@@ -4,7 +4,6 @@
 #include "ActionEffect.h"
 #include "../map/Map.h"
 #include "../entity/Avatar.h"
-#include "../game/Weapon.h"
 #include "../core/io/FileIO.h"
 
 uShort timer_processMovement(timer* t, uLong ms)
@@ -49,37 +48,18 @@ uShort timer_moveEmote(timer* t, uLong ms)
 	return TIMER_CONTINUE;
 }
 
-uShort timer_ActorAttackEnd(timer* t, uLong ms)
-{
-	Actor* a = (Actor*)t->userData;
-	
-	DEBUGOUT("ATTACK COOLDOWN " + its(t->interval));
-	
-	if (a)
-	{
-		a->mStillInAttack = false;
-		MessageData md("ENTITY_ENDATTACK");
-		md.WriteUserdata("entity", a);
-	}
-	
-	return TIMER_DESTROY;
-}
-
 Actor::Actor()
 	: Entity()
 {
 	mAvatar = NULL;
 	mLoadingAvatar = NULL;
 	mEmoticon = NULL;
-	mWeapon = NULL;
-	
 	mStep = 0;
 	mAction = IDLE;
 	mDirection = SOUTH;
 	mSpeed = SPEED_WALK;
 	mType = ENTITY_ACTOR;
 	mLimitedAvatarSize = false;
-	mStillInAttack = false;
 	mJumpHeight = 0;
 	mFalling = true;
 	SetIgnoreSolids(false);
@@ -97,7 +77,6 @@ Actor::~Actor()
 
 	SAFEDELETE(mAvatar);
 	SAFEDELETE(mLoadingAvatar);
-	SAFEDELETE(mWeapon);
 }
 
 rect Actor::GetBoundingRect()
@@ -119,30 +98,6 @@ rect Actor::GetBoundingRect()
 	r.y = mPosition.y - r.h;
 
 	return r;
-}
-	
-void Actor::Attack(uShort cooldown)
-{
-	mSkipAttack = false;
-	
-	MessageData md("ENTITY_ATTACK");
-	md.WriteUserdata("entity", this);
-	md.WriteInt("cooldown", cooldown);
-	messenger.Dispatch(md, this);
-	
-	//If a listener told us to skip this attack, don't do anything.
-	if (mSkipAttack)
-		return;
-
-	SetAction(ATTACK);
-	mStillInAttack = true;
-	timers->Add("a:atk", cooldown, false, timer_ActorAttackEnd, NULL, this);
-
-	//For testing purposes, AKSHUN ICON (overhead)
-	ActionEffect* a = new ActionEffect;
-		mMap->AddEntity(a, ENTITYLEVEL_USER);
-		a->mMap = mMap;
-		a->Create(GetPosition(), GetBoundingRect().h, "miss", ActionEffect::RISE, 1000);
 }
 
 void Actor::Move(direction dir, sShort distance, byte speed)
@@ -199,9 +154,6 @@ void Actor::MoveTo(point2d destination, byte speed)
 /*	Offset mPosition toward the specified direction, check if it collides, then reset mPosition and return true if collided with something */
 bool Actor::CanMove(direction d, sShort distance)
 {
-	if (IsAttacking())
-		return false;
-		
 	ASSERT(mMap);
 
 	point2d temp = mPosition;
@@ -354,15 +306,6 @@ void Actor::_syncAvatarFrameset()
 			}
 		}
 	}
-	else if (mAction == ATTACK)
-	{
-		//Check for associated attack frame, if we don't have one, or an _attack_2 default, switch to idle frame
-		if ( !img->SetFrameset("_attack_" + dir)  || !img->SetFrameset("_attack_2") )
-		{
-			SetAction(IDLE);
-			return;	
-		}
-	}
 	else
 	{
 		if (IsMoving() && !IsJumping())
@@ -413,7 +356,7 @@ void Actor::AddToActionBuffer(string data)
 
 void Actor::_checkActionBuffer()
 {
-	if (mActionBuffer.empty() || IsAttacking()) return;
+	if (mActionBuffer.empty()) return;
 
 	char c = mActionBuffer.at(0);
 	byte b;
@@ -435,19 +378,6 @@ PRINTF("Checking Buffer [%s]: %c\n", mId.c_str(), c);
 	{
 		SetSpeed(SPEED_RUN);
 		recheck = true;
-	}
-	else if (c == 'a') //ATTACK!
-	{
-		size_t end = mActionBuffer.find(".", 0);
-
-		if (end == string::npos)
-		{
-			WARNING("a:npos : " + mActionBuffer);
-		}
-
-		uShort cooldown = sti(mActionBuffer.substr(1, end - 1));
-		mActionBuffer.erase(0, end);
-		Attack(cooldown);
 	}
 	else if (c == 's') //Sit + 1 char for dir
 	{
@@ -560,7 +490,7 @@ void Actor::SetSpeed(byte newSpeed)
 
 void Actor::SetAction(byte newAction)
 {
-	if (mAction != newAction || newAction == ATTACK) //let the attack anim restart the avatar each time
+	if (mAction != newAction)
 	{
 		mAction = newAction;
 		_syncAvatarFrameset();
@@ -812,10 +742,7 @@ void Actor::Render(uLong ms)
 	//if we're not visible, don't render the below stuff
 	if (!mMap->IsRectInCamera( GetBoundingRect() ))
 		return;
-	
-	if (mWeapon)
-		mWeapon->RenderUnder();
-	
+
 	//if we're not in a ghost mode, render a shadow
 	if (!mAvatar || mAvatar->mModifier != Avatar::MOD_GHOST)
 		RenderShadow();	
@@ -835,14 +762,6 @@ void Actor::Render(uLong ms)
 	//render mAvatar
 	if (mAvatar && mAvatar->GetImage())
 	{
-		// check if we hit the end of the attack anim. If so, set it to idle anim
-		// I lied, let it sit on the last frame of the attack until they do something.
-		/*if (GetState() == ATTACK)
-		{
-			if ( mAvatar->GetImage()->IsOnLastFrame() )
-				SetAction(IDLE);
-		}*/
-		
 		r = mMap->ToScreenPosition( GetBoundingRect() );
 		r.y -= mJumpHeight; //calculate in jump
 
@@ -863,9 +782,6 @@ void Actor::Render(uLong ms)
 	}
 
 	RenderEmote();
-	
-	if (mWeapon)
-		mWeapon->RenderOver();
 }
 
 void Actor::_doDepthRender()

@@ -188,8 +188,6 @@ int actor_GetProp(lua_State* ls)
 	else if (prop == "speed") lua_pushnumber( ls, a->GetSpeed() );
 	else if (prop == "action") lua_pushnumber( ls, a->GetAction() );
 	else if (prop == "noclip") lua_pushnumber( ls, a->IgnoreSolids() );
-	else if (prop == "canattack") lua_pushnumber( ls, a->CanAttack() );
-	else if (prop == "attacking") lua_pushnumber( ls, a->IsAttacking() );
 	else if (prop == "mod" && a->GetAvatar()) lua_pushnumber( ls, a->GetAvatar()->mModifier );
 	else return luaError(ls, "Actor.GetProp", prop + " unknown");
 
@@ -221,36 +219,6 @@ int actor_SetProp(lua_State* ls)
 	}
 	else return luaError(ls, "Actor.SetProp", prop + " unknown");
 
-	return 0;
-}
-
-// .SkipAttack(actor) - Will skip attack animation and cooldown when used in a listener on ENTITY_ATTACK. 
-//		This function has no effect outside an ENTITY_ATTACK listener.
-int actor_SkipAttack(lua_State* ls)
-{
-	PRINT("actor_SkipAttack");
-	luaCountArgs(ls, 1);
-
-	Actor* a = _getReferencedActor(ls);
-	a->SkipAttack();
-	
-	return 0;
-}
-
-// .Attack(actor, cooldown<DEFAULT_ATTACK_COOLDOWN>) - Force the actor to attack
-int actor_Attack(lua_State* ls)
-{
-	PRINT("actor_Attack");
-	luaCountArgs(ls, 1);
-	int numArgs = lua_gettop(ls);
-	
-	int cooldown = DEFAULT_ATTACK_COOLDOWN;
-	if (numArgs > 1)
-		cooldown = (int)lua_tonumber(ls, 2);
-
-	Actor* a = _getReferencedActor(ls);
-	a->Attack(cooldown);
-	
 	return 0;
 }
 
@@ -301,8 +269,6 @@ static const luaL_Reg functions[] = {
 	{"LoadAvatar", actor_LoadAvatar},
 	{"GetProp", actor_GetProp},
 	{"SetProp", actor_SetProp},
-	{"SkipAttack", actor_SkipAttack},
-	{"Attack", actor_Attack},
 	{"NewSceneActor", actor_NewSceneActor},
 	{"Face", actor_Face},
 	{NULL, NULL}

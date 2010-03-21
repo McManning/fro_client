@@ -6,7 +6,6 @@
 #include "GameManager.h"
 #include "Achievements.h"
 #include "IrcNetListeners.h"
-#include "Weapon.h"
 #include "../map/CollectionMap.h"
 #include "../entity/LocalActor.h"
 #include "../entity/ExplodingEntity.h"
@@ -24,11 +23,8 @@
 #include "../interface/AvatarFavoritesDialog.h"
 #include "../interface/LoginDialog.h"
 #include "../interface/Inventory.h"
-#include "../interface/Shortcuts.h"
-#include "../interface/Radar.h"
 #include "../interface/OptionsDialog.h"
 #include "../interface/UserList.h"
-#include "../interface/AvatarViewer.h"
 #include "../interface/ItemTrade.h"
 #include "../interface/MyAchievements.h"
 #include "../interface/AvatarCreator.h"
@@ -404,8 +400,7 @@ GameManager::GameManager(bool forceLogin)
 	}
 
 	mLoaderImage = resman->LoadImg("assets/maploadbar.png");
-	mLevelHudImage = resman->LoadImg("assets/hud_level.png");
-		
+
 	mNet = new IrcNet();
 	mNet->mRealname = "fro";
 	hookNetListeners();
@@ -459,19 +454,12 @@ GameManager::GameManager(bool forceLogin)
 
 	inventory = new Inventory();
 	inventory->SetVisible(false);
-	
-	shortcuts = new Shortcuts();
-	shortcuts->SetVisible(false);
 
 	CreateHud();
 
 	userlist = NULL;
 
 	ResizeChildren();
-	
-	//load our level
-	mPlayerData.mXmlPos = mPlayerData.mDoc.FirstChildElement("data");
-	mPlayerLevel = mPlayerData.GetParamInt("level", "base");
 
 	if (forceLogin)
 		new LoginDialog();
@@ -485,8 +473,7 @@ GameManager::~GameManager()
 	PRINT("~GameManager 1");
 	
 	resman->Unload(mLoaderImage);
-	resman->Unload(mLevelHudImage);
-	
+
 	TiXmlElement* e = mConfig.GetChild(mConfig.mXmlPos, "chat");
 	mConfig.SetParamRect(e, "position", mChat->GetPosition());
 	
@@ -550,11 +537,6 @@ void callback_gameHudSubButton(Button* b)
 			if (!gui->Get("optionsdialog"))
 				new OptionsDialog();
 			break;
-		case 's': //shortcuts
-			ASSERT(shortcuts);
-			shortcuts->SetVisible(true);
-			shortcuts->MoveToTop();
-			break;
 		case 'a': //avatar favorites
 			if (!gui->Get("avyfavs"))
 				new AvatarFavorites();
@@ -568,16 +550,9 @@ void callback_gameHudSubButton(Button* b)
 			if (!gui->Get("achievements"))
 				new MyAchievements();
 			break;
-		case 'r': //radar
-			if (!gui->Get("radar"))
-				new Radar();
-			break;
 		case 'u': //userlist
 			if (!gui->Get("userlist"))
 				new UserList();
-			break;
-		case 'v': //avatar viewer
-			new AvatarViewer();
 			break;
 		case 'b': //report a bug
 			new OpenUrl("http://sybolt.com/tracker/bug_report_page.php");
@@ -659,26 +634,13 @@ void GameManager::CreateHud()
 	mFrameTools->SetVisible(false);
 		y = 0;
 		sx = 175;
-		b = new Button(mFrameTools, "r", rect(0,y,35,35), "", callback_gameHudSubButton);
-			b->mHoverText = "Radar";
-			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		y += 35;
-		sx += 35;
+
 		b = new Button(mFrameTools, "u", rect(0,y,35,35), "", callback_gameHudSubButton);
 			b->mHoverText = "Userlist";
 			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
 		y += 35;
 		sx += 35;
-		b = new Button(mFrameTools, "s", rect(0,y,35,35), "", callback_gameHudSubButton);
-			b->mHoverText = "Shortcuts";
-			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		y += 35;
-		sx += 35;
-		b = new Button(mFrameTools, "v", rect(0,y,35,35), "", callback_gameHudSubButton);
-			b->mHoverText = "Avatar Viewer";
-			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		y += 35;
-		sx += 35;
+
 		mFrameTools->SetSize(35, y);
 		
 /*	USER SUB FRAME */
@@ -842,57 +804,8 @@ void GameManager::Render(uLong ms)
 		//render some sort of color overlay surface over mMap?
 		_renderMapLoader(ms);
 	}
-	else
-	{
-		if (!mHudControls->IsVisible() && mLevelHudImage)
-		{
-			string s = its(mPlayerLevel);
-			
-			//render Level: text
-			mLevelHudImage->Render( scr, r.x + 40, r.y + 16, rect(0, 0, 78, 26) );
-	
-			//render each number
-			sShort yOffset = 1;
-			sShort xOffset = 40 + 78;
-			
-			for (uShort i = 0; i < s.size(); i++)
-			{
-				mLevelHudImage->Render( scr, xOffset, r.y + 16 + yOffset, rect(78 + (s.at(i) - '0') * 21, 0, 21, 26) );
-	
-				xOffset += 18;
-				yOffset *= -1; //invert offset	
-			}
-		}		
-	}
-	
+
 	gameRenderProfiler.Stop();
-}
-
-void GameManager::DoActionKeyEvent()
-{
-	DEBUGOUT("DoActionKeyEvent 1");
-	if (IsMapLoading() || mPlayer->mIsLocked || !mChat->mInput->GetText().empty()) //<- will always be empty, input gets event b4 us!
-		return;
-		
-	DEBUGOUT("DoActionKeyEvent 2");
-
-	//Make sure player input is directed toward the map		
-	if (!mChat->HasKeyFocusInTree() && !mMap->HasKeyFocus())
-		return;
-		
-	DEBUGOUT("DoActionKeyEvent 3");
-
-	MessageData md("PLAYER_ACTION");
-	messenger.Dispatch(md, this);
-/*	
-	if (!mPlayer->mWeapon)
-	{
-		mPlayer->mWeapon = new Sword();
-		mPlayer->mWeapon->mOwner = mPlayer;
-	}
-	mPlayer->mWeapon->Use();
-*/
-	DEBUGOUT("DoActionKeyEvent end");
 }
 
 void GameManager::Event(SDL_Event* event)
@@ -910,73 +823,24 @@ void GameManager::Event(SDL_Event* event)
 			}
 			break;
 		case SDL_KEYDOWN:
-			if (event->key.keysym.mod & KMOD_ALT) //handle alt+? shortcuts
+			if (event->key.keysym.sym == SDLK_ESCAPE)
 			{
-				/*switch (event->key.keysym.sym) 
-				{
-					case SDLK_o: //options
-						if (!gui->Get("optionsdialog"))
-							new OptionsDialog();
-						break;
-					case SDLK_s: //shortcuts
-						ASSERT(shortcuts);
-						shortcuts->SetVisible(true);
-						shortcuts->MoveToTop();
-						break;
-					case SDLK_a: //avatar favorites
-						if (!gui->Get("avyfavs"))
-							new AvatarFavorites();
-						break;
-					case SDLK_i: //inventory
-						ASSERT(inventory);
-						inventory->SetVisible(true);
-						inventory->MoveToTop();
-						break;
-					case SDLK_r: //radar
-						if (!gui->Get("radar"))
-							new Radar();
-						break;
-					case SDLK_u: //userlist
-						if (!gui->Get("userlist"))
-							new UserList();
-						break;
-					case SDLK_v: //avatar viewer
-						new AvatarViewer();
-						break;
-					default: break;	
-				}*/
+				if (!gui->Get("MiniMenu"))
+					new MiniMenu();
 			}
-			else
+		/*	else if (event->key.keysym.sym == SDLK_HOME)
 			{
-				//F1 through F8 assigned to shortcuts 
-				if (event->key.keysym.sym >= SDLK_F1 && event->key.keysym.sym <= SDLK_F8)
+				if (!mChat->mInput->mReadOnly)
 				{
-					if (shortcuts)
-						shortcuts->Run(event->key.keysym.sym - SDLK_F1);
+					mChat->mInput->mReadOnly = true;
+					mChat->mInput->SetText("Hit HOME to toggle mode");
 				}
-				else if (event->key.keysym.sym == SDLK_ESCAPE)
+				else
 				{
-					if (!gui->Get("MiniMenu"))
-						new MiniMenu();
+					mChat->mInput->mReadOnly = false;
+					mChat->mInput->Clear();
 				}
-			/*	else if (event->key.keysym.sym == SDLK_HOME)
-				{
-					if (!mChat->mInput->mReadOnly)
-					{
-						mChat->mInput->mReadOnly = true;
-						mChat->mInput->SetText("Hit HOME to toggle mode");
-					}
-					else
-					{
-						mChat->mInput->mReadOnly = false;
-						mChat->mInput->Clear();
-					}
-				}*/
-			/*	else if (event->key.keysym.sym == SDLK_RETURN)
-				{
-					DoActionKeyEvent();
-				}*/
-			}
+			}*/
 			break;
 		default: break;	
 	}
@@ -1036,10 +900,7 @@ void GameManager::GenerateDefaultPlayerData()
 
 	e = mPlayerData.AddChildElement(root, "class");
 	mPlayerData.SetParamString(e, "name", "Storybook Character");
-	
-	e = mPlayerData.AddChildElement(root, "level");
-	mPlayerData.SetParamInt(e, "base", 1);
-	
+
 	mPlayerData.AddChildElement(root, "flags");
 	mPlayerData.AddChildElement(root, "inventory");
 	
@@ -1086,7 +947,6 @@ void GameManager::LoadPlayerData()
 void GameManager::SavePlayerData()
 {
 	mPlayerData.mXmlPos = mPlayerData.mDoc.FirstChildElement("data");
-	mPlayerData.SetParamInt("level", "base", mPlayerLevel);
 
 	if (mPlayer)
 		mPlayer->SaveFlags();

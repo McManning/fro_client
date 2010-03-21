@@ -20,4 +20,16 @@ class UserList : public Console
 
 extern UserList* userlist;
 
+class UserlistButton : public Button
+{
+  public:
+	UserlistButton();
+	~UserlistButton();
+	
+	void Render(uLong ms);
+	
+  private:
+	Image* mNumbersImage; //renderable numbers to indicate user count
+}
+
 #endif //_USERLIST_H_

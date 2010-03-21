@@ -508,11 +508,7 @@ bool Image::ConvertToAvatarFormat(uShort w, uShort h, uShort delay, bool loopSta
 				case 5: fs.key = "_sit_8"; break; //Drm does not use Kyat-formatted _JUMP_2, _LEFT_2, _RIGHT_2
 				case 6: fs.key = "_sit_4"; break;
 				case 7: fs.key = "_sit_6"; break;
-				
-				case 8: fs.key = "_attack_2"; break;
-				case 9: fs.key = "_attack_8"; break;
-				case 10: fs.key = "_attack_4"; break;
-				case 11: fs.key = "_attack_6"; break;
+
 				default: quit = true; break;
 			}
 			
@@ -523,7 +519,7 @@ bool Image::ConvertToAvatarFormat(uShort w, uShort h, uShort delay, bool loopSta
 				fs.loop = loopStand;
 			else if (rowCounter < 8)
 				fs.loop = loopSit;
-			else //attacks don't loop.
+			else
 				fs.loop = false;
 	
 			PRINTF("Y(%i) Key(%s) Loop(%i)\n", r.y, fs.key.c_str(), fs.loop);
@@ -588,16 +584,6 @@ bool Image::ConvertToAvatarFormat(uShort w, uShort h, uShort delay, bool loopSta
 		if (pfs) pfs->loop = true;
 		pfs = GetFrameset("_move_8");
 		if (pfs) pfs->loop = true;
-		
-		//attack loops
-		pfs = GetFrameset("_attack_2");
-		if (pfs) pfs->loop = false;
-		pfs = GetFrameset("_attack_4");
-		if (pfs) pfs->loop = false;
-		pfs = GetFrameset("_attack_6");
-		if (pfs) pfs->loop = false;
-		pfs = GetFrameset("_attack_8");
-		if (pfs) pfs->loop = false;
 	}
 	
 	return true;

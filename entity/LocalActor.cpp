@@ -90,7 +90,7 @@ void LocalActor::_checkInput()
 		NetSendActionBuffer();
 	}
 
-	if (mIsLocked || IsMoving() || IsAttacking() || !mMap || !mActionBuffer.empty()) 
+	if (mIsLocked || IsMoving() || !mMap || !mActionBuffer.empty()) 
 		return;
 
 	if (!game->mChat->HasKeyFocusInTree() && !mMap->HasKeyFocus())
@@ -161,11 +161,6 @@ void LocalActor::_checkInput()
 		{
 			AddToActionBuffer("s"); 
 		}
-	}
-	else if (keystate[SDLK_RALT] || keystate[SDLK_LALT])
-	{
-		if (CanAttack())
-			AddToActionBuffer("a" + its(DEFAULT_ATTACK_COOLDOWN) + ".");	
 	}
 	else if (moving) //regular movement
 	{

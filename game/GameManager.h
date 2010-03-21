@@ -46,9 +46,6 @@ class GameManager : public Frame
 	void GenerateDefaultPlayerData();
 	void LoadPlayerData();
 	void SavePlayerData();
-	
-	//When the user hits the action key, and we're on a map, it'll dispatch PLAYER_ACTION event
-	void DoActionKeyEvent();
 
 	bool IsMapLoading() { return mLoader.mState != WorldLoader::WORLD_ACTIVE && mLoader.mState != WorldLoader::IDLE; };
 	
@@ -79,8 +76,6 @@ class GameManager : public Frame
 
 	XmlFile mConfig; //global config file for game-related material
 	XmlFile mPlayerData; //our game-specific data. Including inventory, stats, etc. 
-	
-	uShort mPlayerLevel;
 
 	Frame* mHudControls; 
 	
@@ -98,7 +93,6 @@ class GameManager : public Frame
 	void _addNewAchievement(string title, string desc, int max, string file);
 
 	Image* mLoaderImage;
-	Image* mLevelHudImage;
 };
 
 extern GameManager* game;

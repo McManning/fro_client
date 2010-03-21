@@ -534,12 +534,18 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 
 100315
 - Removed exit(0); from MNG_UINT_PLTE size % 3 check failure (Not very nice for a production release).
-	
+
+100320
+- Removed Entity.SkipAttack(), Entity.Attack(), and "canattack", "attacking" properties from Entity.GetProp
+- Removed any internal attack related matters. Including _attack_ frames for avatars.
+- Removed Weapon class
+- Removed Radar, Avatar Viewer, Shortcuts, and Remote Player Menu interfaces.
+- Removed player level data
+- 
+
 
 IMMEDIATE TODO:
 
-- Trash the _action_ crap
-- Trash anything attack related
 - Use left-click map objects
 	If a map object is left clickable (interactive), hover an icon over it
 	You also have to be within a certain range
@@ -549,7 +555,6 @@ IMMEDIATE TODO:
 	- Replace with a seperate window, also accessible by clicking their name in userlist
 - Move REPORT BUG to the esc menu
 - Remove REPORT BUG and OPTIONS from main menu
-- Remove player level info
 - Static menu at the top
 - Any chat stuff prefixed with / will be considered a command (like mirc) and will go through
 	commands. If it's not there, it'll send the event to lua listeners. Will NOT go to the channel. 
@@ -558,10 +563,8 @@ IMMEDIATE TODO:
 
 	
 TODO:
-	- Add support for subdirectory entities in the ME and the playable map itself
-	- Pack avatars & shortcuts into the savefile?
+	- Pack avatars into the savefile?
 	- drm welfare check: comes in every week or so, gives you dorra
-	- Fix that giant SO render bug in the mapeditor (when origin is off screen, whole thing goes poof, etc)
 	- OnUnload of old map is called AFTER OnLoad of new map
 	- Scripts OnLoad should not be called until ALL normal resources are loaded. Order of operations
 		fuck up when scripts are loaded before resources they need.

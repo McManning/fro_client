@@ -102,3 +102,46 @@ void UserList::ChangeNick(string oldNick, string newNick)
 		}
 	}
 }
+
+/* ********************** */
+
+void callback_UserlistButtonClick(UserlistButton* b)
+{
+	if (!userlist)
+		userlist = new Userlist();
+}
+
+UserlistButton::UserlistButton()
+	: Button(gui, "", rect(x,y,w,h), "", callback_UserlistButtonClick)
+{
+	mNumbersImage = resman->LoadImg("assets/hud_level.png"); //HUD_LEVEL IS TEMP
+	
+	userlist = new Userlist();
+	
+}
+
+UserlistButton::~UserlistButton()
+{
+	resman->Unload(mNumbersImage);	
+}
+
+void UserlistButton::Render(uLong ms)
+{
+	Image* scr = Screen::Instance();
+	
+	string s = its(PLAYERCOUNT);
+
+	//render each number
+	sShort yOffset = 1;
+	sShort xOffset = 40 + 78;
+	
+	for (int i = 0; i < s.size(); ++i)
+	{
+		mNumbersImage->Render( scr, xOffset, r.y + 16 + yOffset, rect(78 + (s.at(i) - '0') * 21, 0, 21, 26) );
+
+		xOffset += 18;
+		yOffset *= -1; //invert offset	
+	}
+}
+
+

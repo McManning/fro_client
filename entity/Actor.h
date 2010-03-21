@@ -14,13 +14,10 @@
 
 const int MAX_AVATAR_FILESIZE = (200 * 1024); //200 KB
 
-const int DEFAULT_ATTACK_COOLDOWN = 800;
-
 /*	Actor is a base class for "living" entities. Basically entities that can act, move, 
 	have avatars that change based on their actions, etc. 
  */
 class Avatar;
-class Weapon;
 class Actor : public Entity
 {
   public:
@@ -28,7 +25,6 @@ class Actor : public Entity
 	enum { //action types
 		IDLE = 0,
 		SIT,
-		ATTACK,
 	};	
 		
 	enum //jump types
@@ -85,24 +81,6 @@ class Actor : public Entity
 	
 	void SetPosition(point2d position);
 
-	/*	Perform an attack. (Do NOT use SetAction(ATTACK) for this) This function will set a timer
-		to let them move again once cooldown is reached. */
-	void Attack(uShort cooldown);
-	
-	/*	If we're not currently attacking, yes. */
-	bool CanAttack() { return !mStillInAttack; };
-	
-	bool IsAttacking() const { return mStillInAttack; };
-	
-	// If true, actor cannot move. 
-	bool mStillInAttack;
-
-	void SkipAttack() { mSkipAttack = true; };
-
-	/*	if true, will skip animation and cooldown for the current Attack() call. 
-		This can only be set from a listener on ENTITY_ATTACK, as it will remain false outside of Attack() */
-	bool mSkipAttack; 
-
 	void SetAction(byte newAction);
 	byte GetAction() const { return mAction; };
 	
@@ -141,8 +119,6 @@ class Actor : public Entity
 	
 	uShort mEmoteOffset;
 	Image* mEmoticon;
-		
-	Weapon* mWeapon; //the weapon we're currently weilding
 
   protected:
   
