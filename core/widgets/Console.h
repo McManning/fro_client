@@ -1,0 +1,99 @@
+
+#ifndef _CONSOLE_H_
+#define _CONSOLE_H_
+
+#include "Frame.h"
+
+/*
+	Works like this:
+		User inputs: var_x
+		Console searches for matching command: var_x
+		It checks the data members for non-null values, 
+		and outputs them, or calls the linked callback, etc.
+*/
+class Console;
+struct consoleCommand
+{
+	consoleCommand()
+	{
+		callback = NULL;
+		link = NULL;
+		type = VOID;
+	};
+	
+	typedef enum
+	{
+		INT = 0,
+		DOUBLE,
+		STRING,
+		VOID,
+		RECT,
+		POINT2D
+	} commandType;
+
+	string cmd;
+	
+	//Various events that could occur when the command is triggered
+	//TODO: Combine these, so it can only hold ONE. Whatever.. type that was.
+	void (*callback)(Console*, string); 
+	void* link; //variable linked
+	commandType type;
+};
+
+class Input;
+class Multiline;
+class Console : public Frame 
+{
+  public:
+	//("assets/console.png", "log_", false, onInput);
+	Console(string id, string title, string imageFile, string savePrefix, 
+				bool hasExit, bool hasInput);
+	~Console();
+
+	void Render(uLong ms); 
+	void Event(SDL_Event* event); 
+
+	void SetPosition(rect r);
+	void ResizeChildren();
+
+	void AddMessage(string msg);
+	void AddFormattedMessage(string msg);
+		
+	/*	Will list all commands that start with the text in the input. 
+		If input is empty, will list all commands.
+		TODO: How will I implement this?
+	*/
+	void ShowCommands();
+		
+	void HookCommand(string cmd, void (*callback)(Console*, string));
+	void HookCommand(string cmd, consoleCommand::commandType type, void* link);
+	
+	void UnhookCommand(string cmd);
+	void DoCommand(string s);
+
+	void SaveText();
+	
+	Input* mInput;
+	Multiline* mOutput;
+	Label* mTitle;
+	Button* mExit;
+	
+	Image* mBackground; 
+	WidgetImage* mBottomImage;
+	WidgetImage* mTopImage;
+	
+	color mBackgroundColor;
+
+	string mSavePrefix; //when saving log files
+	
+	bool mShowTimestamps;
+	
+  private:
+	void _runHookedCommand(consoleCommand& c, string s);
+	
+	std::vector<consoleCommand> mCommandHooks;
+};
+
+extern Console* console;
+
+#endif //_CONSOLE_H_

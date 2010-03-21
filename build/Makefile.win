@@ -1,0 +1,309 @@
+# Project: fro
+# Makefile created by Dev-C++ 4.9.9.2
+
+CPP  = g++.exe
+CC   = gcc.exe
+WINDRES = windres.exe
+RES  = ../w32obj/fro_private.res
+OBJ  = ../w32obj/Common.o ../w32obj/FontManager.o ../w32obj/Image.o ../w32obj/ResourceManager.o ../w32obj/TimerManager.o ../w32obj/BoltFile.o ../w32obj/Crypt.o ../w32obj/FileIO.o ../w32obj/md5.o ../w32obj/XmlFile.o ../w32obj/tinyxml.o ../w32obj/tinyxmlerror.o ../w32obj/tinyxmlparser.o ../w32obj/main.o ../w32obj/GuiManager.o ../w32obj/Screen.o ../w32obj/IMG.o ../w32obj/IMG_bmp.o ../w32obj/IMG_gif.o ../w32obj/IMG_jpg.o ../w32obj/IMG_mng.o ../w32obj/IMG_png.o ../w32obj/SDL_gfxPrimitives.o ../w32obj/SDL_rotozoom.o ../w32obj/SDL_ttf.o ../w32obj/SoundManager.o ../w32obj/SDL_Misc.o ../w32obj/Widget.o ../w32obj/WidgetImage.o ../w32obj/Console.o ../w32obj/Frame.o ../w32obj/Input.o ../w32obj/Label.o ../w32obj/Multiline.o ../w32obj/Scrollbar.o ../w32obj/SmallSelect.o ../w32obj/Button.o ../w32obj/Checkbox.o ../w32obj/GameManager.o ../w32obj/AvatarFavoritesDialog.o ../w32obj/LoginDialog.o ../w32obj/DownloadManager.o ../w32obj/TextSocketConnection.o ../w32obj/IrcNet2.o ../w32obj/Inventory.o ../w32obj/RemotePlayerMenu.o ../w32obj/Shortcuts.o ../w32obj/MessageManager.o ../w32obj/IrcNetListeners.o ../w32obj/BubbleManager.o ../w32obj/CollectionMap.o ../w32obj/Map.o ../w32obj/Entity.o ../w32obj/EntityManager.o ../w32obj/LocalActor.o ../w32obj/Actor.o ../w32obj/RemoteActor.o ../w32obj/StaticObject.o ../w32obj/ColorPicker.o ../w32obj/Radar.o ../w32obj/OptionsDialog.o ../w32obj/OpenUrl.o ../w32obj/TimeProfiler.o ../w32obj/DataPacket.o ../w32obj/Avatar.o ../w32obj/UserList.o ../w32obj/SceneActor.o ../w32obj/AvatarViewer.o ../w32obj/FilePicker.o ../w32obj/MessagePopup.o ../w32obj/ExplodingEntity.o ../w32obj/AvatarCreator.o ../w32obj/MessageData.o ../w32obj/ItemTrade.o ../w32obj/TextObject.o ../w32obj/EventsLib.o ../w32obj/LuaManager.o ../w32obj/LuaCommon.o ../w32obj/SystemLib.o ../w32obj/TimersLib.o ../w32obj/EntityLib.o ../w32obj/PlayerLib.o ../w32obj/ActorLib.o ../w32obj/ConvoLib.o ../w32obj/CameraLib.o ../w32obj/Weapon.o ../w32obj/TerrainTest.o ../w32obj/WorldLoader.o ../w32obj/MyAchievements.o ../w32obj/GameLib.o ../w32obj/Achievements.o ../w32obj/MiniMenu.o ../w32obj/ActionEffect.o $(RES)
+LINKOBJ  = ../w32obj/Common.o ../w32obj/FontManager.o ../w32obj/Image.o ../w32obj/ResourceManager.o ../w32obj/TimerManager.o ../w32obj/BoltFile.o ../w32obj/Crypt.o ../w32obj/FileIO.o ../w32obj/md5.o ../w32obj/XmlFile.o ../w32obj/tinyxml.o ../w32obj/tinyxmlerror.o ../w32obj/tinyxmlparser.o ../w32obj/main.o ../w32obj/GuiManager.o ../w32obj/Screen.o ../w32obj/IMG.o ../w32obj/IMG_bmp.o ../w32obj/IMG_gif.o ../w32obj/IMG_jpg.o ../w32obj/IMG_mng.o ../w32obj/IMG_png.o ../w32obj/SDL_gfxPrimitives.o ../w32obj/SDL_rotozoom.o ../w32obj/SDL_ttf.o ../w32obj/SoundManager.o ../w32obj/SDL_Misc.o ../w32obj/Widget.o ../w32obj/WidgetImage.o ../w32obj/Console.o ../w32obj/Frame.o ../w32obj/Input.o ../w32obj/Label.o ../w32obj/Multiline.o ../w32obj/Scrollbar.o ../w32obj/SmallSelect.o ../w32obj/Button.o ../w32obj/Checkbox.o ../w32obj/GameManager.o ../w32obj/AvatarFavoritesDialog.o ../w32obj/LoginDialog.o ../w32obj/DownloadManager.o ../w32obj/TextSocketConnection.o ../w32obj/IrcNet2.o ../w32obj/Inventory.o ../w32obj/RemotePlayerMenu.o ../w32obj/Shortcuts.o ../w32obj/MessageManager.o ../w32obj/IrcNetListeners.o ../w32obj/BubbleManager.o ../w32obj/CollectionMap.o ../w32obj/Map.o ../w32obj/Entity.o ../w32obj/EntityManager.o ../w32obj/LocalActor.o ../w32obj/Actor.o ../w32obj/RemoteActor.o ../w32obj/StaticObject.o ../w32obj/ColorPicker.o ../w32obj/Radar.o ../w32obj/OptionsDialog.o ../w32obj/OpenUrl.o ../w32obj/TimeProfiler.o ../w32obj/DataPacket.o ../w32obj/Avatar.o ../w32obj/UserList.o ../w32obj/SceneActor.o ../w32obj/AvatarViewer.o ../w32obj/FilePicker.o ../w32obj/MessagePopup.o ../w32obj/ExplodingEntity.o ../w32obj/AvatarCreator.o ../w32obj/MessageData.o ../w32obj/ItemTrade.o ../w32obj/TextObject.o ../w32obj/EventsLib.o ../w32obj/LuaManager.o ../w32obj/LuaCommon.o ../w32obj/SystemLib.o ../w32obj/TimersLib.o ../w32obj/EntityLib.o ../w32obj/PlayerLib.o ../w32obj/ActorLib.o ../w32obj/ConvoLib.o ../w32obj/CameraLib.o ../w32obj/Weapon.o ../w32obj/TerrainTest.o ../w32obj/WorldLoader.o ../w32obj/MyAchievements.o ../w32obj/GameLib.o ../w32obj/Achievements.o ../w32obj/MiniMenu.o ../w32obj/ActionEffect.o $(RES)
+LIBS =  -L"C:/Dev-Cpp/lib" -mwindows -lmingw32 -lSDLmain -lSDL -lpng -lfreetype -lzdll -ljpeg -lwsock32 -llua5.1  -s 
+INCS =  -I"C:/Dev-Cpp/include"  -I"C:/Dev-Cpp/include/freetype2" 
+CXXINCS =  -I"C:/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"C:/Dev-Cpp/include/c++/3.4.2/backward"  -I"C:/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"C:/Dev-Cpp/include/c++/3.4.2"  -I"C:/Dev-Cpp/include"  -I"C:/Dev-Cpp/include/freetype2" 
+BIN  = ../w32bin/fro.exe
+CXXFLAGS = $(CXXINCS)   -ansi -traditional-cpp -fexpensive-optimizations
+CFLAGS = $(INCS)   -ansi -traditional-cpp -fexpensive-optimizations
+RM = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before ../w32bin/fro.exe all-after
+
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o "..\w32bin\fro.exe" $(LIBS)
+
+../w32obj/Common.o: ../core/Common.cpp
+	$(CPP) -c ../core/Common.cpp -o ../w32obj/Common.o $(CXXFLAGS)
+
+../w32obj/FontManager.o: ../core/FontManager.cpp
+	$(CPP) -c ../core/FontManager.cpp -o ../w32obj/FontManager.o $(CXXFLAGS)
+
+../w32obj/Image.o: ../core/Image.cpp
+	$(CPP) -c ../core/Image.cpp -o ../w32obj/Image.o $(CXXFLAGS)
+
+../w32obj/ResourceManager.o: ../core/ResourceManager.cpp
+	$(CPP) -c ../core/ResourceManager.cpp -o ../w32obj/ResourceManager.o $(CXXFLAGS)
+
+../w32obj/TimerManager.o: ../core/TimerManager.cpp
+	$(CPP) -c ../core/TimerManager.cpp -o ../w32obj/TimerManager.o $(CXXFLAGS)
+
+../w32obj/BoltFile.o: ../core/io/BoltFile.cpp
+	$(CPP) -c ../core/io/BoltFile.cpp -o ../w32obj/BoltFile.o $(CXXFLAGS)
+
+../w32obj/Crypt.o: ../core/io/Crypt.cpp
+	$(CPP) -c ../core/io/Crypt.cpp -o ../w32obj/Crypt.o $(CXXFLAGS)
+
+../w32obj/FileIO.o: ../core/io/FileIO.cpp
+	$(CPP) -c ../core/io/FileIO.cpp -o ../w32obj/FileIO.o $(CXXFLAGS)
+
+../w32obj/md5.o: ../core/io/md5.c
+	$(CPP) -c ../core/io/md5.c -o ../w32obj/md5.o $(CXXFLAGS)
+
+../w32obj/XmlFile.o: ../core/io/XmlFile.cpp
+	$(CPP) -c ../core/io/XmlFile.cpp -o ../w32obj/XmlFile.o $(CXXFLAGS)
+
+../w32obj/tinyxml.o: ../core/io/tinyxml/tinyxml.cpp
+	$(CPP) -c ../core/io/tinyxml/tinyxml.cpp -o ../w32obj/tinyxml.o $(CXXFLAGS)
+
+../w32obj/tinyxmlerror.o: ../core/io/tinyxml/tinyxmlerror.cpp
+	$(CPP) -c ../core/io/tinyxml/tinyxmlerror.cpp -o ../w32obj/tinyxmlerror.o $(CXXFLAGS)
+
+../w32obj/tinyxmlparser.o: ../core/io/tinyxml/tinyxmlparser.cpp
+	$(CPP) -c ../core/io/tinyxml/tinyxmlparser.cpp -o ../w32obj/tinyxmlparser.o $(CXXFLAGS)
+
+../w32obj/main.o: ../main.cpp
+	$(CPP) -c ../main.cpp -o ../w32obj/main.o $(CXXFLAGS)
+
+../w32obj/GuiManager.o: ../core/GuiManager.cpp
+	$(CPP) -c ../core/GuiManager.cpp -o ../w32obj/GuiManager.o $(CXXFLAGS)
+
+../w32obj/Screen.o: ../core/Screen.cpp
+	$(CPP) -c ../core/Screen.cpp -o ../w32obj/Screen.o $(CXXFLAGS)
+
+../w32obj/IMG.o: ../core/SDL/IMG.c
+	$(CPP) -c ../core/SDL/IMG.c -o ../w32obj/IMG.o $(CXXFLAGS)
+
+../w32obj/IMG_bmp.o: ../core/SDL/IMG_bmp.c
+	$(CPP) -c ../core/SDL/IMG_bmp.c -o ../w32obj/IMG_bmp.o $(CXXFLAGS)
+
+../w32obj/IMG_gif.o: ../core/SDL/IMG_gif.c
+	$(CPP) -c ../core/SDL/IMG_gif.c -o ../w32obj/IMG_gif.o $(CXXFLAGS)
+
+../w32obj/IMG_jpg.o: ../core/SDL/IMG_jpg.c
+	$(CPP) -c ../core/SDL/IMG_jpg.c -o ../w32obj/IMG_jpg.o $(CXXFLAGS)
+
+../w32obj/IMG_mng.o: ../core/SDL/IMG_mng.c
+	$(CPP) -c ../core/SDL/IMG_mng.c -o ../w32obj/IMG_mng.o $(CXXFLAGS)
+
+../w32obj/IMG_png.o: ../core/SDL/IMG_png.c
+	$(CPP) -c ../core/SDL/IMG_png.c -o ../w32obj/IMG_png.o $(CXXFLAGS)
+
+../w32obj/SDL_gfxPrimitives.o: ../core/SDL/SDL_gfxPrimitives.c
+	$(CPP) -c ../core/SDL/SDL_gfxPrimitives.c -o ../w32obj/SDL_gfxPrimitives.o $(CXXFLAGS)
+
+../w32obj/SDL_rotozoom.o: ../core/SDL/SDL_rotozoom.cpp
+	$(CPP) -c ../core/SDL/SDL_rotozoom.cpp -o ../w32obj/SDL_rotozoom.o $(CXXFLAGS)
+
+../w32obj/SDL_ttf.o: ../core/SDL/SDL_ttf.c
+	$(CPP) -c ../core/SDL/SDL_ttf.c -o ../w32obj/SDL_ttf.o $(CXXFLAGS)
+
+../w32obj/SoundManager.o: ../core/sound/SoundManager.cpp
+	$(CPP) -c ../core/sound/SoundManager.cpp -o ../w32obj/SoundManager.o $(CXXFLAGS)
+
+../w32obj/SDL_Misc.o: ../core/SDL/SDL_Misc.cpp
+	$(CPP) -c ../core/SDL/SDL_Misc.cpp -o ../w32obj/SDL_Misc.o $(CXXFLAGS)
+
+../w32obj/Widget.o: ../core/widgets/Widget.cpp
+	$(CPP) -c ../core/widgets/Widget.cpp -o ../w32obj/Widget.o $(CXXFLAGS)
+
+../w32obj/WidgetImage.o: ../core/widgets/WidgetImage.cpp
+	$(CPP) -c ../core/widgets/WidgetImage.cpp -o ../w32obj/WidgetImage.o $(CXXFLAGS)
+
+../w32obj/Console.o: ../core/widgets/Console.cpp
+	$(CPP) -c ../core/widgets/Console.cpp -o ../w32obj/Console.o $(CXXFLAGS)
+
+../w32obj/Frame.o: ../core/widgets/Frame.cpp
+	$(CPP) -c ../core/widgets/Frame.cpp -o ../w32obj/Frame.o $(CXXFLAGS)
+
+../w32obj/Input.o: ../core/widgets/Input.cpp
+	$(CPP) -c ../core/widgets/Input.cpp -o ../w32obj/Input.o $(CXXFLAGS)
+
+../w32obj/Label.o: ../core/widgets/Label.cpp
+	$(CPP) -c ../core/widgets/Label.cpp -o ../w32obj/Label.o $(CXXFLAGS)
+
+../w32obj/Multiline.o: ../core/widgets/Multiline.cpp
+	$(CPP) -c ../core/widgets/Multiline.cpp -o ../w32obj/Multiline.o $(CXXFLAGS)
+
+../w32obj/Scrollbar.o: ../core/widgets/Scrollbar.cpp
+	$(CPP) -c ../core/widgets/Scrollbar.cpp -o ../w32obj/Scrollbar.o $(CXXFLAGS)
+
+../w32obj/SmallSelect.o: ../core/widgets/SmallSelect.cpp
+	$(CPP) -c ../core/widgets/SmallSelect.cpp -o ../w32obj/SmallSelect.o $(CXXFLAGS)
+
+../w32obj/Button.o: ../core/widgets/Button.cpp
+	$(CPP) -c ../core/widgets/Button.cpp -o ../w32obj/Button.o $(CXXFLAGS)
+
+../w32obj/Checkbox.o: ../core/widgets/Checkbox.cpp
+	$(CPP) -c ../core/widgets/Checkbox.cpp -o ../w32obj/Checkbox.o $(CXXFLAGS)
+
+../w32obj/GameManager.o: ../game/GameManager.cpp
+	$(CPP) -c ../game/GameManager.cpp -o ../w32obj/GameManager.o $(CXXFLAGS)
+
+../w32obj/AvatarFavoritesDialog.o: ../interface/AvatarFavoritesDialog.cpp
+	$(CPP) -c ../interface/AvatarFavoritesDialog.cpp -o ../w32obj/AvatarFavoritesDialog.o $(CXXFLAGS)
+
+../w32obj/LoginDialog.o: ../interface/LoginDialog.cpp
+	$(CPP) -c ../interface/LoginDialog.cpp -o ../w32obj/LoginDialog.o $(CXXFLAGS)
+
+../w32obj/DownloadManager.o: ../core/net/DownloadManager.cpp
+	$(CPP) -c ../core/net/DownloadManager.cpp -o ../w32obj/DownloadManager.o $(CXXFLAGS)
+
+../w32obj/TextSocketConnection.o: ../core/net/TextSocketConnection.cpp
+	$(CPP) -c ../core/net/TextSocketConnection.cpp -o ../w32obj/TextSocketConnection.o $(CXXFLAGS)
+
+../w32obj/IrcNet2.o: ../core/net/IrcNet2.cpp
+	$(CPP) -c ../core/net/IrcNet2.cpp -o ../w32obj/IrcNet2.o $(CXXFLAGS)
+
+../w32obj/Inventory.o: ../interface/Inventory.cpp
+	$(CPP) -c ../interface/Inventory.cpp -o ../w32obj/Inventory.o $(CXXFLAGS)
+
+../w32obj/RemotePlayerMenu.o: ../interface/RemotePlayerMenu.cpp
+	$(CPP) -c ../interface/RemotePlayerMenu.cpp -o ../w32obj/RemotePlayerMenu.o $(CXXFLAGS)
+
+../w32obj/Shortcuts.o: ../interface/Shortcuts.cpp
+	$(CPP) -c ../interface/Shortcuts.cpp -o ../w32obj/Shortcuts.o $(CXXFLAGS)
+
+../w32obj/MessageManager.o: ../core/MessageManager.cpp
+	$(CPP) -c ../core/MessageManager.cpp -o ../w32obj/MessageManager.o $(CXXFLAGS)
+
+../w32obj/IrcNetListeners.o: ../game/IrcNetListeners.cpp
+	$(CPP) -c ../game/IrcNetListeners.cpp -o ../w32obj/IrcNetListeners.o $(CXXFLAGS)
+
+../w32obj/BubbleManager.o: ../map/BubbleManager.cpp
+	$(CPP) -c ../map/BubbleManager.cpp -o ../w32obj/BubbleManager.o $(CXXFLAGS)
+
+../w32obj/CollectionMap.o: ../map/CollectionMap.cpp
+	$(CPP) -c ../map/CollectionMap.cpp -o ../w32obj/CollectionMap.o $(CXXFLAGS)
+
+../w32obj/Map.o: ../map/Map.cpp
+	$(CPP) -c ../map/Map.cpp -o ../w32obj/Map.o $(CXXFLAGS)
+
+../w32obj/Entity.o: ../entity/Entity.cpp
+	$(CPP) -c ../entity/Entity.cpp -o ../w32obj/Entity.o $(CXXFLAGS)
+
+../w32obj/EntityManager.o: ../entity/EntityManager.cpp
+	$(CPP) -c ../entity/EntityManager.cpp -o ../w32obj/EntityManager.o $(CXXFLAGS)
+
+../w32obj/LocalActor.o: ../entity/LocalActor.cpp
+	$(CPP) -c ../entity/LocalActor.cpp -o ../w32obj/LocalActor.o $(CXXFLAGS)
+
+../w32obj/Actor.o: ../entity/Actor.cpp
+	$(CPP) -c ../entity/Actor.cpp -o ../w32obj/Actor.o $(CXXFLAGS)
+
+../w32obj/RemoteActor.o: ../entity/RemoteActor.cpp
+	$(CPP) -c ../entity/RemoteActor.cpp -o ../w32obj/RemoteActor.o $(CXXFLAGS)
+
+../w32obj/StaticObject.o: ../entity/StaticObject.cpp
+	$(CPP) -c ../entity/StaticObject.cpp -o ../w32obj/StaticObject.o $(CXXFLAGS)
+
+../w32obj/ColorPicker.o: ../core/widgets/ColorPicker.cpp
+	$(CPP) -c ../core/widgets/ColorPicker.cpp -o ../w32obj/ColorPicker.o $(CXXFLAGS)
+
+../w32obj/Radar.o: ../interface/Radar.cpp
+	$(CPP) -c ../interface/Radar.cpp -o ../w32obj/Radar.o $(CXXFLAGS)
+
+../w32obj/OptionsDialog.o: ../interface/OptionsDialog.cpp
+	$(CPP) -c ../interface/OptionsDialog.cpp -o ../w32obj/OptionsDialog.o $(CXXFLAGS)
+
+../w32obj/OpenUrl.o: ../core/widgets/OpenUrl.cpp
+	$(CPP) -c ../core/widgets/OpenUrl.cpp -o ../w32obj/OpenUrl.o $(CXXFLAGS)
+
+../w32obj/TimeProfiler.o: ../core/TimeProfiler.cpp
+	$(CPP) -c ../core/TimeProfiler.cpp -o ../w32obj/TimeProfiler.o $(CXXFLAGS)
+
+../w32obj/DataPacket.o: ../core/net/DataPacket.cpp
+	$(CPP) -c ../core/net/DataPacket.cpp -o ../w32obj/DataPacket.o $(CXXFLAGS)
+
+../w32obj/Avatar.o: ../entity/Avatar.cpp
+	$(CPP) -c ../entity/Avatar.cpp -o ../w32obj/Avatar.o $(CXXFLAGS)
+
+../w32obj/UserList.o: ../interface/UserList.cpp
+	$(CPP) -c ../interface/UserList.cpp -o ../w32obj/UserList.o $(CXXFLAGS)
+
+../w32obj/SceneActor.o: ../entity/SceneActor.cpp
+	$(CPP) -c ../entity/SceneActor.cpp -o ../w32obj/SceneActor.o $(CXXFLAGS)
+
+../w32obj/AvatarViewer.o: ../interface/AvatarViewer.cpp
+	$(CPP) -c ../interface/AvatarViewer.cpp -o ../w32obj/AvatarViewer.o $(CXXFLAGS)
+
+../w32obj/FilePicker.o: ../core/widgets/FilePicker.cpp
+	$(CPP) -c ../core/widgets/FilePicker.cpp -o ../w32obj/FilePicker.o $(CXXFLAGS)
+
+../w32obj/MessagePopup.o: ../core/widgets/MessagePopup.cpp
+	$(CPP) -c ../core/widgets/MessagePopup.cpp -o ../w32obj/MessagePopup.o $(CXXFLAGS)
+
+../w32obj/ExplodingEntity.o: ../entity/ExplodingEntity.cpp
+	$(CPP) -c ../entity/ExplodingEntity.cpp -o ../w32obj/ExplodingEntity.o $(CXXFLAGS)
+
+../w32obj/AvatarCreator.o: ../interface/AvatarCreator.cpp
+	$(CPP) -c ../interface/AvatarCreator.cpp -o ../w32obj/AvatarCreator.o $(CXXFLAGS)
+
+../w32obj/MessageData.o: ../core/MessageData.cpp
+	$(CPP) -c ../core/MessageData.cpp -o ../w32obj/MessageData.o $(CXXFLAGS)
+
+../w32obj/ItemTrade.o: ../interface/ItemTrade.cpp
+	$(CPP) -c ../interface/ItemTrade.cpp -o ../w32obj/ItemTrade.o $(CXXFLAGS)
+
+../w32obj/TextObject.o: ../entity/TextObject.cpp
+	$(CPP) -c ../entity/TextObject.cpp -o ../w32obj/TextObject.o $(CXXFLAGS)
+
+../w32obj/EventsLib.o: ../lua/EventsLib.cpp
+	$(CPP) -c ../lua/EventsLib.cpp -o ../w32obj/EventsLib.o $(CXXFLAGS)
+
+../w32obj/LuaManager.o: ../lua/LuaManager.cpp
+	$(CPP) -c ../lua/LuaManager.cpp -o ../w32obj/LuaManager.o $(CXXFLAGS)
+
+../w32obj/LuaCommon.o: ../lua/LuaCommon.cpp
+	$(CPP) -c ../lua/LuaCommon.cpp -o ../w32obj/LuaCommon.o $(CXXFLAGS)
+
+../w32obj/SystemLib.o: ../lua/SystemLib.cpp
+	$(CPP) -c ../lua/SystemLib.cpp -o ../w32obj/SystemLib.o $(CXXFLAGS)
+
+../w32obj/TimersLib.o: ../lua/TimersLib.cpp
+	$(CPP) -c ../lua/TimersLib.cpp -o ../w32obj/TimersLib.o $(CXXFLAGS)
+
+../w32obj/EntityLib.o: ../lua/EntityLib.cpp
+	$(CPP) -c ../lua/EntityLib.cpp -o ../w32obj/EntityLib.o $(CXXFLAGS)
+
+../w32obj/PlayerLib.o: ../lua/PlayerLib.cpp
+	$(CPP) -c ../lua/PlayerLib.cpp -o ../w32obj/PlayerLib.o $(CXXFLAGS)
+
+../w32obj/ActorLib.o: ../lua/ActorLib.cpp
+	$(CPP) -c ../lua/ActorLib.cpp -o ../w32obj/ActorLib.o $(CXXFLAGS)
+
+../w32obj/ConvoLib.o: ../lua/ConvoLib.cpp
+	$(CPP) -c ../lua/ConvoLib.cpp -o ../w32obj/ConvoLib.o $(CXXFLAGS)
+
+../w32obj/CameraLib.o: ../lua/CameraLib.cpp
+	$(CPP) -c ../lua/CameraLib.cpp -o ../w32obj/CameraLib.o $(CXXFLAGS)
+
+../w32obj/Weapon.o: ../game/Weapon.cpp
+	$(CPP) -c ../game/Weapon.cpp -o ../w32obj/Weapon.o $(CXXFLAGS)
+
+../w32obj/TerrainTest.o: ../game/TerrainTest.cpp
+	$(CPP) -c ../game/TerrainTest.cpp -o ../w32obj/TerrainTest.o $(CXXFLAGS)
+
+../w32obj/WorldLoader.o: ../game/WorldLoader.cpp
+	$(CPP) -c ../game/WorldLoader.cpp -o ../w32obj/WorldLoader.o $(CXXFLAGS)
+
+../w32obj/MyAchievements.o: ../interface/MyAchievements.cpp
+	$(CPP) -c ../interface/MyAchievements.cpp -o ../w32obj/MyAchievements.o $(CXXFLAGS)
+
+../w32obj/GameLib.o: ../lua/GameLib.cpp
+	$(CPP) -c ../lua/GameLib.cpp -o ../w32obj/GameLib.o $(CXXFLAGS)
+
+../w32obj/Achievements.o: ../game/Achievements.cpp
+	$(CPP) -c ../game/Achievements.cpp -o ../w32obj/Achievements.o $(CXXFLAGS)
+
+../w32obj/MiniMenu.o: ../interface/MiniMenu.cpp
+	$(CPP) -c ../interface/MiniMenu.cpp -o ../w32obj/MiniMenu.o $(CXXFLAGS)
+
+../w32obj/ActionEffect.o: ../entity/ActionEffect.cpp
+	$(CPP) -c ../entity/ActionEffect.cpp -o ../w32obj/ActionEffect.o $(CXXFLAGS)
+
+../w32obj/fro_private.res: fro_private.rc 
+	$(WINDRES) -i fro_private.rc --input-format=rc -o ../w32obj/fro_private.res -O coff 

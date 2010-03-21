@@ -1,0 +1,403 @@
+
+#include "Widget.h"
+#include "../Screen.h"
+#include "../ResourceManager.h"
+#include "../GuiManager.h"
+#include "../FontManager.h"
+//#include "Console.h"
+
+Widget::Widget() 
+{
+	mParent = NULL;
+	eventCallback = NULL;
+	renderCallback = NULL;
+	mVisible = true;
+	mActive = true;
+	mSortable = true;
+	mTemporary = false;
+	mConstrainChildrenToRect = true;
+	mType = WIDGET_UNKNOWN;
+	mFont = NULL;
+	mBorderColor.a = 0; //don't render
+	mHoverDelay = 3000;
+}
+
+Widget::~Widget()
+{
+	for (uShort i = 0;  i < mChildren.size(); i++)
+	{
+		mChildren.at(i)->mParent = NULL;
+		SAFEDELETE(mChildren.at(i));
+	}
+	
+	mChildren.clear();
+	
+	if (mParent)
+	{
+		mParent->Remove(this, false);
+		mParent = NULL;
+	}
+	
+	for (uShort i = 0; i < mImages.size(); i++)
+	{
+		SAFEDELETE(mImages.at(i));	
+	}
+	
+	gui->DereferenceWidget(this);
+}
+
+bool Widget::Add(Widget* child) 
+{
+	if ( Get(child) != -1 )
+	{
+		FATAL("Cloning");
+		return false;
+	}
+	
+	mChildren.push_back(child);
+	child->mParent = this;
+	
+	FlagRender();
+	
+	return true;
+}
+
+bool Widget::Remove(Widget* child, bool deleteClass)
+{
+	for (uShort i = 0;  i < mChildren.size(); i++)
+	{
+		if (mChildren.at(i) == child)
+		{
+			child->mParent = NULL;
+			if (deleteClass)
+				SAFEDELETE(child);
+			mChildren.erase(mChildren.begin() + i);
+			
+			FlagRender();
+			
+			return true;
+		}
+	}
+
+	return false; //not found
+}
+
+//Deep searching method. Allows us to grab Objects from the mChildren of our mChildrens mChildren
+Widget* Widget::Get(string id, bool searchDeep, uShort type) 
+{
+	Widget* w;
+	Widget* w2 = NULL;
+	for (uShort i = 0;  i < mChildren.size(); i++)
+	{
+		w = mChildren.at(i);
+		if (w->mId == id && (w->mType == type || type == WIDGET_UNKNOWN))
+			return w;
+			
+		if (searchDeep)
+		{
+			w2 = w->Get(id, true, type);
+			if (w2)
+				return w2;
+		}
+	}
+
+	return NULL;
+}
+
+sShort Widget::Get(Widget* w) 
+{
+	for (uShort i = 0;  i < mChildren.size(); i++)
+	{
+		if (mChildren.at(i) == w)
+			return i;
+	}
+
+	return -1;
+}
+
+Widget* Widget::At(uShort i) 
+{
+	if (!mChildren.empty() && i < mChildren.size()) 
+		return mChildren.at(i);
+		
+	return NULL;
+}
+
+void Widget::MoveToTop()
+{
+	if (!mParent || mParent->mChildren.empty() || !mSortable) 
+		return;
+		
+	//if we're already at top, don't do the equations below
+	if (mParent->mChildren.at(mParent->mChildren.size() - 1) == this)
+		return; 
+	
+	sShort pos = mParent->Get(this);
+
+	ASSERT(pos >= 0 && pos < mParent->mChildren.size());
+
+	mParent->mChildren.erase(mParent->mChildren.begin() + pos);
+	mParent->mChildren.push_back(this);
+	
+	mParent->MoveToTop(); //Continue down the tree until this widget is at the VERY TOP.
+	
+	FlagRender();
+}
+
+void Widget::MoveToBottom()
+{
+	if (!mParent || mParent->mChildren.empty() || !mSortable) 
+		return;
+		
+	//if we're already at bottom, don't do the equations below
+	if (mParent->mChildren.at(0) == this)
+		return; 
+	
+	sShort pos = mParent->Get(this);
+
+	ASSERT(pos >= 0 && pos < mParent->mChildren.size());
+
+	mParent->mChildren.erase(mParent->mChildren.begin() + pos);
+	mParent->mChildren.insert(mParent->mChildren.begin(), this);
+	
+	//TODO: Necessary? mParent->MoveToBottom(); //Continue down the tree until this widget is at the VERY BOTTOM.
+	
+	FlagRender();
+}
+
+Widget* Widget::GetParent() 
+{
+	return mParent;
+}
+
+sShort Widget::GetScreenX() 
+{
+	if (mParent)
+		return mParent->GetScreenX() + mPosition.x;
+	else
+		return mPosition.x;
+}
+
+sShort Widget::GetScreenY()
+{
+	if (mParent)
+		return mParent->GetScreenY() + mPosition.y;
+	else
+		return mPosition.y;
+}
+
+void Widget::Event(SDL_Event* event)
+{
+	if (eventCallback) 
+		eventCallback(this, event);
+		
+	/*	TODO: This doesn't work with our current event system
+		Because as the widget is added to global event handlers when created, the
+		mousebuttonup or keyup that creates the event will also be passed to this
+		widget, thus instantly killing it after it's creation. Another method must be
+		found.
+	*/
+	if (mTemporary && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP
+						|| event->type == SDL_MOUSEBUTTONUP))
+		Die();
+}
+
+void Widget::Render(uLong ms)
+{
+	Image* scr = Screen::Instance();
+	
+	if (renderCallback) 
+		renderCallback(this, ms);
+
+	if (mBorderColor.a != 0) //default will have a zero alpha
+		scr->DrawRound(GetScreenPosition(), 0, mBorderColor);
+
+	for (uShort i = 0;  i < mChildren.size(); i++)
+	{
+		if (mChildren.at(i)->IsVisible())
+			mChildren.at(i)->Render(ms);	
+	}
+}
+
+
+void Widget::RenderImages(uLong ms)
+{
+	Image* scr = Screen::Instance();
+	for (uShort i = 0; i < mImages.size(); i++)
+	{
+		mImages.at(i)->Render(this, scr);
+	}	
+}
+
+WidgetImage* Widget::GetImage(string id)
+{
+	for (uShort i = 0; i < mImages.size(); i++)
+	{
+		if (mImages.at(i)->mId == id) 
+			return mImages.at(i);
+	}	
+	return NULL;
+}
+
+void Widget::AddImage(WidgetImage* wi)
+{
+	for (uShort i = 0; i < mImages.size(); i++)
+	{
+		if (mImages.at(i)->mId == wi->mId) //erase old ones w/ matching id
+		{
+			SAFEDELETE(mImages.at(i));
+			mImages.erase(mImages.begin() + i);
+			i--;
+		}
+	}	
+	mImages.push_back(wi);
+}
+
+void Widget::FlagRender()
+{
+	//OPTIMIZETODO: Add position to our clip rects
+}
+
+void Widget::SetPosition(rect r)
+{
+	FlagRender(); //for old position
+
+	if (mParent && mParent->mConstrainChildrenToRect)
+	{
+		if (r.x + r.w > mParent->Width() && r.x == 0) r.w = mParent->Width();
+		if (r.y + r.h > mParent->Height() && r.y == 0) r.h = mParent->Height();
+		
+		if (r.x + r.w > mParent->Width()) r.x = mParent->Width() - r.w;
+		if (r.y + r.h > mParent->Height()) r.y = mParent->Height() - r.h;
+		
+		if (r.x < 0) r.x = 0;
+		if (r.y < 0) r.y = 0;
+	}
+	
+	mPosition = r;
+	FlagRender(); //for new position
+}
+
+void Widget::SetVisible(bool b)
+{
+	mVisible = b;
+	FlagRender();
+}
+
+void Widget::SetActive(bool b)
+{
+	mActive = b;
+	FlagRender();
+}
+
+bool Widget::HasKeyFocusInTree()
+{
+	if (gui->hasKeyFocus == this)
+		return true;
+		
+	for (uShort i = 0;  i < mChildren.size(); i++)
+	{
+		if (mChildren.at(i)->HasKeyFocusInTree())
+			return true;
+	}
+	
+	return false;
+}
+
+bool Widget::HasMouseFocusInTree()
+{
+	if (gui->hasMouseFocus == this)
+		return true;
+		
+	for (uShort i = 0;  i < mChildren.size(); i++)
+	{
+		if (mChildren.at(i)->HasMouseFocusInTree())
+			return true;
+	}
+	
+	return false;
+}
+
+bool Widget::HasKeyFocus()
+{
+	return (gui->hasKeyFocus == this);
+}
+
+bool Widget::HasMouseFocus()
+{
+	return (gui->hasMouseFocus == this);
+}
+
+//Goes to the next sibling that can accept keyboard input. 
+//TODO: This. Since our list reorganizes every time a widget is clicked, it'll screw up
+//the whole system. Figure out a working technique :[
+void Widget::TabToNextSibling()
+{
+/*	int i;
+	bool foundMe = false;
+	if (mParent)
+	{
+		for (i = mParent->mChildren.size() - 1; i >= 0; i--)
+		{
+			DEBUGOUT("Checking: " + mParent->mChildren.at(i)->mId);
+			if (mParent->mChildren.at(i) == this)
+			{
+				foundMe = true;
+				DEBUGOUT("Found Me");
+				continue;
+			}
+			else if (mParent->mChildren.at(i)->mType == WIDGET_INPUT)
+			{
+				if (foundMe)
+				{
+					gui->hasKeyFocus = mParent->mChildren.at(i);
+					DEBUGOUT("Setting Focus: " + gui->hasKeyFocus->mId);
+					break;
+				}
+			}
+		}
+	}*/
+}
+	
+void Widget::SetSize(uShort w, uShort h)
+{
+	SetPosition( rect(mPosition.x, mPosition.y, w, h) );
+}
+
+//center our position in the parent
+void Widget::Center()
+{
+	Image* scr = Screen::Instance();
+	uShort w = (mParent) ? mParent->Width() : scr->Width();
+	uShort h = (mParent) ? mParent->Height() : scr->Height();
+	
+	SetPosition( rect(w / 2 - mPosition.w /  2, h / 2 - mPosition.h /  2, mPosition.w, mPosition.h) );
+}
+
+void Widget::Die()
+{
+	gui->RemoveWidget(this);
+}
+
+void Widget::DemandFocus(bool b)
+{
+	if (b)
+		gui->AddToDemandFocusStack(this);
+	else
+		gui->RemoveFromDemandFocusStack(this);
+}
+
+void Widget::SetKeyFocus(bool b)
+{
+	if (b)
+	{
+		gui->hasKeyFocus = this;
+		MoveToTop();
+	}
+	else if (HasKeyFocus())
+		gui->hasKeyFocus = NULL;
+}
+
+
+
+

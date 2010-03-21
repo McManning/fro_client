@@ -1,0 +1,744 @@
+
+Changelog for fro/drm restructuring, following the Build 1.0.3 release. 
+
+[There are quite a few missing logs. Mostly details regarding the Map Editor and Object Editor]
+
+091112
+- Converted Map to a Frame to allow children
+- Added console as Map::mChat, seperate from the system console.
+- WIDGET_FRAME type children will now fire ResizeChildren() when parent frame fires ResizeChildren()
+- Fixed url clicking (SDL_MOUSEBUTTONDOWN wasn't being passed, guiManager gave hasKeyFocus the event, not hasMouseFocus)
+- Fixed local actor only being able to move when the map or game::mMap::mChat is focused
+- Fixed #define issue for WIN32 (now being defined in core/Common.h until a fix can be found that doesn't involve windows.h global inclusion)
+- Fixed several bugs with map downloading
+	Currently have tested:
+	-Linked resource not found serverside (embedded php error code)
+	-Linked resource references a file not found on the server
+- StaticObject now deletes cached resources it fails to load. 
+- Key focus is passed to Map::mChat::mInput when Map::HasKeyFocus()
+
+091113
+- Removed Frame resizing fill color default (until we can find a faster alpha-blending rect renderer)
+- Added login dialog and welcome message reader
+- Added avatar favorites dialog
+- Starting adding command hooks to Map::mChat
+- Reimplemented and fixed input box history (pageup/pagedown accessible)
+- Added /music command (Might later add a winamp plugin to grab info directly from the app)
+- Added MessagePopup dialog
+	May need to rewrite this, or write another version that is more like message boxes.
+
+091114
+- Added inventory dialog
+- Added encryption to dorra amount
+- Added a message to appear when player tries to use an inventory item (placeholder until they actually have a use)
+- Fixed the allowance of null activate timers. (Timers can now be used simply as a marker that exists only for X milliseconds) 
+- Fixed issue where timer callback return values were ignored
+- Added right click menu to remote actors
+- Fixed various issues regarding mOrigin/mPosition for entities (Confusion regarding the purpose of the two)
+- Added beat command (accessible via character right click menu), with a 10 second interval between acceptible uses. 
+- Fixed screenshot saving
+- Added alert message to gui, rendered in top left for predefined number of seconds (10sec)
+- Added shortcut editor, and shortcuts applied to function keys 1 through 8, with a 10 second interval between acceptible uses. 
+- Added MessageManager to dispatch messages between classes.
+- Changed gui's event handler for SDL_MOUSEBUTTONUP back to hasKeyFocus (instead of hasMouseFocus)
+	It was causing issues with scrollbars and such. Basically, need to find something to satisfy all situations.
+
+091115-091125
+- Changed multilines url clicking. Now single right click to open url in default browser.
+- Added server queue to IrcNet2 and the ability to go through the queue, connecting to each server in order (In case a connection fails)
+- Changed welcome response xml to set multiple servers, and a special section for starting map id.
+- Improved overall design of login process
+- Moved game console to GameManager instead of Map, so it can be accessed without a map, and doesn't lose backlogs.
+- Linked IrcNet2 into GameManager, and added IrcNet handler callbacks. 
+- Changed MessagePopup class to use labels instead of multilines
+	TODO: Make variation using multilines
+
+091126
+- Added widget focus stack to gui to solve the issue of multiple widgets demanding focus at once.
+- Changed default settings for system console, making it seem more like a SYSTEM console. 
+
+091128
+- Implemented game-specific messages, and created compatibility with previous client versions.
+	TODO: The code for this though is a complete mess, and thrown in LocalActor and IrcNetListeners. Requires reorganization.
+	- Action buffer (de)compression should be moved to MovingEntity
+	- avatarPropertiesToPacket and visaversa should be moved to MovingEntity, or create an Avatar class that handles serialization and maintains avatarProperties within it. 
+- Changed beat command to only work when within a certain distance of the target (Currently set to 100 pixels from origin->origin)
+- Changed the way nick changes are displayed. Will now only announce the change when the affected player is within a certain distance. (Same as chat range)
+- Combined /me, /music, and beat into the 'act' message. Now takes various forms:
+	act $message - /me command (also supporting act 0 $message. First is for backwards compatibility)
+	act 1 $song - /music command
+	act 2 $nick $item - beat command
+- Fixed a bug that caused various console commands to crash. (This bug also occured in previous versions)
+- Fixed issue where RemoteActor/LocalActor wouldn't sync to the current pose state after loading a new avatar.
+- Added in a semi-hacky parameter to Entity::ReadXml that lets it differentiate between online/offline loading mode. This way we can change resource directories and behavior.
+- Changed downloader to forcibly kill threads on Flush rather than wait. (So we don't hang on shutdown) Don't know if this is an appropriate solution.
+- Added right click menu to Input widget.
+- Added common operation functions to Input widget (Cut(), Copy(), Paste(), etc)
+- Added paste color operation to Input widget (both in right click menu and linked to ctrl+b) Will open a color picker dialog and request the user to create a color that will then be copied into the input at the cursor.
+- Renamed Widget::DemandKeyFocus() to Widget::SetKeyFocus() to lessen the confusion with Widget::DemandFocus(), since it's not necessarily a demand.
+
+091204
+- Added options dialog
+- Changed the way right clicking urls work. It will now open a dialog asking to either save to clipboard or open in browser.
+- Added ALT key combos to the Game Manager.
+	Alt+o: Options
+	Alt+r: Radar
+	Alt+i: Inventory
+	Alt+a: Avatars
+	Alt+s: Shortcuts
+- Added game_config xml to save configuration settings seperate from the core engine. 
+- Optimized Font renderer a bit. 
+	
+091205
+- Fixed bug in Options Dialog that blocked certain options from being changed 
+	(A bug which has existed for quite some, and no one reported it)
+- Fixed console timestamp settings being modified when the option was changed
+- Changed structure of game_config to include login information
+- Added cutoff filesize for the downloader (sendHttpGet). If a file stream is larger than the set size (currently 3MB) it will stop, delete the destination file, and return failure.
+- Fixed right click menus vanishing when clicked off.
+- Fixed issue with key focus screwing up player movement input
+- Fixed bug that would remove local actor from the map after a map change
+
+091209
+- Added DataPacket class to manage the structure of network packets. 
+- Added Avatar class to manage avatar properties (Will make things easier as Avatars become more complex).
+- Fixed some bugs with the network
+- Moved loading avatar information to MovingEntity (Was currently a set of functions/variables cloned in both LocalActor & RemoteActor)
+- Fixed key focus issue when a map loads
+- Fixed issue with player moving while map was loading
+- Fixed bug in network state which caused it to switch from connecting->disconnected->connected
+
+091214
+- Added scrolling (arrow keys) to the Object Editor to make large object editing easier
+- Added background color editing to OE. Use oe_background \cRGB to change the background.
+- Added grid toggle to Object Editor (F3) and Map Editor (g)
+- Added delete key support to inputs
+- Fixed bug that allowed any avatar dimensions for MNGs.
+
+091216
+- Fixed bug with scrollbars not readjusting after being initialized with zero height. 
+- Added application flags to boot up map editor and object editor, without starting up game manager.
+	Flags are: -oe or -me
+- Added object collision rects display to ME
+- Added byte caps per each download in the downloader. Use DownloadManager::SetByteCap(int) to 
+	set the cap before ::QueueDownload. But the cap must be reset afterward if this is a temporary change.
+	(Reason it's not a parameter in QueueDownload is due to the deep levels of class functions between 
+		resman->LoadImg and downloader->QueueDownload. It's too excessive to add a parameter at each level)
+- Gave player avatars a unique (lower) maximum filesize to avoid the spam of MB-level avatars. (Capped at 200 KB)
+- Switched frame change checks from Image::Render() to their own timer (for images with multiple frames)
+- Added a render optimization system that only called a full Render() when something changed. 
+	However, while useful for gui applications, the introduction of animated images maxes out the FPS anyway. 
+	The only true way of fixing this is to redraw & update only the rects that have been modified
+		however this is incredibly more complicated and not in the domain of my patience. 
+- Improved the NextServer system when trying to connect
+- Improved detection of failures while connecting and loading a map
+- Fixed bug where it wouldn't detect a disconnection
+	Currently only displays a "You've been disconnected" message. Maybe attempt reconnect cycles?
+- Fixed several other bugs in the network connection state handling
+- Fixed bug with players having a blank avatar locally when theirs didn't load on initial LocalActor startup.
+- Fixed a bug with stripping \cRGB at the end of a string
+- Blocked local file LocalActor avatars from being saved to game config
+- Added private messaging
+- Added emote system. 
+- Adjusted readFormattedNumber() to return the center of a tile rather than the topleft for tx inputs.
+- Added userlist (alt+u)
+- Fixed issue with joining online maps with no channel ID (There's still other bugs though).
+	Overall, the connection procedure still needs to be improved upon, simplified, handle all errors, etc.
+- Fixed bug with bad reporting on how many map resources we actually have
+- Added delay range to map objects (delay="low-high") however, when cloning this range is ignored and it 
+	instead just uses whatever the original uses. So that needs to be fixed.
+
+091218
+- Improved handling of channel kicks, bans, bad server responses, etc.
+- Fixed issue where the map would be displayed even if we didn't join the channel properly
+- Fixed bug that caused names to remain in the userlist when we leave channels
+- Combined inventory xml into a general purpose player data xml file.
+- Added -nologin application flag to bypass the forced login and load a default map (from online resource, but played locally)
+- Added player level hud that has no purpose besides to confuse people.
+- Added nickname storage to IrcNet
+- Fixed bug in IrcNet where our channel wouldn't be deleted when we were kicked.
+
+091220
+- Fixed bug with using \cRGB in widget hover text
+- Fixed bug where single frame MNGs wouldn't display
+- Fixed Show Player Names option
+- Fixed bug that allowed people to set their max FPS below 5, which was not a very smart thing to do, but happened regardless.
+- Moved spawn & map dimension properties to <layout>
+- Added console command 'server addr:port' to manually connect to a server, and bypass login.
+- Added new jumping system (currently using the tab key, will change later)
+- Added map gravity affector to jumping, Map::SetGravity(uShort). Default gravity is 1, higher jumping if higher values.
+- Improved <object> structure to save full image file names instead of the id + extension 
+- Changed the way entity layers are defined. Will now be defined in the entity xml itself, and not the map <layout>
+	The idea is that there aren't any entities that would need to exist on different layers.
+	And if the case would ever occur, two different entity XMLs can be created (However, hopefully it won't be necessary).
+- Added oe_layer <0, 1, or 2> command to OE to set the default layer for the object.
+- Added spawn point edit mode to ME. (s key to toggle)
+- Added map dimensions calculation to ME. Will output a width/height big enough to contain all entities on the map.
+
+091221
+- Fixed a bug with avatars. When one stopped moving, the frame would continue to play till the end, even if !LoopStand
+- Added SceneActor class and the associated <actor> to map entities and <layout>.
+	However, no editor supports this type, so they must be manually created.
+- Fixed yet another bug with looping stand frames for avatars (Wouldn't loop _move_#)
+- Added Avatar Viewer (alt+v)
+- Fixed bug where 0 interval timers would create an infinite loop. 
+- Added Open File dialog (Although it's currently only an input widget)
+- Fixed invalid pointer bug when two avatars used the same image (via avatar1 = avatarb copy operator)
+- Added hud buttons for the alt+letter dialogs. Toggles between two hud modes via topleft symbol.
+
+091222
+- Fixed several bugs in the Image class regarding animation
+- Fixed a bug regarding MNG animation. Now uses Loop Sit/Stand for MNGs too.
+- Fixed jump syncing between clients by holding the outbound movement buffer until we land, and sending our landing point
+	along with it (In theory, this should also fix the issues with local client having a solid where remote clients do not,
+	and auto-correcting for that conflict)
+- Added LocalActor::mLoadingAvatar serialization to NetSendState if the LocalActor::mAvatar is null
+- Added one minute timeout timer to connecting and awaiting verification net states. Once it times out, it will attempt to
+	disconnect (if waiting for verification) and connect to the next server in the list.
+	NOTE: UNTESTED!
+	
+091223
+- Added a multiline mode to MessagePopup for longer messages
+- Added <alert> and <msg> to post-login xml reader.
+- Fixed bug where the correct avatar wouldn't be sent on first map join
+
+091227
+- Implemented MessageData, allowing MessageManager to use a more informative messaging system. 
+	(ie: attaches keys to values, rather than simply having numerical indexes and trying to match up index->value in listeners)
+
+091229
+- Added position memorization to system console and GameManager's chat console (Each saved to their own config)
+- Fixed bug that caused maps to still load even if a layout Actor had no unique resource to clone from.
+- Changed Multiline(&Console)::AddAdvMessage to AddFormattedMessage
+
+091230
+- Added item trading. By doing this, I installed 5 new net packets (each with a 'tr' prefix), three related classes, and
+	additional controls to the inventory and remote player menu. 
+- Fixed a bug with Labels not returning the right value for Width() when MaxWidth() is 0. 
+- Changed Actor::Emote() where it'll pop the chat bubble before displaying an emote. 
+- Fixed issue where jumping map entities wouldn't queue a resort as their Y positions changed. (Actor::Move() now flags a resort)
+- Added option to disable trade requests, and moved Accept Private Messages option to network tab
+- Implemented warp destination objects and warp destination points (At least, reading. But not setting)
+- Added destination point parameter to GameManager::JoinOnlineMap()
+
+091231
+- Implemented message ENTITY_MOVE in Actor::ProcessMovement() (Actually only sent by Actor classes. Should it be ACTOR_MOVE?)
+- Implemented message ENTITY_SAY in BubbleManager::CreateBubble()
+- Implemented message ENTITY_CREATE in EntityManager::DispatchEntityCreateMessage()
+	Must be called alongside AddEntity to avoid a conflict with loading entities in the background during a new map load.
+	(Scripts of the old map would be sent the event and believe the entities to exist on the displayed map)
+
+100101
+- Fixed bug where ENTITY_MOVE wasn't sent if we jumped into a solid and stopped short. 
+
+100104
+- Added TextObject entity (However, it only exists in <layout> and doesn't have a unique ref)
+- Added /stamp command to write text directly to the map (Deletes itself after 5 minutes)
+- Added colorizing to Avatar Creator
+- Added grid snapping option to Map Editor (toggled with 'n')
+
+100105
+- Added adjustable surface flags to Screen
+- Set game window to be static sized, while other apps get a resizeable gui.
+- Changed map resource versioning from using version numbers to md5 hashes of the files.
+	If an entity lacks an md5 hash property, it will assume the cached version is always correct.
+- Added create_actor <id> <w> <h> command to console so that we can easily output SceneActor xml without
+	the need of a full blown editor (Main importance is that it does an md5 hash on the image file)
+- Added ITEM_USE messenger event when someone clicks use item in the inventory
+- Fixed bug with remote player nick changing
+- Added me_addscript <id> and me_removescript <id>. It'll add the script names to the .res, and make sure
+	it exists on disk, but won't actually load the script.
+- Added Actor placement in the Map Editor
+- Fixed calculation errors in Entity::CollidesWith()
+- Fixed ambiguity issues as to whether entity collision rects are relative to origin or top left image position.
+
+100107
+- Fixed bug in file->string loading (Screwed up when dealing with newlines)
+- Implemented LuaManager, EventsLib, and SystemLib
+- Fixed bug in loading/saving script resources in Map Editor
+- Added offline map test mode. Console command: test_map id. Will load from editor/maps/, editor/entities/, etc.
+	Made to work with the output from the Map Editor.
+- Fixed bug that caused Object Editor to save full editor/entity/ path to saved entities resource filenames
+- Added oe_warp <mapId> <entityName> to Object Editor. Send oe_warp without parameters to erase properties.
+
+100108
+- Added Timers library to lua. (Timers.Add, .Remove, and .RemoveAll)
+- Fixed bug with single framed MNG avatars being considered invalid.
+
+100109
+- Improved lua error reporting
+- Added Entity library to lua
+
+100110
+- Fixed Dorra saving/loading
+- Fixed negative Dorra amount in inventory
+- Added Player library to lua
+- Added Entity::SetFlag & Entity::GetFlag. Flags are arbitrary keys associated with values, can be used to 
+	maintain information on a per-entity basis. Might add entity flag persistency between maps.
+- Added LocalActor::LoadFlags/SaveFlags to save Entity flags to file in order to maintain persistency.
+- Fixed bug in XmlFile::SetText() (Wouldn't add a text node to an element if it didn't already exist).
+- Added encryption to entity flags
+- Fixed bug where the inventory listing would reverse order every reload
+- Added Actor library to lua. Not yet sure if this should be combined with Entity or not.
+- Fixed Entity::SetLayer so that it actually works
+- Changed lua userdata to use the lua Registry for storage. This way we have full access to all lua objects,
+	including tables and functions, rather than simply numbers, strings, and cptrs.
+
+100111
+- Added Convo library to lua
+- Fixed an issue with bad pointers in SDL_Frame::key when using Image conversion routines
+- Can now read in directions from xml, or lua, by using either keypad numbers (7 = SOUTHEAST, etc) or string representation ("se" = SOUTHEAST)
+- Fixed a bug with Actor direction updating (Avatar wouldn't update at the right time when the direction updated)
+- Added Actor::IgnoreSolids
+- Fixed Actor::MoveTo. Doesn't use pathfinding or anything yet, but it does set the destination and try to move to it dumbly. 
+	(Ie: Walks into walls if there are any in their path). This will still follow the 9 direction rules, and they won't move in obscure angles.
+
+100112
+- Redesigned the Hud to contain all links in three sub menus
+- Added Report A Bug feature (Opens link to sybolt.com/tracker report page)
+- Added Camera library to lua
+- Fixed bug with MNG frame selection. Actor::_recalculateDirection() was at fault, and decided to break everything with SetDirection()
+
+100113
+- Added console command map_info to toggle extra map data (collision, origins, destinations, etc)
+- Invalid md5 values in entity xml (such as md5="1") will now force the game to redownload resources even if they exist already. 
+	This is not a bug, but a feature for testing maps when it becomes an annoyance to re-hash the file every time. 
+	(However, for RELEASE versions, there needs to be a hash!)
+- Added the ability to disable player input. Also accessible by lua with Player.IsLocked() and Player.Lock(1 | 0)
+- Added PLAYER_ACTION messenger event, sent out when the player hits enter while the map has our input focus and the chat input is empty.
+- Added depth rendering to StaticObjects. Will sink actors into the objects when they traverse over them. 
+- Added a testing Weapon class to mess around with.
+
+100114 - Terra Day!
+- Added TerrainTest class and -terra app option to boot it up. Currently used as my tool to figure out how to do terrain painting
+	properly, and without any errors. 
+
+100115 - Attack Day!
+- Added ATTACK action to Actors. Do not SetAction(ATTACK) directly though, call Actor::Attack(cooldown).
+	Also do not use GetAction(ATTACK), but use IsAttacking(). (GetAction can still return ATTACK, even though the attack has ended.
+	The action will not change until the actor moves). Attack is added to the action buffer as 'aXX.' where XX is a number indicating
+	attack cooldown (Actors buffer will not continue processing until the cooldown has been completed)
+- Added support for _attack_2, _attack_4, etc to both PNG and MNG avatars. (PNG will have rows 9 through 12 (after 4 sit frames))
+	Will play when the actor attacks, and will pause at the last frame until the actor moves again. 
+	(Currently there is no option to loop, and I doubt that I'll make one)
+- Added ENTITY_ATTACK event ( only fired by Actor::Attack() ) Contains "entity" (userdata) and "cooldown" (int)
+- Added ENTITY_ENDATTACK event. Fired after ENTITY_ATTACK when the cooldown time is reached. Contains "entity" (userdata)
+- Added the ability to skip attack animation and cooloff within a single call for Attack(). This is done by calling
+	Actor::SkipAttack() from within an event listener on ENTITY_ATTACK. From within lua, call Actor.SkipAttack()
+	This is benefitial for when we use the attack key to talk to friendly NPCs, and make it not look like we're trying to hit them.
+- Added to lua: 
+	Actor.SkipAttack() (useable only in ENTITY_ATTACK listeners)
+	Actor.GetProp() Additions:
+		"canattack" - returns 1 if we're capable of attacking (Not in a cooldown stage, or similar constraint). 0 otherwise.
+		"attacking" - returns 1 if we're currently in an attack (waiting for cooldown). 
+			1 in between ENTITY_ATTACK and ENTITY_ENDATTACK events. 0 otherwise.
+	Actor.Attack(actor, cooldown<DEFAULT_ATTACK_COOLDOWN>) - Force the actor to attack, and wait cooldown milliseconds before 
+	being able to do anything. ENTITY_ENDATTACK event will be fired after that amount of milliseconds.
+- Disabled PLAYER_ACTION due to conflict with the chat input. Will later decide whether to keep this, or just rely on ENTITY_ATTACK
+- Rebuilt the map loading system. Now uses a seperate class for map loading (WorldLoader) linked to GameManager. There is also 
+	no more background map loading, and when the map goes to load, you will be removed from your current map and the new map will
+	load in. This opens up the ability to have some sort of cool loading event happening (map crumbling, or something), fixes several
+	issues with scripting, and removes headaches.
+
+100116 - Avatar Day!
+- Added an overload to LoadAvatar in RemoteActor to restrict them to only http:// and avy:// avatars. Disallowing attempts at accessing 
+	local files.
+- (UNTESTED) Added support for avy:// composite avatars in Avatar class.
+	Final Url Format: avy://Base.HeadId.HeadHex.BodyId.BodyHex.HairId.HairHex
+		Example: avy://adult.default.FF0000.default.00FFCC.afro.666666
+- Fixed a bug with SDL_CopySurface (wouldn't copy properly if src wasn't 32 BPP. Now creates a 32bit copy before proceeding)
+- Sped up SDL_CopySurface when dealing with copying full images
+- Implemented Avatar Modifiers. Currently support MOD_MINI, MOD_GIANT, MOD_SMASH
+- Fixed memory leak in Avatar class
+- Added "mod" to Actor.GetProp and Actor.SetProp. Returns and sets the avatar modifier. Values are relative to the avatar mod enum.
+	MOD_NONE = 0, MOD_TARANDFEATHER = 1 (not working yet), MOD_MINI = 2, MOD_GIANT = 3, MOD_SMASH = 4, and more to come later on.
+- Implemented "mod" message for avatar modifier notifications over the network
+- Implemented modifier data in avatar (de)serialization
+- Added ENTITY_DESTROY event message, triggered when an entity is deleted from the map (Does not ever fire for LocalActor)
+- Improved greyscale colorization
+- Fixed a bug that caused images created through ResourceManager::NewImage not to state SDL_Image::LOADED
+
+100117
+- Added PAL Lessons button to login screen (not yet useable)
+- Added the ability to load maps in offline mode, but still use online resources
+- Fixed bug with downloader deleting local files we didn't want it to
+- Improved how drm live-downloads images we don't already have. 
+- Added Achievements system. Added to lua: Player.EarnAchievement and Player.GetAchievement
+- Added My Achievements dialog
+
+100120
+- Added unique handles to timers
+- Change Timers.Add() in lua to return the handle
+- Added Timers.RemoveHandle(handle) in lua
+- Changed the structure of lua timer callbacks. 
+	Now in the form: function callback(handle, interval, userdata)
+- Added unique handles to event listeners
+- Added Events.UnregisterHandle(handle) in lua
+- Changed Events.Register to accept optional userdata as a third parameter, and to return a handle to the new timer
+- Changed the structure of event listener callbacks. 
+	Now in the form: function callback(handle, eventId, datatable, userdata)
+- Added Entity.Remove(entity) and Entity.RemoveAllMatching("id") to support deletion of entities from the map
+- Changed Player.SetCash to Player.AddCash(amt), where it'll add (or subtract if amt < 0) from our dorra
+
+100122
+- Forced a minute delay between /join attempts (It's basically masking a bug involving rapid joinings that crash the client)
+	This delay is ignored if we just tried to /join a map but it failed.
+- Disabled /join while already loading a map
+- Added the beta Avatar Creator to the hud
+- Fixed bug with remote actors not loading a default avatar
+- Fixed bug that caused a crash when remote actors with no avatar parted the channel
+- Fixed double ENTITY_CREATE messages being sent when remote actors join
+- Added user login credentials to map config request urls (Now we can restrict access to certain users)
+- Fixed bug with jumping while sitting
+- Added custom error messages for map load errors. 
+	(Defineable serverside if <error>msg</error> is the only thing returned from master.php)
+	
+100123
+- Added LocalActor::Warp(). It should be able to properly use the editor dir when warping from editor dir maps, and cache otherwise.
+- Implemented Player.Warp() in lua
+- Disabled chatbox completely when loading a map
+
+100125
+- Fixed crashing bug when someone talks right before leaving the channel
+- Added position and rotation data to stamp packet, to make sure these values are the same across all clients.
+- Added optional md5 hash check to DownloadManager. If a hash is provided, will do the download failure callback with errorCode DEC_BADHASH
+	when the resulting file's hash doesn't match the one provided in QueueDownload.
+- Fixed bug that had active="0" lua scripts to load in memory, instead of active="1"
+- Fixed a bug that caused blank strings to be dropped in DataPacket decryption, and thus causing fatal crashes. 
+	(explode() was written to ignore them) Added an option to explode() to toggle the addition of blank filler strings in the result
+- Fixed bug with confirming a trade when you never sent an item (would give the other user a blank named item with a random amount and cost)
+- Added Game library to lua (only consisting of Game.Print() currently)
+
+100127
+- Added privmsg button to trade dialog
+- Added GAIN_ITEM and LOSE_ITEM messenger events
+- Added default settings generation if savegame doesn't exist.
+- Fixed static link to http://localhost in MyAchievements
+
+----- RELEASED AS 1.1.0 BETA (TO DEVELOPERS) -----
+
+100128
+- Added \cRGB support to stamps
+
+100201
+- Increased socket read buffers to 1024*10 bytes in an attempt to better handle higher amounts of players.
+
+100205
+- Added OpenUrl support to entities. If their NAME starts with http://, will open that url when right clicked.
+- Fixed infinite-avatar loading bug when avy:// url has a file not found or other issue
+- Moved saved avatar and general user settings to savegame file
+- Add to Favorites button in AC now also sets your current avatar as the creation
+
+100206
+- Reduced amount of times NM response is sent. Will now only send to the channel once per every 3 seconds. This should
+	account for splits while remaining low-bandwith.
+- Added an additional check for users who aren't registered on the map. If someone sends valid data and aren't on our map,
+	the client will attempt to get a NM response from them. 
+- Increased item description length to 200 characters
+- Added coloring to stamps, by using \cRGB. However, it only works if \cRGB prefixes the message (There's a bug with 
+	rendering text to a newly created blank surface)
+- Implemented warp properties for objects
+- Added overload to Player.Warp() in lua. Can either be .Warp("world", x, y) or .Warp("world", "objectname") or just .Warp("world")
+- Changed lua Entity.NewTextObject() to entity_ptr Entity.NewTextObject(text, x, y, size<default_font_size>, layer<1>, rotation<0.0>)
+	
+100211
+- Improved detection of malformed sup/nm messages (Malformed sup message could cause a crash to an entire channel)
+- Changed EarnAchievement() to return the current number of points in an achievement, or 0 if an error occured
+- Included several built in achievements and using /game/Achievements.h to maintain all related code (Checks, timers, etc).
+- Added system that allows the Helios AI to give achievements
+- Added getPreviousFileMatchingPattern() and fixed the back buttons in the AC
+- Set title color to a light grey for achievements that are visible, but not yet earned.
+
+100212
+- Wrote a MiniMenu class however haven't implemented it yet (Don't know exactly how to do so efficiently).
+- Fixed bug with right clicking map entities that would cause a crash 
+- Moved /assets/achievements/ to /cache/achievements/
+
+----- RELEASED AS 1.1.0 BETA (PUBLIC) -----
+----- Start Of 1.1.1 Beta Notes -----
+
+100215
+- {Report:0000018} Moved game_config to assets/game.cfg, config to assets/system.cfg, playersave to assets/player.save, 
+	avatars to avatars.xml, shortcuts to shortcuts.xml. All of these may need to be moved/adjusted again, I want to centralize
+	a folder for people to copy files over for updates. (Or, a folder that'll be ignored while updating)
+- {Report:0000017} Fixed inbound stamp messages not being read properly
+- {Report:0000013} Fixed game config settings not being saved/loaded properly after a default savegame file was created.
+	(Specific xml elements weren't created, and thus always returned zeros)
+- {Report:0000014} Fixed F8 crash and shortcuts not working as they were supposed to
+- Reduced shortcut use delay to 5 seconds instead of 10
+- {Report:0000015} MAY have added a fix regarding focus problems with dialogs are closed, and the window is Alt+Tabbed to, however
+	the problem seems to be Vista related and I am unable to reproduce at this time.
+
+100219
+- {Request: Morthm} Added /commands and /emotes
+
+100222
+- Fixed rendering of caption buttons
+- Moved system console toggle from Esc to Home key
+- Changed Esc key to open the quick menu (generic menu to return to login, quit, or other constantly used options)
+- Added steam:// url support (However, only copying to clipboard works, unless end users figure out a way to shell execute steam urls)
+
+100226
+- Added frame limit to avatars (set to 50 frames max) to prevent overflow crashes
+- Disabled GIF avatar support temporarily. This is to prevent the chance of crashing a channel, since there is currently a fatal bug 
+	in the GIF loader. GIF format is still acceptable for map objects, however. Just nothing that requires the Avatar class to render.
+- Moved nick settings to player.save, and moved player.save back to the main directory
+- Changed the deleteSource property in SDL_Image and ResourceManager to deleteSourceIfInvalid, to only delete invalid downloaded images.
+- Fixed a bug where invalid achievement icons would remain in the folder and never attempt to re-download
+- Added an automated reply when someone tries to privmsg you and you have private messages blocked.
+- Added channel-wide message when an achievement is earned, detailing who earned what achievement.
+- Changed the way the offline map tester reads the .xml files. Will want all elements to be inside <map> rather than toplevel.
+- Map Editor now outputs full <map> .xml's (But still without the <resource> section, still will use .res files).
+
+100227
+- Added /ghost and /normalize commands for avy mods. (Normalize to return the avatar to the default state)
+- Fixed a bug where NetSendAvyMod() would crash the client if not on a channel
+- Added support for Winamp in /music. Type /music without anything after it to attempt to find Winamp
+- Added ActionEffect entity class to display comic-effects for attacks/actions (Work in progress). Currently set to display
+	a MISS effect whenever the attack key is used.
+- Added details regarding target (x,y) and objectName to map config request from master.php. This way we can further control 
+	warping. 
+- player.save file will now be written to every time it's modified, to further prevent data loss during a crash. 
+
+100301
+- Added persistant flags to maps, saved to player.save
+- Added Game.SetMapFlag("flag", "value") and Game.GetMapFlag("flag") to Lua to access said persistant map flags
+- Added System.GenerateFilename("key") to lua to generate a cache filename from the specified key, that won't collide with any
+	other cache files unless they too called .GenerateFilename() with the same key from a lua script.
+- Removed the match check for internal ID and file ID for entities. Internal IDs can now be different, possibly
+	allowing subfolders for entity storage but still having a different internal-use ID for maps. But.. not yet tested.
+
+100305
+- Removed MD5 hashing of user passwords to/from master/login. This is to make things work alongside our newer login system,
+	as it requires serverside SHA1 with some special salts. 
+- Removed MD5 hashing from the Object Editor
+- Added support for sub directory entities in OE
+- Improved grid rendering in ME/OE to use a cached image rather than drawing rects directly. A LOT less cpu intensive.
+- Fixed OnUnload() lua functions of the previous map being called after a new map is already being loaded. 
+- Added emoticon icon that appears when earning an achievement
+- Decided to trash the "Unique Entity" management system, and to restructure maps slightly in a more organized fashion. 
+	- Temporarily removed ME & OE & offline map running in order to clean up the system
+	- Old Method for spawning entities:
+		- During map load, each entity in <resources> would get one unique instance loaded into memory
+		- Each entity load after that will make a direct copy of that first entity loaded into memory
+		Problem: Waste of memory, overcomplicated things
+	- New Method:
+		- Each entity load will read the settings in the map xml and build itself accordingly
+		Derp, why didn't I do this before? Mainly had to do with the way the map editor kept track of things, but that was dumb.
+- Removed Entity.Clone(entity); from lua. Entity.Add("classname") is the method of choice
+- Overall, adopted more of an "entity factory" way of doing things, creating individual instances from templates. 
+	This method has been used in a lot of games, and although I attempt to try something different, I still resulted in the 
+	old technique (Why try to be unique anymore?).
+- Added <scripts> section to the map xml for script resources, and <properties> to contain all global properties 
+	(rather than having loose elements flying around).
+
+100315
+- Removed exit(0); from MNG_UINT_PLTE size % 3 check failure (Not very nice for a production release).
+	
+
+IMMEDIATE TODO:
+
+- Trash the _action_ crap
+- Trash anything attack related
+- Use left-click map objects
+	If a map object is left clickable (interactive), hover an icon over it
+	You also have to be within a certain range
+	Only one object is selected at once
+	An event will be triggered when you select the object (for scriptanz!)
+- Trash right click menus for players, too confusing
+	- Replace with a seperate window, also accessible by clicking their name in userlist
+- Move REPORT BUG to the esc menu
+- Remove REPORT BUG and OPTIONS from main menu
+- Remove player level info
+- Static menu at the top
+- Any chat stuff prefixed with / will be considered a command (like mirc) and will go through
+	commands. If it's not there, it'll send the event to lua listeners. Will NOT go to the channel. 
+- Figure out why some cached avatars aren't being deleted (maybe an avy change WHILE it's downloading?)
+	Yes, I think it's the change while downloading thing that does it. 
+
+	
+TODO:
+	- Add support for subdirectory entities in the ME and the playable map itself
+	- Pack avatars & shortcuts into the savefile?
+	- drm welfare check: comes in every week or so, gives you dorra
+	- Fix that giant SO render bug in the mapeditor (when origin is off screen, whole thing goes poof, etc)
+	- OnUnload of old map is called AFTER OnLoad of new map
+	- Scripts OnLoad should not be called until ALL normal resources are loaded. Order of operations
+		fuck up when scripts are loaded before resources they need.
+	- Need System.EncryptFile and System.DecryptFile for files (just for the hell of it, so we can 
+		encrypt things like the farm file)
+	-Make sure lua only has file IO access in the cache directory...
+	-Allow object editing while map editing. And live updating the edited objects.
+	-I see an issue regarding deep cloning SDL_Image while downloading. Nothing currently behaves in a way where this
+		bug would become a problem, however it still requires repair. Currently stuck assertions in to make sure it doesn't happen.
+	-connects then disconnects after we use console command 'server'. 
+	-Using console command 'server' while already connecting causes the client to crash
+	-warp people to spawn if they are detected to be inside a solid object. 
+		However, there could be an issue with solids moving around, and deciding to sit right onto the player. 
+	-waypoint movement for actors:
+		<waypoint speed="x" loop="1">
+			x y x y x y x y x y ...
+		</waypoint>
+		<!-- loop would force it to go from last coordinates to first -->
+		Would be lua scripted instead of xml. Derp.
+
+	-Add memorization for last map & last position (This can either be clientside or serverside)
+	-Might need to send position correction post jump? Or if we hit a wall 
+
+	-Add alphabetical sort button to avatar favorites and inventory
+		Or a sort button that has a dropdown that's like "sort by name, sort by amount, etc"
+	-Add some sort of crude lua call tracer to better track errors that cause the app to just die
+	-Replace mJumpHeight with Z coordinate and add to ENTITY_MOVE
+	-Dispatch ENTITY_MOVE more? (Such as every movement update, and include the Z coordinate)? 
+		Not entirely sure if this is necessary. True, it helps keep accuracy, but when we do pathfinding and such, it'll
+		cause re-pathing all too often (Of course, we could determine distance b/w current position and pathing destination,
+		and if it's too far, it'll then repath. But still...)
+	-Actor::CanMove needs to be finished. (Currently only checks if final destination is blocked, not the path to said destination)
+	-Avatars use their _stop_ frames while in a jump, shouldn't it be _move_?
+	-Add oe_help command
+	-Should convert loopStand, loopSit, etc in avatars to a single integer with bit flags. 
+	-Defineable no-attack zones that disable attack animation, but still fire attack events.
+	-Add something like PLAYER ATTACK EVENT WILL NOT DO ANIMATION WHEN AROUND ME to objects/actors so that certain NPCs can 
+		prevent you from attacking them.
+	-DownloadManager needs to not stick shit in the thread when it already exists, and doesn't want to replace. Just add to completion stack
+	-Add avatar change locking
+		Script it: Map.LockAvatar(1)
+	-Fix reload previous world system in WorldLoader
+	-Need to keep better track of who's on channels, and make sure we don't get privmsg's from people outside channels that should be on the chan.
+	-GIFs with 0 delay actually have 0.1 second delays... should we do this in drm too?
+	-need to change how warps work. I don't like setting destination map and object id in the OE itself. This should be per-map.. or something.
+	-Add a max stamp counter, start deleting stamps if the max is hit.
+	-ava dir live updating (or just general updater!111)
+	-Make sure the same script isn't included multiple times
+	-settable stamp rotation range, and size within a certain range
+	-change _attack_2 or whatever to _action_2, maybe... not sure..
+	
+	-button image is fucked on trade for privmsg
+	-privmsg shows up behind trade, not in front (trade is taking front priority~)
+	-chatbox needs a button to send it to the bottom corner again, like before, so we can HIDE DAT SHIT
+	-active=0 lua scripts are simply LOLDOWNLOADTHISFILE. Should this be replaced with something else?
+	-add font resizing for chatbox (and general system?)
+	-Add an internal achievement for wallhacking (Derp)
+	-If player data file doesn't exist, have a popup in the startup asking them if they want to set up
+		basic settings for new users (Create an avatar, set a nickname, etc)
+
+	-Not actually using entityType anywhere. Please do.
+	-Warps that go to the map we're already on, need to.. ya know.. NOT RELOAD THE MAP :3
+		Well, do we actually WANT this? It looks like a sudden jump of we do it this way.. and we have no opportunity to 
+		modify the map we're on.. then again, redownloading avatars is an annoyance..
+	-Neat achievement popups and whatnot
+	-Add <designer> tags to map properties.
+		This way we can probably add a little "Map Designed By <NAME>" in the corner for screenshots, or whatever.
+	- Bad gui.xml error was thrown on an old 1.75Ghz, 1 GB ram, Win XP SP3 (or 2) computer
+	- There's currently a bug with the Font class. Wrapping message rendering will ignore colors, due to calculation errors it creates. This needs to be resolved.
+	- 
+	
+make some sort of drag & drop item crafting system.
+If it doesnt' craft into something, it destroys all the items.
+Otherwise, creates something awesome.
+(Or another crafter that says NO if it can't craft with the current stuff)
+
+	I send a movement buffer out when I join a channel.
+	Right after said join.
+	contents are: rcX.Y.
+
+	Regarding downloading each objects xml, could simply make an xml document out of that xml's subsection from the map, and then
+	save THAT to a file. Then we'd have object data continuously updated and good for editing. 
+	But then again, do we want normal users to be able to edit shit? No we do not.
+
+Jig is a prime example of someone who has difficulties with drm. There needs to be ways to simplify various things. This includes:
+	-Updating the client. (Copying avatars to the new folder, unzipping, etc)
+	-Setting avatar properties (like width/height)
+	-Coloring names
+
+	
+	
+
+Will not add ENTITYLEVEL_GUI. It's a stupid idea. Instead, add the ability to add onscreen text and images
+without that crap (Widgets, or something). 
+
+OR, give staticObject the ability to do this itself. Don't implement into every entity type, but allow SO's
+and SO-inherited classes to do this. (This includes text, image displays, etc). Then maybe just add another basic
+overlay layer that they can stick themselves in, but not necessarily force entities to have that prop. This way
+we can have a weather overlay, but also have stuff under that, but which is still over actors. 
+
+Then again, that's also problematic. Maybe add ENTITYLEVEL_SCREEN, but don't let Actors on it. Or, if they try, 
+just have them behave like others, while StaticObjects will be screen relative. 
+COULD give a mPositionRelativeToScreen value to Entity, but it'll only be used by SO's and their inherited forms...
+(It needs to be in the base class so that we can query it while iterating through entities in map render and such)
+
+		
+		
+Friday Feb 5th, 2010 Milestones
+
+> Tutorial World
+
+
+> Destructables and associated animation
+	-Give each entity a health value
+	-If health != 0, it's attackable.
+	-Once an object dies, pass ENTITY_DIE with attackers name, ENTITY_HIT passed when attacked, 
+		make little generic hit animations, and make the object vanish in a storm of fuzz
+	
+
+> Startup settings 
+	-Ask user to input an initial nickname
+	-Ask them if they want to start up the AC to set an avatar
+
+> No attack anim "zones" and whatnot
+
+
+> Seperate set of collision rects for objects that let you do "if player is touching this rect, do shit" in scripting
+	So we can still have COLLIDED stuff, but also have IF IN RECT stuff
+	 
+> Word breaking in multilines!
+
+
+> Login dialog buttons
+
+
+> Add something in the top right corner saying how many users online there are
+
+
+
+
+smf2_themes stores the value of the custom value
+
+would have to find a match for both id_member and variable 
+
+Say, if we wanna access their start location, it would be:
+
+smf2_themes:
+	return 'value' where 'id_member' == myid and variable == 'cust_frosta'
+	
+
+Should add an "inventor" attribute to items.
+	
+	http://notkyat.helloismileyou.com/avy/
+	
+	
+	
+Hal Achievement:
+	- !roulette six times in a row, and don't die.
+	- Win a game of poker with 3+ players
+	- 
+	
+	
+	
+
+issue with diff internal names than external..
+
+When we package them into the - wait.. that's not a problem... because that crap is never stored.
+Hurrrm... images will be a problem.. We have to do a subdir creation sort of check.. the downloader
+should do that >:[
+
+SOMETIMES lua reports an error in OnLoad, and other times it doesn't (basically every other time)
+if we constantly test_map.. Is this skipping the func?
+
+
+
+Add:
+
+Need some HIDE ALL PLAYERS option, that basically turns everyone into floating orbs with names, but 
+	you and the npcs. This way we can do certain things without intervention.
+	(replaces all their avatars with something else. Not the block avy, but .. ya know)
