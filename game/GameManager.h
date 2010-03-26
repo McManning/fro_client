@@ -8,8 +8,6 @@
 
 const int JOIN_INTERVAL_MS = (60*1000);
 
-const char* const GAME_CONFIG_FILENAME = "assets/game.cfg";
-
 const char* const DIR_ENTITIES = "entities/";
 const char* const DIR_SCRIPTS = "scripts/";
 const char* const DIR_MAPS = "maps/";
@@ -32,12 +30,14 @@ class GameManager : public Frame
 	void SetPosition(rect r);
 
 	void CreateHud();
-	void ToggleHudSubMenu(string id);
 
 	void UpdateAppTitle();
 
 	//TODO: Move elsewhere?
 	Console* GetPrivateChat(string nick);
+
+	void LoadTestWorld(string luafile);
+	void LoadOnlineWorld(string id, point2d target = point2d(), string targetObjectName = "");
 
 	void Process(uLong ms);
 	void Render(uLong ms);
@@ -47,9 +47,9 @@ class GameManager : public Frame
 	void LoadPlayerData();
 	void SavePlayerData();
 
-	bool IsMapLoading() { return mLoader.mState != WorldLoader::WORLD_ACTIVE && mLoader.mState != WorldLoader::IDLE; };
+	bool IsMapLoading() const { return mLoader &&  mLoader->m_state != WorldLoader::WORLD_ACTIVE && mLoader->m_state != WorldLoader::IDLE; };
 	
-	void UnloadWorld();
+	void UnloadMap();
 	
 	void DisplayAchievement(string title);
 	
@@ -61,12 +61,9 @@ class GameManager : public Frame
 	Map* mMap;
 	LocalActor* mPlayer;
 	Console* mChat;
-	
 	IrcNet* mNet;
-	
-	WorldLoader mLoader;
-	
-	string mMasterUrl;	
+	WorldLoader* mLoader;
+
 	bool mShowJoinParts;
 	bool mShowAddresses;
 	string mQueuedMapId;
@@ -77,18 +74,12 @@ class GameManager : public Frame
 	XmlFile mConfig; //global config file for game-related material
 	XmlFile mPlayerData; //our game-specific data. Including inventory, stats, etc. 
 
-	Frame* mHudControls; 
-	
-	//Sub-Hud menus
-	Frame* mFrameSystem;
-	Frame* mFrameTools;
-	Frame* mFrameUser;
-	
 	//login credentials. mPassword is an md5 value.
 	string mUsername;
 	string mPassword;
 
   private:
+	void _hookCommands();
 	void _renderMapLoader(uLong ms);
 	void _addNewAchievement(string title, string desc, int max, string file);
 

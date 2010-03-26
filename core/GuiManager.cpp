@@ -126,6 +126,8 @@ GuiManager::GuiManager()
 	console = new Console("console", "Build " + string(APP_VERSION), "assets/console_system.png", "log_", false, true);
 	//console->mInput->mAllowSpecialKeys = false;
 	
+	PRINT("Configuring Console");
+	
 	TiXmlElement* e = config.GetChild(config.mXmlPos, "console");
 	rect r = config.GetParamRect(e, "position");
 	if (isDefaultRect(r))
@@ -146,6 +148,8 @@ GuiManager::GuiManager()
 	
 	Add(console);
 	console->SetVisible(false);
+	
+	PRINT("GuiManager Finished");
 }
 
 GuiManager::~GuiManager()

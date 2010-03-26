@@ -541,11 +541,28 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 - Removed Weapon class
 - Removed Radar, Avatar Viewer, Shortcuts, and Remote Player Menu interfaces.
 - Removed player level data
+
+100321
+- Added Map lua library
+- Removed LuaManager class
+- Removed loading and xml parsing routines from Map and all inherited classes
+- Removed ReadXml/WriteXml routines from Entity and all inherited classes
+- Removed lessons button from LoginDialog class
+- Removed Entity.Add() from lua
+- Fixed options not saving in options dialog
+
+100324
+- Added Map.NewBasic(), Map.SetSpawn(), Map.SetSize(), Map.SetColor() to Lua
+- Renamed CollectionMap to BasicMap to make it slightly more descriptive
+- Fixed several bugs with WorldLoader
 - 
 
 
 IMMEDIATE TODO:
-
+- Trash game->mQueuedMapId
+- Get rid of assets/game.cfg and GM::mConfig. Import everything into player.save, but keep connection
+	data to their own file so that we can overwrite it via updates. Only load that xml file when needed.
+- login dialog is taking up the full screen, when it doesn't need to. Fix that
 - Use left-click map objects
 	If a map object is left clickable (interactive), hover an icon over it
 	You also have to be within a certain range

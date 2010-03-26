@@ -5,13 +5,13 @@
 #include <map>
 
 #include "BubbleManager.h"
-#include "../lua/LuaManager.h"
 #include "../core/Core.h"
 #include "../core/widgets/Frame.h"
 #include "../entity/EntityManager.h"
 
 #define TILE_SIZE (16)
 
+class lua_State;
 class Map : public Frame, public EntityManager
 {
   public:
@@ -21,8 +21,8 @@ class Map : public Frame, public EntityManager
 	enum mapType 
 	{
 		NONE = 0,
+		BASIC,
 		EDITOR,
-		COLLECTION,
 		PURGATORY,
 		MAZE
 	};
@@ -81,31 +81,8 @@ class Map : public Frame, public EntityManager
 
 /*	Map Loading Procedures */
 
-	/*	Load general map properties */
-	virtual bool LoadProperties() = 0;
-
-	/*	Queue up resources this map needs. Can either check if they exist in disk or download from url */
-	virtual bool QueueResources() = 0; 
-	
-	/*	Load scripts we need. */
-	virtual bool LoadScripts() = 0;
-	
-	/*	Clone unique entities, generate maze walls, whatever */
-	virtual bool LoadLayout() = 0;
-	
 	/*	Overloaded from EntityManager so we can dispatch ENTITY_CREATE event */
 	void AddEntity(Entity* e, sShort level);
-	
-	/*	Main method to load a new entity. Depending on the situation (and inherited map type), 
-		they could be internally created, or configured through some xml file in either mXml 
-		or an external source, etc etc.
-		This should NOT actually add the entity to the map, but just create it, and let the caller deal with it */
-	virtual Entity* AddEntityFromResources(string id, point2d pos) = 0;
-	
-	XmlFile* mXml;
-	
-	void SetLoadError(string err);
-	string GetLoadError() const { return mLoadError; };
 
 	uShort GetGravity() const { return mGravity; };
 	void SetGravity(uShort g) { mGravity = g; };
@@ -117,18 +94,14 @@ class Map : public Frame, public EntityManager
 	string GetFlag(string flag);
 	
 	BubbleManager mBubbles;
-	
-	string mChannelId; //set by LoadProperties
-	bool mShowPlayerNames;
 
-	//Should this map behave like online maps? 
-	bool mOfflineMode;
+	bool mShowPlayerNames; //TODO: Move to Game or something
 
-	bool mShowInfo; //show extra info while rendering
-
-	std::vector<LuaManager*> mScripts;
 	std::vector<point2d> mCameraDestinationStack;
 	uShort mCameraSpeed;
+	
+	lua_State* mLuaState;
+	
   private:
 	void _constrainCameraToMap();
 	void _constrainCameraX();
@@ -139,8 +112,6 @@ class Map : public Frame, public EntityManager
 	
 	point2d mCameraPosition;
 	point2d mCameraFollowOffset;
-	
-	string mLoadError;
 
 	uShort mGravity;
 		

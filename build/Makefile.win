@@ -5,9 +5,9 @@ CPP  = g++.exe
 CC   = gcc.exe
 WINDRES = windres.exe
 RES  = ../w32obj/fro_private.res
-OBJ  = ../w32obj/Common.o ../w32obj/FontManager.o ../w32obj/Image.o ../w32obj/ResourceManager.o ../w32obj/TimerManager.o ../w32obj/BoltFile.o ../w32obj/Crypt.o ../w32obj/FileIO.o ../w32obj/md5.o ../w32obj/XmlFile.o ../w32obj/tinyxml.o ../w32obj/tinyxmlerror.o ../w32obj/tinyxmlparser.o ../w32obj/main.o ../w32obj/GuiManager.o ../w32obj/Screen.o ../w32obj/IMG.o ../w32obj/IMG_bmp.o ../w32obj/IMG_gif.o ../w32obj/IMG_jpg.o ../w32obj/IMG_mng.o ../w32obj/IMG_png.o ../w32obj/SDL_gfxPrimitives.o ../w32obj/SDL_rotozoom.o ../w32obj/SDL_ttf.o ../w32obj/SoundManager.o ../w32obj/SDL_Misc.o ../w32obj/Widget.o ../w32obj/WidgetImage.o ../w32obj/Console.o ../w32obj/Frame.o ../w32obj/Input.o ../w32obj/Label.o ../w32obj/Multiline.o ../w32obj/Scrollbar.o ../w32obj/SmallSelect.o ../w32obj/Button.o ../w32obj/Checkbox.o ../w32obj/GameManager.o ../w32obj/AvatarFavoritesDialog.o ../w32obj/LoginDialog.o ../w32obj/DownloadManager.o ../w32obj/TextSocketConnection.o ../w32obj/IrcNet2.o ../w32obj/Inventory.o ../w32obj/RemotePlayerMenu.o ../w32obj/Shortcuts.o ../w32obj/MessageManager.o ../w32obj/IrcNetListeners.o ../w32obj/BubbleManager.o ../w32obj/CollectionMap.o ../w32obj/Map.o ../w32obj/Entity.o ../w32obj/EntityManager.o ../w32obj/LocalActor.o ../w32obj/Actor.o ../w32obj/RemoteActor.o ../w32obj/StaticObject.o ../w32obj/ColorPicker.o ../w32obj/Radar.o ../w32obj/OptionsDialog.o ../w32obj/OpenUrl.o ../w32obj/TimeProfiler.o ../w32obj/DataPacket.o ../w32obj/Avatar.o ../w32obj/UserList.o ../w32obj/SceneActor.o ../w32obj/AvatarViewer.o ../w32obj/FilePicker.o ../w32obj/MessagePopup.o ../w32obj/ExplodingEntity.o ../w32obj/AvatarCreator.o ../w32obj/MessageData.o ../w32obj/ItemTrade.o ../w32obj/TextObject.o ../w32obj/EventsLib.o ../w32obj/LuaManager.o ../w32obj/LuaCommon.o ../w32obj/SystemLib.o ../w32obj/TimersLib.o ../w32obj/EntityLib.o ../w32obj/PlayerLib.o ../w32obj/ActorLib.o ../w32obj/ConvoLib.o ../w32obj/CameraLib.o ../w32obj/Weapon.o ../w32obj/TerrainTest.o ../w32obj/WorldLoader.o ../w32obj/MyAchievements.o ../w32obj/GameLib.o ../w32obj/Achievements.o ../w32obj/MiniMenu.o ../w32obj/ActionEffect.o $(RES)
-LINKOBJ  = ../w32obj/Common.o ../w32obj/FontManager.o ../w32obj/Image.o ../w32obj/ResourceManager.o ../w32obj/TimerManager.o ../w32obj/BoltFile.o ../w32obj/Crypt.o ../w32obj/FileIO.o ../w32obj/md5.o ../w32obj/XmlFile.o ../w32obj/tinyxml.o ../w32obj/tinyxmlerror.o ../w32obj/tinyxmlparser.o ../w32obj/main.o ../w32obj/GuiManager.o ../w32obj/Screen.o ../w32obj/IMG.o ../w32obj/IMG_bmp.o ../w32obj/IMG_gif.o ../w32obj/IMG_jpg.o ../w32obj/IMG_mng.o ../w32obj/IMG_png.o ../w32obj/SDL_gfxPrimitives.o ../w32obj/SDL_rotozoom.o ../w32obj/SDL_ttf.o ../w32obj/SoundManager.o ../w32obj/SDL_Misc.o ../w32obj/Widget.o ../w32obj/WidgetImage.o ../w32obj/Console.o ../w32obj/Frame.o ../w32obj/Input.o ../w32obj/Label.o ../w32obj/Multiline.o ../w32obj/Scrollbar.o ../w32obj/SmallSelect.o ../w32obj/Button.o ../w32obj/Checkbox.o ../w32obj/GameManager.o ../w32obj/AvatarFavoritesDialog.o ../w32obj/LoginDialog.o ../w32obj/DownloadManager.o ../w32obj/TextSocketConnection.o ../w32obj/IrcNet2.o ../w32obj/Inventory.o ../w32obj/RemotePlayerMenu.o ../w32obj/Shortcuts.o ../w32obj/MessageManager.o ../w32obj/IrcNetListeners.o ../w32obj/BubbleManager.o ../w32obj/CollectionMap.o ../w32obj/Map.o ../w32obj/Entity.o ../w32obj/EntityManager.o ../w32obj/LocalActor.o ../w32obj/Actor.o ../w32obj/RemoteActor.o ../w32obj/StaticObject.o ../w32obj/ColorPicker.o ../w32obj/Radar.o ../w32obj/OptionsDialog.o ../w32obj/OpenUrl.o ../w32obj/TimeProfiler.o ../w32obj/DataPacket.o ../w32obj/Avatar.o ../w32obj/UserList.o ../w32obj/SceneActor.o ../w32obj/AvatarViewer.o ../w32obj/FilePicker.o ../w32obj/MessagePopup.o ../w32obj/ExplodingEntity.o ../w32obj/AvatarCreator.o ../w32obj/MessageData.o ../w32obj/ItemTrade.o ../w32obj/TextObject.o ../w32obj/EventsLib.o ../w32obj/LuaManager.o ../w32obj/LuaCommon.o ../w32obj/SystemLib.o ../w32obj/TimersLib.o ../w32obj/EntityLib.o ../w32obj/PlayerLib.o ../w32obj/ActorLib.o ../w32obj/ConvoLib.o ../w32obj/CameraLib.o ../w32obj/Weapon.o ../w32obj/TerrainTest.o ../w32obj/WorldLoader.o ../w32obj/MyAchievements.o ../w32obj/GameLib.o ../w32obj/Achievements.o ../w32obj/MiniMenu.o ../w32obj/ActionEffect.o $(RES)
-LIBS =  -L"C:/Dev-Cpp/lib" -mwindows -lmingw32 -lSDLmain -lSDL -lpng -lfreetype -lzdll -ljpeg -lwsock32 -llua5.1  -s 
+OBJ  = ../w32obj/Common.o ../w32obj/FontManager.o ../w32obj/Image.o ../w32obj/ResourceManager.o ../w32obj/TimerManager.o ../w32obj/BoltFile.o ../w32obj/Crypt.o ../w32obj/FileIO.o ../w32obj/md5.o ../w32obj/XmlFile.o ../w32obj/tinyxml.o ../w32obj/tinyxmlerror.o ../w32obj/tinyxmlparser.o ../w32obj/main.o ../w32obj/GuiManager.o ../w32obj/Screen.o ../w32obj/IMG.o ../w32obj/IMG_bmp.o ../w32obj/IMG_gif.o ../w32obj/IMG_jpg.o ../w32obj/IMG_mng.o ../w32obj/IMG_png.o ../w32obj/SDL_gfxPrimitives.o ../w32obj/SDL_rotozoom.o ../w32obj/SDL_ttf.o ../w32obj/SoundManager.o ../w32obj/SDL_Misc.o ../w32obj/Widget.o ../w32obj/WidgetImage.o ../w32obj/Console.o ../w32obj/Frame.o ../w32obj/Input.o ../w32obj/Label.o ../w32obj/Multiline.o ../w32obj/Scrollbar.o ../w32obj/SmallSelect.o ../w32obj/Button.o ../w32obj/Checkbox.o ../w32obj/GameManager.o ../w32obj/AvatarFavoritesDialog.o ../w32obj/LoginDialog.o ../w32obj/DownloadManager.o ../w32obj/TextSocketConnection.o ../w32obj/IrcNet2.o ../w32obj/Inventory.o ../w32obj/MessageManager.o ../w32obj/IrcNetListeners.o ../w32obj/BubbleManager.o ../w32obj/BasicMap.o ../w32obj/Map.o ../w32obj/Entity.o ../w32obj/EntityManager.o ../w32obj/LocalActor.o ../w32obj/Actor.o ../w32obj/RemoteActor.o ../w32obj/StaticObject.o ../w32obj/ColorPicker.o ../w32obj/OptionsDialog.o ../w32obj/OpenUrl.o ../w32obj/TimeProfiler.o ../w32obj/DataPacket.o ../w32obj/Avatar.o ../w32obj/UserList.o ../w32obj/SceneActor.o ../w32obj/FilePicker.o ../w32obj/MessagePopup.o ../w32obj/ExplodingEntity.o ../w32obj/AvatarCreator.o ../w32obj/MessageData.o ../w32obj/ItemTrade.o ../w32obj/TextObject.o ../w32obj/EventsLib.o ../w32obj/LuaCommon.o ../w32obj/SystemLib.o ../w32obj/TimersLib.o ../w32obj/EntityLib.o ../w32obj/PlayerLib.o ../w32obj/ActorLib.o ../w32obj/ConvoLib.o ../w32obj/CameraLib.o ../w32obj/TerrainTest.o ../w32obj/WorldLoader.o ../w32obj/MyAchievements.o ../w32obj/GameLib.o ../w32obj/Achievements.o ../w32obj/MiniMenu.o ../w32obj/ActionEffect.o ../w32obj/MapLib.o $(RES)
+LINKOBJ  = ../w32obj/Common.o ../w32obj/FontManager.o ../w32obj/Image.o ../w32obj/ResourceManager.o ../w32obj/TimerManager.o ../w32obj/BoltFile.o ../w32obj/Crypt.o ../w32obj/FileIO.o ../w32obj/md5.o ../w32obj/XmlFile.o ../w32obj/tinyxml.o ../w32obj/tinyxmlerror.o ../w32obj/tinyxmlparser.o ../w32obj/main.o ../w32obj/GuiManager.o ../w32obj/Screen.o ../w32obj/IMG.o ../w32obj/IMG_bmp.o ../w32obj/IMG_gif.o ../w32obj/IMG_jpg.o ../w32obj/IMG_mng.o ../w32obj/IMG_png.o ../w32obj/SDL_gfxPrimitives.o ../w32obj/SDL_rotozoom.o ../w32obj/SDL_ttf.o ../w32obj/SoundManager.o ../w32obj/SDL_Misc.o ../w32obj/Widget.o ../w32obj/WidgetImage.o ../w32obj/Console.o ../w32obj/Frame.o ../w32obj/Input.o ../w32obj/Label.o ../w32obj/Multiline.o ../w32obj/Scrollbar.o ../w32obj/SmallSelect.o ../w32obj/Button.o ../w32obj/Checkbox.o ../w32obj/GameManager.o ../w32obj/AvatarFavoritesDialog.o ../w32obj/LoginDialog.o ../w32obj/DownloadManager.o ../w32obj/TextSocketConnection.o ../w32obj/IrcNet2.o ../w32obj/Inventory.o ../w32obj/MessageManager.o ../w32obj/IrcNetListeners.o ../w32obj/BubbleManager.o ../w32obj/BasicMap.o ../w32obj/Map.o ../w32obj/Entity.o ../w32obj/EntityManager.o ../w32obj/LocalActor.o ../w32obj/Actor.o ../w32obj/RemoteActor.o ../w32obj/StaticObject.o ../w32obj/ColorPicker.o ../w32obj/OptionsDialog.o ../w32obj/OpenUrl.o ../w32obj/TimeProfiler.o ../w32obj/DataPacket.o ../w32obj/Avatar.o ../w32obj/UserList.o ../w32obj/SceneActor.o ../w32obj/FilePicker.o ../w32obj/MessagePopup.o ../w32obj/ExplodingEntity.o ../w32obj/AvatarCreator.o ../w32obj/MessageData.o ../w32obj/ItemTrade.o ../w32obj/TextObject.o ../w32obj/EventsLib.o ../w32obj/LuaCommon.o ../w32obj/SystemLib.o ../w32obj/TimersLib.o ../w32obj/EntityLib.o ../w32obj/PlayerLib.o ../w32obj/ActorLib.o ../w32obj/ConvoLib.o ../w32obj/CameraLib.o ../w32obj/TerrainTest.o ../w32obj/WorldLoader.o ../w32obj/MyAchievements.o ../w32obj/GameLib.o ../w32obj/Achievements.o ../w32obj/MiniMenu.o ../w32obj/ActionEffect.o ../w32obj/MapLib.o $(RES)
+LIBS =  -L"C:/Dev-Cpp/lib" -mwindows -lmingw32 -lSDLmain -lSDL -lpng -lfreetype -lzdll -ljpeg -lwsock32 -llua5.1  
 INCS =  -I"C:/Dev-Cpp/include"  -I"C:/Dev-Cpp/include/freetype2" 
 CXXINCS =  -I"C:/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"C:/Dev-Cpp/include/c++/3.4.2/backward"  -I"C:/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"C:/Dev-Cpp/include/c++/3.4.2"  -I"C:/Dev-Cpp/include"  -I"C:/Dev-Cpp/include/freetype2" 
 BIN  = ../w32bin/fro.exe
@@ -161,12 +161,6 @@ $(BIN): $(OBJ)
 ../w32obj/Inventory.o: ../interface/Inventory.cpp
 	$(CPP) -c ../interface/Inventory.cpp -o ../w32obj/Inventory.o $(CXXFLAGS)
 
-../w32obj/RemotePlayerMenu.o: ../interface/RemotePlayerMenu.cpp
-	$(CPP) -c ../interface/RemotePlayerMenu.cpp -o ../w32obj/RemotePlayerMenu.o $(CXXFLAGS)
-
-../w32obj/Shortcuts.o: ../interface/Shortcuts.cpp
-	$(CPP) -c ../interface/Shortcuts.cpp -o ../w32obj/Shortcuts.o $(CXXFLAGS)
-
 ../w32obj/MessageManager.o: ../core/MessageManager.cpp
 	$(CPP) -c ../core/MessageManager.cpp -o ../w32obj/MessageManager.o $(CXXFLAGS)
 
@@ -176,8 +170,8 @@ $(BIN): $(OBJ)
 ../w32obj/BubbleManager.o: ../map/BubbleManager.cpp
 	$(CPP) -c ../map/BubbleManager.cpp -o ../w32obj/BubbleManager.o $(CXXFLAGS)
 
-../w32obj/CollectionMap.o: ../map/CollectionMap.cpp
-	$(CPP) -c ../map/CollectionMap.cpp -o ../w32obj/CollectionMap.o $(CXXFLAGS)
+../w32obj/BasicMap.o: ../map/BasicMap.cpp
+	$(CPP) -c ../map/BasicMap.cpp -o ../w32obj/BasicMap.o $(CXXFLAGS)
 
 ../w32obj/Map.o: ../map/Map.cpp
 	$(CPP) -c ../map/Map.cpp -o ../w32obj/Map.o $(CXXFLAGS)
@@ -203,9 +197,6 @@ $(BIN): $(OBJ)
 ../w32obj/ColorPicker.o: ../core/widgets/ColorPicker.cpp
 	$(CPP) -c ../core/widgets/ColorPicker.cpp -o ../w32obj/ColorPicker.o $(CXXFLAGS)
 
-../w32obj/Radar.o: ../interface/Radar.cpp
-	$(CPP) -c ../interface/Radar.cpp -o ../w32obj/Radar.o $(CXXFLAGS)
-
 ../w32obj/OptionsDialog.o: ../interface/OptionsDialog.cpp
 	$(CPP) -c ../interface/OptionsDialog.cpp -o ../w32obj/OptionsDialog.o $(CXXFLAGS)
 
@@ -226,9 +217,6 @@ $(BIN): $(OBJ)
 
 ../w32obj/SceneActor.o: ../entity/SceneActor.cpp
 	$(CPP) -c ../entity/SceneActor.cpp -o ../w32obj/SceneActor.o $(CXXFLAGS)
-
-../w32obj/AvatarViewer.o: ../interface/AvatarViewer.cpp
-	$(CPP) -c ../interface/AvatarViewer.cpp -o ../w32obj/AvatarViewer.o $(CXXFLAGS)
 
 ../w32obj/FilePicker.o: ../core/widgets/FilePicker.cpp
 	$(CPP) -c ../core/widgets/FilePicker.cpp -o ../w32obj/FilePicker.o $(CXXFLAGS)
@@ -254,9 +242,6 @@ $(BIN): $(OBJ)
 ../w32obj/EventsLib.o: ../lua/EventsLib.cpp
 	$(CPP) -c ../lua/EventsLib.cpp -o ../w32obj/EventsLib.o $(CXXFLAGS)
 
-../w32obj/LuaManager.o: ../lua/LuaManager.cpp
-	$(CPP) -c ../lua/LuaManager.cpp -o ../w32obj/LuaManager.o $(CXXFLAGS)
-
 ../w32obj/LuaCommon.o: ../lua/LuaCommon.cpp
 	$(CPP) -c ../lua/LuaCommon.cpp -o ../w32obj/LuaCommon.o $(CXXFLAGS)
 
@@ -281,9 +266,6 @@ $(BIN): $(OBJ)
 ../w32obj/CameraLib.o: ../lua/CameraLib.cpp
 	$(CPP) -c ../lua/CameraLib.cpp -o ../w32obj/CameraLib.o $(CXXFLAGS)
 
-../w32obj/Weapon.o: ../game/Weapon.cpp
-	$(CPP) -c ../game/Weapon.cpp -o ../w32obj/Weapon.o $(CXXFLAGS)
-
 ../w32obj/TerrainTest.o: ../game/TerrainTest.cpp
 	$(CPP) -c ../game/TerrainTest.cpp -o ../w32obj/TerrainTest.o $(CXXFLAGS)
 
@@ -304,6 +286,9 @@ $(BIN): $(OBJ)
 
 ../w32obj/ActionEffect.o: ../entity/ActionEffect.cpp
 	$(CPP) -c ../entity/ActionEffect.cpp -o ../w32obj/ActionEffect.o $(CXXFLAGS)
+
+../w32obj/MapLib.o: ../lua/MapLib.cpp
+	$(CPP) -c ../lua/MapLib.cpp -o ../w32obj/MapLib.o $(CXXFLAGS)
 
 ../w32obj/fro_private.res: fro_private.rc 
 	$(WINDRES) -i fro_private.rc --input-format=rc -o ../w32obj/fro_private.res -O coff 

@@ -5,7 +5,6 @@
 #include "../core/widgets/Frame.h"
 #include "Inventory.h"
 
-class Label;
 class ItemTrade : public Frame
 {
   public:

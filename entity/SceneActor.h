@@ -14,8 +14,6 @@ class SceneActor : public Actor
   public:
 	SceneActor();
 	~SceneActor();
-
-	int ReadXml(XmlFile* xf, TiXmlElement* e, bool online);
 };
 
 #endif //_SCENEACTOR_H_

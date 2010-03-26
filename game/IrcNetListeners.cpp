@@ -704,7 +704,7 @@ void listener_NetCmdError(MessageListener* ml, MessageData& md, void* sender)
 		case 475: //+k channel has key
 			msg = "\\c900" + md.ReadString("message");
 			printMessage(msg);
-			game->mLoader._cancelLoad();
+			game->UnloadMap();
 			break;
 		default:
 			msg = "\\c900 * [" + md.ReadString("command") + "] " + md.ReadString("message");
@@ -729,8 +729,6 @@ void listener_NetOnChannel(MessageListener* ml, MessageData& md, void* sender)
 {
 	string msg = "\\c090 * On Channel " + md.ReadString("channel");
 	printMessage(msg);
-
-	game->mLoader.mState = WorldLoader::WORLD_READY;
 }
 
 void listener_NetChannelJoin(MessageListener* ml, MessageData& md, void* sender)
@@ -783,7 +781,7 @@ void listener_NetChannelKick(MessageListener* ml, MessageData& md, void* sender)
 		//I COULD trigger a full re-download on a kick, but that's pointless.
 		//JoinChannel(mChannel->mId, mChannel->mPassword);
 		msg = "\\c099 You have been kicked!";
-		game->UnloadWorld();
+		game->UnloadMap();
 		
 		printMessage(msg);
 	}
@@ -996,7 +994,7 @@ void listener_NetNewState(MessageListener* ml, MessageData& md, void* sender)
 			DEBUGOUT("ONCHANNEL");
 			break;
 		case DISCONNECTED:
-			game->UnloadWorld();
+			game->UnloadMap();
 			
 			if (!loginDialog)
 				new LoginDialog();
@@ -1029,7 +1027,8 @@ void listener_NetNickInUse(MessageListener* ml, MessageData& md, void* sender)
 // Nothing in message
 void listener_NetVerified(MessageListener* ml, MessageData& md, void* sender)
 {
-	game->mLoader.LoadOnlineWorld(game->mQueuedMapId, point2d());
+	FATAL("LoadStartingWorld");
+	//game->LoadStartingWorld();
 }
 
 void hookNetListeners()

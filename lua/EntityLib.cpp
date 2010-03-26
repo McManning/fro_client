@@ -5,7 +5,7 @@
 #include "../entity/Entity.h"
 #include "../entity/TextObject.h"
 #include "../game/GameManager.h"
-#include "../map/CollectionMap.h"
+#include "../map/BasicMap.h"
 
 // Returns true if the entity is valid. (TODO: Make sure it's on the map) 
 bool _verifyEntity(Entity* e)
@@ -337,27 +337,6 @@ int entity_Say(lua_State* ls)
 	return 0;	
 }
 
-//	ent = .Add("id") - Create a replica of the loaded entity matching id and return a cptr to it. You must manually position it and such.
-int entity_Add(lua_State* ls)
-{
-	PRINT("entity_Add");
-	luaCountArgs(ls, 1);
-	
-	ASSERT(game->mMap);
-
-	if (!lua_isstring(ls, 1))
-		return luaError(ls, "Entity.Add", "Invalid Param");
-	
-	string id = lua_tostring(ls, 1);
-
-	Entity* e = game->mMap->AddEntityFromResources( id, point2d() );
-	if (!e)
-		return luaError(ls, "Entity.Add", id + " not a loaded resource");
-
-	lua_pushlightuserdata(ls, e);
-	return 1;
-}
-
 //	.Remove(entity) - Remove the specified entity from the map. Returns 1 on success, 0 otherwise. 
 int entity_Remove(lua_State* ls)
 {
@@ -428,7 +407,6 @@ static const luaL_Reg functions[] = {
 	{"IsTouching", entity_IsTouching},
 	{"GetDistance", entity_GetDistance},
 	{"Say", entity_Say},
-	{"Add", entity_Add},
 	{"Remove", entity_Remove},
 	{"RemoveAllById", entity_RemoveAllById},
 	{"NewTextObject", entity_NewTextObject},

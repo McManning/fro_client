@@ -21,13 +21,13 @@ OverrideOutput=0
 OverrideOutputName=fro.exe
 HostApplication=
 Folders=..,../core,../core/io,../core/io/tinyxml,../core/net,../core/SDL,../core/sound,../core/widgets,../entity,../game,../interface,../lua,../map
-CommandLine=-nologin
+CommandLine=
 UseCustomMakefile=0
 CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=1100000001000000000100
+CompilerSettings=1100000001000000000000
 
 [Unit1]
 FileName=..\core\Common.cpp
@@ -473,7 +473,7 @@ BuildCmd=
 Major=1
 Minor=1
 Release=1
-Build=262
+Build=344
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -482,7 +482,7 @@ FileDescription=
 InternalName=
 LegalCopyright=Copyright (c) Sybolt Studios 2007-2010
 LegalTrademarks=
-OriginalFilename=..\
+OriginalFilename=
 ProductName=
 ProductVersion=
 AutoIncBuildNr=1
@@ -928,7 +928,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit91]
-FileName=..\map\CollectionMap.cpp
+FileName=..\map\BasicMap.cpp
 CompileCpp=1
 Folder=../map
 Compile=1
@@ -1118,7 +1118,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit92]
-FileName=..\map\CollectionMap.h
+FileName=..\map\BasicMap.h
 CompileCpp=1
 Folder=../map
 Compile=1
@@ -1327,26 +1327,6 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit138]
-FileName=..\lua\LuaManager.cpp
-CompileCpp=1
-Folder=../lua
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit139]
-FileName=..\lua\LuaManager.h
-CompileCpp=1
-Folder=../lua
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
 [Unit80]
 FileName=..\core\net\IrcNet2.cpp
 CompileCpp=1
@@ -1358,26 +1338,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit140]
-FileName=..\lua\LuaCommon.cpp
-CompileCpp=1
-Folder=../lua
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit141]
-FileName=..\lua\LuaCommon.h
-CompileCpp=1
-Folder=../lua
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit142]
 FileName=..\lua\SystemLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1387,7 +1347,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit143]
+[Unit141]
 FileName=..\lua\SystemLib.h
 CompileCpp=1
 Folder=../lua
@@ -1397,7 +1357,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit144]
+[Unit142]
 FileName=..\lua\TimersLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1407,7 +1367,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit145]
+[Unit143]
 FileName=..\lua\TimersLib.h
 CompileCpp=1
 Folder=../lua
@@ -1417,7 +1377,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit146]
+[Unit144]
 FileName=..\lua\EntityLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1427,7 +1387,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit147]
+[Unit145]
 FileName=..\lua\EntityLib.h
 CompileCpp=1
 Folder=../lua
@@ -1437,7 +1397,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit148]
+[Unit146]
 FileName=..\lua\PlayerLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1447,7 +1407,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit149]
+[Unit147]
 FileName=..\lua\PlayerLib.h
 CompileCpp=1
 Folder=../lua
@@ -1457,7 +1417,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit150]
+[Unit148]
 FileName=..\lua\ActorLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1467,7 +1427,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit151]
+[Unit149]
 FileName=..\lua\ActorLib.h
 CompileCpp=1
 Folder=../lua
@@ -1477,7 +1437,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit152]
+[Unit150]
 FileName=..\lua\ConvoLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1487,7 +1447,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit153]
+[Unit151]
 FileName=..\lua\ConvoLib.h
 CompileCpp=1
 Folder=../lua
@@ -1497,7 +1457,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit154]
+[Unit152]
 FileName=..\lua\CameraLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1507,7 +1467,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit155]
+[Unit153]
 FileName=..\lua\CameraLib.h
 CompileCpp=1
 Folder=../lua
@@ -1517,27 +1477,27 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit154]
+FileName=..\game\TerrainTest.cpp
+CompileCpp=1
+Folder=../game
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit155]
+FileName=..\game\TerrainTest.h
+CompileCpp=1
+Folder=../game
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
 [Unit158]
-FileName=..\game\WorldLoader.cpp
-CompileCpp=1
-Folder=../game
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit159]
-FileName=..\game\WorldLoader.h
-CompileCpp=1
-Folder=../game
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit160]
 FileName=..\interface\MyAchievements.cpp
 CompileCpp=1
 Folder=../interface
@@ -1547,7 +1507,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit161]
+[Unit159]
 FileName=..\interface\MyAchievements.h
 CompileCpp=1
 Folder=../interface
@@ -1557,7 +1517,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit162]
+[Unit160]
 FileName=..\lua\GameLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1567,7 +1527,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit163]
+[Unit161]
 FileName=..\lua\GameLib.h
 CompileCpp=1
 Folder=../lua
@@ -1577,7 +1537,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit164]
+[Unit162]
 FileName=..\game\Achievements.cpp
 CompileCpp=1
 Folder=../game
@@ -1587,7 +1547,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit165]
+[Unit163]
 FileName=..\game\Achievements.h
 CompileCpp=1
 Folder=../game
@@ -1597,7 +1557,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit166]
+[Unit164]
 FileName=..\interface\MiniMenu.cpp
 CompileCpp=1
 Folder=../interface
@@ -1607,7 +1567,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit167]
+[Unit165]
 FileName=..\entity\ActionEffect.cpp
 CompileCpp=1
 Folder=../entity
@@ -1617,7 +1577,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit168]
+[Unit166]
 FileName=..\entity\ActionEffect.h
 CompileCpp=1
 Folder=../entity
@@ -1627,10 +1587,30 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit169]
+[Unit167]
 FileName=..\interface\MiniMenu.h
 CompileCpp=1
 Folder=../interface
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit168]
+FileName=..\lua\MapLib.cpp
+CompileCpp=1
+Folder=../lua
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit169]
+FileName=..\lua\MapLib.h
+CompileCpp=1
+Folder=../lua
 Compile=1
 Link=1
 Priority=1000
@@ -1868,7 +1848,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit156]
-FileName=..\game\TerrainTest.cpp
+FileName=..\game\WorldLoader.cpp
 CompileCpp=1
 Folder=../game
 Compile=1
@@ -1878,9 +1858,29 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit157]
-FileName=..\game\TerrainTest.h
+FileName=..\game\WorldLoader.h
 CompileCpp=1
 Folder=../game
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit138]
+FileName=..\lua\LuaCommon.cpp
+CompileCpp=1
+Folder=../lua
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit139]
+FileName=..\lua\LuaCommon.h
+CompileCpp=1
+Folder=../lua
 Compile=1
 Link=1
 Priority=1000

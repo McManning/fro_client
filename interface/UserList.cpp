@@ -105,10 +105,11 @@ void UserList::ChangeNick(string oldNick, string newNick)
 
 /* ********************** */
 
+/*
 void callback_UserlistButtonClick(UserlistButton* b)
 {
 	if (!userlist)
-		userlist = new Userlist();
+		userlist = new UserList();
 }
 
 UserlistButton::UserlistButton()
@@ -143,5 +144,5 @@ void UserlistButton::Render(uLong ms)
 		yOffset *= -1; //invert offset	
 	}
 }
-
+*/
 

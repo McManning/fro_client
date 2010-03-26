@@ -122,34 +122,6 @@ rect Entity::GetBoundingRect()
 	return rect();	
 }
 
-int Entity::ReadXml(XmlFile* xf, TiXmlElement* e, bool online)
-{	
-	string id = e->Value();
-	
-	PRINT("Entity::ReadXml " + id);
-	
-	if (id == "base") //<base solid="1" shadow="1" layer="1"/> base properties
-	{
-		mSolid = xf->GetParamInt(e, "solid");
-		mShadow = xf->GetParamInt(e, "shadow");
-		mLayer = xf->GetParamInt(e, "layer");
-	}
-	else if (id == "origin") //<origin position="x,y" />
-	{
-		mOrigin = xf->GetParamPoint2d(e, "position");
-	}
-	else if (id == "rect") //<rect>serializedRect</rect> adds a collision rect
-	{
-		rect r = deserializeRect(xf->GetText(e));
-		if (!isDefaultRect(r))
-			mCollisionRects.push_back(r);
-	}
-	
-	PRINT("Entity::ReadXml " + id + " End");
-	
-	return XMLPARSE_SUCCESS;
-}
-
 void Entity::RenderShadow()
 {
 	if (!mShadow || !mMap)

@@ -4,6 +4,8 @@
 
 #include "../core/Core.h"
 #include "../core/widgets/Frame.h"
+#include "../core/widgets/Button.h"
+
 
 class UserList : public Console 
 {
@@ -20,6 +22,7 @@ class UserList : public Console
 
 extern UserList* userlist;
 
+/*
 class UserlistButton : public Button
 {
   public:
@@ -30,6 +33,7 @@ class UserlistButton : public Button
 	
   private:
 	Image* mNumbersImage; //renderable numbers to indicate user count
-}
+};
+*/
 
 #endif //_USERLIST_H_

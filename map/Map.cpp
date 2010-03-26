@@ -3,7 +3,6 @@
 #include "../core/widgets/Input.h"
 #include "../core/widgets/OpenUrl.h"
 #include "../core/io/Crypt.h"
-#include "../interface/RemotePlayerMenu.h"
 #include "../game/GameManager.h"
 
 Map::Map() : Frame()
@@ -12,11 +11,9 @@ Map::Map() : Frame()
 	mType = NONE;
 	mFollowedEntity = NULL;
 	mStopCameraAtMapEdge = true;
-	mXml = NULL;
+	mLuaState = NULL;
 	mBubbles.mMap = this;
-	mShowPlayerNames = false;
-	mOfflineMode = false;
-	mShowInfo = false;
+	mShowPlayerNames = game->mPlayerData.GetParamInt("map", "shownames");
 	mGravity = 1;
 	mCameraSpeed = 4;
 }
@@ -24,13 +21,6 @@ Map::Map() : Frame()
 Map::~Map()
 {
 	SaveFlags();
-	
-	for (int i = 0; i < mScripts.size(); i++)
-	{
-		SAFEDELETE(mScripts.at(i));	
-	}
-	
-	SAFEDELETE(mXml);
 }
 
 void Map::Render(uLong ms)
@@ -52,7 +42,7 @@ void Map::Event(SDL_Event* event)
 				e = FindTopmostRemotePlayer( ToCameraPosition(gui->GetMouseRect()) );
 				if (e)
 				{
-					new RemotePlayerMenu(this, (Actor*)e); //TODO: type hacking like a mofo, fix
+			//TODO:		new RemotePlayerMenu(this, (Actor*)e); //TODO: type hacking like a mofo, fix
 				}
 				else //check for url entities
 				{
@@ -265,12 +255,6 @@ void Map::_constrainCameraY()
 void Map::AddCameraDestination(point2d p)
 {
 	mCameraDestinationStack.push_back(p);
-}
-
-void Map::SetLoadError(string err) 
-{ 
-	mLoadError = err; 
-	WARNING(err);
 }
 
 void Map::AddEntity(Entity* e, sShort level)

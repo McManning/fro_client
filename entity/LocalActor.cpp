@@ -24,6 +24,7 @@ uShort timer_playerActionBufferSend(timer* t, uLong ms)
 LocalActor::LocalActor()
 	: Actor()
 {
+	PRINT("[LA] init");
 	mType = ENTITY_LOCALACTOR;
 	mShadow = true;
 	mLimitedAvatarSize = true;
@@ -36,11 +37,13 @@ LocalActor::LocalActor()
 									NULL,
 									this);
 	
+	PRINT("[LA] Load Default Avatar");
 	string url = game->mPlayerData.GetParamString("avatar", "url");
 
 	LoadAvatar("assets/default.png", "", 32, 64, 1000, false, false);
 	SwapAvatars();
 
+	PRINT("[LA] Load Custom Avatar");
 	if (!url.empty())
 		LoadAvatar( url, game->mPlayerData.GetParamString("avatar", "pass"),
 						game->mPlayerData.GetParamInt("avatar", "w"),
@@ -49,7 +52,10 @@ LocalActor::LocalActor()
 						game->mPlayerData.GetParamInt("avatar", "loopstand"),
 						game->mPlayerData.GetParamInt("avatar", "loopsit") );
 
+	PRINT("[LA] Load Flags");	
 	LoadFlags();
+	
+	PRINT("[LA] done");
 }
 
 LocalActor::~LocalActor()
@@ -424,10 +430,12 @@ void LocalActor::Warp(string id, point2d position, string targetObjectName)
 	if (!game->mMap)
 		return;
 	
-	if (game->mMap->mOfflineMode) //if we're running from an offline test map, use editor dir
-		game->mLoader.LoadOfflineWorld(id, position, targetObjectName, false);
-	else //online mode, use cache and download sources
-		game->mLoader.LoadOnlineWorld(id, position, targetObjectName);
+//	if (game->mMap->mOfflineMode) //if we're running from an offline test map, use editor dir
+//		game->mLoader.LoadOfflineWorld(id, position, targetObjectName, false);
+//	else //online mode, use cache and download sources
+
+	FATAL("do this");
+		game->mLoader->LoadOnlineWorld(id, position, targetObjectName);
 }
 
 

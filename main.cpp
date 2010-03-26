@@ -57,6 +57,8 @@ int main (int argc, char *argv[])
 		else //no arguments, run natural game
 		{
 			new GuiManager();
+			
+			PRINT("Booting up GM");
 			new GameManager(true);
 		}
 		

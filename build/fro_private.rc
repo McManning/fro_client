@@ -8,8 +8,8 @@
 // TO CHANGE VERSION INFORMATION, EDIT PROJECT OPTIONS...
 //
 1 VERSIONINFO
-FILEVERSION 1,1,1,262
-PRODUCTVERSION 1,1,1,262
+FILEVERSION 1,1,1,345
+PRODUCTVERSION 1,1,1,345
 FILETYPE VFT_APP
 {
   BLOCK "StringFileInfo"
@@ -22,7 +22,7 @@ FILETYPE VFT_APP
 			 VALUE "InternalName", ""
 			 VALUE "LegalCopyright", "Copyright (c) Sybolt Studios 2007-2010"
 			 VALUE "LegalTrademarks", ""
-			 VALUE "OriginalFilename", "..\"
+			 VALUE "OriginalFilename", ""
 			 VALUE "ProductName", ""
 			 VALUE "ProductVersion", ""
 		 }

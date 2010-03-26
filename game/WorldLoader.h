@@ -7,8 +7,8 @@
 class WorldLoader
 {
   public:
-	WorldLoader() { mState = IDLE; };
-	~WorldLoader() { };
+	WorldLoader();
+	~WorldLoader();
 	
 	typedef enum
 	{
@@ -22,71 +22,46 @@ class WorldLoader
 		WORLD_ACTIVE //the world is visible and the player can move around on it
 	} loaderState;
 	
-	/*	Destroy our current map, leave it's channel, and download config for a new one */
-	void LoadOnlineWorld(string id, point2d target, string targetObjectName = "");
-
-	void LoadOfflineWorld(string id, point2d target, string targetObjectName = "", bool useCache = false);
-
-	/*	Send request for world xml to master and await response */
-	void _downloadConfig();
-
-	void _reloadPreviousMap();
-
-	/*	Load map xml, Create an appropriate Map type based on information in the XML.
-		Then let Map::LoadProperties() and Map::QueueResources() have their way with our xml data.
-		If this is an offline map, skip QueueResources and go straight to the world building phase.
+	void LoadOnlineWorld(string id, point2d target = point2d(), string targetObjectName = "");
+	
+	/*	Load a world directly from the lua file. It assumes all resources exist locally */
+	
+	void LoadTestWorld(string luafile);
+	
+	/*
+		Load the primary lua file of this map and tries to run the Build(); function 
+		to actually construct the map. 
 	*/
-	void _loadConfig();
-
-	/*	Increment the amount of resources completed. If we finished them all, build the world */
-	void _resourceDownloadCompleted(string url, string file);
-
-	/*	Something went wrong. Cancel whole load */
-	void _resourceDownloadFailed(string url, string file);
-
-	/*	Called after we have all the necessary resources locally. This'll try to load them all into memory, configure, copy, move, etc. */
 	void _buildWorld();
-
-	/*	Add our character to the world, clean whatever up, and try to join the channel if online. 
-		If offline, will set mState to WORLD_READY. Otherwise, WORLD_READY will be set after we successfully
-		join the channel.
-	*/
-	void _joinWorld();
-
-	/*	Bring birth to the world. Everything is okay, and the world is to be displayed. Called from GameManager when mState == WORLD_READY */
-	void ActivateWorld();
-
-	void _cancelLoad();
-
-	/*	Add our player to the world, and set our position based on how we wanted to warp in */
+	
+	void _finalize();
+	
+	/*	Called by GameManager once we have WORLD_READY state, 
+		to actually display it and let the player interact with the world */
+	void DisplayWorld();
+	
 	void _syncPlayerWithWorld();
-	
-	/*	Returns a value between 0.0 and 1.0 symbolizing our percent completed. */
+	void _error(string msg);
 	double Progress();
-	
 	void SetState(loaderState state);
 
-	loaderState mState;
+	loaderState m_state;
 	
-	string mId;
-	point2d mWarpDestinationPoint;
-	string mWarpDestinationObject;
-	
-	point2d mPreviousPosition;
-	string mPreviousWorld;
-	
-	uShort mTotalResources;
-	uShort mCompletedResources;
-	
-	bool mOnline; //steps will change based on this value.
-	bool mUseCache; //true if we want to load our resources from cache, and get online resources
-	bool mLoadingPrevious; //are we trying to load the previous map after a failure? (Prevents endless-looping if the previous also failed)
+	point2d m_warpDestinationPoint;
+	string m_sWarpDestinationEntityName;
+
+	bool m_bTestMode; //is this map being loaded in a testing mode, or online
+
+	int m_iTotalResources;
+	int m_iCompletedResources;
+
+	string m_sWorldName; // Set in PHASE A
+	string m_sPrimaryLuaFile; // Set in PHASE B, accessed in PHASE C
+	string m_sChannelName; // Set in PHASE A, accessed in PHASE D
+	string m_sResourcesList; // Set in PHASE A, accessed in PHASE B
+
+	point2d m_previousPosition;
+	string m_sPreviousMap;
 };
 
-void callback_mapResourceDownloadSuccess(downloadData* data);
-void callback_mapResourceDownloadFailure(downloadData* data);
-
 #endif //_WORLDLOADER_H_
-
-
-

@@ -50,14 +50,6 @@ class Entity
 	virtual void SetPosition(point2d position);
 	virtual point2d GetPosition() const { return mPosition; };
 
-	//Read configuration settings for this entity from an XML file
-	//Param: online: If true, will access cache files, (false for when using editors)
-	//	Online parameter is a complete hack. A better technique needs to be figured out.
-	virtual int ReadXml(XmlFile* xf, TiXmlElement* e, bool online);
-	
-	//Write configuration settings for this entity to an XML file
-	virtual void WriteXml(XmlFile* xf, TiXmlElement* root) {};
-	
 	/*	Returns true if any of this entities collision rects intersect r */
 	bool CollidesWith(rect r);
 

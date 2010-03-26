@@ -13,8 +13,6 @@ class StaticObject : public Entity
 
 	void Render(uLong ms);
 
-	int ReadXml(XmlFile* xf, TiXmlElement* e, bool online);
-
 	void LoadImage(string file);
 
 	rect GetBoundingRect();

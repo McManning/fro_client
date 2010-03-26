@@ -46,6 +46,9 @@ OptionsDialog::OptionsDialog() :
 	mFrameAudio = new Frame(this, "Audio", r);
 	mFrameGraphics = new Frame(this, "Graphics", r);
 	
+	//in case something else screwed with it
+	game->mPlayerData.mXmlPos = game->mPlayerData.mDoc.FirstChildElement("data");
+	
 	_buildFrameUser();
 	_buildFrameNetwork();
 	_buildFrameAudio();
@@ -146,11 +149,13 @@ void OptionsDialog::_buildFrameNetwork()
 	
 	mFrameNetwork->mSortable = false;
 
+/*
 	new Label(mFrameNetwork, "", rect(0,y), "Reconnect");
 	i = new Input(mFrameNetwork, "reconnect", rect(95, y, 150, 20), "0123456789", 0, true, NULL);
-		i->SetText( game->mConfig.GetParamString("connection", "delay") );
+		i->SetText( "0" ); //game->mConfig.GetParamString("connection", "delay") );
 		i->mHoverText = "Delay (in minutes) between reconnect attempts. 0 to disable.";
 	y += 25;
+*/
 	
 	c = new Checkbox(mFrameNetwork, "joinparts", rect(0,y), "Show Joins/Parts", 0);
 		c->SetState( game->mShowJoinParts );
@@ -279,13 +284,14 @@ void OptionsDialog::Save()
 		game->mShowAddresses = c->GetState();
 	}
 
+/*
 	i = (Input*)mFrameNetwork->Get("reconnect");
 	if (i)
 	{
 		game->mConfig.SetParamInt("connection", "delay", sti(i->GetText()));
 		//TODO: this
 	}
-				
+*/				
 	c = (Checkbox*)mFrameNetwork->Get("privmsg");
 	if (c)
 	{
@@ -324,7 +330,6 @@ void OptionsDialog::Save()
 		gui->mFpsCap = u;
 	}
 
-	game->mConfig.SaveToFile(GAME_CONFIG_FILENAME);
 	game->SavePlayerData();
 	config.SaveToFile(CONFIG_FILENAME);
 }

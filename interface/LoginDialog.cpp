@@ -62,11 +62,8 @@ int callback_welcomeXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 		game->mUsername = loginDialog->mUsername;
 		game->mPassword = loginDialog->mPassword;
 
-		if (loginDialog->mAutoConnectOnLogin)
-		{
-			game->mQueuedMapId = xf->GetText(e);
-			game->mNet->TryNextServer();
-		}
+		game->mQueuedMapId = xf->GetText(e);
+		game->mNet->TryNextServer();
 		
 		loginDialog = NULL;
 	}
@@ -153,11 +150,6 @@ void callback_LoginDialogRegister(Button* b)
 	new MessagePopup("register", "Register", msg, true);	
 }
 
-void callback_lessonsButton(Button* b)
-{
-	loginDialog->StartLessons();	
-}
-
 LoginDialog::LoginDialog() :
 	Frame(gui, "login", gui->GetScreenPosition())
 {
@@ -165,8 +157,6 @@ LoginDialog::LoginDialog() :
 	
 	uShort y = 30;
 
-	mAutoConnectOnLogin = true;
-	
 	Input* i;
 	Button* b;
 	Checkbox* c;
@@ -174,20 +164,22 @@ LoginDialog::LoginDialog() :
 	
 	mLoginFrame = new Frame(this, "", rect(50,50), "Login to Sybolt", true, false, false, true);
 	
+	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("login");
+	
 	new Label(mLoginFrame, "", rect(10,y), "ID");
 	i = new Input(mLoginFrame, "id", rect(60, y, 150, 20), "", 32, true, NULL);
-		i->SetText( game->mConfig.GetParamString("login", "id") );
+		i->SetText( game->mPlayerData.GetParamString(e, "id") );
 		i->SetKeyFocus();
 	y += 25;	
 	
 	new Label(mLoginFrame, "", rect(10,y), "Pass");
 	i = new Input(mLoginFrame, "pass", rect(60, y, 150, 20), "", 32, true, NULL);
-		i->SetText( game->mConfig.GetParamString("login", "pass") );
+		i->SetText( game->mPlayerData.GetParamString(e, "pass") );
 	y += 25;
 
 	//checkboxes to the left
 	c = new Checkbox(mLoginFrame, "remember", rect(10,y), "Remember Me", 0);
-		c->SetState( game->mConfig.GetParamInt("login", "remember") );
+		c->SetState( game->mPlayerData.GetParamInt(e, "remember") );
 	y += 25;
 	
 	
@@ -206,21 +198,10 @@ LoginDialog::LoginDialog() :
 		b->mHoverText = "Skip Login";
 		makeImage(b, "", "assets/login.png", rect(40,0,20,20),
 				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
-/*
-	c = new Checkbox(this, "autoconnect", rect(10,y), "Auto-Connect", 0);
-		c->SetState(mAutoConnectOnLogin);
-		c->SetState( game->mConfig.GetParamInt("login", "autoconnect") );
-		c->mHoverText = "Automatically connect to a channel based on login credentials";
-*/		
+
 	l = new Label(mLoginFrame, "status", rect(10,y), "Getting Server Verification...");
 		l->SetVisible(false);
 
-
-
-	mLessons = new Button(this, "lessons", rect(Width()-130,Height()-130,111,111), "", callback_lessonsButton);
-		makeImage(mLessons, "", "assets/lessons.png", rect(0,0,111,111), 
-					rect(0,0,111,111), WIDGETIMAGE_FULL, true, false);
-		
 	y += 25;
 
 	mLoginFrame->SetSize(220, y);
@@ -252,10 +233,6 @@ void LoginDialog::Render(uLong ms)
 
 void LoginDialog::Skip()
 {
-	//in case these somehow had values before
-	//game->syboltId.clear();
-	//game->syboltPass.clear();
-	
 	SendLoginQuery(true);
 }
 
@@ -270,20 +247,22 @@ void LoginDialog::SendLogin()
 		new MessagePopup("", "Invalid Login", "You must input an ID");
 		return;
 	}
-		
+
 	c = (Checkbox*)mLoginFrame->Get("remember");
 	if (c)
 	{
-		game->mConfig.SetParamInt("login", "remember", c->GetState());
+		TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
+		
+		game->mPlayerData.SetParamInt(e, "remember", c->GetState());
 		
 		if (c->GetState() == 1)
 		{
 			if (i)
-				game->mConfig.SetParamString("login", "id", i->GetText());
+				game->mPlayerData.SetParamString(e, "id", i->GetText());
 			
 			i = (Input*)mLoginFrame->Get("pass");
 			if (i)
-				game->mConfig.SetParamString("login", "pass", i->GetText());
+				game->mPlayerData.SetParamString(e, "pass", i->GetText());
 		}
 	}
 
@@ -296,18 +275,9 @@ void LoginDialog::SendLoginQuery(bool skip)
 	Input* i;	
 	
 	//send http get: login.php?ver=1.1.0&id=test&pass=test
-	string query = game->mConfig.GetParamString("connection", "login") + "?";
 	
-	//this is set no matter if we skip/login
-/*	c = (Checkbox*)Get("autoconnect");
-	if (c)
-	{
-		mAutoConnectOnLogin = c->GetState();
-//		game->SetConfig("login", "autoconnect", its(c->GetState()));
-	}
-
-	query += "ac=" + its(c->GetState()); //autoconnect to returned server, y/n
-*/	
+	FATAL("do this");
+	string query = ""; //game->mConfig.GetParamString("connection", "login") + "?";
 
 	query += "ver=";
 	query += APP_VERSION;
@@ -331,18 +301,15 @@ void LoginDialog::SendLoginQuery(bool skip)
 			}
 		}
 	}
-
-	//TODO: send query, get response, etc
+	
 	downloader->QueueDownload(query, getTemporaryCacheFilename(),
 									NULL, dlCallback_welcomeXmlSuccess,
 									dlCallback_welcomeXmlFailure, true);
-									
 	SetControlState(false);
 }
 
 void LoginDialog::SetControlState(bool enabled)
 {
-//	Get("autoconnect")->SetVisible(enabled);
 	mLoginFrame->Get("login")->SetVisible(enabled);
 	mLoginFrame->Get("skip")->SetVisible(enabled);
 	mLoginFrame->Get("register")->SetVisible(enabled);
@@ -356,39 +323,3 @@ void LoginDialog::SetControlState(bool enabled)
 		
 	mLoginFrame->Get("status")->SetVisible(!enabled);
 }
-
-void LoginDialog::StartLessons()
-{
-	//new MessagePopup("", "Sorry!", "Sorry! We don't have any lessons yet.");
-	//return;
-	
-	game->mLoader.LoadOfflineWorld("lessons", point2d(), "", true);
-	Die();
-}
-
-/*
-	If the Xml returns:
-A:	<welcome>
-		<error>Invalid Login</error>
-	</welcome>
-	Display message popup with the error and do: loginDialog->SetControlState(true);
-		to let the user resend validation info.
-B:	Invalid Xml file or failed download
-	Display message popup with an error like 
-		"Invalid response from master. Suggest manual server connection."
-		Do: loginDialog->SetControlState(true);x
-C:	<welcome>
-		<server>addr:port</server>
-		<server>addr:port</server>
-		<server>addr:port</server>
-		<start>mapid</start>
-		<board>
-			....
-		</board>
-		...
-	</welcome>
-	If game->autoConnectOnLogin == true, connect to the data specified in the
-		connection xml field. Do whatever other callbacks based on xml chunks. (board stuff, 
-		personal messages stuff, inventory stuff, etc etc)
-		loginDialog->Die();
-*/

@@ -19,12 +19,7 @@ class LoginDialog : public Frame
 	void SendLogin();
 	void Skip();
 
-	void StartLessons();
-
-	bool mAutoConnectOnLogin;
-	
 	Frame* mLoginFrame;
-	Button* mLessons;
 	
 	string mUsername;
 	string mPassword;

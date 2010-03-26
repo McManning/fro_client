@@ -6,7 +6,7 @@
 #include "GameManager.h"
 #include "Achievements.h"
 #include "IrcNetListeners.h"
-#include "../map/CollectionMap.h"
+#include "../map/BasicMap.h"
 #include "../entity/LocalActor.h"
 #include "../entity/ExplodingEntity.h"
 #include "../entity/Avatar.h"
@@ -20,15 +20,16 @@
 #include "../core/net/IrcNet2.h"
 #include "../core/io/BoltFile.h"
 
-#include "../interface/AvatarFavoritesDialog.h"
 #include "../interface/LoginDialog.h"
 #include "../interface/Inventory.h"
-#include "../interface/OptionsDialog.h"
 #include "../interface/UserList.h"
-#include "../interface/ItemTrade.h"
+#include "../interface/AvatarFavoritesDialog.h"
+#include "../interface/OptionsDialog.h"
 #include "../interface/MyAchievements.h"
 #include "../interface/AvatarCreator.h"
 #include "../interface/MiniMenu.h"
+
+#include "../lua/MapLib.h"
 
 GameManager* game;
 
@@ -69,11 +70,6 @@ void callback_consoleNetInfo(Console* c, string s)
 	string ss;
 	game->mNet->StateToString(ss);
 	c->AddFormattedMessage(ss);	
-}
-
-void callback_consoleToggleMapInfo(Console* c, string s)
-{
-	game->mMap->mShowInfo = !game->mMap->mShowInfo;
 }
 
 void callback_consoleOutputAvatar(Console* c, string s)
@@ -120,11 +116,16 @@ void callback_consoleTestMap(Console* c, string s) //test_map
 	
 	string id = s.substr(9);
 	
-	game->mLoader.LoadOfflineWorld(id, point2d());
+	ASSERT(game);
+	
+	SAFEDELETE(game->mLoader);
+	game->mLoader = new WorldLoader();
+	game->mLoader->LoadTestWorld(id);
 }
 
 void callback_consolePlayerFlags(Console* c, string s)
 {
+	ASSERT(game && game->mPlayer);
 	game->mPlayer->PrintFlags();
 }
 
@@ -264,9 +265,10 @@ void callback_chatCommandJoin(Console* c, string s)
 		game->mChat->AddMessage("\\c900* Not connected!");
 		return;
 	}
-	
-	if (game->mLoader.mState != WorldLoader::WORLD_ACTIVE
-		&& game->mLoader.mState != WorldLoader::FAILED)
+
+FATAL("do this");
+	if (game->mLoader->m_state != WorldLoader::WORLD_ACTIVE
+		&& game->mLoader->m_state != WorldLoader::FAILED)
 	{
 		c->AddMessage("\\c900* Already loading a world!");
 		return;	
@@ -284,7 +286,9 @@ void callback_chatCommandJoin(Console* c, string s)
 
 	s = stripCodes(s.substr(6));
 	c->AddMessage("\\c090* Loading " + s);
-	game->mLoader.LoadOnlineWorld(s, point2d());
+	
+FATAL("do this");
+//	game->mLoader->LoadOnlineWorld(s);
 
 #ifndef DEBUG
 	//limit the number of times they can change channels
@@ -337,12 +341,6 @@ void callback_chatCommandListCommands(Console* c, string s)
 
 // GameManager callbacks
 
-void callback_toggleHud(Button* b)
-{
-	game->mHudControls->SetVisible(!game->mHudControls->IsVisible());	
-	game->ToggleHudSubMenu(""); //hide any visible sub menu
-}
-
 uShort callback_gameManagerProcess(timer* t, uLong ms)
 {
 	GameManager* g = (GameManager*)t->userData;
@@ -351,74 +349,15 @@ uShort callback_gameManagerProcess(timer* t, uLong ms)
 	return TIMER_CONTINUE;
 }
 
-GameManager::GameManager(bool forceLogin)
-	: Frame( gui, "GameManager", rect(0,0,gui->Width(),gui->Height()) )
+void GameManager::_hookCommands()
 {
-	game = this;
-	
-	UpdateAppTitle();
-	
-	//TODO: this is temp, to ensure we don't have multiple GMs running.
-	ASSERT( gui->Get("GameManager") == this );
-
-	if (!mConfig.LoadFromFile(GAME_CONFIG_FILENAME))
-	{
-		FATAL(string(GAME_CONFIG_FILENAME) + " read error: " + mConfig.GetError());
-	}
-
-	mConfig.mXmlPos = mConfig.mDoc.FirstChildElement("configuration");
-	
-	if (!mConfig.mXmlPos)
-	{
-		FATAL("Invalid game_config");
-	}
-
-	mConfig.mAutoSave = true;
-		
-	LoadPlayerData();
-
-	mMap = NULL;
-	mShowJoinParts = mPlayerData.GetParamInt("map", "joinparts");
-	mShowAddresses = mPlayerData.GetParamInt("map", "addresses");
-
-	mChat = new Console("chat", "", "assets/console_blue.png", "chat_", false, true);
-	mChat->mInput->mAllowSpecialKeys = false;
-	Add(mChat);
-	
-	TiXmlElement* e = mConfig.GetChild(mConfig.mXmlPos, "chat");
-	rect r = mConfig.GetParamRect(e, "position");
-	if (isDefaultRect(r))
-	{
-		mChat->SetPosition( rect(mPosition.w - mChat->Width(), 
-								mPosition.h - mChat->Height(),
-								mChat->Width(), mChat->Height()) 
-							);
-	}
-	else
-	{
-		mChat->SetPosition(r);
-	}
-
-	mLoaderImage = resman->LoadImg("assets/maploadbar.png");
-
-	mNet = new IrcNet();
-	mNet->mRealname = "fro";
-	hookNetListeners();
-
 	console->HookCommand("net_info", callback_consoleNetInfo);
 	console->HookCommand("avatar_info", callback_consoleAvatarInfo);
 	console->HookCommand("server", callback_consoleManualServer);
 	console->HookCommand("avatarout", callback_consoleOutputAvatar);
-	console->HookCommand("map_info", callback_consoleToggleMapInfo);
 	console->HookCommand("test_map", callback_consoleTestMap);
 	console->HookCommand("player_flags", callback_consolePlayerFlags);
 	
-	mPlayer = new LocalActor();
-	mPlayer->mName = mPlayerData.GetParamString("user", "nick");
-	if (mPlayer->mName.empty())
-		mPlayer->mName = "fro_user";
-
-	//Hook console commands
 	mChat->HookCommand("", callback_chatNoCommand);
 	mChat->HookCommand("/me", callback_chatCommandMe);
 	mChat->HookCommand("/stamp", callback_chatCommandStamp);
@@ -444,27 +383,98 @@ GameManager::GameManager(bool forceLogin)
 	mChat->HookCommand("/emotes", callback_chatCommandListEmotes);
 	mChat->HookCommand("/commands", callback_chatCommandListCommands);
 	
+}
+
+GameManager::GameManager(bool forceLogin)
+	: Frame( gui, "GameManager", rect(0,0,gui->Width(),gui->Height()) )
+{
+	mMap = NULL;
+	mPlayer = NULL;
+	mChat = NULL;
+	mNet = NULL;
+	mLoader = NULL;
+	
+	PRINT("[GM] Starting");
+	
+	game = this;
+	
+	UpdateAppTitle();
+	
+	//TODO: this is temp, to ensure we don't have multiple GMs running.
+	ASSERT( gui->Get("GameManager") == this );
+
+	PRINT("[GM] Loading Player Data");
+		
+	LoadPlayerData();
+
+	mMap = NULL;
+	mShowJoinParts = mPlayerData.GetParamInt("map", "joinparts");
+	mShowAddresses = mPlayerData.GetParamInt("map", "addresses");
+
+	PRINT("[GM] Loading Chat");
+
+	mChat = new Console("chat", "", "assets/console_blue.png", "chat_", false, true);
+	mChat->mInput->mAllowSpecialKeys = false;
+	Add(mChat);
+	
+	TiXmlElement* e = mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
+	rect r = mPlayerData.GetParamRect(e, "position");
+	if (isDefaultRect(r))
+	{
+		mChat->SetPosition( rect(mPosition.w - mChat->Width(), 
+								mPosition.h - mChat->Height(),
+								mChat->Width(), mChat->Height()) 
+							);
+	}
+	else
+	{
+		mChat->SetPosition(r);
+	}
+
+	mLoaderImage = resman->LoadImg("assets/maploadbar.png");
+
+	PRINT("[GM] Loading Network");
+	mNet = new IrcNet();
+	mNet->mRealname = "fro";
+	
+	PRINT("[GM] Hooking Network");
+	hookNetListeners();
+
+	PRINT("[GM] Loading Local Actor");
+	mPlayer = new LocalActor();
+	mPlayer->mName = mPlayerData.GetParamString("user", "nick");
+	if (mPlayer->mName.empty())
+		mPlayer->mName = "fro_user";
+
+	PRINT("[GM] Hooking Commands");
+	_hookCommands();
 
 	timers->AddProcess("gameproc", 
 						callback_gameManagerProcess, 
 						NULL, 
 						this);
-	
-	mMasterUrl = mConfig.GetParamString("connection", "master");
+
+	PRINT("[GM] Loading Inventory");
 
 	inventory = new Inventory();
 	inventory->SetVisible(false);
+	
+	PRINT("[GM] Loading Userlist");
+	userlist = new UserList();
 
+	PRINT("[GM] Loading HUD");
 	CreateHud();
-
-	userlist = NULL;
-
+	
 	ResizeChildren();
+
+	PRINT("[GM] Bringing up Login");
 
 	if (forceLogin)
 		new LoginDialog();
-	else
-		mLoader.LoadOfflineWorld("default", point2d());
+//	else
+//		mLoader.LoadOfflineWorld("default", point2d());
+
+	PRINT("[GM] Finished");
 
 }
 
@@ -472,10 +482,12 @@ GameManager::~GameManager()
 {
 	PRINT("~GameManager 1");
 	
+	UnloadMap();
+	
 	resman->Unload(mLoaderImage);
 
-	TiXmlElement* e = mConfig.GetChild(mConfig.mXmlPos, "chat");
-	mConfig.SetParamRect(e, "position", mChat->GetPosition());
+	TiXmlElement* e = mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
+	mPlayerData.SetParamRect(e, "position", mChat->GetPosition());
 	
 	PRINT("~GameManager 2");
 
@@ -522,12 +534,6 @@ void GameManager::ResizeChildren()
 	Frame::ResizeChildren();
 }
 
-	
-void callback_gameHudButton(Button* b)
-{
-	game->ToggleHudSubMenu(b->mId);
-}
-
 void callback_gameHudSubButton(Button* b)
 {
 	b->GetParent()->SetVisible(false);
@@ -564,16 +570,9 @@ void callback_gameHudSubButton(Button* b)
 	}
 }
 
-void GameManager::ToggleHudSubMenu(string id)
-{
-	mFrameSystem->SetVisible( (id == mFrameSystem->mId && !mFrameSystem->IsVisible()) );
-	mFrameTools->SetVisible( (id == mFrameTools->mId && !mFrameTools->IsVisible()) );
-	mFrameUser->SetVisible( (id == mFrameUser->mId && !mFrameUser->IsVisible()) );
-}
-	
 void GameManager::CreateHud()
 {
-	string file = "assets/hud_controls.png";
+/*	string file = "assets/hud_controls.png";
 	uShort x, y, sx;
 	Button* b;
 
@@ -582,7 +581,7 @@ void GameManager::CreateHud()
 		makeImage(b, "", "assets/menubutton.png", rect(0,0,27,60),
 					rect(0,0,27,60), WIDGETIMAGE_FULL, true, false);	
 
-/*	MAIN HUD CONTROLS */
+//	MAIN HUD CONTROLS
 
 	mHudControls = new Frame(this, "", rect(40,12,0,0));
 	
@@ -608,7 +607,7 @@ void GameManager::CreateHud()
 	mHudControls->SetSize(x, 35);
 	mHudControls->SetVisible(false);
 
-/*	SYSTEM SUB FRAME */
+//	SYSTEM SUB FRAME
 
 	rect r(40,52,35,500);
 	mFrameSystem = new Frame(this, "System", r);
@@ -627,7 +626,7 @@ void GameManager::CreateHud()
 		sx += 35;
 		mFrameSystem->SetSize(35, y);
 		
-/*	TOOLS SUB FRAME */
+//	TOOLS SUB FRAME
 		
 	r.x += 40;
 	mFrameTools = new Frame(this, "Tools", r);
@@ -643,7 +642,7 @@ void GameManager::CreateHud()
 
 		mFrameTools->SetSize(35, y);
 		
-/*	USER SUB FRAME */
+//	USER SUB FRAME
 	
 	r.x += 40;
 	mFrameUser = new Frame(this, "User", r);
@@ -672,31 +671,33 @@ void GameManager::CreateHud()
 		sx += 35;
 		
 		mFrameUser->SetSize(35, y);
+*/
+}
 
+void GameManager::LoadTestWorld(string luafile)
+{
+	SAFEDELETE(mLoader);
+	mLoader = new WorldLoader();
+	mLoader->LoadTestWorld(luafile);
+}
+
+void GameManager::LoadOnlineWorld(string id, point2d target, string targetObjectName)
+{
+	SAFEDELETE(mLoader);
+	mLoader = new WorldLoader();
+	mLoader->LoadOnlineWorld(id, target, targetObjectName);
 }
 
 void GameManager::Process(uLong ms)
 {
 	gameProcessProfiler.Start();
 
-	if (mLoader.mState == WorldLoader::WORLD_READY)
+	if (mLoader && mLoader->m_state == WorldLoader::WORLD_READY)
 	{
-		mLoader.ActivateWorld();
+		mLoader->DisplayWorld();
 		ResizeChildren();
-		//Hide loading animation thing
 	}
-	else if (mLoader.mState == WorldLoader::FAILED)
-	{
-		//if they're not on a server, and there's no map, bring login back up
-		if (!mMap && (!mNet || !mNet->IsConnected()))
-		{
-			if (!loginDialog)
-				new LoginDialog();
-			mLoader.SetState(WorldLoader::IDLE);
-		}
-		
-	}
-	
+
 	//Keep map at lowest level of our widgets
 	if (!IsMapLoading() && mMap)
 	{
@@ -724,8 +725,8 @@ void GameManager::_renderMapLoader(uLong ms)
 	rect r = GetScreenPosition();
 	
 	//render progress bar, etc
-	string msg;
-	switch (mLoader.mState)
+/*	string msg;
+	switch (mLoader.m_state)
 	{
 		case WorldLoader::IDLE:
 			msg = "Idle";
@@ -737,7 +738,7 @@ void GameManager::_renderMapLoader(uLong ms)
 			msg = "Getting Config";
 			break;
 		case WorldLoader::GETTING_RESOURCES:
-			msg = "Getting Resource " + its(mLoader.mTotalResources) + " / " + its(mLoader.mCompletedResources);
+			msg = "Getting Resource " + its(mLoader.m_iTotalResources) + " / " + its(mLoader.m_iCompletedResources);
 			break;
 		case WorldLoader::BUILDING_WORLD:
 			msg = "Building World";
@@ -775,18 +776,22 @@ void GameManager::_renderMapLoader(uLong ms)
 	mLoaderImage->Render(scr, r.x+275, r.y+52, rect(35,52,25,25));
 	
 	mFont->Render( scr, r.x + 5, r.y + 57, msg, color(50,50,50) );
-
+*/
 }
 
-void GameManager::UnloadWorld()
+void GameManager::UnloadMap()
 {
-	//TODO: THIS!
 	if (mMap)
 	{
+		//tell our primary script we're going to die, before we do.
+		mapLib_CloseLuaState(mMap->mLuaState);
+		mMap->mLuaState = NULL;
+	
+		//kill the map class itself, gracefully
 		mMap->Die();
 		mMap = NULL;
 	}
-	
+
 	mPlayer->mMap = NULL;
 }
 
@@ -1080,6 +1085,8 @@ void GameManager::UpdateAppTitle()
 			
 		title += ")";
 	}
+	
+	PRINT("Setting Title: " + title);
 	
 	gui->SetAppTitle(title);
 }

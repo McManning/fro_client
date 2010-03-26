@@ -20,7 +20,7 @@ void callback_MiniMenuToLogin(Button* b)
 	{
 		//game->UnloadWorld();
 		//new LoginDialog();
-		game->UnloadWorld();
+		game->UnloadMap();
 		game->mNet->Quit();
 		new LoginDialog();
 	}
