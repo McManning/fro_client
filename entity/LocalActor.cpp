@@ -41,7 +41,6 @@ LocalActor::LocalActor()
 	string url = game->mPlayerData.GetParamString("avatar", "url");
 
 	LoadAvatar("assets/default.png", "", 32, 64, 1000, false, false);
-	SwapAvatars();
 
 	PRINT("[LA] Load Custom Avatar");
 	if (!url.empty())
@@ -84,7 +83,7 @@ void LocalActor::PostMovement()
 
 void LocalActor::_checkInput()
 {
-	if (game->IsMapLoading())
+	if (game->IsMapLoading() || game->mGameMode != GameManager::MODE_ACTION)
 		return;
 
 	if (!IsMoving() && mNeedsToSendBuffer)
@@ -109,29 +108,29 @@ void LocalActor::_checkInput()
 
 	bool moving = true;
 	//Calculate change of direction based on keys held
-	if ( keystate[SDLK_UP] )
+	if ( keystate[SDLK_w] || keystate[SDLK_UP] )
 	{
-		if ( keystate[SDLK_LEFT] )
+		if ( keystate[SDLK_a] || keystate[SDLK_LEFT] )
 			newDir = NORTHWEST;
-		else if ( keystate[SDLK_RIGHT] )
+		else if ( keystate[SDLK_d] || keystate[SDLK_RIGHT] )
 			newDir = NORTHEAST;
 		else
 			newDir = NORTH;
 	}
-	else if ( keystate[SDLK_DOWN] )
+	else if ( keystate[SDLK_s] || keystate[SDLK_DOWN] )
 	{
-		if ( keystate[SDLK_LEFT] )
+		if ( keystate[SDLK_a] || keystate[SDLK_LEFT] )
 			newDir = SOUTHWEST;
-		else if ( keystate[SDLK_RIGHT] )
+		else if ( keystate[SDLK_d] || keystate[SDLK_RIGHT] )
 			newDir = SOUTHEAST;
 		else
 			newDir = SOUTH;
 	}
-	else if ( keystate[SDLK_LEFT] )
+	else if ( keystate[SDLK_a] || keystate[SDLK_LEFT] )
 	{
 		newDir = WEST;
 	}
-	else if ( keystate[SDLK_RIGHT] )
+	else if ( keystate[SDLK_d] || keystate[SDLK_RIGHT] )
 	{
 		newDir = EAST;
 	}
@@ -141,8 +140,38 @@ void LocalActor::_checkInput()
 		moving = false;
 	}
 
+	//If they pressed the shift key, toggle speed
+	if ( (keystate[SDLK_RSHIFT] || keystate[SDLK_LSHIFT]))
+	{
+		if (!mShiftDown)
+		{
+			//toggle speed
+			if (GetSpeed() == SPEED_RUN)
+				AddToActionBuffer("w");
+			else
+				AddToActionBuffer("r");
+			
+			mShiftDown = true;
+		}
+	}
+	else if (mShiftDown) //it was let up
+	{
+		mShiftDown = false;
+	}
+	
+	//Check if they try to sit
+	if (keystate[SDLK_RCTRL] || keystate[SDLK_LCTRL])
+	{
+		if (GetDirection() != newDir || GetAction() != SIT)
+		{
+			SetDirection(newDir);
+			AddToActionBuffer(string("s") + directionToChar(newDir));
+		}
+		moving = false;
+	}
+
 	//jump!
-	if ( keystate[SDLK_TAB] )
+	if ( keystate[SDLK_SPACE] )
 	{
 		if (newDir != GetDirection())
 		{
@@ -151,17 +180,14 @@ void LocalActor::_checkInput()
 		}
 		
 		AddToActionBuffer("j");
+		
 		//determine jump type
 		if (moving)
 		{
-			if ( /*GetSpeed() == SPEED_RUN*/ keystate[SDLK_RSHIFT] || keystate[SDLK_LSHIFT] )
-			{
+			if (GetSpeed() == SPEED_RUN)
 				AddToActionBuffer("r");
-			}
 			else
-			{
 				AddToActionBuffer("w"); 
-			}
 		}
 		else //standing jump
 		{
@@ -170,57 +196,8 @@ void LocalActor::_checkInput()
 	}
 	else if (moving) //regular movement
 	{
-		if (keystate[SDLK_RCTRL] || keystate[SDLK_LCTRL])
-		{
-			if (mDirection != newDir || mAction != SIT)
-			{
-				SetDirection(newDir);
-				AddToActionBuffer(string("s") + directionToChar(newDir));
-			}
-		}
-		else
-		{
-			
-			//Detect change in speed
-			if ( keystate[SDLK_RSHIFT] || keystate[SDLK_LSHIFT] )
-			{
-				if (mSpeed != SPEED_RUN)
-				{
-					AddToActionBuffer("r");
-				}
-			}
-			else //it was let up
-			{
-				if (mSpeed != SPEED_WALK)
-				{
-					AddToActionBuffer("w");
-				}
-			}
-			
-			/*
-			//Somewhat emulate SDL_KEYDOWN, but as a one-time event until let go.
-			if (!keystate[SDLK_RSHIFT] && !keystate[SDLK_LSHIFT]) //let go
-			{
-				mShiftDown = false;
-			}
-			else //one of them is down
-			{
-				if (!mShiftDown) //first press, 
-				{
-					mShiftDown = true;
-					
-					//Toggle walk/run
-					if (GetSpeed() == SPEED_RUN)
-						AddToActionBuffer("w");
-					else
-						AddToActionBuffer("r");
-				}
-			}
-			*/
-			
-			SetDirection(newDir);
-			StepForward();
-		}
+		SetDirection(newDir);
+		StepForward();
 	}
 }
 
@@ -326,24 +303,20 @@ void LocalActor::NetSendState(string targetNick, string header) //header VERSION
 void LocalActor::NetSendActionBuffer() //mov #x #y $buffer
 {
 	if (mOutputActionBuffer.empty()) return;
-
+	
 	DEBUGOUT("Sending: (" + its(mLastSavedPosition.x) + "," + its(mLastSavedPosition.y)
 				+ ") " + mOutputActionBuffer);
 						
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
-		/*TODO: I don't like this atm. It appends speed to the front of the buffer
-			since I can't manage to keep it synced up. Can't watch when shift is released
-			and pressed all the time since it'll constantly do rwrwrw when typing in input,
-			also can't auto-run all the time w/ remote clients because it'll be jerky. So
-			it'll be here in the start of mov to ensure it's always set. */
-			
 		DataPacket data("mov");
 		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
 	
 		data.WriteInt(mLastSavedPosition.x);
 		data.WriteInt(mLastSavedPosition.y);
-		data.WriteString( compressActionBuffer( ((mSpeed == SPEED_WALK) ? "w" : "r") + mOutputActionBuffer ) );
+		
+		//Appends speed in the beginning in order to keep speed synced more or less
+		data.WriteString( compressActionBuffer( ((mSpeed == SPEED_WALK) ? 'w' : 'r') + mOutputActionBuffer ) );
 	
 		game->mNet->MessageToChannel( data.ToString() );
 	}
@@ -429,13 +402,8 @@ void LocalActor::Warp(string id, point2d position, string targetObjectName)
 {
 	if (!game->mMap)
 		return;
-	
-//	if (game->mMap->mOfflineMode) //if we're running from an offline test map, use editor dir
-//		game->mLoader.LoadOfflineWorld(id, position, targetObjectName, false);
-//	else //online mode, use cache and download sources
 
-	FATAL("do this");
-		game->mLoader->LoadOnlineWorld(id, position, targetObjectName);
+	game->LoadOnlineWorld(id, position, targetObjectName);
 }
 
 

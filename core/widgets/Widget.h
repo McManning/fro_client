@@ -118,7 +118,7 @@ class Widget
 	void Center(); 
 	
 	//Delete this widget and all children from the gui
-	void Die();
+	virtual void Die();
 
 	/*	if b == true, no other widget besides this one and it's children will be given 
 		input focus. If b == false, then if this widget demanded focus, it will no longer.

@@ -4,6 +4,7 @@
 TextObject::TextObject()
 	: StaticObject()
 {
+	mType = ENTITY_TEXT;
 	mFontSize = 0;
 	mWidth = 0;
 }

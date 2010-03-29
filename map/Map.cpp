@@ -4,6 +4,8 @@
 #include "../core/widgets/OpenUrl.h"
 #include "../core/io/Crypt.h"
 #include "../game/GameManager.h"
+#include "../lua/MapLib.h"
+#include "../interface/AvatarFavoritesDialog.h"
 
 Map::Map() : Frame()
 { 
@@ -21,6 +23,10 @@ Map::Map() : Frame()
 Map::~Map()
 {
 	SaveFlags();
+	
+	//in case this wasn't deleted gracefully
+	if (mLuaState)
+		mapLib_CloseLuaState(mLuaState);
 }
 
 void Map::Render(uLong ms)
@@ -37,21 +43,11 @@ void Map::Event(SDL_Event* event)
 		case SDL_MOUSEBUTTONUP:
 			if (event->button.button == SDL_BUTTON_RIGHT)
 			{
-				//check for remote player colliding with button, if there is one,
-				//open right click menu	
-				e = FindTopmostRemotePlayer( ToCameraPosition(gui->GetMouseRect()) );
-				if (e)
-				{
-			//TODO:		new RemotePlayerMenu(this, (Actor*)e); //TODO: type hacking like a mofo, fix
-				}
-				else //check for url entities
-				{
-					e = FindTopmostUrlEntityUnderRect( ToCameraPosition(gui->GetMouseRect()) ); 
-					if (e)
-					{
-						new OpenUrl(e->mName);
-					}
-				}
+				HandleRightClick();
+			}
+			else if (event->button.button == SDL_BUTTON_LEFT)
+			{
+				HandleLeftClick();	
 			}
 			break;
 		case SDL_KEYDOWN: {
@@ -73,11 +69,98 @@ void Map::Event(SDL_Event* event)
 		game->mChat->mInput->SetKeyFocus();	
 }
 
+void Map::HandleLeftClick()
+{
+	Entity* e = GetEntityUnderMouse(true, false);
+	
+	if (e)
+	{
+		MessageData md("ENTITY_CLICK");
+		md.WriteUserdata("entity", e);
+		messenger.Dispatch(md, e);
+	}
+}
+
+void Map::HandleRightClick()
+{
+	Entity* e = GetEntityUnderMouse(false, true);
+	
+	if (e == (Entity*)game->mPlayer)
+	{
+		if (!gui->Get("avyfavs"))
+			new AvatarFavorites();
+	}
+	else if (e) //remote player
+	{
+		ClickRemoteActor((RemoteActor*)e);
+	}
+}
+
+void Map::ClickRemoteActor(RemoteActor* ra)
+{
+	FATAL("some menu here");
+}
+
+/*	Will attempt to return the entity directly under the mouse, if it is clickable. */
+Entity* Map::GetEntityUnderMouse(bool mustBeClickable, bool playersOnly)
+{
+	int x, y;
+	rect r;
+	Entity* e;
+	Image* img;
+	
+	//for all entities, highest to lowest
+	for (int i = mEntities.size()-1; i > -1; --i)
+	{
+		e = mEntities.at(i);
+			
+		//if we can click this entity, (clickable OR playersOnly mode and it's considered a player)
+		if (!e || !e->IsVisibleInCamera())
+			continue;
+	
+		if (mustBeClickable && !e->mCanClick)
+			continue;
+			
+		if (playersOnly && e->mType != ENTITY_LOCALACTOR && e->mType != ENTITY_REMOTEACTOR)
+			continue;
+
+		r = ToScreenPosition(e->GetBoundingRect());
+		if ( areRectsIntersecting(gui->GetMouseRect(), r) )
+		{
+			//Otherwise, if the mouse is touching a non transparent pixel
+			x = gui->GetMouseX() - r.x;
+			y = gui->GetMouseY() - r.y;
+			
+			img = e->GetImage();
+			if (img)
+			{
+				//if non transparent pixel, we found our entity. 
+				if (img->GetPixel(x, y).a > 0)
+					return e;
+			}
+		}
+	}
+	
+	return NULL;
+}
+
 void Map::Process(uLong ms)
 {
 	mBubbles.Process(ms);
 	UpdateCamera(ms);
 	ResortEntities();
+}
+
+/*	A graceful cleanup was issued. Do some special cleanup */
+void Map::Die()
+{
+	//tell our primary script we're going to die, before we do.
+	mapLib_CloseLuaState(mLuaState);
+	mLuaState = NULL;
+	
+	FlushEntities();
+	
+	Widget::Die();
 }
 
 bool Map::IsRectBlocked(rect r)
@@ -255,13 +338,6 @@ void Map::_constrainCameraY()
 void Map::AddCameraDestination(point2d p)
 {
 	mCameraDestinationStack.push_back(p);
-}
-
-void Map::AddEntity(Entity* e, sShort level)
-{
-	EntityManager::AddEntity(e, level);
-	
-	DispatchEntityCreateMessage(e);
 }
 
 void Map::SetFlag(string flag, string value)

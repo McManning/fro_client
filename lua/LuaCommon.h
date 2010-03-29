@@ -18,4 +18,6 @@ bool luaCountArgs(lua_State* ls, int desired);
 
 int luaError(lua_State* ls, string func, string msg);
 
+void luaStackdump(lua_State* l);
+
 #endif //_LUACOMMON_H_

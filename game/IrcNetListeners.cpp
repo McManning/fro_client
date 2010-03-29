@@ -65,6 +65,7 @@ RemoteActor* _addRemoteActor(string& nick, DataPacket& data)
 
 	RemoteActor* ra = new RemoteActor();
 	ra->mMap = game->mMap;
+	ra->SetLayer(EntityManager::LAYER_USER);
 	ra->mName = nick;
 	if (userlist)
 		userlist->AddNick(nick);
@@ -78,7 +79,8 @@ RemoteActor* _addRemoteActor(string& nick, DataPacket& data)
 		ra->ReadAvatarFromPacket(data, 6);
 	}
 	
-	game->mMap->AddEntity(ra, ENTITYLEVEL_USER);
+	
+	game->mMap->AddEntity(ra);
 
 	return ra;
 }
@@ -98,7 +100,7 @@ void _removeRemoteActor(RemoteActor* a)
 	if (userlist)
 		userlist->RemoveNick(a->mName);
 		
-	a->mMap->RemoveEntity(a, ENTITYLEVEL_USER);
+	a->mMap->RemoveEntity(a);
 }
 
 uShort timer_destroyMapStamp(timer* t, uLong ms)
@@ -123,7 +125,8 @@ void _stampMapText(sShort x, sShort y, sShort rotation, string text)
 	TextObject* to = new TextObject();
 		to->mId = "stamp";
 		to->mMap = game->mMap;
-		to->mMap->AddEntity(to, ENTITYLEVEL_GROUND);
+		to->SetLayer(EntityManager::LAYER_GROUND);
+		to->mMap->AddEntity(to);
 		to->SetText(text, 20, rotation);	
 		to->SetPosition( point2d(x, y) );
 	
@@ -135,19 +138,30 @@ void _stampMapText(sShort x, sShort y, sShort rotation, string text)
 
 void netSendSay(string text) //say $message
 {
-	if (game->IsMapLoading()) return;
+	if (game->IsMapLoading() || text.empty()) return;
 
 	//do a few modifications
 	if (text.find_last_of(">") == 0 && text.find("<", 0) == string::npos)
 		text.insert(0, "\\c090");
 
-	game->mChat->AddMessage(game->mPlayer->mName + ": " + text);
-	game->mMap->mBubbles.CreateBubble(game->mPlayer, text);
-	
-	achievement_NeedASpamBlocker();
-	
-	gui->GetUserAttention(); //in case they still want sound while they send a msg
-	gui->mGetUserAttention = false; //hack to stop the title from flashing when we talk
+	if (text.at(0) != '/') //Ignore slash commands 
+	{
+		game->mChat->AddMessage(game->mPlayer->mName + ": " + text);
+		game->mMap->mBubbles.CreateBubble(game->mPlayer, text);
+		
+		achievement_NeedASpamBlocker();
+		
+		gui->GetUserAttention(); //in case they still want sound while they send a msg
+		gui->mGetUserAttention = false; //hack to stop the title from flashing when we talk
+	}
+	else
+	{	
+		//Dispatch a command message
+		MessageData md("ENTITY_CMD");
+		md.WriteUserdata("entity", game->mPlayer);
+		md.WriteString("message", text);
+		messenger.Dispatch(md, game->mPlayer);
+	}
 	
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
@@ -380,19 +394,31 @@ void _handleNetMessage_Say(string& nick, DataPacket& data)
 {
 	if (!game->mMap || data.Size() < 1) return;
 	
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (!ra) { _handleUnknownUser(nick); return; }
 
 	//if they're too far, ignore
-	if ( getDistance(game->mPlayer->GetPosition(), ra->GetPosition()) > 310 )
+	if ( !ra->IsVisibleInCamera() )
 		return;
 		
 	string msg = data.ReadString(0);
 	
-	game->mChat->AddMessage(nick + ": " + msg);
-	game->mMap->mBubbles.CreateBubble(ra, msg);
 	
+	if (msg.at(0) != '/') //Ignore slash commands 
+	{
+		game->mChat->AddMessage(nick + ": " + msg);
+		game->mMap->mBubbles.CreateBubble(ra, msg);
+	}
+	else
+	{	
+		//Dispatch a command message
+		MessageData md("ENTITY_CMD");
+		md.WriteUserdata("entity", ra);
+		md.WriteString("message", text);
+		messenger.Dispatch(md, ra);
+	}
+
 	gui->GetUserAttention();
 }
 
@@ -400,7 +426,7 @@ void _handleNetMessage_Stamp(string& nick, DataPacket& data)
 {
 	if (!game->mMap || data.Size() < 4) return;
 	
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (!ra) { _handleUnknownUser(nick); return; }
 
@@ -411,12 +437,12 @@ void _handleNetMessage_Act(string& nick, DataPacket& data)
 {
 	if (!game->mMap || data.Size() < 1) return;
 	
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (!ra) { _handleUnknownUser(nick); return; }
 
 	//if they're too far, ignore
-	if ( getDistance(game->mPlayer->GetPosition(), ra->GetPosition()) > 310 )
+	if ( !ra->IsVisibleInCamera() )
 		return;
 		
 	string msg;
@@ -451,7 +477,7 @@ void _handleNetMessage_Avy(string& nick, DataPacket& data)
 {
 	if (!game->mMap) return;
 	
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (!ra) { _handleUnknownUser(nick); return; }
 	
@@ -462,7 +488,7 @@ void _handleNetMessage_Sup(string& nick, DataPacket& data)
 {
 	if (!game->mMap) return;
 	
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (ra)
 	{
@@ -489,7 +515,7 @@ void _handleNetMessage_Nm(string& nick, DataPacket& data)
 {
 	if (!game->mMap) return;
 	
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (ra)
 	{
@@ -526,7 +552,7 @@ void _handleNetMessage_PlayerEarnedAchievement(string& nick, DataPacket& data) /
 {
 	if (!game->mMap) return;
 		
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
 	
 	if (data.Size() != 1)
@@ -543,7 +569,7 @@ void _handleNetMessage_Mov(string& nick, DataPacket& data)
 {
 	if (!game->mMap) return;
 	
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
 
 	if (data.Size() != 3)
@@ -567,7 +593,7 @@ void _handleNetMessage_Emo(string& nick, DataPacket& data)
 {
 	if (!game->mMap) return;
 	
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
 
 	if (data.Size() != 1)
@@ -583,7 +609,7 @@ void _handleNetMessage_Mod(string& nick, DataPacket& data) //avatar mod: mod #
 {
 	if (!game->mMap) return;
 	
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
 
 	if (!ra->GetAvatar())
@@ -788,7 +814,7 @@ void listener_NetChannelKick(MessageListener* ml, MessageData& md, void* sender)
 	else if (game->mMap)
 	{
 		//Remove them from our map if they were on it
-		Entity* e = game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+		Entity* e = game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 		_removeRemoteActor((RemoteActor*)e);
 	}
 }
@@ -814,7 +840,7 @@ void listener_NetChannelPart(MessageListener* ml, MessageData& md, void* sender)
 	}
 	
 	//Remove them from our map if they were on it
-	Entity* e = game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+	Entity* e = game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	_removeRemoteActor((RemoteActor*)e);
 }
 
@@ -846,7 +872,7 @@ void listener_NetChannelQuit(MessageListener* ml, MessageData& md, void* sender)
 	else if (game->mMap)
 	{
 		//Remove them from our map if they were on it
-		Entity* e = game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+		Entity* e = game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 		_removeRemoteActor((RemoteActor*)e);
 	}
 }
@@ -950,7 +976,7 @@ void listener_NetNick(MessageListener* ml, MessageData& md, void* sender)
 	if (oldn == game->mPlayer->mName)
 		e = game->mPlayer;
 	else
-		e = game->mMap->FindEntityByName(oldn, ENTITY_REMOTEACTOR, ENTITYLEVEL_USER);
+		e = game->mMap->FindEntityByName(oldn, ENTITY_REMOTEACTOR);
 	
 	if (!e)
 		return;
@@ -960,7 +986,7 @@ void listener_NetNick(MessageListener* ml, MessageData& md, void* sender)
 		userlist->ChangeNick(oldn, newn);
 
 	string msg;
-	if (game->mShowJoinParts && getDistance(game->mPlayer->GetPosition(), e->GetPosition()) < 310)
+	if (game->mShowJoinParts && e->IsVisibleInCamera())
 	{
 		msg = "\\c090 * " + oldn + "\\c090 is now known as " + newn;
 		printMessage(msg);

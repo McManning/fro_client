@@ -96,7 +96,6 @@ void achievement_NeedASpamBlocker()
 	if (timers->Find("ach_spam"))
 	{
 		++spamCounter;
-		DEBUGOUT("spam++ " + its(spamCounter));
 		if (spamCounter == ACH_NEEDASPAMBLOCKER_COUNT)
 		{
 			game->EarnAchievement("We Need A Spam Blocker", 
@@ -106,7 +105,6 @@ void achievement_NeedASpamBlocker()
 	}
 	else
 	{
-		DEBUGOUT("Adding spam counter");
 		timers->Add("ach_spam", ACH_NEEDASPAMBLOCKER_MS, false, NULL, NULL);
 		spamCounter = 1;
 	}

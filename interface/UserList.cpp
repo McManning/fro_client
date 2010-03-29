@@ -41,9 +41,9 @@ UserList::UserList() :
 	{
 		Entity* e;
 		//Iterate list and add a line for each remote actor or ourself
-		for (uShort i = 0; i < game->mMap->entityLevel[ENTITYLEVEL_USER].size(); i++)
+		for (int i = 0; i < game->mMap->mEntities.size(); ++i)
 		{
-			e = game->mMap->entityLevel[ENTITYLEVEL_USER].at(i);
+			e = game->mMap->mEntities.at(i);
 			if (e && (e->mType == ENTITY_REMOTEACTOR || e->mType == ENTITY_LOCALACTOR))
 			{
 				AddNick(e->mName);

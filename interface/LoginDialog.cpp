@@ -151,7 +151,7 @@ void callback_LoginDialogRegister(Button* b)
 }
 
 LoginDialog::LoginDialog() :
-	Frame(gui, "login", gui->GetScreenPosition())
+	Frame(gui, "login", rect(50,50), "Login to Sybolt", true, false, false, true)
 {
 	ASSERT(!loginDialog); //there can be only one
 	
@@ -161,54 +161,50 @@ LoginDialog::LoginDialog() :
 	Button* b;
 	Checkbox* c;
 	Label* l;
-	
-	mLoginFrame = new Frame(this, "", rect(50,50), "Login to Sybolt", true, false, false, true);
-	
+
 	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("login");
 	
-	new Label(mLoginFrame, "", rect(10,y), "ID");
-	i = new Input(mLoginFrame, "id", rect(60, y, 150, 20), "", 32, true, NULL);
+	new Label(this, "", rect(10,y), "ID");
+	i = new Input(this, "id", rect(60, y, 150, 20), "", 32, true, NULL);
 		i->SetText( game->mPlayerData.GetParamString(e, "id") );
 		i->SetKeyFocus();
 	y += 25;	
 	
-	new Label(mLoginFrame, "", rect(10,y), "Pass");
-	i = new Input(mLoginFrame, "pass", rect(60, y, 150, 20), "", 32, true, NULL);
+	new Label(this, "", rect(10,y), "Pass");
+	i = new Input(this, "pass", rect(60, y, 150, 20), "", 32, true, NULL);
 		i->SetText( game->mPlayerData.GetParamString(e, "pass") );
 	y += 25;
 
 	//checkboxes to the left
-	c = new Checkbox(mLoginFrame, "remember", rect(10,y), "Remember Me", 0);
+	c = new Checkbox(this, "remember", rect(10,y), "Remember Me", 0);
 		c->SetState( game->mPlayerData.GetParamInt(e, "remember") );
 	y += 25;
 	
 	
 	//bottom button set
-	b = new Button(mLoginFrame, "register",rect(10,y,20,20), "", callback_LoginDialogRegister);
+	b = new Button(this, "register",rect(10,y,20,20), "", callback_LoginDialogRegister);
 		b->mHoverText = "Register";
 		makeImage(b, "", "assets/login.png", rect(0,0,20,20),
 				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
 	
-	b = new Button(mLoginFrame, "login",rect(160,y,20,20), "", callback_LoginDialogSendLogin);
+	b = new Button(this, "login",rect(160,y,20,20), "", callback_LoginDialogSendLogin);
 		b->mHoverText = "Send Login";
 		makeImage(b, "", "assets/login.png", rect(20,0,20,20),
 				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
 	
-	b = new Button(mLoginFrame, "skip",rect(190,y,20,20), "", callback_LoginDialogSkip);
+	b = new Button(this, "skip",rect(190,y,20,20), "", callback_LoginDialogSkip);
 		b->mHoverText = "Skip Login";
 		makeImage(b, "", "assets/login.png", rect(40,0,20,20),
 				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
 
-	l = new Label(mLoginFrame, "status", rect(10,y), "Getting Server Verification...");
+	l = new Label(this, "status", rect(10,y), "Getting Server Verification...");
 		l->SetVisible(false);
 
 	y += 25;
 
-	mLoginFrame->SetSize(220, y);
-	mLoginFrame->ResizeChildren();
-	//mLoginFrame->Center();
-//	DemandFocus();
-	
+	SetSize(220, y);
+	ResizeChildren();
+
 	if (game)
 		game->SetVisible(false);
 	
@@ -241,14 +237,14 @@ void LoginDialog::SendLogin()
 	Input* i;
 	Checkbox* c;
 	
-	i = (Input*)mLoginFrame->Get("id");
+	i = (Input*)Get("id");
 	if (i && i->GetText().empty())
 	{
 		new MessagePopup("", "Invalid Login", "You must input an ID");
 		return;
 	}
 
-	c = (Checkbox*)mLoginFrame->Get("remember");
+	c = (Checkbox*)Get("remember");
 	if (c)
 	{
 		TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
@@ -260,7 +256,7 @@ void LoginDialog::SendLogin()
 			if (i)
 				game->mPlayerData.SetParamString(e, "id", i->GetText());
 			
-			i = (Input*)mLoginFrame->Get("pass");
+			i = (Input*)Get("pass");
 			if (i)
 				game->mPlayerData.SetParamString(e, "pass", i->GetText());
 		}
@@ -284,10 +280,10 @@ void LoginDialog::SendLoginQuery(bool skip)
 
 	if (!skip)
 	{
-		i = (Input*)mLoginFrame->Get("id");
+		i = (Input*)Get("id");
 		mUsername = i->GetText();
 		
-		i = (Input*)mLoginFrame->Get("pass");
+		i = (Input*)Get("pass");
 		mPassword = i->GetText();
 		
 		if (!mUsername.empty())
@@ -310,16 +306,16 @@ void LoginDialog::SendLoginQuery(bool skip)
 
 void LoginDialog::SetControlState(bool enabled)
 {
-	mLoginFrame->Get("login")->SetVisible(enabled);
-	mLoginFrame->Get("skip")->SetVisible(enabled);
-	mLoginFrame->Get("register")->SetVisible(enabled);
-	mLoginFrame->Get("remember")->SetVisible(enabled);
-	mLoginFrame->Get("id")->SetActive(enabled);
-	mLoginFrame->Get("pass")->SetActive(enabled);
+	Get("login")->SetVisible(enabled);
+	Get("skip")->SetVisible(enabled);
+	Get("register")->SetVisible(enabled);
+	Get("remember")->SetVisible(enabled);
+	Get("id")->SetActive(enabled);
+	Get("pass")->SetActive(enabled);
 	
-	Button* b = (Button*)mLoginFrame->Get("frameclose");
+	Button* b = (Button*)Get("frameclose");
 	if (b)
 		b->SetActive(enabled);
 		
-	mLoginFrame->Get("status")->SetVisible(!enabled);
+	Get("status")->SetVisible(!enabled);
 }

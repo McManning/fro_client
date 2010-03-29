@@ -27,7 +27,7 @@ void timer_eraseExplodingEntity(timer* t)
 	if (m)
 	{
 		//if it's not found on the map (map changed before this entity died) delete it here instead to avoid a leak.
-		if (!m->mMap->RemoveEntity(m, ENTITYLEVEL_SKY))
+		if (!m->mMap->RemoveEntity(m))
 			delete m;
 	}
 }
@@ -43,13 +43,14 @@ ExplodingEntity::ExplodingEntity(Map* map, Image* img, point2d position)
 	mImage = NULL;
 	mId = "ExplodingEntity";
 	mMap = map;
-
+	mLayer = EntityManager::LAYER_SKY;
+	
 	mTimer = timers->Add("boom", 10, false,
 						timer_explodeImage,
 						timer_eraseExplodingEntity,
 						this);
 						
-	mMap->AddEntity(this, ENTITYLEVEL_SKY);
+	mMap->AddEntity(this);
 
 	_build(img, position, rect(0,0,img->Width(),img->Height()));
 }

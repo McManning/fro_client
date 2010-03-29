@@ -5,8 +5,8 @@
 #include "Common.h"
 #include "Image.h"
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH 800 //640
+#define SCREEN_HEIGHT 600 //480
 
 /*	Main application screen, where most of the rendering is done. 
 	There is only one of these that should exist, and Screen::Instance() should be done before any SDL calls.

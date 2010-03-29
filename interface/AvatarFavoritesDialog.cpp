@@ -1,5 +1,6 @@
 
 #include "AvatarFavoritesDialog.h"
+#include "AvatarCreator.h"
 
 #include "../core/widgets/Button.h"
 #include "../core/widgets/Multiline.h"
@@ -159,6 +160,11 @@ void callback_avatarFavorites(Button* b)
 	}
 }
 
+void callback_createAvatar(Button* b)
+{
+	new AvatarCreator();	
+}
+
 AvatarFavorites::AvatarFavorites() :
 	Frame(gui, "avyfavs", rect(0, 0, 250,250),
 			"Avatar Favorites", true, true, true, true)
@@ -184,6 +190,11 @@ AvatarFavorites::AvatarFavorites() :
 	mUse = new Button(this, "use", rect(0,0,20,20), "", callback_avatarFavorites);
 	mUse->mHoverText = "Use Selected";
 		makeImage(mUse, "", "assets/button20.png", rect(100,0,20,20),
+					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+
+	mDesign = new Button(this, "", rect(0,0,20,20), "", callback_createAvatar);
+	mDesign->mHoverText = "Open Avatar Designer";
+		makeImage(mDesign, "", "assets/button20.png", rect(0,0,20,20),
 					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
 
 	ResizeChildren(); //get them into position
@@ -397,7 +408,8 @@ void AvatarFavorites::ResizeChildren() //overridden so we can move things around
 	mDelete->SetPosition( rect(Width()-76,Height()-25,20,20) );
 	mEdit->SetPosition( rect(Width()-101,Height()-25,20,20) );
 	mNew->SetPosition( rect(Width()-126,Height()-25,20,20) );
-
+	mDesign->SetPosition( rect(10,Height()-25,20,20) );
+	
 	Frame::ResizeChildren(); //takes care of titlebar stuff (close button, sizer, caption, etc)
 }
 

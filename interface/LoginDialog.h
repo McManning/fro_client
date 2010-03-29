@@ -19,8 +19,6 @@ class LoginDialog : public Frame
 	void SendLogin();
 	void Skip();
 
-	Frame* mLoginFrame;
-	
 	string mUsername;
 	string mPassword;
 

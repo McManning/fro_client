@@ -4,6 +4,7 @@
 #include "LuaCommon.h"
 #include "../entity/Entity.h"
 #include "../entity/TextObject.h"
+#include "../entity/SceneActor.h"
 #include "../game/GameManager.h"
 #include "../map/BasicMap.h"
 
@@ -37,7 +38,7 @@ int entity_Exists(lua_State* ls)
 	
 	Entity* e = (Entity*)lua_touserdata(ls, 1);
 	
-	int result = game->mMap->EntityExists(e);
+	int result = (game->mMap->FindEntity(e) == -1) ? 0 : 1;
 
 	lua_pushnumber( ls, result );
 	return 1;
@@ -81,21 +82,18 @@ int entity_FindAllById(lua_State* ls)
 
 	Entity* e;
 	int index = 1; //Table keys will be index numbers, starting at 1 (common for lua arrays)
-	for (int i = 0; i < ENTITYLEVEL_COUNT; ++i)
+	for (int i = 0; i < game->mMap->mEntities.size(); ++i)
 	{
-		for (int ii = 0; ii < game->mMap->entityLevel[i].size(); ++ii)
-		{
-			e = game->mMap->entityLevel[i].at(ii);
+		e = game->mMap->mEntities.at(i);
 			
-			//if it matches the search, add to table
-			if ( (useWildmatch && wildmatch(id.c_str(), e->mId.c_str())) 
-				|| (!useWildmatch && e->mId == id) )
-			{
-				lua_pushnumber(ls, index);
-				lua_pushlightuserdata(ls, e);
-				lua_settable(ls, top);
-				++index;
-			}
+		//if it matches the search, add to table
+		if ( (useWildmatch && wildmatch(id.c_str(), e->mId.c_str())) 
+			|| (!useWildmatch && e->mId == id) )
+		{
+			lua_pushnumber(ls, index);
+			lua_pushlightuserdata(ls, e);
+			lua_settable(ls, top);
+			++index;
 		}
 	}
 	
@@ -140,21 +138,18 @@ int entity_FindAllByName(lua_State* ls)
 
 	Entity* e;
 	int index = 1; //Table keys will be index numbers, starting at 1 (common for lua arrays)
-	for (int i = 0; i < ENTITYLEVEL_COUNT; ++i)
+	for (int i = 0; i < game->mMap->mEntities.size(); ++i)
 	{
-		for (int ii = 0; ii < game->mMap->entityLevel[i].size(); ++ii)
+		e = game->mMap->mEntities.at(i);
+		
+		//if it matches the search, add to table
+		if ( (useWildmatch && wildmatch(name.c_str(), e->mName.c_str())) 
+			|| (!useWildmatch && e->mName == name) )
 		{
-			e = game->mMap->entityLevel[i].at(ii);
-			
-			//if it matches the search, add to table
-			if ( (useWildmatch && wildmatch(name.c_str(), e->mName.c_str())) 
-				|| (!useWildmatch && e->mName == name) )
-			{
-				lua_pushnumber(ls, index);
-				lua_pushlightuserdata(ls, e);
-				lua_settable(ls, top);
-				++index;
-			}
+			lua_pushnumber(ls, index);
+			lua_pushlightuserdata(ls, e);
+			lua_settable(ls, top);
+			++index;
 		}
 	}
 	
@@ -220,11 +215,12 @@ int entity_GetProp(lua_State* ls)
 	//TODO: Improve this somehow! (How did Valve do it?)
 	if (prop == "id") lua_pushstring( ls, e->mId.c_str() );
 	else if (prop == "name") lua_pushstring( ls, e->mName.c_str() );
-	else if (prop == "visible") lua_pushnumber( ls, e->IsVisible() );
-	else if (prop == "solid") lua_pushnumber( ls, e->IsSolid() );
-	else if (prop == "shadow") lua_pushnumber( ls, e->mShadow );
+	else if (prop == "visible") lua_pushboolean( ls, e->IsVisible() );
+	else if (prop == "solid") lua_pushboolean( ls, e->IsSolid() );
+	else if (prop == "shadow") lua_pushboolean( ls, e->mShadow );
 	else if (prop == "layer") lua_pushnumber( ls, e->GetLayer() );
 	else if (prop == "type") lua_pushstring( ls, e->GetTypeName().c_str() );
+	else if (prop == "clickable") lua_pushboolean( ls, e->mCanClick );
 	else return luaError(ls, "Entity.GetProp", prop + " unknown");
 
 	return 1;
@@ -243,10 +239,11 @@ int entity_SetProp(lua_State* ls)
 	//TODO: Improve this somehow! (How did Valve do it?)
 	if (prop == "id") e->mId = lua_tostring(ls, 3);
 	else if (prop == "name") e->mName = lua_tostring(ls, 3);
-	else if (prop == "visible") e->SetVisible( lua_tonumber(ls, 3) );
-	else if (prop == "solid") e->SetSolid( lua_tonumber(ls, 3) );
-	else if (prop == "shadow") e->mShadow = lua_tonumber(ls, 3);
-	else if (prop == "layer") e->SetLayer( (byte)lua_tonumber(ls, 3) );
+	else if (prop == "visible") e->SetVisible( lua_toboolean(ls, 3) );
+	else if (prop == "solid") e->SetSolid( lua_toboolean(ls, 3) );
+	else if (prop == "shadow") e->mShadow = lua_toboolean(ls, 3);
+	else if (prop == "layer") e->SetLayer( (int)lua_tonumber(ls, 3) );
+	else if (prop == "clickable") e->mCanClick = lua_toboolean(ls, 3);
 	else return luaError(ls, "Entity.SetProp", prop + " unknown");
 
 	return 0;
@@ -376,13 +373,14 @@ int entity_NewTextObject(lua_State* ls)
 	string text = lua_tostring(ls, 1);
 	point2d pos( (sShort)lua_tonumber(ls, 2), (sShort)lua_tonumber(ls, 3) );
 	int size = (numArgs > 3) ? (int)lua_tonumber(ls, 4) : 0;
-	byte layer = (numArgs > 4) ? (byte)lua_tonumber(ls, 5) : 0;
+	int layer = (numArgs > 4) ? (int)lua_tonumber(ls, 5) : 0;
 	double rot = (numArgs > 5) ? lua_tonumber(ls, 6) : 0.0;
 
 	//Actually create it, and add it
 	TextObject* e = new TextObject();
 	e->mMap = game->mMap;
-	e->mMap->AddEntity( e, layer );
+	e->SetLayer(layer);
+	e->mMap->AddEntity(e);
 	e->SetText(text, size, rot);
 	e->SetPosition(pos);
 	
@@ -390,6 +388,291 @@ int entity_NewTextObject(lua_State* ls)
 	return 1;
 }
 
+
+/*	Read in t.Collision = { 1, 2, 3, 4, ... } array of rects into Entity collisions list 
+	Returns 0 if malformed, 1 otherwise.
+*/	
+int _parseEntityCollision(lua_State* ls, Entity* e)
+{
+	rect r;
+	if (!lua_istable(ls, -1))
+		return 0;
+		
+	e->mCollisionRects.clear(); //clear up anything that may still be around
+		
+	lua_pushnil(ls);
+	while (lua_next(ls, -2) != 0)
+	{
+		//Run through 4 items manually to read in a single rect
+		r.x = (int)lua_tonumber(ls, -1);
+		lua_pop(ls, 1);
+		
+		if (lua_next(ls, -2)) { r.y = (int)lua_tonumber(ls, -1); lua_pop(ls, 1); } else return 0;
+		if (lua_next(ls, -2)) { r.w = (int)lua_tonumber(ls, -1); lua_pop(ls, 1); } else return 0;
+		if (lua_next(ls, -2)) { r.h = (int)lua_tonumber(ls, -1); lua_pop(ls, 1); } else return 0;
+		
+		e->mCollisionRects.push_back(r);
+	}
+	
+	return 1;
+}
+
+/*		Read in	t.Image = { File = "Something", Width = #, Delay = # }	
+			OR 	t.Image = "Filename"
+*/
+int _parseEntityImage_StaticObjectType(lua_State* ls, StaticObject* so)
+{
+	if (lua_isstring(ls, -1))
+	{
+		so->LoadImage(lua_tostring(ls, -1));
+		return 1;
+	}
+	
+	if (!lua_istable(ls, -1))
+		return 0;
+	
+	string key;
+	int width = 0, delay = 1000;
+	
+	lua_pushnil(ls);
+	while (lua_next(ls, -2) != 0)
+	{
+		if (lua_isstring(ls, -2))
+		{
+			key = lua_tostring(ls, -2);
+			if (key == "File")
+				so->LoadImage(lua_tostring(ls, -1));
+			else if (key == "Width")
+				width = (int)lua_tonumber(ls, -1);
+			else if (key == "Delay")
+				delay = (int)lua_tonumber(ls, -1);
+		}
+		lua_pop(ls, 1); //pop value	
+	}
+
+	// TODO: A better way to handle this?
+	if (width != 0 && so)
+	{
+		if (so->mImage)
+			so->mImage->ConvertToHorizontalAnimation(rect(0, 0, width, so->mImage->Height()), delay);
+		if (so->mOriginalImage)
+			so->mOriginalImage->ConvertToHorizontalAnimation(rect(0, 0, width, so->mOriginalImage->Height()), delay);
+	}
+
+	return 1;
+}
+
+int _parseEntityAvatar(lua_State* ls, Actor* a)
+{
+	if (!lua_istable(ls, -1))
+		return 0;
+	
+	string key, file;
+	int width = 0, height = 0, delay = 1000;
+	bool loopsit = false, loopstand = false;
+	
+	lua_pushnil(ls);
+	while (lua_next(ls, -2) != 0)
+	{
+		if (lua_isstring(ls, -2))
+		{
+			key = lua_tostring(ls, -2);
+			if (key == "File")
+				file = lua_tostring(ls, -1);
+			else if (key == "Width")
+				width = (int)lua_tonumber(ls, -1);
+			else if (key == "Height")
+				height = (int)lua_tonumber(ls, -1);
+			else if (key == "LoopSit")
+				loopsit = lua_toboolean(ls, -1);
+			else if (key == "LoopStand")
+				loopstand = lua_toboolean(ls, -1);
+			else if (key == "Delay")
+				delay = (int)lua_tonumber(ls, -1);
+		}
+		lua_pop(ls, 1); //pop value	
+	}
+	
+	if (!file.empty())
+	{
+		a->LoadAvatar(file, "", width, height, delay, loopstand, loopsit);
+	}
+	return 1;
+}
+
+/*	Read in t.Origin = { 0, 0 } two ints, (x, y). Returns 1 if both are read in, 0 otherwise */
+int _parseEntityOrigin(lua_State* ls, Entity* e)
+{
+	point2d p;
+	if (!lua_istable(ls, -1))
+		return 0;
+	
+	lua_pushnil(ls);
+	if (!lua_next(ls, -2))
+		return 0;
+
+	p.x = (int)lua_tonumber(ls, -1);
+	lua_pop(ls, 1);
+	
+	if (!lua_next(ls, -2))
+		return 0;
+		
+	p.y = (int)lua_tonumber(ls, -1);
+	lua_pop(ls, 1);
+	
+	e->mOrigin = p;
+
+	//Have to manually pop off the table because we're not running lua_next() to completion
+	lua_pop(ls, 1); 
+	
+	return 1;
+}
+	
+/* 	key is index -2, value is index -1 
+	@return 0 on error, 1 otherwise
+*/
+int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
+{
+	if (key == "Class")
+	{
+		e->mId = lua_tostring(ls, -1);
+	}
+	else if (key == "Name")
+	{
+		e->mName = lua_tostring(ls, -1);
+	}
+	else if (key == "Visible")
+	{
+		e->SetVisible( lua_toboolean(ls, -1) );
+	}
+	else if (key == "Solid")
+	{
+		e->SetSolid( lua_toboolean(ls, -1) );
+	}
+	else if (key == "Shadow")
+	{
+		e->mShadow = lua_toboolean(ls, -1);
+	}
+	else if (key == "Clickable")
+	{
+		e->mCanClick = lua_toboolean(ls, -1);	
+	}
+	else if (key == "Layer")
+	{
+		e->SetLayer( (int)lua_tonumber(ls, -1) );
+	}
+	else if (key == "Collision") //have to deal with an array of ints
+	{
+		return _parseEntityCollision(ls, e);
+	}
+	else if (key == "Origin")
+	{
+		_parseEntityOrigin(ls, e); //don't really care if it fails
+	}
+	else if (key == "Image")
+	{
+		if (e->mType == ENTITY_STATICOBJECT)
+			_parseEntityImage_StaticObjectType(ls, (StaticObject*)e);
+			
+		// TODO: Avatar load support
+	}
+	else if (key == "Avatar" && e->mType >= ENTITY_ACTOR && e->mType < ENTITY_END_ACTORS)
+	{
+		_parseEntityAvatar(ls, (Actor*)e);
+	}
+}
+	
+/*	Iterates through all members of the entity table, 
+	handling each property uniquely
+*/
+int _parseEntityProperties(lua_State* ls, Entity* e, int tableIndex)
+{
+	lua_pushnil(ls);
+	
+	string key;
+	while (lua_next(ls, tableIndex) != 0)
+	{
+		if (lua_isstring(ls, -2)) //make sure they key is a string before screwing with it
+		{
+			key = lua_tostring(ls, -2);
+			_parseSingleEntityProperty(ls, key, e);
+		}
+		else
+		{
+			FATAL("Key in stack isn't a string!");	
+		}
+		lua_pop(ls, 1); //pop value	
+		
+	} //while lua_next != 0
+	
+	return 1;
+}
+
+Entity* _createEntity(int type)
+{
+	Entity* e = NULL;
+	switch (type)
+	{
+		case ENTITY_STATICOBJECT:
+			e = new StaticObject;
+			break;
+		case ENTITY_SCENEACTOR:
+			e = new SceneActor;
+			break;
+		case ENTITY_TEXT:
+			e = new TextObject;
+		default:
+			break;
+	}
+	return e;
+}
+	
+/* entity = Entity.Create(entityInfoTable, x, y);
+	Create a new entity instance and place it on the map at (x, y)
+*/
+int entity_Create(lua_State* ls)
+{
+	Entity* e;
+	point2d p;
+	
+	// Make sure they passed in a table as the first parameter
+	if (!lua_istable(ls, 1))
+	{
+		return luaError(ls, "Entity.Create", "First param must be a table");
+	}
+
+	// Grab t.Type and create an entity associated with that type
+	lua_pushstring(ls, "Type");
+	lua_gettable(ls, 1);
+	int type = (int)lua_tonumber(ls, -1);
+	lua_pop(ls, 1);
+	
+	// Create the entity class based on the type provided
+
+	e = _createEntity(type);
+	if (!e)
+	{
+		return luaError(ls, "Entity.Create", "Invalid type: " + its(type));
+	}
+
+	// Configure the class via all the properties the class defines
+	if (!_parseEntityProperties(ls, e, 1))
+	{
+		return luaError(ls, "Entity.Create", "Error parsing properties");
+	}
+
+	//Finally, add it to the map and return a reference to it
+	e->mMap = game->mMap;
+	game->mMap->AddEntity(e);
+	
+	p.x = (int)lua_tonumber(ls, 2);
+	p.y = (int)lua_tonumber(ls, 3);
+	
+	e->SetPosition(p);
+	
+	lua_pushlightuserdata(ls, e);
+	return 1;
+}
 
 static const luaL_Reg functions[] = {
 	{"Exists", entity_Exists},
@@ -410,6 +693,7 @@ static const luaL_Reg functions[] = {
 	{"Remove", entity_Remove},
 	{"RemoveAllById", entity_RemoveAllById},
 	{"NewTextObject", entity_NewTextObject},
+	{"Create", entity_Create},
 	{NULL, NULL}
 };
 

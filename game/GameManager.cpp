@@ -29,8 +29,6 @@
 #include "../interface/AvatarCreator.h"
 #include "../interface/MiniMenu.h"
 
-#include "../lua/MapLib.h"
-
 GameManager* game;
 
 TimeProfiler gameProcessProfiler("Game::Process");
@@ -85,27 +83,6 @@ void callback_consoleAvatarInfo(Console* c, string s)
 	c->AddFormattedMessage(ss);
 }
 
-void callback_consoleManualServer(Console* c, string s)
-{
-	vString v;
-	explode(&v, &s, " ");
-	
-	if (v.size() < 3)
-	{
-		c->AddMessage("Invalid. server addr:port world");
-		return;
-	}
-	
-	if (loginDialog)
-		loginDialog->Die();
-
-	game->mNet->Quit("Manual Server Input");
-	game->mNet->mServerList.clear();
-	game->mNet->mServerList.push_back(v.at(1));
-	game->mQueuedMapId = v.at(2);
-	game->mNet->TryNextServer();
-}
-
 void callback_consoleTestMap(Console* c, string s) //test_map
 {
 	if (s.length() < 10)
@@ -117,10 +94,7 @@ void callback_consoleTestMap(Console* c, string s) //test_map
 	string id = s.substr(9);
 	
 	ASSERT(game);
-	
-	SAFEDELETE(game->mLoader);
-	game->mLoader = new WorldLoader();
-	game->mLoader->LoadTestWorld(id);
+	game->LoadTestWorld(id);
 }
 
 void callback_consolePlayerFlags(Console* c, string s)
@@ -353,7 +327,6 @@ void GameManager::_hookCommands()
 {
 	console->HookCommand("net_info", callback_consoleNetInfo);
 	console->HookCommand("avatar_info", callback_consoleAvatarInfo);
-	console->HookCommand("server", callback_consoleManualServer);
 	console->HookCommand("avatarout", callback_consoleOutputAvatar);
 	console->HookCommand("test_map", callback_consoleTestMap);
 	console->HookCommand("player_flags", callback_consolePlayerFlags);
@@ -414,7 +387,7 @@ GameManager::GameManager(bool forceLogin)
 	PRINT("[GM] Loading Chat");
 
 	mChat = new Console("chat", "", "assets/console_blue.png", "chat_", false, true);
-	mChat->mInput->mAllowSpecialKeys = false;
+	//mChat->mInput->mAllowSpecialKeys = false;
 	Add(mChat);
 	
 	TiXmlElement* e = mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
@@ -458,9 +431,6 @@ GameManager::GameManager(bool forceLogin)
 
 	inventory = new Inventory();
 	inventory->SetVisible(false);
-	
-	PRINT("[GM] Loading Userlist");
-	userlist = new UserList();
 
 	PRINT("[GM] Loading HUD");
 	CreateHud();
@@ -475,6 +445,10 @@ GameManager::GameManager(bool forceLogin)
 //		mLoader.LoadOfflineWorld("default", point2d());
 
 	PRINT("[GM] Finished");
+	
+	ToggleGameMode(MODE_ACTION);
+	
+	new AvatarFavorites();
 
 }
 
@@ -536,13 +510,8 @@ void GameManager::ResizeChildren()
 
 void callback_gameHudSubButton(Button* b)
 {
-	b->GetParent()->SetVisible(false);
 	switch (b->mId.at(0))
 	{
-		case 'o': //options
-			if (!gui->Get("optionsdialog"))
-				new OptionsDialog();
-			break;
 		case 'a': //avatar favorites
 			if (!gui->Get("avyfavs"))
 				new AvatarFavorites();
@@ -563,115 +532,49 @@ void callback_gameHudSubButton(Button* b)
 		case 'b': //report a bug
 			new OpenUrl("http://sybolt.com/tracker/bug_report_page.php");
 			break;
-		case 'd': //design avatar
-			new AvatarCreator();
-			break;
 		default: break;
 	}
 }
 
 void GameManager::CreateHud()
 {
-/*	string file = "assets/hud_controls.png";
-	uShort x, y, sx;
+	string file = "assets/hud_controls.png";
+	uShort x = 0, sx = 0;
 	Button* b;
 
-	b = new Button(this, "", rect(5,5,27,60), "", callback_toggleHud);
-		b->mHoverText = "Toggle HUD Mode";
-		makeImage(b, "", "assets/menubutton.png", rect(0,0,27,60),
-					rect(0,0,27,60), WIDGETIMAGE_FULL, true, false);	
+	mHud = new Frame(this, "", rect(12,12,0,0));
 
-//	MAIN HUD CONTROLS
+	b = new Button(mHud, "b", rect(x,0,35,35), "", callback_gameHudSubButton);
+		b->mHoverText = "Report A Bug";
+		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
+	x += 40;
+	sx += 35;
 
-	mHudControls = new Frame(this, "", rect(40,12,0,0));
+	b = new Button(mHud, "u", rect(x,0,35,35), "", callback_gameHudSubButton);
+		b->mHoverText = "Userlist";
+		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
+	x += 40;
+	sx += 35;
+
+	b = new Button(mHud, "c", rect(x,0,35,35), "", callback_gameHudSubButton);
+		b->mHoverText = "Achievements";
+		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
+	x += 40;
+	sx += 35;
+
+	b = new Button(mHud, "a", rect(x,0,35,35), "", callback_gameHudSubButton);
+		b->mHoverText = "Avatar Favorites";
+		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
+	x += 40;
+	sx += 35;
 	
-	x = 0; sx = 0;
-	b = new Button(mHudControls, "System", rect(x,0,35,35), "", callback_gameHudButton);
+	b = new Button(mHud, "i", rect(x,0,35,35), "", callback_gameHudSubButton);
+		b->mHoverText = "Inventory";
 		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		b->mHoverText = "System";
-	sx += 35;
 	x += 40;
-		
-	b = new Button(mHudControls, "Tools", rect(x,0,35,35), "", callback_gameHudButton);
-		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		b->mHoverText = "Tools";
 	sx += 35;
-	x += 40;
-			
-	b = new Button(mHudControls, "User", rect(x,0,35,35), "", callback_gameHudButton);
-		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		b->mHoverText = "User";
-	sx += 35;
-	x += 40;
-
-	mHudControls->SetSize(x, 35);
-	mHudControls->SetVisible(false);
-
-//	SYSTEM SUB FRAME
-
-	rect r(40,52,35,500);
-	mFrameSystem = new Frame(this, "System", r);
-	mFrameSystem->SetVisible(false);
-		y = 0;
-		sx = 105;
-		b = new Button(mFrameSystem, "o", rect(0,y,35,35), "", callback_gameHudSubButton);
-			b->mHoverText = "Options";
-			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		y += 35;
-		sx += 35;
-		b = new Button(mFrameSystem, "b", rect(0,y,35,35), "", callback_gameHudSubButton);
-			b->mHoverText = "Report A Bug";
-			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		y += 35;
-		sx += 35;
-		mFrameSystem->SetSize(35, y);
-		
-//	TOOLS SUB FRAME
-		
-	r.x += 40;
-	mFrameTools = new Frame(this, "Tools", r);
-	mFrameTools->SetVisible(false);
-		y = 0;
-		sx = 175;
-
-		b = new Button(mFrameTools, "u", rect(0,y,35,35), "", callback_gameHudSubButton);
-			b->mHoverText = "Userlist";
-			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		y += 35;
-		sx += 35;
-
-		mFrameTools->SetSize(35, y);
-		
-//	USER SUB FRAME
 	
-	r.x += 40;
-	mFrameUser = new Frame(this, "User", r);
-	mFrameUser->SetVisible(false);
-		y = 0;
-		sx = 315;
-		b = new Button(mFrameUser, "a", rect(0,y,35,35), "", callback_gameHudSubButton);
-			b->mHoverText = "Avatar Favorites";
-			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		y += 35;
-		sx += 35;
-		b = new Button(mFrameUser, "i", rect(0,y,35,35), "", callback_gameHudSubButton);
-			b->mHoverText = "Inventory";
-			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		y += 35;
-		sx += 35;
-		b = new Button(mFrameUser, "c", rect(0,y,35,35), "", callback_gameHudSubButton);
-			b->mHoverText = "Achievements";
-			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		y += 35;
-		sx += 35;
-		b = new Button(mFrameUser, "d", rect(0,y,35,35), "", callback_gameHudSubButton);
-			b->mHoverText = "Design Avatar";
-			makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
-		y += 35;
-		sx += 35;
-		
-		mFrameUser->SetSize(35, y);
-*/
+	mHud->SetSize(x, 35);
 }
 
 void GameManager::LoadTestWorld(string luafile)
@@ -711,7 +614,7 @@ void GameManager::Process(uLong ms)
 		gui->hasKeyFocus = mChat->mInput;
 	
 	MoveToBottom(); //keep game at the bottom of the screen.
-	
+
 	gameProcessProfiler.Stop();
 }
 
@@ -783,16 +686,15 @@ void GameManager::UnloadMap()
 {
 	if (mMap)
 	{
-		//tell our primary script we're going to die, before we do.
-		mapLib_CloseLuaState(mMap->mLuaState);
-		mMap->mLuaState = NULL;
-	
 		//kill the map class itself, gracefully
 		mMap->Die();
 		mMap = NULL;
 	}
 
 	mPlayer->mMap = NULL;
+	
+	if (userlist)
+		userlist->mOutput->Clear();
 }
 
 void GameManager::Render(uLong ms)
@@ -830,22 +732,16 @@ void GameManager::Event(SDL_Event* event)
 		case SDL_KEYDOWN:
 			if (event->key.keysym.sym == SDLK_ESCAPE)
 			{
-				if (!gui->Get("MiniMenu"))
+				Widget* w = gui->Get("MiniMenu");
+				if (!w)
 					new MiniMenu();
-			}
-		/*	else if (event->key.keysym.sym == SDLK_HOME)
-			{
-				if (!mChat->mInput->mReadOnly)
-				{
-					mChat->mInput->mReadOnly = true;
-					mChat->mInput->SetText("Hit HOME to toggle mode");
-				}
 				else
-				{
-					mChat->mInput->mReadOnly = false;
-					mChat->mInput->Clear();
-				}
-			}*/
+					w->Die();
+			}
+			else if (event->key.keysym.sym == SDLK_TAB)
+			{
+				ToggleGameMode( (mGameMode == MODE_ACTION) ? MODE_CHAT : MODE_ACTION );
+			}
 			break;
 		default: break;	
 	}
@@ -1090,4 +986,21 @@ void GameManager::UpdateAppTitle()
 	
 	gui->SetAppTitle(title);
 }
+
+void GameManager::ToggleGameMode(gameMode mode)
+{
+	mGameMode = mode;
+	if (mode == MODE_ACTION)
+	{
+		mChat->mInput->mReadOnly = true;
+		mChat->mInput->SetText("Hit TAB to enable or disable chat mode");
+	}
+	else
+	{
+		mChat->mInput->mReadOnly = false;
+		mChat->mInput->Clear();
+	}
+}
+
+
 

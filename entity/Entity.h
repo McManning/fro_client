@@ -11,8 +11,8 @@
 #include <map>
 #include "../core/Core.h"
 
-#define MAX_AVATAR_WIDTH 64
-#define MAX_AVATAR_HEIGHT 96
+const int MAX_AVATAR_WIDTH = 64;
+const int MAX_AVATAR_HEIGHT = 96;
 
 typedef enum
 {
@@ -24,6 +24,7 @@ typedef enum
 	//Place other actor-inherited entities here.
 	ENTITY_END_ACTORS, //Do not use, just as a marker
 	ENTITY_STATICOBJECT,
+	ENTITY_TEXT,
 	ENTITY_EFFECT,
 	ENTITY_WARP,
 	ENTITY_SKILL
@@ -47,6 +48,8 @@ class Entity
 	virtual void Render(uLong ms) {};
 	void RenderShadow();
 	
+	virtual Image* GetImage() { return NULL; };
+	
 	virtual void SetPosition(point2d position);
 	virtual point2d GetPosition() const { return mPosition; };
 
@@ -58,6 +61,8 @@ class Entity
 	
 	/*	Returns true if any of this entities rects are intersecting the entity */
 	bool IsCollidingWithEntity(Entity* e);
+
+	bool IsVisibleInCamera();
 
 	void SetVisible(bool v);
 	bool IsVisible() { return mVisible; };
@@ -89,9 +94,9 @@ class Entity
 	Map* mMap; //TODO: I do NOT like this reference. Find a better way.
 	
 	//get the layer this entity exists on
-	byte GetLayer() const { return mLayer; }; 
+	int GetLayer() const { return mLayer; }; 
 
-	void SetLayer(byte l);
+	void SetLayer(int l);
 	
 	bool IsSolid() const { return mSolid; };
 	void SetSolid(bool b) { mSolid = b; };
@@ -106,7 +111,9 @@ class Entity
  // protected:
 	bool mSolid; //can other entities pass through our collision rects?
 	bool mVisible;
-	byte mLayer;
+	int mLayer;
+
+	bool mCanClick;
 	
 	std::map<string, string> mFlags;
 };

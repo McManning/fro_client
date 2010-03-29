@@ -14,6 +14,8 @@ class StaticObject : public Entity
 	void Render(uLong ms);
 
 	void LoadImage(string file);
+	
+	Image* GetImage();
 
 	rect GetBoundingRect();
 	

@@ -228,12 +228,11 @@ int actor_NewSceneActor(lua_State* ls)
 {
 	PRINT("actor_NewSceneActor");
 	luaCountArgs(ls, 1);
-	
-	byte layer = (byte)lua_tonumber(ls, 1);
-	
+
 	SceneActor* a = new SceneActor();
 	a->mMap = game->mMap;
-	a->mMap->AddEntity( a, layer );
+	a->SetLayer( (int)lua_tonumber(ls, 1) );
+	a->mMap->AddEntity( a );
 	
 	lua_pushlightuserdata(ls, a);
 	return 1;

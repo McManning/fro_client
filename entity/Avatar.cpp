@@ -95,9 +95,7 @@ bool Avatar::Convert()
 		return false;
 	}
 	
-	bool result = false;
-	result = mImage->ConvertToAvatarFormat(mWidth, mHeight, mDelay, mLoopStand, mLoopSit);
-	return result;
+	return mImage->ConvertToAvatarFormat(mWidth, mHeight, mDelay, mLoopStand, mLoopSit);
 }
 
 void Avatar::Serialize(DataPacket& dst)

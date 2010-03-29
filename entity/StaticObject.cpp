@@ -98,6 +98,14 @@ rect StaticObject::GetBoundingRect()
 				mImage->Width(), mImage->Height() );
 }
 
+Image* StaticObject::GetImage()
+{
+	if (mImage)
+		return mImage;
+	
+	return mOriginalImage;
+}
+
 void StaticObject::Rotozoom(double degree, double zoom)
 {
 	mRotation = degree;
@@ -118,7 +126,10 @@ void StaticObject::LoadImage(string file)
 	mOriginalImage = resman->LoadImg(file);
 
 	if (!mOriginalImage)
+	{
 		mImage = NULL;
+		console->AddMessage(" *\\c900 StaticObject:" + mId + " Failed to load " + file);
+	}
 	else
 		mImage = mOriginalImage->Clone();
 

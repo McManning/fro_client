@@ -434,9 +434,10 @@ void WorldLoader::_syncPlayerWithWorld()
 {
 	LocalActor* p = game->mPlayer;
 	p->mMap = game->mMap;
+	p->SetLayer(EntityManager::LAYER_USER);
 	p->ClearActionBuffer();
 	
-	p->mMap->AddEntity(p, ENTITYLEVEL_USER);
+	p->mMap->AddEntity(p);
 	p->mMap->SetCameraFollow(p);
 	
 	//spawn our player in a different position, based on the destination type

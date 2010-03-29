@@ -64,6 +64,8 @@ class GameManager : public Frame
 	IrcNet* mNet;
 	WorldLoader* mLoader;
 
+	Frame* mHud;
+
 	bool mShowJoinParts;
 	bool mShowAddresses;
 	string mQueuedMapId;
@@ -77,6 +79,16 @@ class GameManager : public Frame
 	//login credentials. mPassword is an md5 value.
 	string mUsername;
 	string mPassword;
+	
+	enum gameMode
+	{
+		MODE_CHAT = 0,
+		MODE_ACTION,	
+	};
+	
+	gameMode mGameMode;
+	
+	void ToggleGameMode(gameMode mode);
 
   private:
 	void _hookCommands();

@@ -12,7 +12,7 @@ uShort timer_ActionEffect(timer* t, uLong ms)
 	{
 		Map* m = a->mMap;
 		t->userData = NULL;	
-		m->RemoveEntity(a, a->GetLayer());
+		m->RemoveEntity(a);
 		return TIMER_DESTROY;
 	}
 	
@@ -42,8 +42,10 @@ ActionEffect* ActionEffect::Clone()
 
 	//Will create another effect that started how we did. NOT an exact clone. 
 	a->Create(mStartPosition, mOrigin.y, mEffectId, mEffect, mDisplayMs);
+	a->mMap = mMap;
+	a->SetLayer(GetLayer());
 	
-	mMap->AddEntity(a, GetLayer());
+	mMap->AddEntity(a);
 	
 	return a;
 }

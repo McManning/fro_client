@@ -555,53 +555,78 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 - Added Map.NewBasic(), Map.SetSpawn(), Map.SetSize(), Map.SetColor() to Lua
 - Renamed CollectionMap to BasicMap to make it slightly more descriptive
 - Fixed several bugs with WorldLoader
-- 
+
+100326
+- Increased screen size to 800x600 due to popular demand
+- Removed server manual connection command.
+- Rewrote EntityManager to only utilize one list of entities, and to use a more abstract method when dealing with entity layers.
+	Will sort entities based on y position AND layer, which can now be any number. 
+- Removed EntityManager::AddEntity overloading and put ENTITY_CREATE message dispatch into the original AddEntity function.
+- Added a Die() overload to Map in order to gracefully cleanup certain content before the next map.
+	A major issue during map testing was that images (and their associated properties) would not reload from disk as specified,
+	and instead simply clone the internally cached data. By forcing lua scripts and entities to be erased from the old map before
+	a new map is constructed, we also clear up all leftover resources.
+- Removed all references to /lua/MapLib from GameManager
+- Fixed bug where userlist wouldn't clear names when changing maps
+
+100327
+- Added game mode toggle (toggle between chat and action)
+- Added WASD movement (arrow keys still useable), changed jump to space bar, shift keys now toggle speed, ctrl no longer needs a
+	direction held down to sit, and tab key toggles between action (movement) and chat modes.
+- Re-enabled arrow key support for the chat's console (to move the cursor around).
+- Added Player.IsInChatMode() in lua, returns true if the game is currently in chat mode, false if in action mode.
+	(This'll be good when we bind via lua certain keys for ingame events)
+- Added general purpose Entity::GetImage() to return the Image the entity is using to render. 
+	Should usually be overriden depending on entity type
+- Added mCanClick to Entity
+- Added ability to right click the local player to access the avatar favorites dialog
+- Added "clickable" to Entity.SetProp/GetProp
+- Added "Clickable = true/false" to Entity.Create() table
+- Added shorthand Entity::IsVisibleInCamera()
+- Changed listening distance (for displaying nick changes, join/parts, chat messages, etc) from using a constant 
+	distance of 300 to using Entity::IsVisibleInCamera()
+- Added bad image file check in MyAchievements
+- Replaced dropdown menu at the top with a static, limited version.
+- Merged game.cfg into player.save
+
+100328
+- Added dispatch of ENTITY_CMD[entity, message] when local or remote actors say something prefixed with slash (/)
+	These messages will not be displayed in the chatbox, and rely on scripts to handle them.
+- Added another overload to Player.Warp in lua: Player.Warp(x, y); to jump coordinates on current map.
+	Shorthand of Entity.SetPosition(Player.GetEntity(), x, y);
 
 
 IMMEDIATE TODO:
+- Avatars downloaded to cache aren't being deleted. Do a periodic cleanup of /cache/*.ava files. Or.. at least flag shit needs to be 
+	cleaned up, idk, fuck. Maintaining in memory would be nice too, shit. 
+- Widget* w = gui->Get("MiniMenu");  Bug here, it won't delete on the next esc press unless we move it first.
 - Trash game->mQueuedMapId
-- Get rid of assets/game.cfg and GM::mConfig. Import everything into player.save, but keep connection
-	data to their own file so that we can overwrite it via updates. Only load that xml file when needed.
-- login dialog is taking up the full screen, when it doesn't need to. Fix that
-- Use left-click map objects
-	If a map object is left clickable (interactive), hover an icon over it
-	You also have to be within a certain range
-	Only one object is selected at once
-	An event will be triggered when you select the object (for scriptanz!)
 - Trash right click menus for players, too confusing
 	- Replace with a seperate window, also accessible by clicking their name in userlist
-- Move REPORT BUG to the esc menu
-- Remove REPORT BUG and OPTIONS from main menu
-- Static menu at the top
-- Any chat stuff prefixed with / will be considered a command (like mirc) and will go through
-	commands. If it's not there, it'll send the event to lua listeners. Will NOT go to the channel. 
 - Figure out why some cached avatars aren't being deleted (maybe an avy change WHILE it's downloading?)
 	Yes, I think it's the change while downloading thing that does it. 
 
+- Clam Report:
+	European, uses standard US keyboard but when the '" key is pressed, then a letter that isn't aeiouy,
+	it'll fuck up. Probably trying to put accents on the letters. Try to test in Euro IME mode in windows, or some shit
+	
 	
 TODO:
+	- Add say.. a second userlist (or additional list under the userlist) that lists the players from the previous map
+		So we can privmsg them after moving.. I guess?
+	- Clickable names in the chatbox would be nice. Albeit HARD AS FUCK. But still nice. Basically, if a line starts
+		with "something: " and grab that something, then consider that a user? I guess? Meh.
 	- Pack avatars into the savefile?
 	- drm welfare check: comes in every week or so, gives you dorra
-	- OnUnload of old map is called AFTER OnLoad of new map
-	- Scripts OnLoad should not be called until ALL normal resources are loaded. Order of operations
-		fuck up when scripts are loaded before resources they need.
 	- Need System.EncryptFile and System.DecryptFile for files (just for the hell of it, so we can 
 		encrypt things like the farm file)
 	-Make sure lua only has file IO access in the cache directory...
 	-Allow object editing while map editing. And live updating the edited objects.
 	-I see an issue regarding deep cloning SDL_Image while downloading. Nothing currently behaves in a way where this
 		bug would become a problem, however it still requires repair. Currently stuck assertions in to make sure it doesn't happen.
-	-connects then disconnects after we use console command 'server'. 
-	-Using console command 'server' while already connecting causes the client to crash
 	-warp people to spawn if they are detected to be inside a solid object. 
 		However, there could be an issue with solids moving around, and deciding to sit right onto the player. 
-	-waypoint movement for actors:
-		<waypoint speed="x" loop="1">
-			x y x y x y x y x y ...
-		</waypoint>
-		<!-- loop would force it to go from last coordinates to first -->
-		Would be lua scripted instead of xml. Derp.
-
+	-waypoint movement for actors
 	-Add memorization for last map & last position (This can either be clientside or serverside)
 	-Might need to send position correction post jump? Or if we hit a wall 
 
@@ -629,27 +654,22 @@ TODO:
 	-need to change how warps work. I don't like setting destination map and object id in the OE itself. This should be per-map.. or something.
 	-Add a max stamp counter, start deleting stamps if the max is hit.
 	-ava dir live updating (or just general updater!111)
-	-Make sure the same script isn't included multiple times
 	-settable stamp rotation range, and size within a certain range
-	-change _attack_2 or whatever to _action_2, maybe... not sure..
-	
+
 	-button image is fucked on trade for privmsg
 	-privmsg shows up behind trade, not in front (trade is taking front priority~)
 	-chatbox needs a button to send it to the bottom corner again, like before, so we can HIDE DAT SHIT
-	-active=0 lua scripts are simply LOLDOWNLOADTHISFILE. Should this be replaced with something else?
 	-add font resizing for chatbox (and general system?)
 	-Add an internal achievement for wallhacking (Derp)
 	-If player data file doesn't exist, have a popup in the startup asking them if they want to set up
 		basic settings for new users (Create an avatar, set a nickname, etc)
 
 	-Not actually using entityType anywhere. Please do.
-	-Warps that go to the map we're already on, need to.. ya know.. NOT RELOAD THE MAP :3
-		Well, do we actually WANT this? It looks like a sudden jump of we do it this way.. and we have no opportunity to 
-		modify the map we're on.. then again, redownloading avatars is an annoyance..
 	-Neat achievement popups and whatnot
 	-Add <designer> tags to map properties.
 		This way we can probably add a little "Map Designed By <NAME>" in the corner for screenshots, or whatever.
 	- Bad gui.xml error was thrown on an old 1.75Ghz, 1 GB ram, Win XP SP3 (or 2) computer
+		Same is thrown when running in the debug mode. Something to do with TinyXML?
 	- There's currently a bug with the Font class. Wrapping message rendering will ignore colors, due to calculation errors it creates. This needs to be resolved.
 	- 
 	

@@ -19,35 +19,52 @@ int player_GetActor(lua_State* ls)
 	return 1;
 }
 
+int player_IsInChatMode(lua_State* ls)
+{
+	lua_pushboolean(ls, game->mGameMode == GameManager::MODE_CHAT);
+	return 1;	
+}
+
 //.Warp("id", x<-1>, y<-1>) - Warp to the specified map. If x, y are not supplied, will warp to default spawn point.
 // OR .Warp("id", "objectname") - Warp to the specified object on the target map
+// OR .Warp(x, y) - Warp to specified coordinates on the current map
 int player_Warp(lua_State* ls)
 {
 	PRINT("player_Warp");
 	luaCountArgs(ls, 1);
 	
 	int numArgs = lua_gettop(ls);
-
-	string id = lua_tostring(ls, 1);
 	
+	string id;
 	string name;
 	point2d p;
-
-	if (numArgs > 1)
+	
+	if (lua_isstring(ls, 1))
 	{
-		if (lua_isstring(ls, 2))
+		name = lua_tostring(ls, 1);
+		
+		if (numArgs > 1)
 		{
-			name = lua_tostring(ls, 2);
+			if (lua_isstring(ls, 2))
+			{
+				name = lua_tostring(ls, 2);
+			}
+			else if (numArgs > 2)
+			{
+				p.x = (int)lua_tonumber(ls, 2);
+				p.y = (int)lua_tonumber(ls, 3);
+			}
 		}
-		else if (numArgs > 2)
-		{
-			p.x = (sShort)lua_tonumber(ls, 2);
-			p.y = (sShort)lua_tonumber(ls, 3);
-		}
+		
+		game->mPlayer->Warp(id, p, name);
+	}
+	else if (lua_isnumber(ls, 1) && numArgs > 1) //change coordinates on current map
+	{
+		p.x = (int)lua_tonumber(ls, 1);
+		p.y = (int)lua_tonumber(ls, 2);
+		game->mPlayer->SetPosition(p);
 	}
 
-	game->mPlayer->Warp(id, p, name);
- 
 	return 0;
 };
 
@@ -255,6 +272,7 @@ int player_GetAchievement(lua_State* ls)
 
 static const luaL_Reg functions[] = {
 	{"GetActor", player_GetActor},
+	{"IsInChatMode", player_IsInChatMode},
 	{"Warp", player_Warp},
 	{"GiveItem", player_GiveItem},
 	{"HasItem", player_HasItem},

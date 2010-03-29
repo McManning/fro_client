@@ -164,8 +164,8 @@ int camera_IsEntityVisible(lua_State* ls)
 	Entity* e = (Entity*)lua_touserdata(ls, 1);
 
 	int visible = 0;
-	if ( m->EntityExists(e) )
-		visible = m->IsRectInCamera( e->GetBoundingRect() );
+	if ( m->FindEntity(e) != -1 )
+		visible = e->IsVisibleInCamera();
 
 	lua_pushnumber(ls, visible);
 	

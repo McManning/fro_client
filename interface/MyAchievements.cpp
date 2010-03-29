@@ -53,18 +53,16 @@ void MyAchievements::_load()
 			a.file = game->mPlayerData.GetParamString(e, "file");
 			a.max = game->mPlayerData.GetParamInt(e, "max");
 			a.total = game->mPlayerData.GetParamInt(e, "total");
-			
-			
-			FATAL("do this");
+
 			a.icon = NULL;
-		/*	if (a.file.empty())
+			if (a.file.empty())
 				a.icon = NULL;
 			else
 				a.icon = resman->LoadImg(	"cache/achievements/" + a.file + ".png", 
 											game->mConfig.GetParamString("connection", "achievements") 
 												+ a.file + ".png", "", true
 										);
-		*/	
+
 			mAchievements.push_back(a);
 			
 			e = e->NextSiblingElement();

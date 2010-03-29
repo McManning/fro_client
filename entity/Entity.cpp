@@ -19,6 +19,7 @@ Entity::Entity()
 	mLocked = false;
 	mShadow = false;
 	mJumpHeight = 0;
+	mCanClick = false;
 }
 
 Entity::~Entity()
@@ -39,6 +40,7 @@ string Entity::GetTypeName()
 		case ENTITY_SCENEACTOR: return "actor";
 		case ENTITY_STATICOBJECT: return "object";
 		case ENTITY_EFFECT: return "effect";
+		case ENTITY_TEXT: return "text";
 		default: return "unknown";
 	}
 }
@@ -48,10 +50,13 @@ void Entity::SetVisible(bool v)
 	mVisible = v;	
 }
 
+bool Entity::IsVisibleInCamera() 
+{ 
+	return IsVisible() && mMap && mMap->IsRectInCamera(GetBoundingRect());
+}
+
 void Entity::SetPosition(point2d position)
 {
-	ASSERT(mMap);
-	
 	if (mSnapToGrid)
 	{
 		//recalculate and properly snap coordinates to our grid
@@ -69,7 +74,8 @@ void Entity::SetPosition(point2d position)
 		
 	mPosition = position;	
 
-	mMap->QueueEntityResort();
+	if (mMap)
+		mMap->QueueEntityResort();
 }
 
 bool Entity::CollidesWith(rect r)
@@ -145,10 +151,9 @@ void Entity::RenderShadow()
 
 }
 
-void Entity::SetLayer(byte l)
+void Entity::SetLayer(int l)
 {
-	ASSERT(mMap);
-	mMap->AddEntity(this, l);
+	mLayer = l;
 }
 
 void Entity::SetFlag(string flag, string value)

@@ -65,6 +65,7 @@ class AvatarFavorites : public Frame
 	Button* mUse;
 	Button* mDelete;
 	Button* mEdit;
+	Button* mDesign;
 	Multiline* mList;
 
 	std::vector<avatarProperties*> mAvatars;

@@ -100,6 +100,16 @@ rect Actor::GetBoundingRect()
 	return r;
 }
 
+Image* Actor::GetImage()
+{
+	Avatar* a = GetAvatar();
+	
+	if (a)
+		return a->GetImage();
+		
+	return NULL;	
+}
+
 void Actor::Move(direction dir, sShort distance, byte speed)
 {
 	if (speed == 0)
@@ -726,6 +736,9 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 	
 	downloader->SetByteCap(oldcap);
 
+	// If it loads from disk, we'll swap here.
+	_checkLoadingAvatar();
+
 	return (mLoadingAvatar != NULL);
 }
 
@@ -789,32 +802,29 @@ void Actor::_doDepthRender()
 	rect dst;
 	rect src;
 	StaticObject* o;
-	for (int i = 0; i < ENTITYLEVEL_COUNT; i++)
+	for (int i = 0; i < mMap->mEntities.size(); ++i)
 	{
-		for (int ii = 0; ii < mMap->entityLevel[i].size(); ii++)
+		if ( mMap->mEntities.at(i) == this )
+			break;
+		
+		//If we need to do depth rendering on this object, do it. 
+		if ( mMap->mEntities.at(i)->mType == ENTITY_STATICOBJECT
+			&& areRectsIntersecting(mMap->mEntities.at(i)->GetBoundingRect(), GetBoundingRect()) )
 		{
-			if ( mMap->entityLevel[i].at(ii) == this )
-				break;
-			
-			//If we need to do depth rendering on this object, do it. 
-			if ( mMap->entityLevel[i].at(ii)->mType == ENTITY_STATICOBJECT
-				&& areRectsIntersecting(mMap->entityLevel[i].at(ii)->GetBoundingRect(), GetBoundingRect()) )
+			o = (StaticObject*)mMap->mEntities.at(i);
+			if (o->mDepth > 0)
 			{
-				o = (StaticObject*)mMap->entityLevel[i].at(ii);
-				if (o->mDepth > 0)
-				{
-					src = GetBoundingRect();
-					dst.x = src.x;
-					dst.y = mPosition.y - o->mDepth;
+				src = GetBoundingRect();
+				dst.x = src.x;
+				dst.y = mPosition.y - o->mDepth;
+			
+				src.x = dst.x - o->mPosition.x;
+				src.y = dst.y - o->mPosition.y;
+				src.h = o->mDepth + src.w / 10; //shadow is BoundingRect().w / 8, and only half a shadow below our rect, so / 10.
 				
-					src.x = dst.x - o->mPosition.x;
-					src.y = dst.y - o->mPosition.y;
-					src.h = o->mDepth + src.w / 10; //shadow is BoundingRect().w / 8, and only half a shadow below our rect, so / 10.
-					
-					dst = mMap->ToScreenPosition(dst);
-					
-					o->mImage->Render(Screen::Instance(), dst.x, dst.y, src);
-				}
+				dst = mMap->ToScreenPosition(dst);
+				
+				o->mImage->Render(Screen::Instance(), dst.x, dst.y, src);
 			}
 		}
 	}	

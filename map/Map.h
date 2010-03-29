@@ -12,6 +12,7 @@
 #define TILE_SIZE (16)
 
 class lua_State;
+class RemoteActor;
 class Map : public Frame, public EntityManager
 {
   public:
@@ -32,7 +33,16 @@ class Map : public Frame, public EntityManager
 	virtual void Process(uLong ms);
 	virtual bool IsRectBlocked(rect r);
 	virtual void ResizeChildren();
+	virtual void Die(); //Graceful cleanup
 	
+	void HandleLeftClick();
+	void HandleRightClick();
+	
+	void ClickRemoteActor(RemoteActor* ra);
+	
+	/*	Will attempt to return the entity directly under the mouse, if it is clickable. */
+	Entity* GetEntityUnderMouse(bool mustBeClickable, bool playersOnly);
+		
 	point2d mSpawnPoint;
 	
 	uShort mWidth;
@@ -80,9 +90,6 @@ class Map : public Frame, public EntityManager
  	void AddCameraDestination(point2d p);
 
 /*	Map Loading Procedures */
-
-	/*	Overloaded from EntityManager so we can dispatch ENTITY_CREATE event */
-	void AddEntity(Entity* e, sShort level);
 
 	uShort GetGravity() const { return mGravity; };
 	void SetGravity(uShort g) { mGravity = g; };

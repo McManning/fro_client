@@ -41,6 +41,8 @@ class Actor : public Entity
 	
 	void Render(uLong ms);
 	
+	Image* GetImage();
+	
 	/*	Load an avatar, convert to avatar format, etc
 		if MNG/GIF/other animated format: delay, w, and h are ignored. Otherwise it's a constant
 		frame delay used when splitting single image avatars into frames.
