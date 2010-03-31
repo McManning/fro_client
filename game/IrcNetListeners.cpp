@@ -415,7 +415,7 @@ void _handleNetMessage_Say(string& nick, DataPacket& data)
 		//Dispatch a command message
 		MessageData md("ENTITY_CMD");
 		md.WriteUserdata("entity", ra);
-		md.WriteString("message", text);
+		md.WriteString("message", msg);
 		messenger.Dispatch(md, ra);
 	}
 

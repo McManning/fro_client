@@ -137,6 +137,10 @@ class Image
 	
 	bool Render(Image* destination, sShort x, sShort y, rect clip = rect());
 	bool Render(SDL_Surface* dst, sShort x, sShort y, rect clip = rect());
+	
+	// Shorthand rendering routines for various behavior
+	bool RenderHorizontalEdge(Image* dst, rect rSrc, rect rDst);
+	bool RenderVerticalEdge(Image* dst, rect rSrc, rect rDst);
 	bool RenderPattern(Image* dst, rect rSrc, rect rDst);
 	bool RenderBox(Image* dst, rect rSrc, rect rDst);
 

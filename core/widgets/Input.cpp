@@ -75,45 +75,35 @@ InputMenu::InputMenu(Input* parent)
 	uShort x = 0;
 	
 	uShort buttonSize = 18;
-	
-	string file = "assets/inputmenu.png";
 
 	b = new Button(this, "cut", rect(x, y, buttonSize, buttonSize), "", callback_inputMenuCut);
-	b->mHoverText = "Cut (Ctrl+X)";
-		makeImage(b, "", file, rect(x,0,buttonSize,buttonSize),
-					rect(0,0,buttonSize,buttonSize), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Cut (Ctrl+X)";
+		b->SetImage("assets/gui/input_cut.png");
 	x += buttonSize;
 
 	b = new Button(this, "copy", rect(x, y, buttonSize, buttonSize), "", callback_inputMenuCopy);
-	b->mHoverText = "Copy (Ctrl+C)";
-		makeImage(b, "", file, rect(x,0,buttonSize,buttonSize),
-					rect(0,0,buttonSize,buttonSize), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Copy (Ctrl+C)";
+		b->SetImage("assets/gui/input_copy.png");
 	x += buttonSize;
 			
 	b = new Button(this, "paste", rect(x, y, buttonSize, buttonSize), "", callback_inputMenuPaste);
-	b->mHoverText = "Paste (Ctrl+V)";
-		makeImage(b, "", file, rect(x,0,buttonSize,buttonSize),
-					rect(0,0,buttonSize,buttonSize), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Paste (Ctrl+V)";
+		b->SetImage("assets/gui/input_paste.png");
 	x += buttonSize;
 				
 	b = new Button(this, "selectall", rect(x, y, buttonSize, buttonSize), "", callback_inputMenuSelectAll);
-	b->mHoverText = "Select All (Ctrl+A)";
-		makeImage(b, "", file, rect(x,0,buttonSize,buttonSize),
-					rect(0,0,buttonSize,buttonSize), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Select All (Ctrl+A)";
+		b->SetImage("assets/gui/input_selectall.png");
 	x += buttonSize;
 			
 	b = new Button(this, "color", rect(x, y, buttonSize, buttonSize), "", callback_inputMenuPasteColor);
-	b->mHoverText = "Paste Color (Ctrl+B)";
-		makeImage(b, "", file, rect(x,0,buttonSize,buttonSize),
-					rect(0,0,buttonSize,buttonSize), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Paste Color (Ctrl+B)";
+		b->SetImage("assets/gui/input_color.png");
 	x += buttonSize;
-			
-	////////////////////// 
-	
+
 	b = new Button(this, "close", rect(x, y, buttonSize, buttonSize), "", callback_closeFrame);
-	b->mHoverText = "Close Menu";
-		makeImage(b, "", file, rect(x,0,buttonSize,buttonSize),
-					rect(0,0,buttonSize,buttonSize), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Close Menu";
+		b->SetImage("assets/gui/input_close.png");
 	x += buttonSize;
 
 	rect r;
@@ -140,35 +130,6 @@ void InputMenu::Event(SDL_Event* event)
 }
 
 /////////////////////////////////////////////////////////////
-
-Input::Input() 
-{
-	mNeedUpdate = false;
-	mIsPassword = false;
-	mMaxLength = 0;
-	mType = WIDGET_INPUT;
-	mFont = fonts->Get();
-
-	mHistoryPos = 0;
-
-	SetSelection(0, 0);
-	SetMenuEnabled(true);
-	
-	mCaretPos = 0;
-	mPixelX = 0;
-	mSelecting = false;
-	mAllowSpecialKeys = true;
-	mDrawCaret = true;
-	mLastBlink = 0;
-	mReadOnly = false;
-	mClickedOnce = false;
-	onEnterCallback = NULL;
-	onChangeCallback = NULL;
-	mTextImage = NULL;
-
-	//we need to know mouse positions outside our widget for highlight dragging
-	gui->AddGlobalEventHandler(this);
-}
 
 Input::Input(Widget* wParent, string sId, rect rPosition, string sMask, 
 				uShort uMaxLen, bool bSpecialKeys, void (*callbackOnEnter)(Input*))
@@ -203,7 +164,7 @@ Input::Input(Widget* wParent, string sId, rect rPosition, string sMask,
 	mId = sId;
 	mCharacterMask = sMask;
 
-	gui->WidgetImageFromXml(this, "input");
+	mImage = resman->LoadImg("assets/gui/input_bg.png");
 	
 	SetPosition(rPosition);
 	
@@ -245,7 +206,8 @@ void Input::Render(uLong ms)
 	//render caption surf from mPixelX to mPixelX + m_pos.getWidth()
 	rect r = GetScreenPosition();
 
-	RenderImages(ms);
+	if (mImage)
+		mImage->RenderBox(scr, rect(0, CalculateImageOffset(15), 5, 5), r);
 
 	//shrink the actual window a bit so we can get a 1px border
 	r.w -= 4;
@@ -758,4 +720,10 @@ void Input::PasteColor()
 {
 	ColorPicker* c = new ColorPicker(this);
 	gui->Add(c);
+}
+
+void Input::SetImage(string file)
+{
+	resman->Unload(mImage);
+	mImage = resman->LoadImg(file);
 }

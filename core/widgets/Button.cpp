@@ -11,25 +11,19 @@ void callback_closeFrame(Button* b)
 		b->GetParent()->Die();
 }
 
-Button::Button()
-{
-	mCaptionImage = NULL;
-	onClickCallback = NULL;
-	mType = WIDGET_BUTTON;
-}
-
 Button::Button(Widget* wParent, string sId, rect rPosition, string sCaption,
 			void (*cbOnClick)(Button*))
 {
 	mType = WIDGET_BUTTON;
 	mCaptionImage = NULL;
-
+	mImage = NULL;
+	
 	mFont = fonts->Get();
 	mId = sId;
 	
 	if (!sCaption.empty())
 	{
-		gui->WidgetImageFromXml(this, "button");
+		SetImage("assets/gui/button.png");
 		SetCaption(sCaption);
 	}
 	
@@ -46,16 +40,25 @@ Button::~Button()
 
 void Button::Render(uLong ms)
 {
-	if (mImages.empty()) return;
+	rect r = GetScreenPosition();
+	Image* scr = Screen::Instance();
 	
-	rect pos = GetScreenPosition();
-
-	RenderImages(ms);
+	if (mImage)
+	{
+		if (mCaptionImage) //gotta do a hedge render
+		{
+			mImage->RenderHorizontalEdge(scr, rect(0, CalculateImageOffset(21), 7, 21), r);
+		}
+		else //regular button
+		{
+			mImage->Render(scr, r.x, r.y, rect(0, CalculateImageOffset(Height()), r.w, r.h));
+		}
+	}
 
 	if (mCaptionImage)
 		mCaptionImage->Render(Screen::Instance(), 
-							pos.x + (pos.w / 2) - (mCaptionImage->Width() / 2),
-							pos.y + (pos.h / 2) - (mCaptionImage->Height() / 2)
+							r.x + (r.w / 2) - (mCaptionImage->Width() / 2),
+							r.y + (r.h / 2) - (mCaptionImage->Height() / 2)
 						);
 	Widget::Render(ms);
 }
@@ -90,4 +93,10 @@ void Button::Event(SDL_Event* event)
 		onClickCallback(this);
 		
 	Widget::Event(event);	
+}
+
+void Button::SetImage(string file)
+{
+	resman->Unload(mImage);
+	mImage = resman->LoadImg(file);
 }

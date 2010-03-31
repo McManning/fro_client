@@ -50,23 +50,6 @@ GuiManager::GuiManager()
 	SDL_EnableUNICODE(SDL_ENABLE); //TODO: unicode has an overhead, however it handles shift/capslock so keep till I write in a fix.. or actually USE unicode
 	SDL_ShowCursor(SDL_DISABLE); //We have our own cursor
 
-//Gui Settings
-	mXml = new XmlFile();
-
-	if (!mXml->LoadFromFile("assets/gui.xml"))
-	{
-		string err = mXml->GetError();
-		SAFEDELETE(mXml);
-		
-		FATAL(err);
-	}
-	mXml->mXmlPos = mXml->mDoc.FirstChildElement("gui");
-	if (!mXml->mXmlPos)
-	{
-		SAFEDELETE(mXml);
-		FATAL("No <gui>");
-	}
-
 	seedRnd();
 	loadGlobalConfig();
 
@@ -116,15 +99,14 @@ GuiManager::GuiManager()
 	mNextRenderTick = 0;
 	mBeatCounter = 0;
 	mFrameCounter = 0;
-	mCursorImage = resman->LoadImg("assets/gui.png");
+	mCursorImage = resman->LoadImg("assets/gui/gui.png");
 	mPosition = scr->GetClip();
 	mFont = fonts->Get();
 	mDarkOverlay = NULL;
 
 //Consoles
 	PRINT("Loading Console");
-	console = new Console("console", "Build " + string(APP_VERSION), "assets/console_system.png", "log_", false, true);
-	//console->mInput->mAllowSpecialKeys = false;
+	console = new Console("console", "Build " + string(APP_VERSION), "system", "log_", false, true);
 	
 	PRINT("Configuring Console");
 	
@@ -142,8 +124,7 @@ GuiManager::GuiManager()
 	
 	console->HookCommand("messenger_debug", callback_ToggleMessengerDebug);
 
-	console->mBackgroundColor = color();
-	WidgetImageFromXml((Widget*)console->mOutput, "consoleoutbg");
+	console->mBackgroundColor = color(180,205,245);
 	console->ResizeChildren();
 	
 	Add(console);
@@ -172,8 +153,7 @@ GuiManager::~GuiManager()
 		SAFEDELETE(mChildren.at(i));
 	}
 	mChildren.clear();
-	
-	SAFEDELETE(mXml);
+
 	resman->Unload(mCursorImage);
 
 	PRINT("Flushing Timers");
@@ -205,46 +185,6 @@ GuiManager::~GuiManager()
 	SDL_Quit(); //must be the last call after all SDL-related calls
 	
 	PRINT("Gui Shutdown Complete");
-}
-
-/*
-<gui>
-	<buttonbg file="button.png" type="1" offset="0" repeat="0" dst="x,y,w,h" src="x,y,w,h" />
-</gui>
-*/
-//Load widgetImage settings from gui's xml file
-WidgetImage* GuiManager::WidgetImageFromXml(Widget* parent, string element, string id) const
-{
-	if (!mXml)
-		return NULL;
-
-	TiXmlElement* e = mXml->GetChild(mXml->mXmlPos, element);
-
-	if (!e)
-		return NULL;
-
-	WidgetImage* wi = new WidgetImage();
-
-	string type = mXml->GetParamString(e, "type");
-	if (type == "hedge")
-		wi->mType = WIDGETIMAGE_HEDGE;
-	else if (type == "vedge")
-		wi->mType = WIDGETIMAGE_VEDGE;
-	else if (type == "box")
-		wi->mType = WIDGETIMAGE_BOX;
-	else
-		wi->mType = WIDGETIMAGE_FULL;
-
-	wi->mOffsetOnWidgetState = mXml->GetParamInt(e, "offset");
-	wi->mRepeat = mXml->GetParamInt(e, "repeat");
-	wi->mDst = mXml->GetParamRect(e, "dst");
-	wi->mSrc = mXml->GetParamRect(e, "src");
-	wi->mId = id;
-	wi->mImage = resman->LoadImg(mXml->GetParamString(e, "file"));
-
-	parent->AddImage(wi);
-
-	return wi;
 }
 
 //Perform recursive search for children that have the coords in their rect

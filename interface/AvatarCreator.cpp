@@ -120,13 +120,11 @@ void AvatarCreator::CreateControls()
 		
 	b = new Button(this, "Add", rect(10,200,20,20), "", callback_AvatarCreatorAddToFavorites);
 		b->mHoverText = "Set as avatar and add to favorites";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 			
 	b = new Button(this, "Save", rect(35,200,20,20), "", callback_AvatarCreatorSavePNG);
 		b->mHoverText = "Save to PNG";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 	
 //Base edit frame
 	y = 0;
@@ -138,13 +136,11 @@ void AvatarCreator::CreateControls()
 	
 	b = new Button(mBaseFrame, "p", rect(0,y,20,20), "", callback_AvatarCreatorBase);
 		b->mHoverText = "Previous Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 				
 	b = new Button(mBaseFrame, "n", rect(150-20,y,20,20), "", callback_AvatarCreatorBase);
 		b->mHoverText = "Next Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 	y += 25;
 
 	mBaseFrame->SetPosition( rect(controlsX, controlsY, 150, y) );
@@ -161,26 +157,24 @@ void AvatarCreator::CreateControls()
 	
 	s = new Scrollbar(mHairFrame, "r", rect(0,y,150,20), HORIZONTAL, 255, 10, 255, callback_AvatarCreatorColor);
 		s->mHoverText = "Red Value";
-		s->mTabImage->mSrc.x = 90;
+		//s->mTabImage->mSrc.x = 90;
 	y += 25;
 	s = new Scrollbar(mHairFrame, "g", rect(0,y,150,20), HORIZONTAL, 255, 10, 255, callback_AvatarCreatorColor);
 		s->mHoverText = "Green Value";
-		s->mTabImage->mSrc.x = 105;
+		//s->mTabImage->mSrc.x = 105;
 	y += 25;
 	s = new Scrollbar(mHairFrame, "b", rect(0,y,150,20), HORIZONTAL, 255, 10, 255, callback_AvatarCreatorColor);
 		s->mHoverText = "Blue Value";
-		s->mTabImage->mSrc.x = 120;
+		//s->mTabImage->mSrc.x = 120;
 	y += 25;
 	
 	b = new Button(mHairFrame, "p", rect(0,y,20,20), "", callback_AvatarCreatorHair);
 		b->mHoverText = "Previous Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 				
 	b = new Button(mHairFrame, "n", rect(150-20,y,20,20), "", callback_AvatarCreatorHair);
 		b->mHoverText = "Next Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 	y += 25;
 		
 	mHairFrame->SetPosition( rect(controlsX, controlsY, 150, y) );
@@ -197,26 +191,24 @@ void AvatarCreator::CreateControls()
 	
 	s = new Scrollbar(mHeadFrame, "r", rect(0,y,150,20), HORIZONTAL, 255, 10, 255, callback_AvatarCreatorColor);
 		s->mHoverText = "Red Value";
-		s->mTabImage->mSrc.x = 90;
+		//s->mTabImage->mSrc.x = 90;
 	y += 25;
 	s = new Scrollbar(mHeadFrame, "g", rect(0,y,150,20), HORIZONTAL, 255, 10, 255, callback_AvatarCreatorColor);
 		s->mHoverText = "Green Value";
-		s->mTabImage->mSrc.x = 105;
+		//s->mTabImage->mSrc.x = 105;
 	y += 25;
 	s = new Scrollbar(mHeadFrame, "b", rect(0,y,150,20), HORIZONTAL, 255, 10, 255, callback_AvatarCreatorColor);
 		s->mHoverText = "Blue Value";
-		s->mTabImage->mSrc.x = 120;
+		//s->mTabImage->mSrc.x = 120;
 	y += 25;
 	
 	b = new Button(mHeadFrame, "p", rect(0,y,20,20), "", callback_AvatarCreatorHead);
 		b->mHoverText = "Previous Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 				
 	b = new Button(mHeadFrame, "n", rect(150-20,y,20,20), "", callback_AvatarCreatorHead);
 		b->mHoverText = "Next Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 	y += 25;
 					
 	mHeadFrame->SetPosition( rect(controlsX, controlsY, 150, y) );
@@ -233,26 +225,24 @@ void AvatarCreator::CreateControls()
 	
 	s = new Scrollbar(mBodyFrame, "r", rect(0,y,150,20), HORIZONTAL, 255, 10, 255, callback_AvatarCreatorColor);
 		s->mHoverText = "Red Value";
-		s->mTabImage->mSrc.x = 90;
+	//	s->mTabImage->mSrc.x = 90;
 	y += 25;
 	s = new Scrollbar(mBodyFrame, "g", rect(0,y,150,20), HORIZONTAL, 255, 10, 255, callback_AvatarCreatorColor);
 		s->mHoverText = "Green Value";
-		s->mTabImage->mSrc.x = 105;
+	//	s->mTabImage->mSrc.x = 105;
 	y += 25;
 	s = new Scrollbar(mBodyFrame, "b", rect(0,y,150,20), HORIZONTAL, 255, 10, 255, callback_AvatarCreatorColor);
 		s->mHoverText = "Blue Value";
-		s->mTabImage->mSrc.x = 120;
+	//	s->mTabImage->mSrc.x = 120;
 	y += 25;
 	
 	b = new Button(mBodyFrame, "p", rect(0,y,20,20), "", callback_AvatarCreatorBody);
 		b->mHoverText = "Previous Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 				
 	b = new Button(mBodyFrame, "n", rect(150-20,y,20,20), "", callback_AvatarCreatorBody);
 		b->mHoverText = "Next Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 	y += 25;
 				
 	mBodyFrame->SetPosition( rect(controlsX, controlsY, 150, y) );
@@ -267,26 +257,22 @@ void AvatarCreator::CreateControls()
 	x = controlsX;
 	b = new Button(this, "base", rect(x,y,20,20), "", callback_AvatarCreatorToggleTab);
 		b->mHoverText = "Edit Base Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 	x += 25;
 	
 	b = new Button(this, "head", rect(x,y,20,20), "", callback_AvatarCreatorToggleTab);
 		b->mHoverText = "Edit Head Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 	x += 25;
 	
 	b = new Button(this, "body", rect(x,y,20,20), "", callback_AvatarCreatorToggleTab);
 		b->mHoverText = "Edit Body Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 	x += 25;
 	
 	b = new Button(this, "hair", rect(x,y,20,20), "", callback_AvatarCreatorToggleTab);
 		b->mHoverText = "Edit Hair Model";
-		makeImage(b, "", "assets/options_tabs.png", rect(80,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 	
 	//TODO: save buttons, some background for the preview to be rendered in front of, etc.
 

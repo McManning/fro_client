@@ -10,7 +10,6 @@
 #define _WIDGET_H_
 
 #include "../Common.h"
-#include "WidgetImage.h"
 #include "../FontManager.h"
 
 //because all widgets will include Widget, and they all use SDL_Events crap
@@ -149,16 +148,17 @@ class Widget
 	
 	//True: Children will not be event handled if their position is outside our rect.
 	bool mConstrainChildrenToRect; 
-	
-	WidgetImage* GetImage(string id); //obtains WidgetImage with the Id
-	void RenderImages(uLong ms); //draws all mImages at default rects
-	void AddImage(WidgetImage* wi); 
-	
+
 	//Goes to the next sibling that can accept keyboard input.
 	void TabToNextSibling();
 	
-	std::vector<WidgetImage*> mImages; //Set of images loaded from Xml and placed around the widget
-	
+	/*	Calculate an offset of our source image based on widget state. (Mouse hover, normal, disabled, etc)
+		And the height the image would usually be that we are going to use. 
+	*/
+	int CalculateImageOffset(int height);
+
+	Image* mImage; //the main image used for rendering the widget
+
 	Font* mFont; //a lot of widgets tend to have a font reference, so it's global now
 	color mFontColor;
 	

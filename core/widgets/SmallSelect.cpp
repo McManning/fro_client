@@ -4,6 +4,7 @@
 #include "../GuiManager.h"
 #include "../FontManager.h"
 #include "../Screen.h"
+#include "../ResourceManager.h"
 
 void callback_smallSelectLeft(Button* b)
 {
@@ -55,10 +56,12 @@ SmallSelect::SmallSelect(Widget* wParent, string sId, rect rPosition,
 	
 	//create buttons and add
 	mLeft = new Button(this, "left", rect(0,0,15,15), "", callback_smallSelectLeft);
-		gui->WidgetImageFromXml(mLeft, "smallselectleft");
+	mLeft->SetImage("assets/gui/smallselect_left.png");
+	
 	mRight = new Button(this, "right", rect(0,0,15,15), "", callback_smallSelectRight);
-		gui->WidgetImageFromXml(mRight, "smallselectright");	
-	mBackgroundImage = gui->WidgetImageFromXml(this, "smallselectbg");
+	mRight->SetImage("assets/gui/smallselect_right.png");
+	
+	mBackgroundImage = resman->LoadImg("assets/gui/smallselect_bg.png");
 	
 	SetPosition(rPosition);
 	if (wParent)
@@ -76,7 +79,7 @@ void SmallSelect::Render(uLong ms)
 	Image* scr = Screen::Instance();
 	
 	if (mBackgroundImage)
-		mBackgroundImage->Render(this, scr, r);
+		mBackgroundImage->RenderHorizontalEdge(scr, rect(0, 0, 20, 20), r);
 	
 	//draw mItems.at(mSelectedIndex), clipped between the two buttons
 	if (mSelectedIndex < mItems.size() && mFont)

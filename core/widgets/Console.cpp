@@ -55,17 +55,18 @@ void callback_consoleExit(Button* b)
 
 Console::Console(string id, string title, string imageFile, string savePrefix, 
 				bool hasExit, bool hasInput)
+	: Frame(NULL, "", rect(), "", true, false, false, false)
 {
 	mFont = fonts->Get();
 	mId = id;
 	mType = WIDGET_FRAME;
-	mMoveable = true;
-	SetSizeable(true);
+
 	//mResizingBackgroundColor = color(0,64,128,100);
 	mResizingBorderColor = color(0,64,200);
 	mBackgroundColor = color(0,0,0,config.GetParamInt("console", "alpha"));
 	mBackground = NULL;
 	mShowTimestamps = true;
+	mSizeable = true; //will not create mSizer, and instead create a custom one
 	mOutput = NULL;
 	mSavePrefix = savePrefix;
 	
@@ -73,36 +74,25 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 
 	if (hasInput)
 	{			
-		mBottomImage = makeImage(this, "btm", imageFile, rect(0,16,26,26), rect(0,0,0,26), 
-								WIDGETIMAGE_HEDGE, false, false);
-								
 		mInput = new Input(this, "input", rect(26,0,0,20), "", 120, true, callback_consoleInput);
-			makeImage(mInput, "", imageFile, rect(104,0,2,20), rect(0,0,0,0), 
-							WIDGETIMAGE_HEDGE, false, false);
-		mInput->mHighlightBackground = HIGHLIGHT_COLOR;
-		mInput->mFontColor = color(255,255,255);
-		
-		mSizer = makeImage(this, "sizer", imageFile, rect(78,0,26,26), rect(0,0,26,26), 
-						WIDGETIMAGE_FULL, false, false);
+		mInput->SetImage("assets/gui/console_input." + imageFile + ".png");
+//		mInput->mHighlightBackground = HIGHLIGHT_COLOR;
+//		mInput->mFontColor = color(255,255,255);
 	}
 	else
 	{
-		//add short bottom								
-		mBottomImage = makeImage(this, "btm", imageFile, rect(0,42,26,16), rect(0,0,0,16), 
-									WIDGETIMAGE_HEDGE, false, false);
 		mInput = NULL;
-		
-		//small sizer
-		mSizer = makeImage(this, "sizer", imageFile, rect(78,42,16,16), rect(0,0,16,16), 
-						WIDGETIMAGE_FULL, false, false);
 	}
 	
-	mTopImage = makeImage(this, "top", imageFile, rect(0,0,26,16), rect(0,0,0,16), 
-							WIDGETIMAGE_HEDGE, false, false);
+//	mTopImage = makeImage(this, "top", imageFile, rect(0,0,26,16), rect(0,0,0,16), 
+//							WIDGETIMAGE_HEDGE, false, false);
 				
 
-	mOutput = new Multiline();
-	mOutput->mFont = fonts->Get("", 0, TTF_STYLE_BOLD); //load default font, but bold.
+	mOutput = new Multiline(this, "output", rect(0, 16, mPosition.w, mPosition.h - 42));
+	resman->Unload(mOutput->mImage);
+	mOutput->mImage = NULL;
+	
+/*	mOutput->mFont = fonts->Get("", 0, TTF_STYLE_BOLD); //load default font, but bold.
 	mOutput->mFontColor = color(255,255,255);
 
 	mOutput->mScrollbar = new Scrollbar();	
@@ -114,10 +104,12 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 	rPosition.w = 18;
 	rPosition.h = 18;
 		
-	mOutput->mScrollbar->mBackgroundImage = makeImage(mOutput->mScrollbar, "bg", imageFile, rect(78,26,18,5), 
-												rect(0,0,18,0), WIDGETIMAGE_VEDGE, false, false);
-	mOutput->mScrollbar->mTabImage = makeImage(mOutput->mScrollbar, "tab", imageFile, rect(96,26,18,15), 
-										rect(0,0,18,15), WIDGETIMAGE_FULL, false, false);
+	//replace our images
+	resman->Unload(mOutput->mScrollbar->mImage);
+	resman->Unload(mOutput->mScrollbar->mTabImage);
+	
+	mOutput->mScrollbar->mImage = resman->LoadImg("assets/console_scroller_bg.png");
+	mOutput->mScrollbar->mTabImage = resman->LoadImg("assets/console_scroller_tab.png");
 	
 	mOutput->mScrollbar->mValueDown = new Button(mOutput->mScrollbar, "down", rect(0,0,18,14), "", callback_scrollbarButtonDown);
 		makeImage(mOutput->mScrollbar->mValueDown, "", imageFile, rect(114,0,18,14), 
@@ -129,23 +121,25 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 				
 	mOutput->mScrollbar->SetPosition(rPosition);
 	mOutput->Add(mOutput->mScrollbar);
+
 	mOutput->SetPosition( rect(0, 16, mPosition.w, mPosition.h - 42) );
 	Add(mOutput);
-	
+*/	
 	mExit = NULL;
 	if (hasExit)
 	{
 		mExit = new Button(this, "exit", rect(0, 2, 12, 12), "", callback_consoleExit);
-			makeImage(mExit, "", imageFile, rect(150,0,12,12), 
-						rect(0,0,12,12), WIDGETIMAGE_FULL, true, false);
+		mExit->SetImage("assets/gui/console_exit. " + imageFile + ".png");
 	}
-		
+	
 	mTitle = NULL;
 	if (!title.empty())
 	{
 		mTitle = new Label(this, "title", rect(5, 1), title);
-		//bold is ugly mTitle->mFont = fonts->Get("", 0, TTF_STYLE_BOLD);
 	}
+
+	//don't use mImage b/c Frame will try to render it. Use a custom.
+	mBackgroundImage = resman->LoadImg("assets/gui/console_bg." + imageFile + ".png");
 	
 	ResizeChildren();
 
@@ -154,21 +148,46 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 Console::~Console()
 {
 	resman->Unload(mBackground);
+	resman->Unload(mBackgroundImage);
 }
 
 void Console::Render(uLong ms)
 {
 	Image* scr = Screen::Instance();
 	
+	rect r = GetScreenPosition();
+	
 	//draw translucent background
 	if (mBackground && !mResizing && mOutput)
 	{
-		rect r = mOutput->GetScreenPosition();
-		mBackground->Render(scr, r.x, r.y, 
+		rect rr = mOutput->GetScreenPosition();
+		mBackground->Render(scr, rr.x, rr.y, 
 							rect(0,0,mBackground->Width(), mBackground->Height()));
 	}
+	
+	if (mBackgroundImage && !mResizing)
+	{
+		mBackgroundImage->RenderHorizontalEdge(scr, rect(0, 0, 26, CONSOLE_HEADER_HEIGHT),
+												rect(r.x, r.y, r.w, CONSOLE_HEADER_HEIGHT));	
+				
+		if (mInput)
+		{							
+			mBackgroundImage->RenderHorizontalEdge(scr, rect(0, 16, 26, CONSOLE_FOOTER_WITH_INPUT_HEIGHT),
+												rect(r.x, r.y + r.h - CONSOLE_FOOTER_WITH_INPUT_HEIGHT, 
+												r.w, CONSOLE_FOOTER_WITH_INPUT_HEIGHT));
+			if (mSizeable)
+				mBackgroundImage->Render(scr, r.x + r.w - 26, r.y + r.h - 26, rect(78, 0, 26, 26));
+		}
+		else
+		{
+			mBackgroundImage->RenderHorizontalEdge(scr, rect(0, 42, 26, CONSOLE_FOOTER_NO_INPUT_HEIGHT),
+												rect(r.x, r.y + r.h - CONSOLE_FOOTER_NO_INPUT_HEIGHT, 
+												r.w, CONSOLE_FOOTER_NO_INPUT_HEIGHT));
+			if (mSizeable)
+				mBackgroundImage->Render(scr, r.x + r.w - 16, r.y + r.h - 16, rect(78, 42, 16, 16));
+		}
+	}
 
-	//TODO: Anything?
 	Frame::Render(ms);
 }
 
@@ -186,15 +205,14 @@ void Console::ResizeChildren()
 		mInput->SetPosition( rect(26, mPosition.h - mInput->Height() - 3, mPosition.w - 60, mInput->Height()) );
 
 	if (mOutput)
-		mOutput->SetPosition( rect(0, 16, mPosition.w, mPosition.h - mTopImage->mSrc.h - mBottomImage->mSrc.h) );
-
+	{
+		int h = (mInput) ? CONSOLE_FOOTER_WITH_INPUT_HEIGHT : CONSOLE_FOOTER_NO_INPUT_HEIGHT;
+		mOutput->SetPosition( rect(0, 16, mPosition.w, mPosition.h - CONSOLE_HEADER_HEIGHT - h) );
+	}
+	
 	if (mExit)
 		mExit->SetPosition( rect(mPosition.w - 16, 2, mExit->Width(), mExit->Height()) );
-	
-	if (mBottomImage)
-	{
-		mBottomImage->mDst.y = mPosition.h - mBottomImage->mDst.h;	
-	}
+
 	resman->Unload(mBackground);
 	
 	if (isDefaultColor(mBackgroundColor))

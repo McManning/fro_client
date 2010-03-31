@@ -60,33 +60,28 @@ OptionsDialog::OptionsDialog() :
 	x = 10;
 	b = new Button(this, "User",rect(x,30,20,20), "", callback_optionsDialogTab);
 		b->mHoverText = "User";
-		makeImage(b, "", "assets/options_tabs.png", rect(0,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_user.png");
 	x += 25;
 	
 	b = new Button(this, "Network",rect(x,30,20,20), "", callback_optionsDialogTab);
 		b->mHoverText = "Network";
-		makeImage(b, "", "assets/options_tabs.png", rect(20,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_network.png");
 	x += 25;
 	
 	b = new Button(this, "Audio",rect(x,30,20,20), "", callback_optionsDialogTab);
 		b->mHoverText = "Audio";
-		makeImage(b, "", "assets/options_tabs.png", rect(40,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_audio.png");
 	x += 25;
 	
 	b = new Button(this, "Graphics",rect(x,30,20,20), "", callback_optionsDialogTab);
 		b->mHoverText = "Graphics";
-		makeImage(b, "", "assets/options_tabs.png", rect(60,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/options_video.png");
 	x += 25;
 	
 //Create save button
 	b = new Button(this, "save",rect(Width()-30,Height()-30,20,20), "", callback_optionsDialogSave);
-			b->mHoverText = "Save Options";
-			makeImage(b, "", "assets/button20.png", rect(60,0,20,20),
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Save Options";
+		b->SetImage("assets/buttons/okay.png");
 
 	ResizeChildren();
 }

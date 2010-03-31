@@ -3,6 +3,7 @@
 #include "../GuiManager.h"
 #include "../Screen.h"
 #include "../FontManager.h"
+#include "../ResourceManager.h"
 
 #define CHECKBOX_LABEL_BUFFER 3 /* Space between the checkbox and the label */
 
@@ -13,17 +14,6 @@ uShort getCheckboxState(Widget* parent, string id)
 		return c->GetState();
 	else
 		return 0;
-}
-
-Checkbox::Checkbox()
-{
-	//TODO: load font name (along with other things) from XML and all that fancy crap
-	mState = 0;
-	mLastState = 0;
-	mStateCount = 1;
-	mType = WIDGET_CHECKBOX;
-	mGroup = 0;
-	mFont = fonts->Get();
 }
 
 Checkbox::Checkbox(Widget* wParent, string sId, rect rPosition, string sCaption, byte bGroup)
@@ -37,8 +27,8 @@ Checkbox::Checkbox(Widget* wParent, string sId, rect rPosition, string sCaption,
 	mId = sId;
 	
 	SetCaption(sCaption);
-	mImage = gui->WidgetImageFromXml(this, "checkbox", "");
-
+	mImage = resman->LoadImg("assets/gui/checkbox.png");
+	
 	SetPosition(rPosition);
 	if (wParent)
 		wParent->Add(this);
@@ -57,25 +47,28 @@ void Checkbox::Render(uLong ms)
 	Image* scr = Screen::Instance();
 
 	//change the size value to match whatever is being displayed
-	mPosition.w = CHECKBOX_LABEL_BUFFER + mImage->mSrc.w;
+	mPosition.w = CHECKBOX_LABEL_BUFFER + CHECKBOX_SIZE;
 	if (!mCaption.empty())
 		mPosition.w += mFont->GetWidth(stripCodes(mCaption));
 	
 	//height is whichever is larger, caption or src
-	if (!mCaption.empty() && mFont->GetHeight() < mImage->mSrc.h) 
+	if (!mCaption.empty() && mFont->GetHeight() < CHECKBOX_SIZE) 
 		mPosition.h = mFont->GetHeight();
 	else 
-		mPosition.h = mImage->mSrc.h;
+		mPosition.h = CHECKBOX_SIZE;
 		
 	rect pos = GetScreenPosition();
 
-	mImage->Render(this, scr, pos, mImage->mSrc.w * mState, 0);
+	mImage->Render( scr, pos.x, pos.y, rect(CHECKBOX_SIZE * mState, 
+											CalculateImageOffset(CHECKBOX_SIZE), 
+											CHECKBOX_SIZE, CHECKBOX_SIZE) 
+					);
 
 	//Render text (centered on Y, just to the right of the image on X)
 	if (mFont && !mCaption.empty())
 		mFont->Render(scr, 
-						pos.x + mImage->mSrc.w + CHECKBOX_LABEL_BUFFER, 
-						pos.y + (mImage->mSrc.h / 2) - (mFont->GetHeight() / 2),
+						pos.x + CHECKBOX_SIZE + CHECKBOX_LABEL_BUFFER, 
+						pos.y + (CHECKBOX_SIZE / 2) - (mFont->GetHeight() / 2),
 						mCaption, mFontColor
 					);
 	

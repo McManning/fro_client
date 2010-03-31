@@ -1,5 +1,4 @@
 
-
 #include "Frame.h"
 #include "Label.h"
 #include "Button.h"
@@ -7,24 +6,12 @@
 #include "../Image.h"
 #include "../GuiManager.h"
 #include "../FontManager.h"
+#include "../ResourceManager.h"
 
 void callback_frameCloseButton(Button* b)
 {
 	if (b->GetParent())
 		b->GetParent()->Die();
-}
-
-Frame::Frame()
-{
-	mMoveable = false;
-	mType = WIDGET_FRAME;
-	//Mouse may move outside our frame while dragging. TODO: Find a way to fix that issue!
-	gui->AddGlobalEventHandler(this);
-	SetSizeable(false);
-	mSizer = NULL;
-	mCaption = NULL;
-	mClose = NULL;
-	mFont = fonts->Get();
 }
 
 Frame::Frame(Widget* wParent, string sId, rect rPosition, string sCaption,
@@ -37,17 +24,17 @@ Frame::Frame(Widget* wParent, string sId, rect rPosition, string sCaption,
 	//Mouse may move outside our frame while dragging. TODO: Find a way to fix that issue!
 	gui->AddGlobalEventHandler(this);
 	mMoveable = bMoveable;
-	//mResizingBackgroundColor = color(0,64,128,100);
 	mResizingBorderColor = color(0,64,200);
 
+	mImage = NULL;
 	if (bBackground)
-		gui->WidgetImageFromXml(this, "framebg", "bg");
-
+		mImage = resman->LoadImg("assets/gui/frame_bg.png");
+		
 	SetSizeable(bSizeable);
 
 	mSizer = NULL;
 	if (bSizeable)
-		mSizer = gui->WidgetImageFromXml(this, "framesizer", "sizer");
+		mSizer = resman->LoadImg("assets/gui/frame_sizer.png");
 
 	mCaption = NULL;
 	if (!sCaption.empty())
@@ -57,7 +44,7 @@ Frame::Frame(Widget* wParent, string sId, rect rPosition, string sCaption,
 	if (bCloseButton)
 	{
 		mClose = new Button(this, "", rect(0,0,20,20), "", callback_closeFrame);
-		gui->WidgetImageFromXml(mClose, "frameclose");
+		mClose->SetImage("assets/gui/frame_close.png");
 	}
 
 	SetPosition(rPosition);
@@ -69,7 +56,7 @@ Frame::Frame(Widget* wParent, string sId, rect rPosition, string sCaption,
 
 Frame::~Frame()
 {
-
+	resman->Unload(mSizer);
 }
 
 void Frame::Render(uLong ms)
@@ -80,28 +67,8 @@ void Frame::Render(uLong ms)
 	
 	if (mResizing) //draw custom stuff
 	{
-
 		scr->SetClip(r);
-		//draw translucent rect..
-		if (!isDefaultColor(mResizingBackgroundColor))
-		{
-			scr->DrawRect( r, mResizingBackgroundColor );
-			
-			Font* f = mFont;
-			if (!f)
-				f = fonts->Get();
-			if (f) //render a caption indicating current size
-			{
-				s = its(r.w) + "x" + its(r.h);
 
-				f->Render(scr, 
-							r.x + (r.w / 2) - (f->GetWidth(s) / 2), 
-							r.y + (r.h / 2) - (f->GetHeight() / 2), 
-							s, color(255,255,255)
-						);
-			}
-		}
-		
 		//draw dashed line at the top & bottom
 		for (uShort x = r.x; x < r.x+r.w; x += 6)
 		{
@@ -119,7 +86,13 @@ void Frame::Render(uLong ms)
 	else
 	{
 		scr->SetClip(r);
-		RenderImages(ms); //just draw them all
+		
+		if (mImage)
+			mImage->RenderBox(scr, rect(0, 0, 24, 24), r);
+		
+		if (mSizer)
+			mSizer->Render(scr, r.x + r.w - 24, r.y + r.h - 24);
+		
 		scr->SetClip();
 
 		//draw children
@@ -179,11 +152,6 @@ void Frame::Event(SDL_Event* event)
 
 void Frame::ResizeChildren() //so that children don't size themselves while resizing (would lag like hell)
 {
-	if (mSizer)
-	{
-		mSizer->mDst.x = mPosition.w - mSizer->mDst.w;
-		mSizer->mDst.y = mPosition.h - mSizer->mDst.h;
-	}
 	if (mClose)
 	{
 		mClose->SetPosition( rect(Width() - mClose->Width() - 4, 2, mClose->Width(), mClose->Height()) );

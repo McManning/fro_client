@@ -14,7 +14,6 @@ class Button;
 class Scrollbar: public Widget 
 {
   public:
-	Scrollbar();
 	Scrollbar(Widget* wParent, string sId, rect rPosition, 
 					byte bOrientation, uShort uMax, uShort uBigScroll, uShort uValue, 
 					void (*onValueChange)(Scrollbar*));
@@ -54,8 +53,7 @@ class Scrollbar: public Widget
 	bool mShowValue; //draw the value or not~
 	byte mOrientation;
 
-	WidgetImage* mBackgroundImage;
-	WidgetImage* mTabImage;
+	Image* mTabImage;
 	uShort ScrollerSize();
 	
 	Button* mValueUp;

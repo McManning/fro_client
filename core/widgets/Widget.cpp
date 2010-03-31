@@ -20,6 +20,7 @@ Widget::Widget()
 	mFont = NULL;
 	mBorderColor.a = 0; //don't render
 	mHoverDelay = 3000;
+	mImage = NULL;
 }
 
 Widget::~Widget()
@@ -38,10 +39,7 @@ Widget::~Widget()
 		mParent = NULL;
 	}
 	
-	for (uShort i = 0; i < mImages.size(); i++)
-	{
-		SAFEDELETE(mImages.at(i));	
-	}
+	resman->Unload(mImage);
 	
 	gui->DereferenceWidget(this);
 }
@@ -219,40 +217,6 @@ void Widget::Render(uLong ms)
 	}
 }
 
-
-void Widget::RenderImages(uLong ms)
-{
-	Image* scr = Screen::Instance();
-	for (uShort i = 0; i < mImages.size(); i++)
-	{
-		mImages.at(i)->Render(this, scr);
-	}	
-}
-
-WidgetImage* Widget::GetImage(string id)
-{
-	for (uShort i = 0; i < mImages.size(); i++)
-	{
-		if (mImages.at(i)->mId == id) 
-			return mImages.at(i);
-	}	
-	return NULL;
-}
-
-void Widget::AddImage(WidgetImage* wi)
-{
-	for (uShort i = 0; i < mImages.size(); i++)
-	{
-		if (mImages.at(i)->mId == wi->mId) //erase old ones w/ matching id
-		{
-			SAFEDELETE(mImages.at(i));
-			mImages.erase(mImages.begin() + i);
-			i--;
-		}
-	}	
-	mImages.push_back(wi);
-}
-
 void Widget::FlagRender()
 {
 	//OPTIMIZETODO: Add position to our clip rects
@@ -398,6 +362,22 @@ void Widget::SetKeyFocus(bool b)
 		gui->hasKeyFocus = NULL;
 }
 
+/*	Calculate an offset of our source image based on widget state. (Mouse hover, normal, disabled, etc)
+	And the height the image would usually be that we are going to use. 
+*/
+int Widget::CalculateImageOffset(int height)
+{
+	if (!IsActive())
+	{
+		return height * 2; //disabled
+	}
+	else if (HasMouseFocus())
+	{
+		return height;
+	}
+	
+	return 0;
+}
 
 
 

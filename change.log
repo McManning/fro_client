@@ -589,12 +589,23 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 - Replaced dropdown menu at the top with a static, limited version.
 - Merged game.cfg into player.save
 
-100328
+100328a
 - Added dispatch of ENTITY_CMD[entity, message] when local or remote actors say something prefixed with slash (/)
 	These messages will not be displayed in the chatbox, and rely on scripts to handle them.
 - Added another overload to Player.Warp in lua: Player.Warp(x, y); to jump coordinates on current map.
 	Shorthand of Entity.SetPosition(Player.GetEntity(), x, y);
 
+100328b (After SVN commit to revision 10)
+- Removed /core/widgets/FilePicker.*
+- Removed /core/widgets/WidgetImage.*
+
+100331a
+- Removed all references to the WidgetImage system and replaced with a cleaner more basic method. 
+- Removed gui.xml access and hardcoded styling for all widgets
+- Fixed bug with icon loading in MyAchievements
+
+100331b (After SVN commit to revision 11)
+- 
 
 IMMEDIATE TODO:
 - Avatars downloaded to cache aren't being deleted. Do a periodic cleanup of /cache/*.ava files. Or.. at least flag shit needs to be 

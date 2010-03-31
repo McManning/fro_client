@@ -386,7 +386,7 @@ GameManager::GameManager(bool forceLogin)
 
 	PRINT("[GM] Loading Chat");
 
-	mChat = new Console("chat", "", "assets/console_blue.png", "chat_", false, true);
+	mChat = new Console("chat", "", "system", "chat_", false, true);
 	//mChat->mInput->mAllowSpecialKeys = false;
 	Add(mChat);
 	
@@ -448,7 +448,7 @@ GameManager::GameManager(bool forceLogin)
 	
 	ToggleGameMode(MODE_ACTION);
 	
-	new AvatarFavorites();
+	new MyAchievements();
 
 }
 
@@ -546,31 +546,31 @@ void GameManager::CreateHud()
 
 	b = new Button(mHud, "b", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "Report A Bug";
-		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/hud/reportbug.png");
 	x += 40;
 	sx += 35;
 
 	b = new Button(mHud, "u", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "Userlist";
-		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/hud/userlist.png");
 	x += 40;
 	sx += 35;
 
 	b = new Button(mHud, "c", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "Achievements";
-		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/hud/achievements.png");
 	x += 40;
 	sx += 35;
 
 	b = new Button(mHud, "a", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "Avatar Favorites";
-		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/hud/avatars.png");
 	x += 40;
 	sx += 35;
 	
 	b = new Button(mHud, "i", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "Inventory";
-		makeImage(b, "", file, rect(sx,0,35,35), rect(0,0,35,35), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/hud/inventory.png");
 	x += 40;
 	sx += 35;
 	

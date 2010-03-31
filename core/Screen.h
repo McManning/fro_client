@@ -39,4 +39,4 @@ class Screen : public Image
 //Define SDL Flags for our screen. Will require Resize() in order take effect.	
 void SetScreenFlags(Uint32 flags);
 
-#endif 
+#endif // _SCREEN_H_

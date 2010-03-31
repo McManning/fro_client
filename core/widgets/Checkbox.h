@@ -8,6 +8,8 @@
 #define UNCHECKED 0
 #define CHECKED 1
 
+const int CHECKBOX_SIZE = 16;
+
 class Font;
 class Image;
 /*
@@ -18,9 +20,7 @@ class Image;
 class Checkbox: public Widget 
 {
   public:
-	Checkbox();
 	Checkbox(Widget* wParent, string sId, rect rPosition, string sCaption, byte bGroup);
-	
 	~Checkbox();
 
 	void Render(uLong ms);
@@ -40,8 +40,6 @@ class Checkbox: public Widget
 	byte GetState() { return mState; };
 	
 	byte mGroup; //group number
-	
-	WidgetImage* mImage;
 	
   protected:
 	string mCaption; 

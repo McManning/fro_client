@@ -40,7 +40,7 @@ class SmallSelect: public Widget
 	Button* mLeft;
 	Button* mRight;
 	
-	WidgetImage* mBackgroundImage;
+	Image* mBackgroundImage;
 };
 
 

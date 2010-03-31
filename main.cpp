@@ -1,13 +1,20 @@
 
 #include "core/Common.h"
+#include "core/Screen.h"
 #include "core/GuiManager.h"
+#include "core/widgets/Checkbox.h"
+#include "core/widgets/Frame.h"
 #include "core/io/FileIO.h"
 #include "core/io/XmlFile.h"
 //#include "objecteditor/ObjectEditor.h"
 //#include "mapeditor/MapEditorDialog.h"
-#include "interface/AvatarCreator.h"
-#include "game/GameManager.h"
-#include "game/TerrainTest.h"
+
+//#define GUI_ONLY
+
+#ifndef GUI_ONLY
+#	include "game/GameManager.h"
+#	include "game/TerrainTest.h"
+#endif
 
 //TODO: A main that doesn't look SO FUCKING BAD. 
 int main (int argc, char *argv[])
@@ -24,6 +31,8 @@ int main (int argc, char *argv[])
 		Uint32 screenFlags = SDL_SWSURFACE | SDL_DOUBLEBUF;
 		SetScreenFlags(	screenFlags );
 
+
+#ifndef GUI_ONLY
        	if (argc > 1) //argv[0] is full application path
        	{
 /*			if (strcmp(argv[1], "-oe") == 0)
@@ -62,6 +71,13 @@ int main (int argc, char *argv[])
 			new GameManager(true);
 		}
 		
+#else
+		new GuiManager();
+		
+		new Checkbox(gui, "", rect(20, 20), "OMFG CHECKBOX", 0);
+		new Frame(gui, "", rect(20, 20, 200, 200), "This is a dialog", true, true, true, true);
+#endif		
+
 	//	console->HookCommand("create_actor", callback_CreateActor);
 		gui->MainLoop();
     }

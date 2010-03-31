@@ -10,7 +10,6 @@ class Image;
 class Button: public Widget 
 {
   public:
-	Button();
 	Button(Widget* wParent, string sId, rect rPosition, string sCaption,
 			void (*cbOnClick)(Button*));
 	~Button();
@@ -21,6 +20,11 @@ class Button: public Widget
 	
 	string GetCaption() { return mCaption; };
 	void SetCaption(string text);
+
+	/*	Set this buttons mImage to the specified file. Use this rather than accessing mImage directly 
+		from outside the class in order to avoid memory leaks (+shorter to write)
+	*/
+	void SetImage(string file);
 	
 	void (*onClickCallback)(Button*);
 	

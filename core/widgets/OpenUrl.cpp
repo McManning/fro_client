@@ -59,14 +59,12 @@ OpenUrl::OpenUrl(string url)
 
 	Button* b;
 	b = new Button(this, "", rect(Width()-25,Height()-25,20,20), "", callback_OpenUrlDefaultBrowser);
-	b->mHoverText = "Open in default web browser";
-		makeImage(b, "", "assets/button20.png", rect(140,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Open in default web browser";
+		b->SetImage("assets/buttons/web.png");
 					
 	b = new Button(this, "", rect(Width()-50,Height()-25,20,20), "", callback_OpenUrlCopy);
-	b->mHoverText = "Copy to clipboard";
-		makeImage(b, "", "assets/button20.png", rect(120,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Copy to clipboard";
+		b->SetImage("assets/buttons/clipboard.png");
 
 	ResizeChildren();
 	Center();

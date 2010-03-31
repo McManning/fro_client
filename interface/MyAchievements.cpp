@@ -3,20 +3,18 @@
 #include "../game/GameManager.h"
 
 MyAchievements::MyAchievements() :
-	Frame(gui, "achievements", rect(), "My Achievements (BETA)", true, true, true, true)
+	Frame(gui, "achievements", rect(0, 0, 500, 400), "My Achievements (BETA)", true, true, true, true)
 {
-	SetSize(500, 400);
 	Center();
 	
 	mDefaultIcon = NULL;
 
 	_load();
-	
-	mDefaultIcon = resman->LoadImg("assets/ach_default.png");
+
+	mDefaultIcon = resman->LoadImg("assets/ach_notearned.png");
 	
 	mAchFrame = new Frame(this, "", rect(5, 30, Width()-30, Height()-45));
-	
-	
+
 	int max = mAchievements.size()-1;
 	if (max < 0)
 		max = 0;
@@ -54,7 +52,7 @@ void MyAchievements::_load()
 			a.max = game->mPlayerData.GetParamInt(e, "max");
 			a.total = game->mPlayerData.GetParamInt(e, "total");
 
-			a.icon = NULL;
+		/*	a.icon = NULL;
 			if (a.file.empty())
 				a.icon = NULL;
 			else
@@ -62,6 +60,12 @@ void MyAchievements::_load()
 											game->mConfig.GetParamString("connection", "achievements") 
 												+ a.file + ".png", "", true
 										);
+*/
+			//TODO: Dynamic loading of achievement icons!
+			if (a.max != a.total)
+				a.icon = NULL; //use default not-earned icon
+			else 
+				a.icon = resman->LoadImg("assets/ach_earned.png");
 
 			mAchievements.push_back(a);
 			
@@ -139,12 +143,12 @@ void MyAchievements::Render(uLong ms)
 	Image* scr = Screen::Instance();
 	rect oldclip = scr->GetClip();
 	rect r = mAchFrame->GetScreenPosition();
-	
+
 	//contain our achievements listing
 	scr->SetClip(r);
 
 	//render each visible one
-	for (sShort i = mScroller->GetValue(); i < mAchievements.size(); i++)
+	for (int i = mScroller->GetValue(); i < mAchievements.size(); ++i)
 	{
 		if (i < 0) continue;
 		

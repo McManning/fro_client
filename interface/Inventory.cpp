@@ -111,14 +111,12 @@ IncinerateAmountRequest::IncinerateAmountRequest(itemProperties* item)
 
 	Button* b;
 	b = new Button(this, "", rect(Width()-70,Height()-25,20,20), "", callback_IncinerateAmountRequestAccept);
-	b->mHoverText = "Incinerate";
-		makeImage(b, "", "assets/button20.png", rect(60,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Incinerate";
+		b->SetImage("assets/buttons/okay.png");
 					
 	b = new Button(this, "", rect(Width()-35,Height()-25,20,20), "", callback_IncinerateAmountRequestCancel);
-	b->mHoverText = "Cancel";
-		makeImage(b, "", "assets/button20.png", rect(80,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Cancel";
+		b->SetImage("assets/buttons/no.png");
 
 	ResizeChildren();
 	Center();
@@ -153,31 +151,27 @@ Inventory::Inventory() :
 	
 	mList = makeList(this, "list", rect(0,0,0,0));
 		mList->onLeftSingleClickCallback = callback_inventoryListClick;
-		mList->mScrollbar->mTabImage->mDst.h = 10;
+		//mList->mScrollbar->mTabImage->mDst.h = 10;
 
 	mInfo = new Multiline(this, "info", rect(0,0,0,0));
-		mInfo->mScrollbar->mTabImage->mDst.h = 10; //shrink our scrollbar a bit to give more room
+		//mInfo->mScrollbar->mTabImage->mDst.h = 10; //shrink our scrollbar a bit to give more room
 
 	//make bottom buttons
 	mTrade = new Button(this, "trade", rect(0,0,20,20), "", NULL);
 		mTrade->mHoverText = "Trade Selected";
-		makeImage(mTrade, "", "assets/invicons.png", rect(40,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		mTrade->SetImage("assets/buttons/inv_trade.png");
 		mTrade->SetVisible(false);
 	
 	mDrop = new Button(this, "drop", rect(0,0,20,20), "", callback_inventory);
 		mDrop->mHoverText = "Incinerate Selected";
-		makeImage(mDrop, "", "assets/invicons.png", rect(0,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		mDrop->SetImage("assets/buttons/inv_drop.png");
 	
 	mUse = new Button(this, "use", rect(0,0,20,20), "", callback_inventory);
 		mUse->mHoverText = "Use Selected";
-		makeImage(mUse, "", "assets/invicons.png", rect(20,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		mUse->SetImage("assets/buttons/inv_use.png");
 
 	mCash = new Button(this, "", rect(0,0,20,20), "", NULL);
-		makeImage(mCash, "", "assets/invicons.png", rect(80,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, false, false);
+		mCash->SetImage("assets/buttons/dorra.png");
 			
 	SetCash(0);
 			

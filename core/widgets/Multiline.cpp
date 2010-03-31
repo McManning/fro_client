@@ -32,20 +32,6 @@ void callback_multilineScrollbar(Scrollbar* caller)
 		parent->_setTopLine(caller->GetValue());
 }
 
-Multiline::Multiline()
-{
-	mClickedOnce = false;
-	mType = WIDGET_MULTILINE;
-	mBottomLine = 0; //at the start
-	mWrap = true;
-	mHighlightSelected = false;
-	mSelectOnHover = false;
-	mSelected = -1;
-	onLeftDoubleClickCallback = onLeftSingleClickCallback = NULL;
-	mScrollbar = NULL;
-	mFont = fonts->Get();
-}
-
 Multiline::Multiline(Widget* wParent, string sId, rect rPosition)
 {
 	mClickedOnce = false;
@@ -61,7 +47,7 @@ Multiline::Multiline(Widget* wParent, string sId, rect rPosition)
 
 	mId = sId;
 
-	gui->WidgetImageFromXml(this, "multi");
+	mImage = resman->LoadImg("assets/gui/multi_bg.png");
 		
 	mScrollbar = new Scrollbar(this, "", rect(0,0,15,rPosition.h), VERTICAL, 1, 1, 0,
 								callback_multilineScrollbar);
@@ -86,12 +72,14 @@ void Multiline::Render(uLong ms)
 
 	//TODO: color curColor = color(255,255,255); //current color we're drawing text in
 
+	if (mImage)
+		mImage->RenderBox(scr, rect(0, 0, 5, 5), r);
+	
 	//set target clipping here so it doesn't overflow lines
 	r.w -= mScrollbar->Width();
 	r.h -= 4;
 	r.y += 2;
 
-	RenderImages(ms);
 	scr->SetClip(r);
 
 	if (!mLines.empty() && mFont)

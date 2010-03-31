@@ -18,7 +18,7 @@ void callback_UserListDoubleClick(Multiline* m)
 }
 
 UserList::UserList() :
-	Console("userlist", "Characters: 0", "assets/console_yellow.png", "", true, false)
+	Console("userlist", "Characters: 0", "system", "", true, false)
 {
 	//convert our output to list format
 	mOutput->mWrap = false;

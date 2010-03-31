@@ -7,6 +7,7 @@
 #include "Label.h"
 
 #include "../GuiManager.h"
+#include "../ResourceManager.h"
 
 void callback_MessagePopupOkay(Button* b)
 {
@@ -33,7 +34,7 @@ MessagePopup::MessagePopup(string id, string title, string msg, bool useMultilin
 		
 		Multiline* m;
 		m = new Multiline(this, "msg", rect(5,30,Width()-10,Height()-60));
-		m->mScrollbar->mTabImage->mDst.h = 10; //shrink our scrollbar a bit to give more room
+		//TODO: m->mScrollbar->mTabImage->mDst.h = 10; //shrink our scrollbar a bit to give more room
 		m->AddFormattedMessage(msg);	
 		m->SetTopLine(0); //set it to display the top of the list.
 	}
@@ -61,9 +62,8 @@ MessagePopup::MessagePopup(string id, string title, string msg, bool useMultilin
 	}
 
 	mOkay = new Button(this, "", rect(Width()-43,Height()-25,20,20), "", callback_MessagePopupOkay);
-	mOkay->mHoverText = "Okay";
-		makeImage(mOkay, "", "assets/button20.png", rect(60,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		mOkay->mHoverText = "Okay";
+		mOkay->SetImage("assets/buttons/okay.png");
 
 	ResizeChildren();
 	Center();

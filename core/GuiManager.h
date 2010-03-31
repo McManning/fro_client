@@ -32,9 +32,7 @@ class GuiManager : public Widget
 	
 	/*	The applications absolute MAIN heartbeat */
 	void MainLoop();
-	
-	//Load widgetImage settings from an xml file
-	WidgetImage* WidgetImageFromXml(Widget* parent, string element, string id = "") const;
+
 	Widget* GrabWidgetUnderXY(Widget* root, sShort x, sShort y) const;
 
 	void Render(uLong ms); //Overloaded from Widget
@@ -82,8 +80,6 @@ class GuiManager : public Widget
 	void SetAlert(string msg);
 
 	void Screenshot();
-
-	XmlFile* mXml; //Default settings for various Widgets. (Font, skinning, etc)
 
 	Image* mCursorImage; //cursor image. TODO: Rename to mCursor
 

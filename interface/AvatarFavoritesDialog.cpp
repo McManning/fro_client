@@ -122,9 +122,8 @@ AvatarEdit::AvatarEdit(avatarProperties* prop) :
 
 	Button* b;
 	b = new Button(this, "save",rect(230,152,20,20), "", callback_avatarEditSave);
-	b->mHoverText = "Save Avatar";
-		makeImage(b, "", "assets/button20.png", rect(60,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Save Avatar";
+		b->SetImage("assets/buttons/go.png");
 
 	mCurrentProperties = prop;
 	
@@ -173,29 +172,24 @@ AvatarFavorites::AvatarFavorites() :
 
 	//make bottom buttons
 	mNew = new Button(this, "new", rect(0,0,20,20), "", callback_avatarFavorites);
-	mNew->mHoverText = "Add New Avatar";
-		makeImage(mNew, "", "assets/button20.png", rect(0,0,20,20),
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		mNew->mHoverText = "Add New Avatar";
+		mNew->SetImage("assets/buttons/star_plus.png");
 
 	mEdit = new Button(this, "edit", rect(0,0,20,20), "", callback_avatarFavorites);
-	mEdit->mHoverText = "Edit Selected";
-		makeImage(mEdit, "", "assets/button20.png", rect(20,0,20,20),
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		mEdit->mHoverText = "Edit Selected";
+		mEdit->SetImage("assets/buttons/star_bar.png");
 
 	mDelete = new Button(this, "del", rect(0,0,20,20), "", callback_avatarFavorites);
-	mDelete->mHoverText = "Delete Selected";
-		makeImage(mDelete, "", "assets/button20.png", rect(40,0,20,20),
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		mDelete->mHoverText = "Delete Selected";
+		mDelete->SetImage("assets/buttons/star_minus.png");
 
 	mUse = new Button(this, "use", rect(0,0,20,20), "", callback_avatarFavorites);
-	mUse->mHoverText = "Use Selected";
-		makeImage(mUse, "", "assets/button20.png", rect(100,0,20,20),
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		mUse->mHoverText = "Use Selected";
+		mUse->SetImage("assets/buttons/go.png");
 
 	mDesign = new Button(this, "", rect(0,0,20,20), "", callback_createAvatar);
-	mDesign->mHoverText = "Open Avatar Designer";
-		makeImage(mDesign, "", "assets/button20.png", rect(0,0,20,20),
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		mDesign->mHoverText = "Open Avatar Designer";
+		mDesign->SetImage("assets/buttons/star_plus.png");
 
 	ResizeChildren(); //get them into position
 	Center();

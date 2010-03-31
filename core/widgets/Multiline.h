@@ -13,9 +13,7 @@ class Font;
 class Multiline: public Widget
 {
   public:
-	Multiline();
 	Multiline(Widget* wParent, string sId, rect rPosition);
-
 	~Multiline();
 
 	void Render(uLong ms);

@@ -9,7 +9,6 @@ class Label;
 class Frame : public Widget 
 {
   public:
-	Frame();
 	Frame(Widget* wParent, string sId, rect rPosition, string sCaption = "", 
 			bool bMoveable = false, bool bSizeable = false, bool bCloseButton = false, 
 			bool bBackground = false);
@@ -29,11 +28,10 @@ class Frame : public Widget
 	bool mMoveable;
 	bool mSizeable; 
 	
-	WidgetImage* mSizer;
+	Image* mSizer;
 	Button* mClose;
 	Label* mCaption;
-	
-	color mResizingBackgroundColor;
+
 	color mResizingBorderColor;
   protected:
 	point2d mDrag;

@@ -40,6 +40,10 @@ struct consoleCommand
 	commandType type;
 };
 
+const int CONSOLE_HEADER_HEIGHT = 16;
+const int CONSOLE_FOOTER_NO_INPUT_HEIGHT = 16;
+const int CONSOLE_FOOTER_WITH_INPUT_HEIGHT = 26;
+
 class Input;
 class Multiline;
 class Console : public Frame 
@@ -78,10 +82,9 @@ class Console : public Frame
 	Label* mTitle;
 	Button* mExit;
 	
-	Image* mBackground; 
-	WidgetImage* mBottomImage;
-	WidgetImage* mTopImage;
-	
+	Image* mBackground; //background of the output
+	Image* mBackgroundImage; //will be sliced up for the main background
+
 	color mBackgroundColor;
 
 	string mSavePrefix; //when saving log files

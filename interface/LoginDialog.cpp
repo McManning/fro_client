@@ -184,18 +184,15 @@ LoginDialog::LoginDialog() :
 	//bottom button set
 	b = new Button(this, "register",rect(10,y,20,20), "", callback_LoginDialogRegister);
 		b->mHoverText = "Register";
-		makeImage(b, "", "assets/login.png", rect(0,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/register.png");
 	
 	b = new Button(this, "login",rect(160,y,20,20), "", callback_LoginDialogSendLogin);
 		b->mHoverText = "Send Login";
-		makeImage(b, "", "assets/login.png", rect(20,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/okay.png");
 	
 	b = new Button(this, "skip",rect(190,y,20,20), "", callback_LoginDialogSkip);
 		b->mHoverText = "Skip Login";
-		makeImage(b, "", "assets/login.png", rect(40,0,20,20),
-				rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->SetImage("assets/buttons/no.png");
 
 	l = new Label(this, "status", rect(10,y), "Getting Server Verification...");
 		l->SetVisible(false);

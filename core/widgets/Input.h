@@ -12,10 +12,8 @@ class Font;
 class Image;
 class Input: public Widget {
   public:
-	Input();
 	Input(Widget* wParent, string sId, rect rPosition, string sMask, 
 				uShort uMaxLen, bool bSpecialKeys, void (*callbackOnEnter)(Input*));
-	
 	~Input();
 
 	void Render(uLong ms);
@@ -58,6 +56,9 @@ class Input: public Widget {
 	
 	bool IsMenuEnabled() const { return mMenuEnabled; };
 	void SetMenuEnabled(bool b) { mMenuEnabled = b; };
+	
+	/*	Use this instead of accessing mImage directly */
+	void SetImage(string file);
 	
 	//VARIABLES AND SUCH -> GO!
 	string mCharacterMask; //list of allowed characters

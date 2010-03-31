@@ -1011,6 +1011,56 @@ bool Image::RenderPattern(Image* dst, rect rSrc, rect rDst)
 	return true;
 }
 
+bool Image::RenderHorizontalEdge(Image* dst, rect rSrc, rect rDst)
+{
+	if (rDst.w > rSrc.w * 2) //center
+	{
+		if (!RenderPattern(dst,
+					rect( rSrc.w + rSrc.x, 0 + rSrc.y, rSrc.w, rSrc.h ),
+					rect( rDst.x + rSrc.w, rDst.y, rDst.w - rSrc.w * 2, rDst.h)
+		)) return false;
+	}
+
+	//left
+	if (!RenderPattern(dst,
+				rSrc,
+				rect( rDst.x, rDst.y, rSrc.w, rDst.h )
+		)) return false;
+
+	//right
+	if (!RenderPattern(dst,
+				rect( rSrc.w * 2 + rSrc.x, rSrc.y, rSrc.w, rSrc.h ),
+				rect( rDst.x + rDst.w - rSrc.w, rDst.y, rSrc.w, rDst.h )
+		)) return false;
+	
+	return true;
+}
+
+bool Image::RenderVerticalEdge(Image* dst, rect rSrc, rect rDst)
+{
+	if (rDst.h > rSrc.h * 2) //center
+	{
+		if (!RenderPattern(dst,
+					rect( 0 + rSrc.x, rSrc.h + rSrc.y, rSrc.w, rSrc.h ),
+					rect( rDst.x, rDst.y + rSrc.h, rDst.w, rDst.h - rSrc.h * 2)
+			)) return false;
+	}
+	
+	//top
+	if (!RenderPattern(dst,
+				rSrc,
+				rect( rDst.x, rDst.y, rDst.w, rSrc.h )
+		)) return false;
+
+	//bottom
+	if (!RenderPattern(dst,
+				rect( rSrc.x, rSrc.h * 2 + rSrc.y, rSrc.w, rSrc.h ),
+				rect( rDst.x, rDst.y + rDst.h - rSrc.h, rDst.w, rSrc.h )
+		)) return false;
+		
+	return true;
+}
+
 bool Image::RenderBox(Image* dst, rect rSrc, rect rDst)
 {
 	_checkStatus();

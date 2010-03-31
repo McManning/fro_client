@@ -7,7 +7,8 @@
 #include "../lua/MapLib.h"
 #include "../interface/AvatarFavoritesDialog.h"
 
-Map::Map() : Frame()
+Map::Map() 
+	: Frame(NULL, "", rect())
 { 
 	mWidth = mHeight = 0; 
 	mType = NONE;

@@ -155,24 +155,6 @@ int system_GenerateFilename(lua_State* ls)
 	return 1;
 }
 
-/*
-void callback_luaFilePicker(FilePicker* fp)
-{
-
-}
-
-// .SelectFile("function")   TODO: I don't know how to deal with this entirely.
-int system_SelectFile(lua_State* ls)
-{
-	PRINT("system_Wildmatch");
-	luaCountArgs(ls, 2);
-	
-	
-	
-	return 0;
-}
-*/
-
 static const luaL_Reg functions[] = {
 	{"Print", system_Print},
 	{"Fatal", system_Fatal},
@@ -185,7 +167,6 @@ static const luaL_Reg functions[] = {
 	{"OffsetByTheta", system_OffsetByTheta},
 	{"StringToNumber", system_StringToNumber},
 	{"GenerateFilename", system_GenerateFilename},
-	//{"SelectFile", system_SelectFile},
 	{NULL, NULL}
 };
 

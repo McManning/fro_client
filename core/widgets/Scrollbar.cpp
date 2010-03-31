@@ -4,6 +4,7 @@
 #include "../GuiManager.h"
 #include "../FontManager.h"
 #include "../Screen.h"
+#include "../ResourceManager.h"
 
 uShort getScrollbarValue(Widget* parent, string id)
 {
@@ -26,22 +27,6 @@ void callback_scrollbarButtonUp(Button* b)
 	s->SetValue(s->GetValue() - 1);
 }
 
-Scrollbar::Scrollbar()
-{
-    mOrientation = VERTICAL;
-	mType = WIDGET_SCROLLBAR;
-	//just set some defaults
-	mMax = 1;
-	mScrollerPos = 0;
-	mScrollPress = -1;
-	mBigScroll = 1;
-	mShowValue = false;
-	onValueChangeCallback = NULL;
-	mBackgroundImage = mTabImage = NULL;
-	mValueDown = NULL;
-	mValueUp = NULL;
-}
-
 Scrollbar::Scrollbar(Widget* wParent, string sId, rect rPosition,
 					byte bOrientation, uShort uMax, uShort uBigScroll, uShort uValue,
 					void (*onValueChange)(Scrollbar*))
@@ -60,20 +45,20 @@ Scrollbar::Scrollbar(Widget* wParent, string sId, rect rPosition,
 	onValueChangeCallback = onValueChange;
 	mOrientation = bOrientation;
 
-	string c; //change Xml read source based on our direction
+	string s;
 	if (mOrientation == VERTICAL)
-		c = "v";
+		s = "assets/gui/vscroller";
 	else
-		c = "h";
+		s = "assets/gui/hscroller";
 
-	mBackgroundImage = gui->WidgetImageFromXml(this, c + "scrollbarbg", "bg");
-	mTabImage = gui->WidgetImageFromXml(this, c + "scrollbartab", "tab");
+	mImage = resman->LoadImg(s + "_bg.png");
+	mTabImage = resman->LoadImg(s + "_tab.png");
 
 	mValueDown = new Button(this, "down", rect(0,0,15,15), "", callback_scrollbarButtonDown);
-		gui->WidgetImageFromXml(mValueDown, c + "scrollbardown");
+	mValueDown->mImage = resman->LoadImg(s + "_down.png");
 
 	mValueUp = new Button(this, "up", rect(0,0,15,15), "", callback_scrollbarButtonUp);
-		gui->WidgetImageFromXml(mValueUp, c + "scrollbarup");
+	mValueUp->mImage = resman->LoadImg(s + "_up.png");
 
 	if (mOrientation == VERTICAL)
 	{
@@ -96,7 +81,7 @@ Scrollbar::Scrollbar(Widget* wParent, string sId, rect rPosition,
 
 Scrollbar::~Scrollbar()
 {
-
+	resman->Unload(mTabImage);
 }
 
 void Scrollbar::Render(uLong ms)
@@ -105,31 +90,33 @@ void Scrollbar::Render(uLong ms)
 	uShort ss;
 	Image* scr = Screen::Instance();
 
-	if (mBackgroundImage)
-		mBackgroundImage->Render(this, scr, r);
-
     // draw the elevator icon
     if (mOrientation == VERTICAL)
 	{
+		if (mImage)
+			mImage->RenderVerticalEdge(scr, rect(0, 0, r.w, r.w), r);
+		
 		ss = r.y + ScrollerTop();
 		if (ss < r.y) ss = r.y;
 		if (ss > r.y + r.h - ScrollerSize())
 			ss = r.y + r.h - ScrollerSize();
 
 		if (mTabImage)
-			mTabImage->Render(this, scr, rect(r.x, ss, r.w, ScrollerSize()));
+			mTabImage->Render(scr, r.x, ss);
 	}
 	else
 	{
+		if (mImage)
+			mImage->RenderHorizontalEdge(scr, rect(0, 0, r.h, r.h), r);
+			
 		ss = r.x + ScrollerTop();
 		if (ss < r.x) ss = r.x;
 		if (ss > r.x + r.w - ScrollerSize())
 			ss = r.x + r.w - ScrollerSize();
 
 		if (mTabImage)
-			mTabImage->Render(this, scr, rect(ss, r.y, ScrollerSize(), r.h));
+			mTabImage->Render(scr, ss, r.y);
 	}
-
 
 	Widget::Render(ms); //draws buttons
 }
@@ -272,17 +259,11 @@ uShort Scrollbar::ScrollerSize() //static size for now~ (I don't like the resiza
   	{
 		if (mOrientation == VERTICAL)
 		{
-			if (mTabImage->mDst.h > 0)
-				return mTabImage->mDst.h;
-			else
-				return mTabImage->mSrc.h;
+			return mTabImage->Width();
 		}
 		else
 		{
-			if (mTabImage->mDst.w > 0)
-				return mTabImage->mDst.w;
-			else
-				return mTabImage->mSrc.w;
+			return mTabImage->Height();
 		}
 	}
 

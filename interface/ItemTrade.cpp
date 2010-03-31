@@ -141,14 +141,12 @@ TradeRequest::TradeRequest(string nick)
 		
 	Button* b;
 	b = new Button(this, "", rect(10,Height()-25,20,20), "", callback_TradeRequestAccept);
-	b->mHoverText = "Accept";
-		makeImage(b, "", "assets/button20.png", rect(60,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Accept";
+		b->SetImage("assets/buttons/okay.png");
 
 	b = new Button(this, "", rect(Width()-35,Height()-25,20,20), "", callback_TradeRequestDeny);
-	b->mHoverText = "Deny";
-		makeImage(b, "", "assets/button20.png", rect(80,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Deny";
+		b->SetImage("assets/buttons/no.png");
 
 	ResizeChildren();
 	Center();
@@ -252,9 +250,8 @@ AmountRequest::AmountRequest(ItemTrade* trade, itemProperties* item)
 
 	Button* b;
 	b= new Button(this, "", rect(Width()-35,Height()-25,20,20), "", callback_AmountRequestAccept);
-	b->mHoverText = "Accept";
-		makeImage(b, "", "assets/button20.png", rect(60,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Accept";
+		b->SetImage("assets/buttons/okay.png");
 
 	ResizeChildren();
 	Center();
@@ -329,19 +326,16 @@ ItemTrade::ItemTrade(string trader)
 	y += 25;
 	
 	b= new Button(this, "", rect(10,Height()-25,20,20), "", callback_ItemTradeReady);
-	b->mHoverText = "Ready To Trade";
-		makeImage(b, "", "assets/button20.png", rect(60,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Ready To Trade";
+		b->SetImage("assets/buttons/okay.png");
 
 	b= new Button(this, "", rect(Width()-30,Height()-25,20,20), "", callback_ItemTradeCancel);
-	b->mHoverText = "Cancel Trade";
-		makeImage(b, "", "assets/button20.png", rect(80,0,20,20), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Cancel Trade";
+		b->SetImage("assets/buttons/no.png");
 	
 	b = new Button(this, "privmsg", rect(90, Height()-25, 20, 20), "", callback_ItemTradePrivmsg);
-	b->mHoverText = "Open Private Chat";
-		makeImage(b, "", "assets/button20.png", rect(100,0,20,20),
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
+		b->mHoverText = "Open Private Chat";
+		b->SetImage("assets/buttons/options_user.png");
 	
 	//bring the inventory up, and set it to be NEXT TO our trade dialog
 	inventory->SetVisible(true);
