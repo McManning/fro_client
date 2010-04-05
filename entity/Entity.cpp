@@ -1,4 +1,5 @@
 
+#include <lua.hpp>
 #include "Entity.h"
 #include "EntityManager.h"
 #include "../map/Map.h"
@@ -173,3 +174,34 @@ string Entity::GetFlag(string flag)
 	
 	return base64_decode(value.c_str(), value.length());
 }
+
+/*	index - Index of the stack where our new value for the property should be */
+int Entity::LuaSetProp(lua_State* ls, string& prop, int index)
+{
+	if (prop == "id") mId = lua_tostring(ls, index);
+	else if (prop == "name") mName = lua_tostring(ls, index);
+	else if (prop == "visible") SetVisible( lua_toboolean(ls, index) );
+	else if (prop == "solid") SetSolid( lua_toboolean(ls, index) );
+	else if (prop == "shadow") mShadow = lua_toboolean(ls, index);
+	else if (prop == "layer") SetLayer( (int)lua_tonumber(ls, index) );
+	else if (prop == "clickable") mCanClick = lua_toboolean(ls, index);
+	else return 0;
+	
+	return 1;
+}
+
+int Entity::LuaGetProp(lua_State* ls, string& prop)
+{
+	if (prop == "id") lua_pushstring( ls, mId.c_str() );
+	else if (prop == "name") lua_pushstring( ls,mName.c_str() );
+	else if (prop == "visible") lua_pushboolean( ls, IsVisible() );
+	else if (prop == "solid") lua_pushboolean( ls, IsSolid() );
+	else if (prop == "shadow") lua_pushboolean( ls, mShadow );
+	else if (prop == "layer") lua_pushnumber( ls, GetLayer() );
+	else if (prop == "type") lua_pushstring( ls, GetTypeName().c_str() );
+	else if (prop == "clickable") lua_pushboolean( ls, mCanClick );
+	else return 0;
+	
+	return 1;
+}
+

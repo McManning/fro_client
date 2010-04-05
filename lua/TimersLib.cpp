@@ -150,7 +150,7 @@ int timers_Add(lua_State* ls)
 	return 1;
 }
 
-// .RemoveHandle(handle) - Unregister a timer with the matching handle number. Returns 1 if successful, 0 otherwise.
+// bool = .RemoveHandle(handle) - Unregister a timer with the matching handle number. Returns true if successful, false otherwise.
 int timers_RemoveHandle(lua_State* ls)
 {
 	PRINT("timers_RemoveHandle");
@@ -160,7 +160,7 @@ int timers_RemoveHandle(lua_State* ls)
 	
 	bool result = timers->RemoveByHandle(handle);
 	
-	lua_pushnumber(ls, result);
+	lua_pushboolean(ls, result);
 	return 1;
 }
 

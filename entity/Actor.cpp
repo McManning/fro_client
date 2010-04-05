@@ -1,4 +1,5 @@
 
+#include <lua.hpp>
 #include "Actor.h"
 #include "StaticObject.h"
 #include "ActionEffect.h"
@@ -688,26 +689,17 @@ void Actor::_checkLoadingAvatar()
 {
 	if (mLoadingAvatar)
 	{
-		if (!mLoadingAvatar->GetImage()) // avy:// could've failed, or other
+		switch (mLoadingAvatar->mState)
 		{
-			SAFEDELETE(mLoadingAvatar);
-		}
-		else
-		{
-			switch (mLoadingAvatar->GetImage()->mImage->state)
-			{
-				case SDL_Image::NOIMAGE:
-					break;
-				case SDL_Image::LOADED: {
-					SwapAvatars();
-				} break;
-				case SDL_Image::LOADING: {
-					//Don't do anything
-				} break;
-				default: { //BADIMAGE or "other"
-					SAFEDELETE(mLoadingAvatar);
-				} break;
-			}
+			case Avatar::LOADED: {
+				SwapAvatars();
+			} break;
+			case Avatar::LOADING: {
+				//Don't do anything
+			} break;
+			default: { //FAILED or "other"
+				SAFEDELETE(mLoadingAvatar);
+			} break;
 		}
 	}
 }
@@ -732,14 +724,16 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 	int oldcap = downloader->GetByteCap();
 	downloader->SetByteCap(MAX_AVATAR_FILESIZE);
 	
-	mLoadingAvatar->Load(); //mImage = resman->LoadImg(file, pass);
+	mLoadingAvatar->Load();
 	
 	downloader->SetByteCap(oldcap);
 
-	// If it loads from disk, we'll swap here.
-	_checkLoadingAvatar();
+	bool result = (mLoadingAvatar != NULL);
+	
+	// If it loads from disk (avy://, etc), we'll swap here.
+	// Screws up LocalActor::LoadAvatar()	 _checkLoadingAvatar();
 
-	return (mLoadingAvatar != NULL);
+	return result;
 }
 
 void Actor::Render(uLong ms)
@@ -1023,6 +1017,39 @@ void Actor::Face(Entity* e)
 		dir = NORTH;
 	
 	SetDirection(dir);
+}
+
+/*	index - Index of the stack where our new value for the property should be */
+int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
+{
+	if (prop == "direction") SetDirection( stringToDirection(lua_tostring(ls, index)) );
+	else if (prop == "speed") SetSpeed( (byte)lua_tonumber(ls, index) );
+	else if (prop == "action") SetAction( (byte)lua_tonumber(ls, index) );
+	else if (prop == "noclip") SetIgnoreSolids( lua_tonumber(ls, index) );
+	else if (prop == "mod" && GetAvatar())
+	{
+		if ( GetAvatar()->Modify( (byte)lua_tonumber(ls, index) ) )
+		{
+			//if we modified our local players avatar, we need to send this mod to the network
+			if (a == (Actor*)game->mPlayer)
+				game->mPlayer->NetSendAvatarMod();
+		}
+	}
+	else return Entity::LuaSetProp(ls, prop, index);
+
+	return 1;
+}
+
+int Actor::LuaGetProp(lua_State* ls, string& prop)
+{
+	if (prop == "direction") lua_pushnumber( ls, GetDirection() );
+	else if (prop == "speed") lua_pushnumber( ls, GetSpeed() );
+	else if (prop == "action") lua_pushnumber( ls, GetAction() );
+	else if (prop == "noclip") lua_pushnumber( ls, IgnoreSolids() );
+	else if (prop == "mod" && GetAvatar()) lua_pushnumber( ls, GetAvatar()->mModifier );
+	else return Entity::LuaGetProp(ls, prop);
+
+	return 1;
 }
 
 

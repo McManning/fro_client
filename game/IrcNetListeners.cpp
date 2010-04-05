@@ -314,6 +314,8 @@ void netSendEmote(uShort num) //emo num
 /*	This user sent a valid message, but we don't have them on the map. Request for add */
 void _handleUnknownUser(string& nick)
 {
+	/*	TODO: Make sure they're actually in our channel! What if they sent
+		a message from somewhere outside our channel? */
 	if ( timers->Find("pushNm") )
 		return;
 			
@@ -605,6 +607,31 @@ void _handleNetMessage_Emo(string& nick, DataPacket& data)
 	ra->Emote( data.ReadInt(0) );
 }
 
+void _handleNetMessage_Lua(string& nick, DataPacket& data)
+{
+	if (!game->mMap) return;
+	
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
+	if (!ra) { _handleUnknownUser(nick); return; }
+	
+	if (data.Size() != 2)
+	{
+		console->AddMessage("Malformed 'lua' from " + ra->mName);
+		return;
+	}
+	
+	string id = data.ReadString(0);
+	string msg = data.ReadString(1);
+	
+	//Dispatch it and let lua listeners pick it up
+	MessageData md;
+	md.SetId("NET_LUA");
+	md.WriteString("id", id);
+	md.WriteString("message", msg);
+	
+	messenger.Dispatch(md, ra);
+}
+
 void _handleNetMessage_Mod(string& nick, DataPacket& data) //avatar mod: mod #
 {
 	if (!game->mMap) return;
@@ -695,6 +722,8 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 		_handleNetMessage_Emo(nick, data);
 	else if (id == "stp")
 		_handleNetMessage_Stamp(nick, data);
+	else if (id == "lua")
+		_handleNetMessage_Lua(nick, data);
 	else if (id == "ern")
 		_handleNetMessage_PlayerEarnedAchievement(nick, data);
 	else if (id == "mod")
@@ -1018,6 +1047,8 @@ void listener_NetNewState(MessageListener* ml, MessageData& md, void* sender)
 			break;
 		case ONCHANNEL:
 			DEBUGOUT("ONCHANNEL");
+			if (game->mLoader)
+				game->mLoader->SetState(WorldLoader::WORLD_READY);
 			break;
 		case DISCONNECTED:
 			game->UnloadMap();
@@ -1053,8 +1084,7 @@ void listener_NetNickInUse(MessageListener* ml, MessageData& md, void* sender)
 // Nothing in message
 void listener_NetVerified(MessageListener* ml, MessageData& md, void* sender)
 {
-	FATAL("LoadStartingWorld");
-	//game->LoadStartingWorld();
+	game->LoadOnlineWorld(game->mStartingWorldId);
 }
 
 void hookNetListeners()

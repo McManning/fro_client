@@ -53,6 +53,10 @@ class Actor : public Entity
 
 	/*	Attempts to convert mLoadingAvatar to avatar format and swaps with mAvatar. Returns true on success */
 	bool SwapAvatars();
+	
+	/*	index - Index of the stack where our new value for the property should be */
+	virtual int LuaSetProp(lua_State* ls, string& prop, int index);
+	virtual int LuaGetProp(lua_State* ls, string& prop);
 
 	/*	Move in the designated direction/distance at the designated speed */
 	virtual void Move(direction dir, sShort distance = 16, byte speed = 0);

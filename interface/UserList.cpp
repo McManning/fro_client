@@ -62,7 +62,7 @@ UserList::~UserList()
 void UserList::ClickSelected()
 {
 	if (mOutput->mSelected < 0 || mOutput->mSelected >= mOutput->mLines.size()) return;
-	
+
 	//open up a private 1 on 1 convo
 	game->GetPrivateChat(mOutput->mLines.at(mOutput->mSelected));
 }

@@ -1,5 +1,6 @@
 
 #include "Map.h"
+#include "../entity/RemoteActor.h"
 #include "../core/widgets/Input.h"
 #include "../core/widgets/OpenUrl.h"
 #include "../core/io/Crypt.h"
@@ -99,7 +100,7 @@ void Map::HandleRightClick()
 
 void Map::ClickRemoteActor(RemoteActor* ra)
 {
-	FATAL("some menu here");
+	Console* c = game->GetPrivateChat(ra->mName);
 }
 
 /*	Will attempt to return the entity directly under the mouse, if it is clickable. */
@@ -136,7 +137,7 @@ Entity* Map::GetEntityUnderMouse(bool mustBeClickable, bool playersOnly)
 			if (img)
 			{
 				//if non transparent pixel, we found our entity. 
-				if (img->GetPixel(x, y).a > 0)
+				if (!img->IsPixelTransparent(x, y))
 					return e;
 			}
 		}

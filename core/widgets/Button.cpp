@@ -47,7 +47,7 @@ void Button::Render(uLong ms)
 	{
 		if (mCaptionImage) //gotta do a hedge render
 		{
-			mImage->RenderHorizontalEdge(scr, rect(0, CalculateImageOffset(21), 7, 21), r);
+			mImage->RenderHorizontalEdge(scr, rect(0, CalculateImageOffset(20), 7, 20), r);
 		}
 		else //regular button
 		{

@@ -13,6 +13,8 @@
 
 #include "../lua/MapLib.h"
 
+#define ONLINE_ENABLED
+
 WorldLoader::WorldLoader()
 {
 	PRINT("Creating WorldLoader");
@@ -44,7 +46,7 @@ void WorldLoader::LoadOnlineWorld(string id, point2d target, string targetObject
 	
 	m_sWorldName = id;
 	m_warpDestinationPoint = target;
-	m_sWarpDestinationObject = targetObjectName;
+	m_sWarpDestinationEntityName = targetObjectName;
 	m_bTestMode = false;
 
 	game->mNet->PartChannel();
@@ -96,16 +98,34 @@ void callback_masterResponse_Failure(downloadData* data)
 	
 void WorldLoader::_sendRequestForConfig()
 {
+	string url;
+	
 	if (m_sWorldName.empty())
 	{
 		_error("Empty m_sWorldName");
 		return;
 	}
 
+	XmlFile xf;
+	if (!xf.LoadFromFile("assets/connections.cfg"))
+	{
+		FATAL(xf.GetError());	
+	}
+	
+	TiXmlElement* e = xf.mDoc.FirstChildElement();
+	if (e)
+		e = e->FirstChildElement("master");
+	
+	if (e)
+		url = xf.GetText(e);
+	
+	if (url.empty() || url.find("http://", 0) != 0)
+	{
+		FATAL("Invalid master address");
+	}
+
 	//generate the request url
-	FATAL("Get master url");
-	string url = ""; //game->mMasterUrl;
-	url += "master.php?id=" + htmlSafe(mId);
+	url += "?id=" + htmlSafe(m_sWorldName);
 	url += "&nick=" + htmlSafe(game->mPlayer->mName);
 	
 	if (!game->mUsername.empty())
@@ -126,10 +146,10 @@ void WorldLoader::_sendRequestForConfig()
 	url += "&ty=" + its(m_warpDestinationPoint.y);
 	url += "&to=" + htmlSafe(m_sWarpDestinationEntityName);
 */	
-	game->mChat->AddMessage("\\c139* Sending request to master server for " + mId);
+	game->mChat->AddMessage("\\c139* Sending request to master server for " + m_sWorldName);
 	DEBUGOUT(url);
 
-	string file = DIR_CACHE + string("map.xml");
+	string file = DIR_CACHE + string("map.txt");
 
 	if (!downloader->QueueDownload(url, file, 
 									this, 
@@ -150,76 +170,40 @@ void WorldLoader::_sendRequestForConfig()
 	Response from master.php will take the following form (Completely constructed serverside)
 	Requirements for construction:
 		A mapid.res file that contains all the necessary resources.
-	
-	<map>
-		<resources>
-			entities/library/fire.png:bc7c421648faf4bcf4a25c22cd81962d
-			entities/library/floor.jpg:6dd0b696f4a66a5087b1fe0cdb6bb951
-			entities/library/overlay.png:b7bda3c471a8e87a0a393926e4f87899
-		</resources>
-		<channel>#fro.worldid</channel> <!-- Must be master controlled for global changes -->
-	</map>
+
+	master:http://localhost/fro/worlds/
+	channel:#fro.library
+	entities/library/fire.png:bc7c421648faf4bcf4a25c22cd81962d
+	entities/library/floor.jpg:6dd0b696f4a66a5087b1fe0cdb6bb951
+	entities/library/overlay.png:b7bda3c471a8e87a0a393926e4f87899
 	
 	OR
 	
-	<error>Some message</error>
+	error:Some error message
 */
 void WorldLoader::_parseConfig()
 {
-	XmlFile xf;
-	TiXmlElement* root;
-	TiXmlElement* e;
-
-	string file = string(DIR_CACHE) + "map.xml";
-
-	//Load the XML file into memory
-	if ( !xf.LoadFromFile(file) )
+	string text;
+	if (!fileToString(text, DIR_CACHE + string("map.txt")))
 	{
-		_error("map.xml: " + xf.GetError());
-		return;
-	}
-	
-	//look for a top level error message response
-	e = xf.mDoc.FirstChildElement("error"); //<error>Msg</error>
-	if (e)
-	{
-		_error(xf.GetText(e));
-		return;
+		_error("Failed to load map config");
+		return;	
 	}
 
-	//make sure it's not malformed
-	root = xf.mDoc.FirstChildElement("map");
-	if (!root)
-	{
-		_error("<map> not found");
-		return;
-	}
-	
-	//load our channel name in
-	e = root->FirstChildElement("channel");
-	if (!e)
-	{
-		_error("<channel> not found");
-		return;
-	}
-	m_sChannelName = e->GetText();
-	
-	/*	begin downloading our resources. If we don't have any, there's a problem
-		because the first resource is our primary script name */
-	e = root->FirstChildElement("resources");	
-	if (!e)
-	{
-		_error("<resources> not found");
-		return;
-	}
-	
 	m_iTotalResources = 0;
 	m_iCompletedResources = 0;
 	SetState(GETTING_RESOURCES);
 	
-	if ( !_queueResources(e->GetText()) )
+	//check for error:Some message
+	if (text.find("error:", 0) == 0)
 	{
-		_error("bad <resources>");
+		_error(text.substr(6));
+		return;
+	}
+	
+	if ( !_queueResources(text) )
+	{
+		_error("Malformed map config");
 		return;
 	}
 }
@@ -257,6 +241,7 @@ void callback_ResourceDownload_Failure(downloadData* data)
 	
 	master:http://sybolt.com/drm/worlds/	Must be the first line. Will be the prefix when constructing the url of each download
 											If this is not the first line, the file will be considered invalid and function returns 0
+	channel:#fro.something					Sets m_sChannelName. Required, otherwise it won't connect to a channel once downloaded.
 	/path/to/file.ext:MD5hash				Will compare /cache/path/to/file.ext's md5 with this value. 
 											If different, delete & add to download as {master}/path/to/file.ext
 	/path/to/file2.ext						No :hash will skip download if /cache/path/to/file2.ext exists
@@ -264,57 +249,73 @@ void callback_ResourceDownload_Failure(downloadData* data)
 	
 	If all files are successfully added, function will return 1
 */
+
 int WorldLoader::_queueResources(string items)
 {
-	if (items.empty())
-		return 1;
-
-	vString v;
-	explode(&v, &items, " ");
-	
-	if (v.at(0).find("master:", 0) != 0)
-	{
-		//no master: for first line
-		return 0;
-	}
-	
-	string master = v.at(0).substr(7);
-	
+	string master;
 	string path;
 	string hash;
 	bool overwrite;
-	
-	//parse each file
+	vString v;
 	size_t pos;
+	
+	if (items.empty())
+		return 1;
+
+	replace(&items, "\r", "");
+	explode(&v, &items, "\n");
+
 	for (int i = 1; i < v.size(); ++i)
 	{
-		pos = v.at(0).find(":",0);
-		if (pos == string::npos) //case of /path/to/file.ext, no hash. If it exists, it's good.
+		//cleanup all whitespace
+		for (pos = 0; pos < v.at(i).length(); ++pos)
 		{
-			path = v.at(i);
-			hash.clear();
-			overwrite = false; //keep the old one, if it's there.
+			if (isWhitespace(v.at(i).at(pos)))
+			{
+				v.at(i).erase(v.at(i).begin() + pos);
+				--pos;
+			}
 		}
-		else
+
+		if (v.at(i).find("channel:", 0) == 0)
 		{
-			path = v.at(i).substr(0, pos);
-			hash = v.at(i).substr(pos+1, v.at(i).length() - pos);
-			overwrite = true; //will only download & overwrite if the old hash doesn't match the new one
+			m_sChannelName = v.at(i).substr(8);
 		}
-		
-		//See if this is the first lua file we've encountered (if it has .lua extension). If so, consider it the primary
-		if (m_sPrimaryLuaFile.empty() && path.find(".lua", 0) == path.length() - 5)
+		else if (v.at(i).find("master:", 0) == 0)
 		{
-			console->AddMessage(" * Set Primary Script: " + m_sPrimaryLuaFile);
-			m_sPrimaryLuaFile = path;
+			master = v.at(i).substr(7);	
 		}
-		
-		console->AddMessage(" * Queuing master:" + master + " path:" + path + " hash:" + hash);
-		
-		downloader->QueueDownload(master + path, DIR_CACHE + path, this,
-									callback_ResourceDownload_Success,
-									callback_ResourceDownload_Failure,
-									overwrite, false, hash);
+		else if (!v.at(i).empty())
+		{
+			pos = v.at(i).find(":",0);
+			if (pos == string::npos) //case of /path/to/file.ext, no hash. If it exists, it's good.
+			{
+				path = v.at(i);
+				hash.clear();
+				overwrite = false; //keep the old one, if it's there.
+			}
+			else
+			{
+				path = v.at(i).substr(0, pos);
+				hash = v.at(i).substr(pos+1, v.at(i).length() - pos);
+				overwrite = true; //will only download & overwrite if the old hash doesn't match the new one
+			}
+			
+			//See if this is the first lua file we've encountered (if it has .lua extension). If so, consider it the primary
+			if (m_sPrimaryLuaFile.empty() && path.find(".lua", 0) != string::npos)
+			{
+				console->AddMessage(" * Set Primary Script: " + m_sPrimaryLuaFile);
+				m_sPrimaryLuaFile = path;
+			}
+			
+			console->AddMessage(" * Queuing master:" + master + " path:" + path + " hash:" + hash);
+			
+			downloader->QueueDownload(master + path, DIR_CACHE + path, this,
+										callback_ResourceDownload_Success,
+										callback_ResourceDownload_Failure,
+										overwrite, false, hash);
+			++m_iTotalResources;
+		}
 	}
 	
 	return 1;
@@ -322,10 +323,12 @@ int WorldLoader::_queueResources(string items)
 
 void WorldLoader::_resourceDownloadSuccess(string url, string file)
 {
-	mCompletedResources++;
+	++m_iCompletedResources;
+	
+	console->AddMessage("\\c990Completed: " + its(m_iCompletedResources) + " Total: " + its(m_iTotalResources));
 	
 	//if we downloaded all our resources, proceed onto the next phase of load
-	if (mCompletedResources == mTotalResources)
+	if (m_iCompletedResources == m_iTotalResources)
 	{
 		_buildWorld();
 	}
@@ -352,6 +355,12 @@ void WorldLoader::_buildWorld()
 	lua_State* ls = mapLib_OpenLuaState();
 
 	string file;
+	
+	if (m_sPrimaryLuaFile.empty())
+	{
+		_error( "Primary lua file missing" );
+		return;
+	}
 	
 	if (!m_bTestMode)
 		file = DIR_CACHE + m_sPrimaryLuaFile;

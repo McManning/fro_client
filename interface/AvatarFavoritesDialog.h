@@ -57,6 +57,8 @@ class AvatarFavorites : public Frame
 	avatarProperties* Add(string url, uShort w, uShort h, string pass, 
 							uShort delay, bool loopStand, bool loopSit);
 	
+	avatarProperties* Find(string url);
+	
 	void EraseSelected();
 	bool Load();
 	bool Save();

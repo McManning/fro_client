@@ -4,10 +4,35 @@
 #include "../core/net/DataPacket.h"
 #include "../game/GameManager.h"
 
+void callback_avatarDownloadSuccess(downloadData* data)
+{
+	Avatar* a = (Avatar*)data->userData;
+	if (a)
+	{
+		a->mImage = resman->LoadImg(data->filename, a->mPass);
+		a->mState = (a->mImage) ? Avatar::LOADED : Avatar::FAILED;
+	}
+	
+	//clean up our cache file, regardless of results
+	removeFile(data->filename);
+}
+
+void callback_avatarDownloadFailure(downloadData* data)
+{
+	Avatar* a = (Avatar*)data->userData;
+	if (a)
+	{
+		a->mState = Avatar::FAILED;
+	}
+	
+	removeFile(data->filename);
+}
+
 Avatar::Avatar()
 {
 	mImage = mDisplayedImage = NULL;
 	mModifier = MOD_NONE;
+	mState = LOADING;
 }
 
 Avatar::~Avatar()
@@ -16,25 +41,7 @@ Avatar::~Avatar()
 		resman->Unload(mDisplayedImage);
 		
 	resman->Unload(mImage);
-}
-
-Avatar& Avatar::operator=(const Avatar& a)
-{
-	if (a.mDisplayedImage && a.mDisplayedImage != a.mImage)
-		mDisplayedImage = a.mDisplayedImage->Clone();
-
-	//just do a shallow copy of mImage, since no Avatar class can modify it
-	mImage = a.mImage->Clone();
-	
-	mId = a.mId;
-	mUrl = a.mUrl;
-	mPass = a.mPass;
-	mWidth = a.mWidth;
-	mHeight = a.mHeight;
-	mDelay = a.mDelay;
-	mLoopStand = a.mLoopStand;
-	mLoopSit = a.mLoopSit;
-	mModifier = a.mModifier;
+	downloader->NullMatchingUserData(this);
 }
 
 bool Avatar::Modify(byte modifier)
@@ -135,11 +142,7 @@ void Avatar::Deserialize(DataPacket& src, uShort offset)
 	else
 		mPass.clear();
 
-	resman->Unload(mImage);
-	resman->Unload(mDisplayedImage);
-	mDisplayedImage = NULL;
-	
-	mImage = resman->LoadImg(mUrl, "", mPass);
+	Load();
 }
 
 void Avatar::Load()
@@ -151,18 +154,31 @@ void Avatar::Load()
 	if (mUrl.find("avy://", 0) == 0)
 	{
 		DEBUGOUT("Loading as composite");
+		mState = FAILED; //if LoadComposite is successful, will set to LOADED
 		LoadComposite();	
 	}
-	else
+	else if (mUrl.find("http://", 0) == 0)
 	{
-		mImage = resman->LoadImg(mUrl, "", mPass);
+		string file = DIR_CACHE + md5(mUrl.c_str(), mUrl.length());
+		
+		if (!downloader->QueueDownload(mUrl, file, this, callback_avatarDownloadSuccess, callback_avatarDownloadFailure, false))
+		{
+			DEBUGOUT("Could not queue avatar download");
+		}
+		
+		mState = LOADING;
+	}
+	else //local file
+	{
+		mImage = resman->LoadImg(mUrl, mPass);
+		mState = (mImage) ? LOADED : FAILED;
 	}
 }
 
 /*	Load an avatar in the form of avy://Base.HeadId.HeadHex.BodyId.BodyHex.HairId.HairHex */
 void Avatar::LoadComposite()
 {
-	string url = mUrl.substr(5); //cut off avy://
+	string url = mUrl.substr(6); //cut off avy://
 	
 	vString v;
 	explode(&v, &url, ".");
@@ -210,6 +226,8 @@ void Avatar::LoadComposite()
 	iHair->Render(mImage, 0, 0);
 	mImage->ColorizeGreyscale(cHair);
 	resman->Unload(iHair);
+	
+	mState = LOADED;
 }
 
 void Avatar::ToFiles()

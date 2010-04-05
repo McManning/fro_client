@@ -312,6 +312,17 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 	return true;
 }
 
+int DownloadManager::CountActiveDownloads()
+{
+	int result = 0;
+	for (int i = 0; i < mThreads.size(); ++i)
+	{
+		if (mThreads.at(i)->currentData)
+			++result;	
+	}
+	return result;
+}
+
 /*
 	Locking is necessary because the thread might add/remove list members during
 	iteration, and the .size() could be wrong, causing iteration to go out of scope.

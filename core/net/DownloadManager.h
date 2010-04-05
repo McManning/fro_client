@@ -94,6 +94,8 @@ class DownloadManager
 	*/
 	bool NullMatchingUserData(void* userData);
 
+	int CountActiveDownloads();
+
 	bool IsIdle();
 
 	void LockQueue()

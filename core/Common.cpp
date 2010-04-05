@@ -821,3 +821,8 @@ void loadGlobalConfig()
 	
 	config.mAutoSave = true;
 }
+
+bool isWhitespace(char c)
+{
+	return ( isspace( (unsigned char) c ) || c == '\n' || c == '\r' || c == '\t' );
+}

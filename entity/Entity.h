@@ -36,6 +36,7 @@ typedef enum
 
 class Image;
 class Map;
+struct lua_State;
 class Entity
 {
   public:
@@ -52,6 +53,10 @@ class Entity
 	
 	virtual void SetPosition(point2d position);
 	virtual point2d GetPosition() const { return mPosition; };
+
+	/*	index - Index of the stack where our new value for the property should be */
+	virtual int LuaSetProp(lua_State* ls, string& prop, int index);
+	virtual int LuaGetProp(lua_State* ls, string& prop);
 
 	/*	Returns true if any of this entities collision rects intersect r */
 	bool CollidesWith(rect r);

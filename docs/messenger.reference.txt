@@ -1,0 +1,146 @@
+
+System Messenger Documentation
+
+MESSAGE_ID
+	key1 (notes)
+	key2 (notes)
+	
+Types are [string], or if defined otherwise, such as:
+	[int] key3
+	[user] key4 (user being a void pointer)
+	
+**** DISPATCHED BY MISC ****
+	
+USE_ITEM
+	id
+	
+GAIN_ITEM
+	id
+	amount
+	
+LOSE_ITEM
+	id
+	amount
+	
+(DISABLED) PLAYER_ACTION (Hit the enter key while on a map, and no chat input)
+
+**** DISPATCHED BY ENTITIES ****
+
+ENTITY_MOVE
+	[user] entity
+	[int] oldx
+	[int] oldy
+	[int] newx 
+	[int] newy 
+	[int] direction (direction we're facing during movement)
+	[int] speed
+		There will usually be a 16 pixel difference between old & new coordinates, unless we're jumping.
+		In which case, it'll be further based on jump type and gravity.
+
+ENTITY_SAY
+	[user] entity
+	message
+
+ENTITY_CREATE
+	[user] entity
+
+ENTITY_DESTROY - Do not expect the entity pointer to be valid after this event has finished. 
+	[user] entity
+			
+ENTITY_ATTACK 
+	[user] entity
+	[int] cooldown (In milliseconds)
+
+ENTITY_ENDATTACK - Fired ENTITY_ATTACK.cooldown milliseconds after ENTITY_ATTACK
+	[user] entity
+	
+**** DISPATCHED BY IRCNET2 ****
+
+NET_STATE
+	[int] state
+
+NET_JOINING
+	channel
+
+NET_FAILED
+	(nothing)
+	
+NET_TIMEOUT
+	(nothing)
+	
+NET_ACTION & NET_PRIVMSG
+	sender
+	address
+	target
+	message
+	
+NET_JOIN
+	nick
+	address
+	
+NET_KICK
+	nick
+	kicker
+	reason
+	
+NET_NICK
+	oldnick
+	newnick
+	
+NET_PART
+	nick
+	address
+	
+NET_MODE
+	sender (Either a server address or a nick)
+	mode
+	
+NET_TOPIC
+	channel
+	nick
+	message
+	
+NET_QUIT
+	nick
+	address
+	reason
+	
+NET_NOTICE
+	nick
+	message
+	
+NET_NICKINUSE
+	message
+	
+NET_VERIFIED
+	(nothing)
+	
+NET_USERLIST
+	list
+	
+NET_ONCHANNEL
+	channel
+	
+NET_MOTD
+	message
+	
+NET_CMDERROR
+	command
+	message
+	
+NET_UNKNOWN
+	command
+	line (Full packet sent)
+	
+NET_ERROR
+	message
+	
+NET_PING
+	sender (Either a nick or a server address)
+
+
+
+
+
+	
+	

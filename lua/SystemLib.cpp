@@ -4,7 +4,14 @@
 #include "LuaCommon.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/widgets/OpenUrl.h"
+#include "../core/widgets/YesNoPopup.h"
 #include "../core/io/FileIO.h"
+
+struct luaCallback
+{
+	lua_State* state;
+	string func;
+};
 
 // .Print("Message")
 int system_Print(lua_State* ls)
@@ -28,39 +35,156 @@ int system_Fatal(lua_State* ls)
 	return 0;
 }
 
-// .Alert("id", "Title", "Message")
+void _doYesNoCallback(luaCallback* data, int result)
+{
+	if (!data || !data->state) return;
+
+	lua_getglobal(data->state, data->func.c_str()); //get function name
+
+	//if there isn't a function at the top of the stack, we failed to find it
+	if (!lua_isfunction(data->state, -1))
+	{
+		//cannot be luaError because we need to return!
+		WARNING("Lua Function " + data->func + " not found during YesNoCallback");
+		return;
+	}
+
+	lua_pushboolean(data->state, result);
+
+	if (lua_pcall(data->state, 1, 0, 0) != 0)
+		console->AddFormattedMessage("\\c900 * LUAYESNO [" + data->func + "] " + string(lua_tostring(data->state, -1)));
+}
+
+void callback_luaYesNo_Yes(YesNoPopup* yn)
+{
+	//call associated lua function
+	if (yn->userdata)
+	{
+		_doYesNoCallback((luaCallback*)yn->userdata, 1);
+		delete (luaCallback*)yn->userdata;
+		yn->userdata = NULL;
+	}
+}
+
+void callback_luaYesNo_No(YesNoPopup* yn)
+{
+	//call associated lua function
+	if (yn->userdata)
+	{
+		_doYesNoCallback((luaCallback*)yn->userdata, 0);
+		delete (luaCallback*)yn->userdata;
+		yn->userdata = NULL;
+	}
+}
+
+//	.YesNo("title", "message", "callback", LongFormat<1|0>)
+//		Will call the callback with one boolean parameter. 
+//		If longformat is true, will use a multiline for the message.
+int system_YesNo(lua_State* ls)
+{
+	PRINT("system_YesNo");
+	luaCountArgs(ls, 3);
+	int numArgs = lua_gettop(ls);
+	
+	luaCallback* data = new luaCallback;
+	data->state = ls;
+	data->func = lua_tostring(ls, 3);
+	
+	bool useMultiline = false;
+	if (numArgs > 3)
+		useMultiline = lua_toboolean(ls, 4);
+	
+	YesNoPopup* yn = new YesNoPopup("", lua_tostring(ls, 1), lua_tostring(ls, 2), useMultiline);
+	
+	yn->userdata = (void*)data;
+	yn->onYesCallback = callback_luaYesNo_Yes;
+	yn->onNoCallback = callback_luaYesNo_No;
+	
+	return 0;
+}
+
+void _doMessagePopupCallback(luaCallback* data)
+{
+	if (!data || !data->state) return;
+
+	lua_getglobal(data->state, data->func.c_str()); //get function name
+
+	//if there isn't a function at the top of the stack, we failed to find it
+	if (!lua_isfunction(data->state, -1))
+	{
+		//cannot be luaError because we need to return!
+		WARNING("Lua Function " + data->func + " not found during MessagePopupCallback");
+		return;
+	}
+
+	if (lua_pcall(data->state, 0, 0, 0) != 0)
+		console->AddFormattedMessage("\\c900 * LUAMSGPOPUP [" + data->func + "] " + string(lua_tostring(data->state, -1)));
+}
+
+void callback_luaMessagePopup(MessagePopup* mp)
+{
+	//call associated lua function
+	if (mp->userdata)
+	{
+		_doMessagePopupCallback((luaCallback*)mp->userdata);
+		delete (luaCallback*)mp->userdata;
+		mp->userdata = NULL;
+	}
+}
+
+// .Alert("Title", "Message", "callback"<optional>)
+//		Will call the callback lua function (if it exists) with no parameters once closed. 
 int system_Alert(lua_State* ls)
 {
 	PRINT("system_Alert");
 	luaCountArgs(ls, 2);
+	int numArgs = lua_gettop(ls);
+	
+	MessagePopup* mp = new MessagePopup("", lua_tostring(ls, 1), lua_tostring(ls, 2), false);
+	
+	if (numArgs > 2)
+	{
+		luaCallback* data = new luaCallback;
+		data->state = ls;
+		data->func = lua_tostring(ls, 3);
+			
+		mp->userdata = (void*)data;
+		mp->onCloseCallback = callback_luaMessagePopup;
+	}
 
-	FATAL( lua_tostring(ls, 1) );
-	
-	new MessagePopup(lua_tostring(ls, 1), lua_tostring(ls, 2), lua_tostring(ls, 3), false);
-	
 	return 0;
 }
 
-// .MessageDialog("id", "Title", "Message")
+// .MessageDialog("Title", "Message", "callback"<optional>)
+//		Will call the callback lua function (if it exists) with no parameters once closed. 
 int system_MessageDialog(lua_State* ls)
 {
 	PRINT("system_MessageDialog");
 	luaCountArgs(ls, 2);
+	int numArgs = lua_gettop(ls);
+	
+	MessagePopup* mp = new MessagePopup("", lua_tostring(ls, 1), lua_tostring(ls, 2), true);
+	
+	if (numArgs > 2)
+	{
+		luaCallback* data = new luaCallback;
+		data->state = ls;
+		data->func = lua_tostring(ls, 3);
+			
+		mp->userdata = (void*)data;
+		mp->onCloseCallback = callback_luaMessagePopup;
+	}
 
-	FATAL( lua_tostring(ls, 1) );
-	
-	new MessagePopup(lua_tostring(ls, 1), lua_tostring(ls, 2), lua_tostring(ls, 3), true);
-	
 	return 0;
 }
 
-// .Wildmatch("pattern", "message") - Returns 1 if the message matches the pattern, 0 otherwise
+// bool = .Wildmatch("pattern", "message") - Returns true if the message matches the pattern
 int system_Wildmatch(lua_State* ls)
 {
 	PRINT("system_Wildmatch");
 	luaCountArgs(ls, 2);
 
-	lua_pushnumber( ls, wildmatch(lua_tostring(ls, 1), lua_tostring(ls, 2)) );
+	lua_pushboolean( ls, wildmatch(lua_tostring(ls, 1), lua_tostring(ls, 2)) );
 	
 	return 1;
 }
@@ -158,6 +282,7 @@ int system_GenerateFilename(lua_State* ls)
 static const luaL_Reg functions[] = {
 	{"Print", system_Print},
 	{"Fatal", system_Fatal},
+	{"YesNo", system_YesNo},
 	{"MessageDialog", system_MessageDialog},
 	{"Alert", system_Alert},
 	{"Wildmatch", system_Wildmatch},

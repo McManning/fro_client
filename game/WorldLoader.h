@@ -44,7 +44,14 @@ class WorldLoader
 	void _error(string msg);
 	double Progress();
 	void SetState(loaderState state);
-
+	
+	/*	Routines for loading online maps only */
+	void _sendRequestForConfig();
+	void _parseConfig();
+	int _queueResources(string items);
+	void _resourceDownloadSuccess(string url, string file);
+	void _resourceDownloadFailure(string url, string file);
+	
 	loaderState m_state;
 	
 	point2d m_warpDestinationPoint;

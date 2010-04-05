@@ -192,8 +192,6 @@ void EntityManager::ResortEntities()
 
 void EntityManager::_delete(Entity* e)
 {
-	PRINT("\t\t\tDELETING " + e->mId);
-
 	if (e->mType != ENTITY_LOCALACTOR) //Can't delete the local player manager
 	{	
 		MessageData md("ENTITY_DESTROY");

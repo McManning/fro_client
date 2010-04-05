@@ -50,7 +50,6 @@ StaticObject::StaticObject()
 
 StaticObject::~StaticObject()
 {
-	PRINT("~StaticObject");
 	resman->Unload(mImage);
 	resman->Unload(mOriginalImage);
 

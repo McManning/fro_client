@@ -7,29 +7,6 @@
 
 ResourceManager* resman;
 
-#ifdef _DOWNLOADMANAGER_H_
-void SDL_ImageDownloadSuccess(downloadData* d)
-{
-	SDL_Image* img = (SDL_Image*)d->userData;
-	if (img)
-	{
-		img->Load(d->filename, img->password);
-	}
-}
-
-void SDL_ImageDownloadFailure(downloadData* d)
-{
-	SDL_Image* img = (SDL_Image*)d->userData;
-	if (img)
-	{
-		img->state = SDL_Image::BADIMAGE;
-	}
-
-	//nuke bad file
-	removeFile(d->filename);
-}
-#endif
-
 ResourceManager::ResourceManager()
 {
 	resman = this;
@@ -53,10 +30,10 @@ ResourceManager::~ResourceManager()
 	PRINT("[ResourceManager::~ResourceManager] Completed");
 }
 
-SDL_Image* ResourceManager::Load(string file, string url, string password, bool deleteSourceIfInvalid)
+SDL_Image* ResourceManager::Load(string file, string password)
 {	
 	//check if it's loaded yet, if so, ++reference and return
-	for (int i = 0; i < mImages.size(); i++)
+	for (int i = 0; i < mImages.size(); ++i)
 	{
 		if (mImages.at(i)->filename == file)
 		{
@@ -69,44 +46,14 @@ SDL_Image* ResourceManager::Load(string file, string url, string password, bool 
 	SDL_Image* img = new SDL_Image;
 	img->password = password;
 	img->filename = file;
-	img->state = SDL_Image::LOADING;
-	img->deleteSourceIfInvalid = deleteSourceIfInvalid;
-	
-	/*	Remote file (or it doesn't exist locally, and we have a backup url to load from), 
-		have to queue the load in a downloader thread */
-	if (file.find("http://", 0) == 0 || (!fileExists(file) && !url.empty()) ) 
-	{	
-#ifdef _DOWNLOADMANAGER_H_
-		if (url.empty())
-		{
-			url = file;
-			file = DIR_CACHE + md5(file.c_str(), file.length());
-		}
-		if ( !downloader || !downloader->QueueDownload(url, file, img,
-										SDL_ImageDownloadSuccess, SDL_ImageDownloadFailure,
-										false) )
-		{
-			WARNING("[SDL_Image* ResourceManager::Load] Could not queue download of " + file);
-			img->state = SDL_Image::BADIMAGE;
-		}
-#else
-	img->state = SDL_Image::BADIMAGE;
-#endif
-	}
-	else
+
+	if ( !img->Load(file, password) )
 	{
-		if ( !img->Load(file, password) )
-		{
-			WARNING("[SDL_Image* ResourceManager::Load] Could not load " + file);
-		}
-	}
-	
-	if (img->state == SDL_Image::BADIMAGE)
-	{
+		WARNING("[SDL_Image* ResourceManager::Load] Could not load " + file);
 		delete img;
-		return NULL;	
+		return NULL;
 	}
-	
+
 	//img->PrintInfo();
 	mImages.push_back(img);
 	
@@ -149,9 +96,9 @@ bool ResourceManager::Unload(SDL_Image* src)
 	return false;
 }
 
-Image* ResourceManager::LoadImg(string file, string url, string password, bool deleteSourceIfInvalid)
+Image* ResourceManager::LoadImg(string file, string password)
 {
-	SDL_Image* sdlimg = Load(file, url, password, deleteSourceIfInvalid);
+	SDL_Image* sdlimg = Load(file, password);
 	
 	if (!sdlimg)
 		return NULL;
@@ -248,7 +195,12 @@ Image* ResourceManager::ImageFromSurface(SDL_Surface* src)  //to resman
 	Image* image = new Image();
 	image->mImage = new SDL_Image;
 	image->mImage->state = SDL_Image::LOADED;
-	FramesToImage(image->mImage, frame, 1, "");
+	if (!FramesToImage(image->mImage, frame, 1, ""))
+	{
+		SAFEDELETE(image->mImage);
+		delete image;
+		return NULL;
+	}
 	image->UpdateTimer();
 	
 	return image;

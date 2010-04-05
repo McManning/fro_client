@@ -94,7 +94,7 @@ GuiManager::GuiManager()
 	mFpsCap = config.GetParamInt("system", "fps");
 	mGetUserAttention = false;
 	mTitleFlashOn = false;
-	mShowStats = false;
+	mShowStats = true;
 	mTick = 0;
 	mNextRenderTick = 0;
 	mBeatCounter = 0;
@@ -309,15 +309,19 @@ void GuiManager::_renderStats()
 	Image* scr = Screen::Instance();
 	string s;
 	
-	s = "FPS: " + its(mFps); //frames rendered per second
-	s += " BPS: " + its(mBps); //heartbeats a second
-	s += " rMS: " + its(mRenderTime); //time it took to render last frame
-
+	s += " [DL " + its(downloader->mQueued.size()); // Count of queued files to download
+	s += ">" + its(downloader->CountActiveDownloads()); // Count of active downloads
+	s += ">" + its(downloader->mCompleted.size()) + "] "; // Count of completed files
+	
+	s += " [FPS:" + its(mFps); //frames rendered per second
+	s += " BPS:" + its(mBps); //heartbeats a second
+	s += " rMS:" + its(mRenderTime) + "]"; //time it took to render last frame
+	
 	rect r;
 	r.w = mFont->GetWidth(s);
 	r.h = mFont->GetHeight();
 	r.x = 3;
-	r.y = scr->Width() - 3 - r.h;
+	r.y = scr->Height() - r.h - 3;
 
 	scr->DrawRect(r, color());
 	mFont->Render(scr, r.x, r.y, s, color(0, 255, 255));
@@ -585,7 +589,7 @@ void GuiManager::ThinkInSeconds(uLong ms)
 		SDL_WM_SetCaption("--------------------------------", NULL);
 	else
 	{
-		string title = mAppTitle + " [FPS: " + its(mFps) + " BPS: " + its(mBps) + "]";
+		string title = mAppTitle; // + " [FPS: " + its(mFps) + " BPS: " + its(mBps) + "]";
 		SDL_WM_SetCaption(title.c_str(), NULL);
 	}
 	

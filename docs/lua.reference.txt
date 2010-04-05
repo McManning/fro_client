@@ -1,0 +1,235 @@
+
+fro Lua Libraries
+
+These definitions are taken directly from the comments in the source code, and some functions 
+may lack several details regarding usage. This is a work in progress, and things will be constantly
+changed, updated, added, and improved as time goes on.
+
+Entity
+	.Exists(entity) - Returns 1 if the entity pointer is valid and on the map, 0 otherwise. 
+		This is preferred over the checking-for-valid-entity-every-time-it's-accessed approach due to it being MUCH faster.
+	.FindById("id") returns cptr to entity, nil if it doesn't exist.
+	.FindAllById("id", useWildcards<0>) - returns a table with indexes 1->N containing all entities on the map with matching id.
+		If the second parameter is supplied, it's a bool indicating whether to use wildcard matching or not
+	.FindByName("name") returns cptr to entity, 0 if it doesn't exist.
+	.FindAllByName("name", useWildcards<0>) - returns a table with indexes 1->N containing all entities on the map with matching names.
+		If the second parameter is supplied, it's a bool indicating whether to use wildcard matching or not
+	x, y = .GetPosition(entity)
+	.SetPosition(entity, x, y)
+	x, y, w, h = .GetRect(entity) Where x, y are coordinates of the top left our our avatar on the map. w, h are avatar dimensions.
+	.GetProp(entity, "property") returns a cptr, number, or string based on the property we're retrieving
+	.SetProp(entity, "property", value) Sets the property to the specified value. Value can be num, string, ptr, depends on the property.
+		For GetProp and SetProp, the following is a list of valid properties, with their accepted data type in brackets:
+		id [string]
+		name [string] - If this is set to non-blank, it will be rendered over the entity (IF it is an actor)
+		visible [boolean]
+		solid [boolean] - If set to true, actors cannot pass through this entity (unless they are noclip'd)
+		shadow [boolean]
+		layer [number >= 0] - Remote/Local Actors are at layer 1001, < 1001 will be rendered under them, > 1001 will be rendered over.
+		type [string READ ONLY] - Entity type. Returns one of the following: "remote", "local", "actor", "object", "effect" or "unknown".
+		clickable [boolean] - If true, when this entity is left clicked, ENTITY_CLICK event will be fired for it
+		
+	.GetFlag(entity, "key") Returns string of value. Empty string if key does not exist.
+	.SetFlag(entity, "key", "value")
+	.IsTouching(ent, ent) - Returns 1 if the two entities are intersecting collision rects, 0 otherwise. 
+		Also note, if the second ent is a bad pointer, it'll return 0 also.
+	.GetDistance(ent, ent) - Returns distance between GetPosition() points of both entities. Error if either entity is invalid.
+	.Say(entity, "msg", showbubble<1>, showinchat<1>) - Say the message. Last two parameters are optional, and default to 1.
+	.Remove(entity) - Remove the specified entity from the map. Returns 1 on success, 0 otherwise. 
+	.RemoveAllById("id") - Removes all entities with the specified ID. Returns 1 if at least one was removed, 0 otherwise
+	entity = .NewTextObject(text, x, y, size<default_font_size>, layer<1>, rotation<0.0>)
+	entity = .Create(entityInfoTable, x, y) - Create a new entity instance and place it on the map at (x, y)
+		TODO: Describe how the entityInfoTable works
+	
+	
+Actor
+	.IsIdle(actor) - Returns 1 if the actor is idle, 0 otherwise.
+	.IsJumping(actor) - Returns 1 if the actor is in a jump, 0 otherwise.
+	.Emote(actor, type)	
+	.Jump(actor, type) - Type being: 0: Standing Jump, 1: Walking Jump, 2: Running Jump
+	x, y = .GetDestination(actor)
+	bool = .CanMove(actor, direction, distance) - Direction corrosponding with a keypad number.
+	.MoveTo(actor, x, y, speed<currentSpeed>) - Will try to move to x, y. (Will use pathfinding, and return 1 if it's possible, when implemented)
+	.Move(actor, direction, distance, speed)
+	.AddToBuffer(actor, "bufferdata")
+	bool = .LoadAvatar(actor, "url", "pass", w, h, delay, loopstand, loopsit)
+	.GetProp(actor, "property") returns a cptr, number, or string based on the property we're retrieving
+	.SetProp(actor, "property", value) Sets the property to the specified value. Value can be num, string, ptr, depends on the property.
+		For GetProp and SetProp, the following is a list of valid properties, with their accepted data type in brackets:
+			(Note: Properties in Entity.GetProp/SetProp cannot be used in these functions. You must still use Entity library for access to those)
+		direction [number 1-9 or a string such as: "n", "e", "sw", etc] - Facing direction of this actor. 
+			GetProp returns the numeric value, but SetProp can set it via numerics or strings.
+			Keypad numbers corrospond with directions. Ie: 4 = west, 8 = north, 3 = southeast, etc.
+		speed [number] - Current movement speed. Default walk speed is 4, run speed is 8.
+		action [number 1 or 0] - 1 is sit, 0 is stand. 
+		noclip [number 1 or 0] - If set to 1, this actor will ignore solid properties of other map entities
+		mod [number] - Returns and sets the current avatar modifier.
+			Acceptable values are: 0 (no mod), 1 (not working yet), 2 (mini), 3 (giant), 4 (smashed), and more to come later on.
+	.Face(actor1, entity) - Change actor1's direction to face entity (Only uses NORTH/SOUTH/EAST/WEST for now).
+	
+Player
+	.GetActor() return cptr to our controlled entity, so that it can be manipulated via the Entity lib
+	bool = .IsInChatMode()
+	.Warp("id", x<-1>, y<-1>) - Warp to the specified map. If x, y are not supplied, will warp to default spawn point.
+	.Warp("id", "entityName") - Warp to the position of the specified entity on the specified map.
+	.Warp(x, y) - Warp to the coordinates of the current map (will not attempt to reload the map)
+	.GiveItem("id", "description"<"">, amount<1>, cost<1>) - Adds the detailed item to our inventory. 
+	.HasItem("id", amount) returns 1 if has at least amount of the item, 0 otherwise. id can't be blank. Amount defaults to 1.
+	.TakeItem("id", amount) Takes up to amount number of "id" from our inventory. id can't be blank.
+	.GetCash() - Returns total dorra 
+	.AddCash(amount) - Adds (or subtracts if the amount is negative) to our dorra total
+	bool = .IsLocked() - Returns true if player input is being ignored
+	.Lock(bool) - Lock the player. If locked (true), player cannot move their actor.
+	.EarnAchievement(title, desc<can only be set once>, max<can only be set once>, file<can only be set once>)
+		Will +1 the total for the achievement. If total == max, display to the player.
+		File is the filename on http://sybolt.com/drm/achievements/ that'll be downloaded into /assets/achievements/ and displayed 
+		next to this achievement description in My Achievements dialog.
+	table(or nil) = .GetAchievement(id) - Returns a table in the form: table[id => "", description => "", max => 1, total => 1]
+		if they have earned the achievement. Or returns nil if we don't have it.
+	
+Camera
+	.SetPosition(x, y, centered<1>) - Set camera position. If centered is 0, (x,y) will be the top-left coordinates.
+	x, y = .GetPosition() 
+	w, h = .GetSize() - Will most likely return screen dimensions
+	.Offset(x, y) - Offset by (x,y) pixels. (Negative values to move up and left, positive to move down and right)
+	.Follow(entity) - Tell the camera to follow the specified entity. Note: If this entity is deleted, everything will probably go to hell.
+	ent = .GetFollowed() - Return the entity the camera is currently following
+	.NoFollow() - Disable entity following
+	.SetFollowOffset(x, y) - Set the offset from the entity we're following with the camera
+	x, y = .GetFollowOffset()
+	bool = .IsRectVisible(x, y, w, h) - Returns true if the rect is visible in the camera, false otherwise.
+	bool = .IsEntityVisible(entity) - Returns true if the entity is visible in the camera, false otherwise.
+
+	WORK IN PROGRESS (Don't dick with it)
+		{"IsPanning", camera_IsPanning},
+		{"PanTo", camera_PanTo},
+		{"AddToPanningStack", camera_AddToPanningStack},
+		{"ClearPanningStack", camera_ClearPanningStack},
+		{"GetSpeed", camera_GetSpeed},
+		{"SetSpeed", camera_SetSpeed},
+	
+Events
+	.Register("id", "lua_callback", userdata<nil>) - Registers the lua function to be called when the event matching id is fired.
+		Returns the unique handle of the newly created listener
+		Lua callback function must be in the following format: 
+			function lua_callback(handle, id, data, userdata) 
+				Where handle is the unique listener handle, id is the event id, data is a table containing the passed data,
+				and userdata is the lua object assigned to this listener
+	.Unregister("id", "lua_callback") - luafunc is optional, if supplied, will unregister those listeners matching both id and luafunc.
+		This will only unregister matching data from this lua_State. Will not damage any other similar outside listeners.
+	.UnregisterAll() - Deletes all message listeners referencing our lua_State
+	bool = .UnregisterHandle(handle) - Unregisters the event with the handle. Returns true on success, false otherwise.
+	
+	Note for Register/Unregister: The callback function name must be passed in as a string, not a function reference. 
+	This is make sure it's easier to work with from within the application, and to give better error reports. 
+	
+Timers
+	handle = .Add(interval, "lua_callback", userdata); Userdata can be string, integer, or cptr. Optional. 
+		Returns a unique handle number to the timer, or 0 if it was unable to create the timer.
+		Lua callback function must be in the following format: 
+			function lua_callback(handle, interval, userdata)
+				Where handle is the timers unique handle, interval is the timer interval and must be returned to keep the timer
+				running (Else, if 0 is returned, the timer will be destroyed), and userdata is the lua object assigned to the timer
+	.Remove("lua_callback");
+		Only Unregisters events matching the matching lua_State, so it won't unregister event listeners outside this script.
+	.RemoveAll() - Deletes all timers referencing our lua_State
+	bool = .RemoveHandle(handle) - Unregister a timer with the matching handle number. Returns true if successful, false otherwise.
+	
+	Note for Add/Remove: The callback function name must be passed in as a string, not a function reference.
+	This is make sure it's easier to work with from within the application, and to give better error reports. 
+	
+Convo
+	convo = .New("id", "title") - Creates a new conversation dialog and returns it
+	.SetUserdata(convo, userdata) - Sets data associated with this convo dialog instance. Accepts any lua object
+	.GetUserdata(convo) - Returns associated lua object
+	.SetText(convo, "message")
+	.AddOption(convo, "text", "lua_callback") - Add a selectable option that'll do the call when chosen
+		Callback has the following parameters: convo<cptr>, selected_option_text<string>, userdata<any lua object or nil>
+	.Clear(convo) - Clear all options of the convo
+	.Close(convo) - Close the specified convo dialog
+
+System
+	.Print("Message") - Prints the message to the console. \cRGB and \n supported
+	.Fatal("Message") - Throws a fatal error and closes the client
+	.YesNo("title", "message", "callback", LongFormat<optional. bool>)
+		Will call the callback with one boolean parameter. 
+		If longformat is true, will use a multiline for the message.
+	.Alert("Title", "Message", "callback"<optional>)
+		Will call the callback lua function (if it exists) with no parameters once closed. 
+	.MessageDialog("Title", "Message", "callback"<optional>)
+		Will call the callback lua function (if it exists) with no parameters once closed. 
+	bool = .Wildmatch("pattern", "message") - Returns true if the message matches the pattern
+		Pattern uses * to match any characters, ? to make any single character.
+	.OpenUrl("url") - Open a url request (Requires the user to choose how to open the url).
+	num = .GetTheta(x, y, x2, y2) - Returns theta (in degrees), using (x,y) as origin.
+	num = .GetDistance(x, y, x2, y2) - Returns distance between (x,y) and (x2,y2)
+	x, y = .OffsetByTheta(x, y, theta, distance) - Returns a new point, offset from the original by the defined degree and distance
+	num = .StringToNumber("string") - Hash the string into an integer, usable as a random number seed
+	string = .GenerateFilename("key") - Returns a random named cache file, generated from the key value.
+		Recommended for creating temporary files. Key can contain any characters, it'll just be hashed as the filename.
+	
+Game
+	.Print("Message") - Prints the message to the main chatbox. \cRGB and \n supported
+	.NetSendToChannel("id", "message")
+		Send a custom packet over the network to all members of the channel
+	.NetSendToNick("nick", "id", "message")
+		Send a custom packet over the network to the specified nick
+
+Map
+	.NewBasic() - Sets Game::mMap to a new initialized BasicMap class.
+	.SetSpawn(x, y) - Sets primary spawn point of the current map
+	.SetSize(w, h) - Sets map size. This determines how the camera 
+		behaves (will stop at the edges of the world) (0, 0) will let
+		the camera free roam.
+	.SetColor(r, g, b) - Set background color of the map
+	string = .GetFlag("flag") - Returns string of value. Empty string if it doesn't exist
+	.SetFlag("flag", "value")
+		Map flags are persistant, and saved to the player.save file. Each map will have its own unique collection of flags.
+		If you want to set flags that are persistant between all maps, you have to use Player.SetFlag/GetFlag
+	
+	
+	
+		
+Using Flags:
+	.GetFlag/.SetFlag can be used to store information on a per-entity basis. Entity flags are cleared after the map is unloaded, 
+	HOWEVER, the flags set to the entity: Player.GetActor() are saved to disk, and remain persistant. 
+	All entity flags may be persistant in the future, but that is not true right now. 
+	
+	
+	
+	
+	
+-------- IGNORE MEEEEE --------------
+
+Things needed:
+	Map.IsBlocked(x, y, w, h)
+	w, h = Map.Size()
+	actor waypoints and pathfinding
+	Static object creation and property editing
+	Possibly a map load phase that let's lua queue up it's own resources internally (say: OnPreload()) 
+		This would be necessary if we tried to create objects from scratch in lua, but without referencing
+		resources in the xml to download initially. Unless we allow on-the-spot downloading of resource, like
+		we did for Actor avatars, but this may cause issues? Or just add it, and let the scripters figure it out
+		themselves.
+
+
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

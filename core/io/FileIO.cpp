@@ -632,13 +632,34 @@ bool buildDirectoryTree(string path)
 	if (path.empty())
 		return true;
 
-	//Convert slashes to appropriate format and create tree
-#ifdef WIN32
-	replace(&path, "/", "\\");
-	return (mkdir(path.c_str()) != -1);
-#else
+	//Convert backslashes to forward
 	replace(&path, "\\", "/");
-	return (mkdir(path.c_str(), 0777) != -1);
+	
+	//Traverse the path and construct directories
+	vString v;
+	explode(&v, &path, "/");
+	
+	PRINTF("[buildDirectoryTree] Full Path %s\n", path.c_str());
+	
+	string cwd;
+	for (int i = 0; i < v.size(); ++i)
+	{
+		cwd += v.at(i);
+		
+		PRINTF("[buildDirectoryTree] mkdir %s\n", cwd.c_str());
+		
+#ifdef WIN32
+		cwd += "\\";
+		if (mkdir(cwd.c_str()) != -1)
+			return false;
+#else
+		cwd += "/";
+		if (mkdir(cwd.c_str(), 0777) != -1)
+			return false;
 #endif
-
+	}
+	
+	PRINTF("[buildDirectoryTree] Done\n");
+	return true;
 }
+

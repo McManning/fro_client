@@ -369,11 +369,14 @@ int Widget::CalculateImageOffset(int height)
 {
 	if (!IsActive())
 	{
-		return height * 2; //disabled
+		return height * 3; //disabled
 	}
 	else if (HasMouseFocus())
 	{
-		return height;
+		if (gui->IsMouseButtonDown(MOUSE_BUTTON_LEFT) || gui->IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+			return height * 2;
+		else
+			return height;
 	}
 	
 	return 0;

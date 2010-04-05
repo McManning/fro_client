@@ -95,6 +95,9 @@ AvatarCreator::AvatarCreator() :
 	mHairFile = mBase + ".hair.default.png";
 	
 	Update();
+	
+	if (avatarFavorites)
+		avatarFavorites->SetActive(false);
 }
 
 AvatarCreator::~AvatarCreator()
@@ -104,6 +107,9 @@ AvatarCreator::~AvatarCreator()
 	resman->Unload(mHair);
 	resman->Unload(mCompositePreview);
 	resman->Unload(mFullComposite);
+	
+	if (avatarFavorites)
+		avatarFavorites->SetActive(true);
 }
 
 void AvatarCreator::CreateControls()
@@ -119,7 +125,7 @@ void AvatarCreator::CreateControls()
 	mErrorLabel->mFontColor = color(255,0,0);
 		
 	b = new Button(this, "Add", rect(10,200,20,20), "", callback_AvatarCreatorAddToFavorites);
-		b->mHoverText = "Set as avatar and add to favorites";
+		b->mHoverText = "Add to Favorites";
 		b->SetImage("assets/buttons/options_user.png");
 			
 	b = new Button(this, "Save", rect(35,200,20,20), "", callback_AvatarCreatorSavePNG);
@@ -486,28 +492,22 @@ void AvatarCreator::AddDesignToFavorites()
 	s.erase(0, s.find_last_of(".")+1); //erase everything before the id
 	url += s + "." + colorToHex(mHairColor);
 	
-	//add to favorites
-	bool createdFavorites = false;
-	if (!avatarFavorites)
-	{
-		//create the window in the background to access it
-		createdFavorites = true;
-		avatarFavorites = new AvatarFavorites();
-		avatarFavorites->SetVisible(false);
-	}
+	ASSERT(avatarFavorites);
 		
-	avatarFavorites->Add(url, mCompositePreview->Width(), mCompositePreview->Height(), 
+	// add it as a new one
+	if (mOriginalUrl.empty())
+	{	
+		avatarFavorites->Add(url, mCompositePreview->Width(), mCompositePreview->Height(), 
 							"", 1000, false, false);
-		
-	if (game && game->mPlayer)
-		game->mPlayer->LoadAvatar(url, "", mCompositePreview->Width(), mCompositePreview->Height(), 1000, false, false);
-		
-	//if we were the ones to bring this up, destroy it again
-	if (createdFavorites)
-		avatarFavorites->Die();
-	
-	new MessagePopup("", "Avatar Saved", "Saved in Favorites as: " + url);
-	
+	}
+	else //Otherwise, we need to replace the old one with this new data
+	{
+		avatarProperties* props = avatarFavorites->Find(mOriginalUrl);
+		props->url = url;
+		avatarFavorites->Add(props); // Have to call Add() in order to change the displayed ID
+	}
+
+	Die();
 }
 
 void AvatarCreator::SaveToFile()
@@ -520,4 +520,56 @@ void AvatarCreator::SaveToFile()
 	new MessagePopup("", "Avatar Saved", "Saved to " + file);
 }
 
+/*
+	Imports an avy:// url, breaks it up, configures the current settings to match, 
+	and then stores the original to be replaced later when saved back to Avatar Favorites
+*/
+void AvatarCreator::ImportUrl(string url)
+{
+	mOriginalUrl = url; //save it for find->replace in AvyFavs later
+	
+	url = url.substr(6); //cut off avy://
+	
+	vString v;
+	explode(&v, &url, ".");
+	
+	if (v.size() < 7) //Invalid Url, TODO: Some error message
+		return;
+	
+	mBase = v.at(0);
+	mHeadFile = mBase + ".head." + v.at(1) + ".png";
+	mBodyFile = mBase + ".body." + v.at(3) + ".png";
+	mHairFile = mBase + ".hair." + v.at(5) + ".png";
+	mHeadColor = hexToColor(v.at(2));
+	mBodyColor = hexToColor(v.at(4));
+	mHairColor = hexToColor(v.at(6));
+	
+	// A little more gross here, have to adjust each scrollbar to match each color :(
+	
+	Scrollbar* s;
+	
+	s = (Scrollbar*)mHeadFrame->Get("r");
+		s->SetValue(mHeadColor.r);
+	s = (Scrollbar*)mHeadFrame->Get("g");
+		s->SetValue(mHeadColor.g);
+	s = (Scrollbar*)mHeadFrame->Get("b");
+		s->SetValue(mHeadColor.b);
+
+	s = (Scrollbar*)mBodyFrame->Get("r");
+		s->SetValue(mBodyColor.r);
+	s = (Scrollbar*)mBodyFrame->Get("g");
+		s->SetValue(mBodyColor.g);
+	s = (Scrollbar*)mBodyFrame->Get("b");
+		s->SetValue(mBodyColor.b);
+
+	s = (Scrollbar*)mHairFrame->Get("r");
+		s->SetValue(mHairColor.r);
+	s = (Scrollbar*)mHairFrame->Get("g");
+		s->SetValue(mHairColor.g);
+	s = (Scrollbar*)mHairFrame->Get("b");
+		s->SetValue(mHairColor.b);
+		
+	// Finally, queue an update for the composite image.
+	Update();
+}
 

@@ -158,11 +158,41 @@ int map_SetColor(lua_State* ls)
 	return 0;
 }
 
+
+//	string = .GetFlag("flag") Returns string of value. Empty string if it doesn't exist
+int map_GetFlag(lua_State* ls)
+{
+	PRINT("map_GetFlag");
+	luaCountArgs(ls, 1);
+
+	ASSERT(game && game->mMap);
+
+	string s = game->mMap->GetFlag( lua_tostring(ls, 1) );
+	lua_pushstring(ls, s.c_str());
+	
+	return 1;	
+}
+
+//	.SetFlag("flag", "value")
+int map_SetFlag(lua_State* ls)
+{
+	PRINT("map_SetFlag");
+	luaCountArgs(ls, 2);
+
+	ASSERT(game && game->mMap);
+
+	game->mMap->SetFlag(lua_tostring(ls, 1), lua_tostring(ls, 2));
+
+	return 0;
+}
+
 static const luaL_Reg functions[] = {
 	{"NewBasic", map_NewBasic},
 	{"SetSpawn", map_SetSpawn},
 	{"SetSize", map_SetSize},
 	{"SetColor", map_SetColor},
+	{"GetFlag", map_GetFlag},
+	{"SetFlag", map_SetFlag},
 	{NULL, NULL}
 };
 

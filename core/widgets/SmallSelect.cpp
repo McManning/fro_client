@@ -51,9 +51,7 @@ SmallSelect::SmallSelect(Widget* wParent, string sId, rect rPosition,
 
 	mFont = fonts->Get();
 	mId = sId;
-	
-	rPosition.h = 20; //fixed height
-	
+
 	//create buttons and add
 	mLeft = new Button(this, "left", rect(0,0,15,15), "", callback_smallSelectLeft);
 	mLeft->SetImage("assets/gui/smallselect_left.png");
@@ -77,6 +75,8 @@ void SmallSelect::Render(uLong ms)
 {
 	rect r = GetScreenPosition();
 	Image* scr = Screen::Instance();
+	
+	r.w += 15; //HACK TODO: Figure out why r.w is too short here!
 	
 	if (mBackgroundImage)
 		mBackgroundImage->RenderHorizontalEdge(scr, rect(0, 0, 20, 20), r);

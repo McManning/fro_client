@@ -255,5 +255,7 @@ string shortTimestamp();
 
 void loadGlobalConfig();
 
+bool isWhitespace(char c);
+
 #endif //_COMMON_H_
 

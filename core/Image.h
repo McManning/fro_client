@@ -44,15 +44,13 @@ class SDL_Image
 	//Memorized in case we need to reload
 	string filename;
 	string password;
-	
-	bool deleteSourceIfInvalid;
-	
+
 	int refCount;
 	int format; 
 	
 	enum { //states
 		NOIMAGE = 0, //Waiting for something to call Load()
-		LOADING, //downloading, or reading file. 
+		LOADING, //reading file. 
 		LOADED, //CountFrames() should return > 0
 		BADIMAGE //invalid image format, or download failed
 	};
@@ -111,6 +109,9 @@ class Image
 			copy: If set to true, will copy the new color over the old, otherwise will attempt to SLOWLY alpha blend.
 	*/
 	bool SetPixel(sShort x, sShort y, color rgb, bool copy = false);
+
+	/*	Return true if the pixel @ (x,y) has an alpha of 0, or is the colorkey */
+	bool IsPixelTransparent(int x, int y);
 
 //Routines to draw primitives to this Image.
 	
@@ -212,10 +213,6 @@ class Image
 
   private:
 	void _checkStatus();
-		
-	//if true, waiting for SDL_Image to finish downloading. 
-	//Must use a bool flag rather than mImage->state so that it acts upon the change ONCE.
-	bool mWaitingForSDLImage;
 };
 
 #endif //_IMAGE_H_

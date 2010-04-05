@@ -64,6 +64,12 @@ class AvatarCreator : public Frame
 	
 	/*	Create a PNG of our creation */
 	void SaveToFile();
+		
+	/*
+		Imports an avy:// url, breaks it up, configures the current settings to match, 
+		and then stores the original to be replaced later when saved back to Avatar Favorites
+	*/
+	void ImportUrl(string url);
 	
 	string mBase; //string containing head, body, or hair.
 	Frame* mBaseFrame;
@@ -87,6 +93,8 @@ class AvatarCreator : public Frame
 	Image* mFullComposite; //the avatar before being split into pieces
 	
 	Label* mErrorLabel;
+	
+	string mOriginalUrl; // avy:// url if we're editing an existing item in AvyFavs, blank otherwise.
 	
   private:
 	void _redraw();

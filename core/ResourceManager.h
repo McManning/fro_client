@@ -11,10 +11,10 @@ class ResourceManager
 	ResourceManager();
 	~ResourceManager();
 	
-	SDL_Image* Load(string file, string url = "", string password = "", bool deleteSourceIfInvalid = false);
+	SDL_Image* Load(string file, string password = "");
 	bool Unload(SDL_Image* src);
 	
-	Image* LoadImg(string file, string url = "", string password = "", bool deleteSourceIfInvalid = false);
+	Image* LoadImg(string file, string password = "");
 	bool Unload(Image* src);
 
 	Image* NewImage(uShort w, uShort h, color colorKey, bool hasAlphaChannel);

@@ -1,7 +1,7 @@
 [Project]
 FileName=fro.dev
 Name=fro
-UnitCount=165
+UnitCount=167
 Type=0
 Ver=1
 ObjFiles=
@@ -473,7 +473,7 @@ BuildCmd=
 Major=1
 Minor=1
 Release=1
-Build=457
+Build=543
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1538,9 +1538,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit166]
-FileName=..\entity\ActionEffect.h
+FileName=..\core\widgets\YesNoPopup.cpp
 CompileCpp=1
-Folder=../entity
+Folder=../core/widgets
 Compile=1
 Link=1
 Priority=1000
@@ -1548,9 +1548,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit167]
-FileName=..\interface\MiniMenu.h
+FileName=..\core\widgets\YesNoPopup.h
 CompileCpp=1
-Folder=../interface
+Folder=../core/widgets
 Compile=1
 Link=1
 Priority=1000

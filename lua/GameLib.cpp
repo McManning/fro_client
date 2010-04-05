@@ -4,6 +4,8 @@
 #include "LuaCommon.h"
 #include "../game/GameManager.h"
 #include "../map/Map.h"
+#include "../core/net/IrcNet2.h"
+#include "../core/net/DataPacket.h"
 
 // .Print("Message")
 int game_Print(lua_State* ls)
@@ -16,40 +18,48 @@ int game_Print(lua_State* ls)
 	return 0;
 }
 
-//TODO: MOVE!
-
-//	string = .GetMapFlag("flag") Returns string of value. Empty string if it doesn't exist
-int game_GetMapFlag(lua_State* ls)
+//	.NetSendToChannel("id", "message")
+//		Send a custom packet over the network to all members of the channel
+int game_NetSendToChannel(lua_State* ls)
 {
-	PRINT("game_GetMapFlag");
-	luaCountArgs(ls, 1);
-
-	ASSERT(game && game->mMap);
-
-	string s = game->mMap->GetFlag( lua_tostring(ls, 1) );
-	lua_pushstring(ls, s.c_str());
-	
-	return 1;	
-}
-
-//	.SetMapFlag("flag", "value")
-int game_SetMapFlag(lua_State* ls)
-{
-	PRINT("game_SetMapFlag");
+	PRINT("game_NetSendToChannel");
 	luaCountArgs(ls, 2);
+	
+	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
+	{
+		DataPacket data("lua");
+		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
 
-	ASSERT(game && game->mMap);
+		data.WriteString( lua_tostring(ls, 1) );
+		data.WriteString( lua_tostring(ls, 2) );
 
-	game->mMap->SetFlag(lua_tostring(ls, 1), lua_tostring(ls, 2));
-
-	return 0;
+		game->mNet->MessageToChannel( data.ToString() );
+	}
 }
 
+//	.NetSendToNick("nick", "id", "message")
+//		Send a custom packet over the network to the specified nick
+int game_NetSendToNick(lua_State* ls)
+{
+	PRINT("game_NetSendToNick");
+	luaCountArgs(ls, 3);
+
+	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
+	{
+		DataPacket data("lua");
+		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		
+		data.WriteString( lua_tostring(ls, 2) );
+		data.WriteString( lua_tostring(ls, 3) );
+		
+		game->mNet->Privmsg( lua_tostring(ls, 1), data.ToString() );
+	}
+}
 
 static const luaL_Reg functions[] = {
 	{"Print", game_Print},
-	{"GetMapFlag", game_GetMapFlag},
-	{"SetMapFlag", game_SetMapFlag},
+	{"NetSendToChannel", game_NetSendToChannel},
+	{"NetSendToNick", game_NetSendToNick},
 	{NULL, NULL}
 };
 

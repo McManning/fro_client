@@ -82,7 +82,7 @@ int actor_Jump(lua_State* ls)
 	return 0;
 }
 
-// .GetDestination(actor) Returns x, y. (Use as:  x, y = Entity.GetDestination(myActor); )
+// x, y = .GetDestination(actor)
 int actor_GetDestination(lua_State* ls) 
 {
 	PRINT("actor_GetDestination");
@@ -105,7 +105,11 @@ int actor_CanMove(lua_State* ls)
 
 	Actor* a = _getReferencedActor(ls);
 	
-	lua_pushnumber( ls, a->CanMove( stringToDirection(lua_tostring(ls, 2)), (sShort)lua_tonumber(ls, 3)) );
+	bool canMove = a->CanMove( stringToDirection(lua_tostring(ls, 2)), 
+												(sShort)lua_tonumber(ls, 3)
+							);
+	
+	lua_pushboolean( ls, canMove );
 	return 1;
 }
 
@@ -162,79 +166,14 @@ int actor_LoadAvatar(lua_State* ls)
 	luaCountArgs(ls, 8);
 
 	Actor* a = _getReferencedActor(ls);
-	
-	int result;
-	result = a->LoadAvatar( lua_tostring(ls, 2), lua_tostring(ls, 3),
+
+	bool result = a->LoadAvatar( lua_tostring(ls, 2), lua_tostring(ls, 3),
 							(uShort)lua_tonumber(ls, 4), (uShort)lua_tonumber(ls, 5),
 							(uShort)lua_tonumber(ls, 6), lua_tonumber(ls, 7),
 							lua_tonumber(ls, 8)
 						);
 						
-	lua_pushnumber(ls, result);
-	return 1;
-}
-
-// .GetProp(actor, "property") returns a cptr, number, or string based on the property we're retrieving
-int actor_GetProp(lua_State* ls) 
-{
-	PRINT("actor_GetProp");
-	luaCountArgs(ls, 2);
-	
-	Actor* a = _getReferencedActor(ls);
-
-	string prop = lua_tostring(ls, 2);
-
-	if (prop == "direction") lua_pushnumber( ls, a->GetDirection() );
-	else if (prop == "speed") lua_pushnumber( ls, a->GetSpeed() );
-	else if (prop == "action") lua_pushnumber( ls, a->GetAction() );
-	else if (prop == "noclip") lua_pushnumber( ls, a->IgnoreSolids() );
-	else if (prop == "mod" && a->GetAvatar()) lua_pushnumber( ls, a->GetAvatar()->mModifier );
-	else return luaError(ls, "Actor.GetProp", prop + " unknown");
-
-	return 1;
-}
-
-// .SetProp(actor, "property", value) Sets the property to the specified value. Value can be num, string, ptr, depends on the property.
-int actor_SetProp(lua_State* ls) 
-{
-	PRINT("actor_SetProp");
-	luaCountArgs(ls, 3);
-
-	Actor* a = _getReferencedActor(ls);
-
-	string prop = lua_tostring(ls, 2);
-
-	if (prop == "direction") a->SetDirection( stringToDirection(lua_tostring(ls, 3)) );
-	else if (prop == "speed") a->SetSpeed( (byte)lua_tonumber(ls, 3) );
-	else if (prop == "action") a->SetAction( (byte)lua_tonumber(ls, 3) );
-	else if (prop == "noclip") a->SetIgnoreSolids( lua_tonumber(ls, 3) );
-	else if (prop == "mod" && a->GetAvatar())
-	{
-		if ( a->GetAvatar()->Modify( (byte)lua_tonumber(ls, 3) ) )
-		{
-			//if we modified our local players avatar, we need to send this mod to the network
-			if (a == (Actor*)game->mPlayer)
-				game->mPlayer->NetSendAvatarMod();
-		}
-	}
-	else return luaError(ls, "Actor.SetProp", prop + " unknown");
-
-	return 0;
-}
-
-// .NewSceneActor(layer<1>) - Add a new blank SceneActor to the map. You need to manually set all its properties afterwards. 
-//	(Avatar, position, direction, name, id, etc). Returns the new actor
-int actor_NewSceneActor(lua_State* ls)
-{
-	PRINT("actor_NewSceneActor");
-	luaCountArgs(ls, 1);
-
-	SceneActor* a = new SceneActor();
-	a->mMap = game->mMap;
-	a->SetLayer( (int)lua_tonumber(ls, 1) );
-	a->mMap->AddEntity( a );
-	
-	lua_pushlightuserdata(ls, a);
+	lua_pushboolean(ls, result);
 	return 1;
 }
 
@@ -266,9 +205,6 @@ static const luaL_Reg functions[] = {
 	{"Move", actor_Move},
 	{"AddToBuffer", actor_AddToBuffer},
 	{"LoadAvatar", actor_LoadAvatar},
-	{"GetProp", actor_GetProp},
-	{"SetProp", actor_SetProp},
-	{"NewSceneActor", actor_NewSceneActor},
 	{"Face", actor_Face},
 	{NULL, NULL}
 };

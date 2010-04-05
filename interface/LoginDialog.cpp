@@ -62,7 +62,7 @@ int callback_welcomeXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 		game->mUsername = loginDialog->mUsername;
 		game->mPassword = loginDialog->mPassword;
 
-		game->mQueuedMapId = xf->GetText(e);
+		game->mStartingWorldId = xf->GetText(e);
 		game->mNet->TryNextServer();
 		
 		loginDialog = NULL;
@@ -266,13 +266,29 @@ void LoginDialog::SendLoginQuery(bool skip)
 {
 	Checkbox* c;
 	Input* i;	
+	string query;
 	
 	//send http get: login.php?ver=1.1.0&id=test&pass=test
 	
-	FATAL("do this");
-	string query = ""; //game->mConfig.GetParamString("connection", "login") + "?";
-
-	query += "ver=";
+	XmlFile xf;
+	if (!xf.LoadFromFile("assets/connections.cfg"))
+	{
+		FATAL(xf.GetError());	
+	}
+	
+	TiXmlElement* e = xf.mDoc.FirstChildElement();
+	if (e)
+		e = e->FirstChildElement("login");
+	
+	if (e)
+		query = xf.GetText(e);
+	
+	if (query.empty() || query.find("http://", 0) != 0)
+	{
+		FATAL("Invalid login address");
+	}
+	
+	query += "?ver=";
 	query += APP_VERSION;
 
 	if (!skip)

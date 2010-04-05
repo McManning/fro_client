@@ -10,8 +10,6 @@ class Avatar
   public:
 	Avatar();
 	~Avatar();	
-	
-	Avatar& operator=(const Avatar& a);	
 
 	void Serialize(DataPacket& dst);
 	void Deserialize(DataPacket& src, uShort offset = 0);
@@ -42,6 +40,15 @@ class Avatar
 		MOD_SMASH,
 		MOD_GHOST,
 	};
+	
+	enum avatarState
+	{
+		LOADING = 0,
+		LOADED,
+		FAILED
+	};
+
+	avatarState mState;
 	
 	Image* GetImage() { return (mDisplayedImage) ? mDisplayedImage : mImage; };
 	

@@ -200,7 +200,7 @@ int events_Register(lua_State* ls)
 	return 1;
 }
 
-//	.UnregisterHandle(handle) - Unregisters the event with the handle. Returns 1 on success, 0 otherwise.
+//	bool = .UnregisterHandle(handle) - Unregisters the event with the handle. Returns true on success, false otherwise.
 int events_UnregisterHandle(lua_State* ls)
 {
 	PRINT("events_UnregisterHandle");
@@ -210,7 +210,7 @@ int events_UnregisterHandle(lua_State* ls)
 	
 	bool result = messenger.RemoveListenerByHandle(handle);
 	
-	lua_pushnumber(ls, result);
+	lua_pushboolean(ls, result);
 	return 1;
 }
 

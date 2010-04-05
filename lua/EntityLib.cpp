@@ -44,7 +44,7 @@ int entity_Exists(lua_State* ls)
 	return 1;
 }
 
-// .FindById("id") returns cptr to entity, 0 if it doesn't exist.
+// .FindById("id") returns cptr to entity, nil if it doesn't exist.
 int entity_FindById(lua_State* ls) 
 {
 	PRINT("entity_FindById");
@@ -53,10 +53,11 @@ int entity_FindById(lua_State* ls)
 	ASSERT(game->mMap);
 
 	Entity* e = game->mMap->FindEntityById( lua_tostring(ls, 1) );
-	if (!e) 
-		return luaError(ls, "Entity.FindById", string(lua_tostring(ls, 1)) + " not found");
-	
-	lua_pushlightuserdata(ls, e);
+	if (!e)
+		lua_pushnil(ls);
+	else
+		lua_pushlightuserdata(ls, e);
+		
 	return 1;
 }
 
@@ -109,10 +110,11 @@ int entity_FindByName(lua_State* ls)
 	ASSERT(game->mMap);
 
 	Entity* e = game->mMap->FindEntityByName( lua_tostring(ls, 1) );
-	if (!e) 
-		return luaError(ls, "Entity.FindByName", string(lua_tostring(ls, 1)) + " not found");
-	
-	lua_pushlightuserdata(ls, e);
+	if (!e)
+		lua_pushnil(ls);
+	else
+		lua_pushlightuserdata(ls, e);
+		
 	return 1;
 }
 
@@ -156,7 +158,7 @@ int entity_FindAllByName(lua_State* ls)
 	return 1;
 }
 
-// .GetPosition(entity)  Returns 2 values, x and y
+// x, y = .GetPosition(entity)
 int entity_GetPosition(lua_State* ls) 
 {
 	PRINT("entity_GetPosition");
@@ -211,19 +213,13 @@ int entity_GetProp(lua_State* ls)
 	Entity* e = _getReferencedEntity(ls);
 
 	string prop = lua_tostring(ls, 2);
-	
-	//TODO: Improve this somehow! (How did Valve do it?)
-	if (prop == "id") lua_pushstring( ls, e->mId.c_str() );
-	else if (prop == "name") lua_pushstring( ls, e->mName.c_str() );
-	else if (prop == "visible") lua_pushboolean( ls, e->IsVisible() );
-	else if (prop == "solid") lua_pushboolean( ls, e->IsSolid() );
-	else if (prop == "shadow") lua_pushboolean( ls, e->mShadow );
-	else if (prop == "layer") lua_pushnumber( ls, e->GetLayer() );
-	else if (prop == "type") lua_pushstring( ls, e->GetTypeName().c_str() );
-	else if (prop == "clickable") lua_pushboolean( ls, e->mCanClick );
-	else return luaError(ls, "Entity.GetProp", prop + " unknown");
 
-	return 1;
+	int result = e->LuaGetProp(ls, prop);
+
+	if (!result)
+		console->AddMessage("Entity.GetProp() '" + prop + "' Unknown");
+	
+	return result;
 }
 
 // .SetProp(entity, "property", value) Sets the property to the specified value. Value can be num, string, ptr, depends on the property.
@@ -235,16 +231,11 @@ int entity_SetProp(lua_State* ls)
 	Entity* e = _getReferencedEntity(ls);
 
 	string prop = lua_tostring(ls, 2);
-	
-	//TODO: Improve this somehow! (How did Valve do it?)
-	if (prop == "id") e->mId = lua_tostring(ls, 3);
-	else if (prop == "name") e->mName = lua_tostring(ls, 3);
-	else if (prop == "visible") e->SetVisible( lua_toboolean(ls, 3) );
-	else if (prop == "solid") e->SetSolid( lua_toboolean(ls, 3) );
-	else if (prop == "shadow") e->mShadow = lua_toboolean(ls, 3);
-	else if (prop == "layer") e->SetLayer( (int)lua_tonumber(ls, 3) );
-	else if (prop == "clickable") e->mCanClick = lua_toboolean(ls, 3);
-	else return luaError(ls, "Entity.SetProp", prop + " unknown");
+
+	int result = e->LuaSetProp(ls, prop, 3);
+
+	if (!result)
+		console->AddMessage("Entity.SetProp() '" + prop + "' Unknown");
 
 	return 0;
 }

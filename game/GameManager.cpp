@@ -228,6 +228,7 @@ void callback_chatCommandOmg(Console* c, string s) { netSendEmote(7); }
 void callback_chatCommandFFFUUU(Console* c, string s) { netSendEmote(8); }
 void callback_chatCommandHeart(Console* c, string s) { netSendEmote(9); }
 void callback_chatCommandAwesome(Console* c, string s) { netSendEmote(10); }
+void callback_chatCommandWtf(Console* c, string s) { netSendEmote(11); }
 
 void callback_chatCommandJoin(Console* c, string s)
 {
@@ -240,7 +241,6 @@ void callback_chatCommandJoin(Console* c, string s)
 		return;
 	}
 
-FATAL("do this");
 	if (game->mLoader->m_state != WorldLoader::WORLD_ACTIVE
 		&& game->mLoader->m_state != WorldLoader::FAILED)
 	{
@@ -260,9 +260,8 @@ FATAL("do this");
 
 	s = stripCodes(s.substr(6));
 	c->AddMessage("\\c090* Loading " + s);
-	
-FATAL("do this");
-//	game->mLoader->LoadOnlineWorld(s);
+
+	game->LoadOnlineWorld(s);
 
 #ifndef DEBUG
 	//limit the number of times they can change channels
@@ -301,7 +300,7 @@ void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 
 void callback_chatCommandListEmotes(Console* c, string s)
 {
-	c->AddFormattedMessage("\\c990Emotes:\\n  /troll, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome");
+	c->AddFormattedMessage("\\c990Emotes:\\n  /troll, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf");
 }
 
 void callback_chatCommandListCommands(Console* c, string s)
@@ -349,6 +348,7 @@ void GameManager::_hookCommands()
 	mChat->HookCommand("/derp", callback_chatCommandDerp);
 	mChat->HookCommand("/happy", callback_chatCommandHappy);
 	mChat->HookCommand("/omg", callback_chatCommandOmg);
+	mChat->HookCommand("/wtf", callback_chatCommandWtf);
 	mChat->HookCommand("/fff", callback_chatCommandFFFUUU);
 	mChat->HookCommand("/heart", callback_chatCommandHeart);
 	mChat->HookCommand("/awesome", callback_chatCommandAwesome);
@@ -448,7 +448,7 @@ GameManager::GameManager(bool forceLogin)
 	
 	ToggleGameMode(MODE_ACTION);
 	
-	new MyAchievements();
+	new AvatarFavorites();
 
 }
 
@@ -754,7 +754,7 @@ Console* GameManager::GetPrivateChat(string nick)
 	Console* c = (Console*)Get("priv" + nick);
 	if (!c)
 	{
-		c = new Console("priv" + nick, "Private: " + nick, "assets/console_green.png",
+		c = new Console("priv" + nick, "Private: " + nick, "system",
 						stripCodes(nick) + "_", true, true);
 		
 		//Change some defaults
@@ -776,7 +776,7 @@ Console* GameManager::GetPrivateChat(string nick)
 
 	return c;
 }
-	
+
 /*	<data>
 		<cash amount="100" />
 		<class name="Storybook Character" />

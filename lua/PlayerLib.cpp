@@ -169,24 +169,38 @@ int player_AddCash(lua_State* ls)
 	return 0;
 }
 
-// .IsLocked() - Returns nonzero if player input is being ignored
-int player_IsLocked(lua_State* ls)
+// .GetProp("property") returns a cptr, number, or string based on the property we're retrieving
+int player_GetProp(lua_State* ls) 
 {
-	PRINT("player_IsLocked");
+	PRINT("player_GetProp");
+	luaCountArgs(ls, 1);
+
+	ASSERT(game->mPlayer);
 	
-	lua_pushnumber( ls, game->mPlayer->mIsLocked );
-	return 1;	
+	string prop = lua_tostring(ls, 1);
+	int result = game->mPlayer->LuaGetProp(ls, prop);
+
+	if (!result)
+		console->AddMessage("Player.GetProp() '" + prop + "' Unknown");
+	
+	return result;
 }
 
-// .Lock(1 or 0) - Lock the player. If locked (1), player cannot move their actor.
-int player_Lock(lua_State* ls)
+// .SetProp("property", value) Sets the property to the specified value. Value can be num, string, ptr, depends on the property.
+int player_SetProp(lua_State* ls)
 {
-	PRINT("player_Lock");
-	luaCountArgs(ls, 1);
-	
-	game->mPlayer->mIsLocked = lua_tonumber(ls, 1);
+	PRINT("player_SetProp");
+	luaCountArgs(ls, 2);
 
-	return 0;	
+	ASSERT(game->mPlayer);
+	
+	string prop = lua_tostring(ls, 1);
+	int result = game->mPlayer->LuaSetProp(ls, prop, 2);
+
+	if (!result)
+		console->AddMessage("Player.SetProp() '" + prop + "' Unknown");
+
+	return 0;
 }
 
 //	.EarnAchievement(title, desc<can only be set once>, max<can only be set once>, file<can only be set once>)
@@ -267,7 +281,8 @@ int player_GetAchievement(lua_State* ls)
 		}
 	}
 
-	return 0;
+	lua_pushnil(ls);
+	return 1;
 }
 
 static const luaL_Reg functions[] = {
@@ -279,8 +294,8 @@ static const luaL_Reg functions[] = {
 	{"TakeItem", player_TakeItem},
 	{"GetCash", player_GetCash},
 	{"AddCash", player_AddCash},
-	{"IsLocked", player_IsLocked},
-	{"Lock", player_Lock},
+	{"GetProp", player_GetProp},
+	{"SetProp", player_SetProp},
 	{"EarnAchievement", player_EarnAchievement},
 	{"GetAchievement", player_GetAchievement},
 	{NULL, NULL}

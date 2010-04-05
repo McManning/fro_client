@@ -4,11 +4,9 @@
 #include "SDL/SDL_Misc.h"
 #include "SDL/SDL_rotozoom.h"
 #include "SDL/SDL_Image.h"
-#include "net/DownloadManager.h"
 #include "widgets/Console.h"
 #include "TimerManager.h"
 #include "Screen.h"
-#include "io/FileIO.h" //removeFile()
 
 /*	TODO: Something much more efficient, where it would only add a timer
 	if the image is animated and has multiple frames. 
@@ -36,7 +34,6 @@ SDL_Image::SDL_Image()
 	refCount = 1;
 	state = NOIMAGE;
 	format = IMG_FORMAT_UNKNOWN;
-	deleteSourceIfInvalid = false;
 }
 
 SDL_Image::~SDL_Image()
@@ -65,13 +62,7 @@ SDL_Image::~SDL_Image()
 //			PRINT("Moving On");
 		}
 	}
-	
-//	PRINT("~SDL_Image Nulling downloader userdata");
-	
-	//if we had images currently downloading, make sure they don't try to access bad memory
-	if (downloader)
-		downloader->NullMatchingUserData(this);
-		
+
 //	PRINT("~SDL_Image Done");
 }
 
@@ -121,9 +112,6 @@ bool SDL_Image::Load(string file, string pass)
 	}
 	
 	state = (result) ? LOADED : BADIMAGE;
-	
-	if (deleteSourceIfInvalid && !result)
-		removeFile(file);
 
 	return result;
 }
@@ -220,7 +208,6 @@ Image::Image()
 	mFrameIndex = 0;
 	mNextFrameChange = 0;
 	mPlaying = true;
-	mWaitingForSDLImage = true;
 }
 
 Image::~Image()
@@ -606,8 +593,7 @@ Image* Image::Clone(bool fullClone, rect clip) const
 			mImage->refCount++;
 		}
 	}
-
-	dst->mWaitingForSDLImage = mWaitingForSDLImage;
+	
 	dst->mFramesetIndex = mFramesetIndex;
 	dst->mFrameIndex = mFrameIndex;
 	dst->mNextFrameChange = mNextFrameChange;
@@ -677,7 +663,6 @@ bool Image::Render(Image* dst, sShort x, sShort y, rect clip)
 
 bool Image::Render(SDL_Surface* dst, sShort x, sShort y, rect clip)
 {
-	_checkStatus();
 	SDL_Surface* src = Surface();
 
 #ifdef DEBUG
@@ -776,16 +761,31 @@ color Image::GetPixel(sShort x, sShort y) const
 
 bool Image::SetPixel(sShort x, sShort y, color rgb, bool copy)
 {
-	_checkStatus();
 	SDL_Surface* surf = Surface();
 	if (!surf) return false;
 
 	return SDL_SetPixel(surf, x, y, rgb.r, rgb.g, rgb.b, rgb.a, copy);
 }
 
+bool Image::IsPixelTransparent(int x, int y)
+{
+	SDL_Surface* surf = Surface();
+	if (!surf) return false;
+
+	color c = GetPixel(x, y);
+	
+	if (c.a == 0)
+		return true;
+		
+	//Some images don't have alpha channel. Check for colorkey
+	if (SDL_GetPixel(surf, x, y) == surf->format->colorkey)
+		return true;
+		
+	return false;
+}
+
 bool Image::DrawRect(rect r, color c, bool filled) 
 {
-	_checkStatus();
 	if (!filled)
 		return DrawRound(r, 0, c);
 
@@ -819,7 +819,6 @@ bool Image::DrawRound(rect r, uShort corner, color rgb)
 bool Image::DrawRound(sShort x0, sShort y0, uShort w, 
 								uShort h, uShort corner, color rgb) 
 {
-	_checkStatus();
 	int dx, dy;
     int Xcenter, Ycenter, X2center, Y2center;
     int r, d, x = 0;
@@ -908,7 +907,6 @@ bool Image::DrawRound(sShort x0, sShort y0, uShort w,
 bool Image::DrawLine(sShort x1, sShort y1, 
 						sShort x2, sShort y2, color rgb, byte thickness) 
 {
-	_checkStatus();
     int i, dx, dy, sdx, sdy, dxabs, dyabs, x, y, px, py;
 	int t;
 	
@@ -974,7 +972,6 @@ bool Image::DrawLine(sShort x1, sShort y1,
 
 bool Image::RenderPattern(Image* dst, rect rSrc, rect rDst)
 { 
-	_checkStatus();
     if (rSrc.w == 0 || rSrc.h == 0 || !Surface()) 
 		return false;
 
@@ -1063,7 +1060,6 @@ bool Image::RenderVerticalEdge(Image* dst, rect rSrc, rect rDst)
 
 bool Image::RenderBox(Image* dst, rect rSrc, rect rDst)
 {
-	_checkStatus();
 	//this function will only work with images that are exact boxes Such as:
 	//an image with 32x32 frames, full image = 96x96 pixels
 
@@ -1171,20 +1167,6 @@ bool Image::Scale(double xzoom, double yzoom, int aa)
 void Image::SavePNG(string file) const
 {
 	IMG_SavePNG(file.c_str(), Surface());
-}
-
-void Image::_checkStatus()
-{
-	if (!mWaitingForSDLImage)
-		return;
-		
-	if (mImage->CountFrames() == 0) //still downloading
-		return;
-	
-	mWaitingForSDLImage = false;
-	
-	//Download is done, and it's loaded. Perform any internal changes.
-	UpdateTimer();
 }
 
 //TODO: Make this work with all frames!

@@ -10,5 +10,5 @@ SceneActor::SceneActor()
 
 SceneActor::~SceneActor()
 {
-	PRINT("~SceneActor");
+
 }

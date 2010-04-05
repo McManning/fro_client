@@ -580,7 +580,8 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 	Should usually be overriden depending on entity type
 - Added mCanClick to Entity
 - Added ability to right click the local player to access the avatar favorites dialog
-- Added "clickable" to Entity.SetProp/GetProp
+- Added "clickable" boolean to Entity.SetProp/GetProp
+- Converted various properties in Entity.GetProp/SetProp to boolean, where appropriate. (ie: "shadow")
 - Added "Clickable = true/false" to Entity.Create() table
 - Added shorthand Entity::IsVisibleInCamera()
 - Changed listening distance (for displaying nick changes, join/parts, chat messages, etc) from using a constant 
@@ -602,39 +603,85 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 100331a
 - Removed all references to the WidgetImage system and replaced with a cleaner more basic method. 
 - Removed gui.xml access and hardcoded styling for all widgets
-- Fixed bug with icon loading in MyAchievements
+- Removed dynamic icon loading in MyAchievements and replaced with two basic icons, 
+	one for achieved and one for unachieved.
 
 100331b (After SVN commit to revision 11)
+- Added error checking to ResourceManager::ImageFromSurface
+- Removed links to DownloadManager and active image download states from Image & SDL_Image
+- Modified Avatar class to handle downloading and to do cleanup of cache files internally.
+
+100402
+- Fix buildDirectoryTree() to build full trees. Ie: a/b/c/d/e when b/c/d/e all don't exist.
+- Added online map support to the new WorldLoader
+- Completely phased out XML reliance in map loading
+- Fixed bug that caused the players action buffer not to send out when they jump to chat state
+- Fixed avy:// links not being sent to remote players
+- Fixed mouse down and inactive offset calculations in Widget::CalculateImageOffset()
+- Implemented import and edit of avy:// urls from Avatar Favorites to Avatar Creator. Now can easily edit existing
+	avy:// formatted avatars in AvyFavs without having to add a new one from scratch.
+- Removed "feature" due to popular demand, where the AvyFavs window would close after an avatar was selected to wear
+- Fixed caption button rendering
+- HACK: "Fixed" SmallSelect widget background rendering, with a rather distasteful hack.
+- Increased the amount of time avatars.xml is saved (Will now be saved whenever any kind of change is made to the avyfavs)
+- Added YesNoPopup class to core/widgets/
+- Added System.YesNo() routine
+- Added callback function to System.Alert and System.MessageDialog
+- Fixed bug that allowed player movement while a widget demands focus
+
+100403
+- Added Game.NetSendToChannel("id", "message") and Game.NetSendToNick("nick", "id", "message") to lua
+	Will allow script writers to send custom data over the network, and can be watched with an Events.Register("NET_LUA", ...)
+	id + message length should be no longer than ~200 characters. And of course, this cannot be used heavily over an irc network
+	that throttles channels after too much chatter. Third party servers are required if heavy data transfer is necessary.
+	It is not possible to override an existing network message, as "lua" is the REAL header of this packet (while id is the first member)
+	NET_LUA
+		[string] id
+		[string] message
+- Added Image::IsPixelTransparent()
+- Fixed bug with the pixel-level testing for map entity interaction not working for colorkey based images.
+- Fixed Entity.FindById()/FindByName() throwing an error when an entity isn't found (should've returned nil)
+- Changed the following lua functions to return booleans rather than integers:
+	Actor.CanMove(), Actor.LoadAvatar(), Actor.IsLocked(), Camera.IsRectVisible(), Camera.IsEntityVisible(), Events.UnregisterHandle(),
+	Timers.RemoveHandle(),
+- Removed the following lua functions:
+	Actor.NewSceneActor(), 
+- Changed Actor.GetAchievement() to return nil if supplied achievement name is not found
+- Moved Game.SetMapFlag/GetMapFlag to Map.SetFlag/GetFlag
+
+100404
+- Removed Actor.GetProp/SetProp, and streamlined everything into Entity.GetProp/SetProp.
+	Can now handle actor and player properties using internal C++ class inheritance.
+- Entity.GetProp/SetProp will no longer throw an error if property is invalid, but instead give an error
+- Added Player.SetProp("prop", value) and value = Player.GetProp("prop") simply as shorthand
+	to Entity.SetProp(Player.GetActor(), "prop", value) etc.
+- Added /wtf emote
 - 
-
+	
 IMMEDIATE TODO:
-- Avatars downloaded to cache aren't being deleted. Do a periodic cleanup of /cache/*.ava files. Or.. at least flag shit needs to be 
-	cleaned up, idk, fuck. Maintaining in memory would be nice too, shit. 
-- Widget* w = gui->Get("MiniMenu");  Bug here, it won't delete on the next esc press unless we move it first.
-- Trash game->mQueuedMapId
-- Trash right click menus for players, too confusing
-	- Replace with a seperate window, also accessible by clicking their name in userlist
-- Figure out why some cached avatars aren't being deleted (maybe an avy change WHILE it's downloading?)
-	Yes, I think it's the change while downloading thing that does it. 
 
+
+- Add lua userdata to yesno, alert, and messagedialog in system lib
+- Widget* w = gui->Get("MiniMenu");  Bug here, it won't delete on the next esc press unless we move it first.
 - Clam Report:
 	European, uses standard US keyboard but when the '" key is pressed, then a letter that isn't aeiouy,
 	it'll fuck up. Probably trying to put accents on the letters. Try to test in Euro IME mode in windows, or some shit
 	
 	
 TODO:
+	- MNGs (?) Are doing full-rect clickable. I think it's because our .a > 0 test is failing due to them having a palette.
 	- Add say.. a second userlist (or additional list under the userlist) that lists the players from the previous map
 		So we can privmsg them after moving.. I guess?
 	- Clickable names in the chatbox would be nice. Albeit HARD AS FUCK. But still nice. Basically, if a line starts
 		with "something: " and grab that something, then consider that a user? I guess? Meh.
+		Alternatively:
+		Determine word under mouse. Scan userlist for that word as a name. If it exists, it's a name we clicked! :D
+		Doesn't work if they left though.. :|
 	- Pack avatars into the savefile?
 	- drm welfare check: comes in every week or so, gives you dorra
 	- Need System.EncryptFile and System.DecryptFile for files (just for the hell of it, so we can 
 		encrypt things like the farm file)
-	-Make sure lua only has file IO access in the cache directory...
 	-Allow object editing while map editing. And live updating the edited objects.
-	-I see an issue regarding deep cloning SDL_Image while downloading. Nothing currently behaves in a way where this
-		bug would become a problem, however it still requires repair. Currently stuck assertions in to make sure it doesn't happen.
 	-warp people to spawn if they are detected to be inside a solid object. 
 		However, there could be an issue with solids moving around, and deciding to sit right onto the player. 
 	-waypoint movement for actors
@@ -651,12 +698,7 @@ TODO:
 		and if it's too far, it'll then repath. But still...)
 	-Actor::CanMove needs to be finished. (Currently only checks if final destination is blocked, not the path to said destination)
 	-Avatars use their _stop_ frames while in a jump, shouldn't it be _move_?
-	-Add oe_help command
 	-Should convert loopStand, loopSit, etc in avatars to a single integer with bit flags. 
-	-Defineable no-attack zones that disable attack animation, but still fire attack events.
-	-Add something like PLAYER ATTACK EVENT WILL NOT DO ANIMATION WHEN AROUND ME to objects/actors so that certain NPCs can 
-		prevent you from attacking them.
-	-DownloadManager needs to not stick shit in the thread when it already exists, and doesn't want to replace. Just add to completion stack
 	-Add avatar change locking
 		Script it: Map.LockAvatar(1)
 	-Fix reload previous world system in WorldLoader
@@ -676,11 +718,6 @@ TODO:
 		basic settings for new users (Create an avatar, set a nickname, etc)
 
 	-Not actually using entityType anywhere. Please do.
-	-Neat achievement popups and whatnot
-	-Add <designer> tags to map properties.
-		This way we can probably add a little "Map Designed By <NAME>" in the corner for screenshots, or whatever.
-	- Bad gui.xml error was thrown on an old 1.75Ghz, 1 GB ram, Win XP SP3 (or 2) computer
-		Same is thrown when running in the debug mode. Something to do with TinyXML?
 	- There's currently a bug with the Font class. Wrapping message rendering will ignore colors, due to calculation errors it creates. This needs to be resolved.
 	- 
 	
@@ -718,26 +755,13 @@ just have them behave like others, while StaticObjects will be screen relative.
 COULD give a mPositionRelativeToScreen value to Entity, but it'll only be used by SO's and their inherited forms...
 (It needs to be in the base class so that we can query it while iterating through entities in map render and such)
 
-		
-		
-Friday Feb 5th, 2010 Milestones
-
-> Tutorial World
-
-
-> Destructables and associated animation
-	-Give each entity a health value
-	-If health != 0, it's attackable.
-	-Once an object dies, pass ENTITY_DIE with attackers name, ENTITY_HIT passed when attacked, 
-		make little generic hit animations, and make the object vanish in a storm of fuzz
 	
+	
+> Tutorial World
 
 > Startup settings 
 	-Ask user to input an initial nickname
 	-Ask them if they want to start up the AC to set an avatar
-
-> No attack anim "zones" and whatnot
-
 
 > Seperate set of collision rects for objects that let you do "if player is touching this rect, do shit" in scripting
 	So we can still have COLLIDED stuff, but also have IF IN RECT stuff

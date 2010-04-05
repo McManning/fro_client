@@ -134,7 +134,7 @@ int camera_GetFollowOffset(lua_State* ls)
 	return 2;
 }
 
-// .IsRectVisible(x, y, w, h) - Returns 1 if the rect is visible in the camera, 0 otherwise.
+// bool = .IsRectVisible(x, y, w, h) - Returns true if the rect is visible in the camera, false otherwise.
 int camera_IsRectVisible(lua_State* ls)
 {
 	PRINT("camera_IsRectVisible");
@@ -148,13 +148,13 @@ int camera_IsRectVisible(lua_State* ls)
 	r.w = (uShort)lua_tonumber(ls, 3);
 	r.h = (uShort)lua_tonumber(ls, 4);
 	
-	int visible = m->IsRectInCamera(r);
-	lua_pushnumber(ls, visible);
+	bool visible = m->IsRectInCamera(r);
+	lua_pushboolean(ls, visible);
 	
 	return 1;
 }
 
-// .IsEntityVisible(entity) - Returns 1 if the entity is visible in the camera, 0 otherwise.
+// bool = .IsEntityVisible(entity) - Returns true if the entity is visible in the camera, false otherwise.
 int camera_IsEntityVisible(lua_State* ls)
 {
 	PRINT("camera_IsEntityVisible");
@@ -163,11 +163,11 @@ int camera_IsEntityVisible(lua_State* ls)
 	Map* m = _getMap();
 	Entity* e = (Entity*)lua_touserdata(ls, 1);
 
-	int visible = 0;
+	bool visible = false;
 	if ( m->FindEntity(e) != -1 )
 		visible = e->IsVisibleInCamera();
 
-	lua_pushnumber(ls, visible);
+	lua_pushboolean(ls, visible);
 	
 	return 1;
 }

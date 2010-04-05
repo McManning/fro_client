@@ -76,7 +76,7 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 	{			
 		mInput = new Input(this, "input", rect(26,0,0,20), "", 120, true, callback_consoleInput);
 		mInput->SetImage("assets/gui/console_input." + imageFile + ".png");
-//		mInput->mHighlightBackground = HIGHLIGHT_COLOR;
+		mInput->mHighlightBackground = HIGHLIGHT_COLOR;
 //		mInput->mFontColor = color(255,255,255);
 	}
 	else
@@ -92,10 +92,10 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 	resman->Unload(mOutput->mImage);
 	mOutput->mImage = NULL;
 	
-/*	mOutput->mFont = fonts->Get("", 0, TTF_STYLE_BOLD); //load default font, but bold.
+	mOutput->mFont = fonts->Get("", 0, TTF_STYLE_BOLD); //load default font, but bold.
 	mOutput->mFontColor = color(255,255,255);
 
-	mOutput->mScrollbar = new Scrollbar();	
+/*	mOutput->mScrollbar = new Scrollbar();	
 	rect rPosition = rect(0, mTopImage->mDst.h, 20, mOutput->Height());
 	
 	mOutput->mScrollbar->mFont = fonts->Get();
@@ -129,7 +129,7 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 	if (hasExit)
 	{
 		mExit = new Button(this, "exit", rect(0, 2, 12, 12), "", callback_consoleExit);
-		mExit->SetImage("assets/gui/console_exit. " + imageFile + ".png");
+		mExit->SetImage("assets/gui/console_exit." + imageFile + ".png");
 	}
 	
 	mTitle = NULL;

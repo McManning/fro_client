@@ -1,4 +1,5 @@
 
+#include <lua.hpp>
 #include "LocalActor.h"
 #include "../map/Map.h"
 #include "../game/GameManager.h"
@@ -17,6 +18,7 @@ uShort timer_playerActionBufferSend(timer* t, uLong ms)
 	{
 		p->mNeedsToSendBuffer = true;
 		//p->NetSendActionBuffer();
+		t->interval = p->mActionBufferSendDelayMs; //readjust if necessary
 	}
 	return TIMER_CONTINUE;
 }
@@ -31,8 +33,9 @@ LocalActor::LocalActor()
 	mNeedsToSendBuffer = false;
 	mShiftDown = false;
 	mIsLocked = false;
+	mActionBufferSendDelayMs = DEFAULT_ACTION_BUFFER_SEND_DELAY;
 	
-	mActionBufferTimer = timers->Add("actsend", ACTION_BUFFER_SEND_DELAY, false,
+	mActionBufferTimer = timers->Add("actsend", mActionBufferSendDelayMs, false,
 									timer_playerActionBufferSend,
 									NULL,
 									this);
@@ -83,7 +86,7 @@ void LocalActor::PostMovement()
 
 void LocalActor::_checkInput()
 {
-	if (game->IsMapLoading() || game->mGameMode != GameManager::MODE_ACTION)
+	if (game->IsMapLoading())
 		return;
 
 	if (!IsMoving() && mNeedsToSendBuffer)
@@ -94,8 +97,11 @@ void LocalActor::_checkInput()
 
 		NetSendActionBuffer();
 	}
+	
+	if (game->mGameMode != GameManager::MODE_ACTION)
+		return;
 
-	if (mIsLocked || IsMoving() || !mMap || !mActionBuffer.empty()) 
+	if (gui->GetDemandsFocus() || mIsLocked || IsMoving() || !mMap || !mActionBuffer.empty()) 
 		return;
 
 	if (!game->mChat->HasKeyFocusInTree() && !mMap->HasKeyFocus())
@@ -406,6 +412,24 @@ void LocalActor::Warp(string id, point2d position, string targetObjectName)
 	game->LoadOnlineWorld(id, position, targetObjectName);
 }
 
+/*	index - Index of the stack where our new value for the property should be */
+int LocalActor::LuaSetProp(lua_State* ls, string& prop, int index)
+{
+	if (prop == "locked") mLocked = lua_toboolean(ls, index);
+	else if (prop == "bufferdelay") mActionBufferSendDelayMs = lua_tonumber(ls, index);
+	else return Actor::LuaSetProp(ls, prop, index);
+	
+	return 1;
+}
+
+int LocalActor::LuaGetProp(lua_State* ls, string& prop)
+{
+	if (prop == "locked") lua_pushboolean( ls, mLocked );
+	else if (prop == "bufferdelay") lua_pushnumber( ls, mActionBufferSendDelayMs );
+	else return Actor::LuaGetProp(ls, prop);
+	
+	return 1;
+}
 
 
 

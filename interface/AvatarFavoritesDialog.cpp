@@ -18,7 +18,6 @@ void callback_avatarEditClose(Button* b)
 	//cancel operation
 	avatarFavorites->mAvatarEdit->Die();
 	avatarFavorites->mAvatarEdit = NULL;
-	avatarFavorites->SetActive(true);
 }
 
 void callback_avatarEditSave(Button* b)
@@ -71,6 +70,7 @@ void callback_avatarEditSave(Button* b)
 	avatarFavorites->mAvatarEdit->Die();
 	avatarFavorites->mAvatarEdit = NULL;
 	avatarFavorites->SetActive(true);
+	avatarFavorites->Save();
 }
 
 AvatarEdit::AvatarEdit(avatarProperties* prop) :
@@ -129,11 +129,15 @@ AvatarEdit::AvatarEdit(avatarProperties* prop) :
 	
 	Center();
 	ResizeChildren();
+	
+	if (avatarFavorites)
+		avatarFavorites->SetActive(false);
 }
 
 AvatarEdit::~AvatarEdit()
 {
-	//lol nothing
+	if (avatarFavorites)
+		avatarFavorites->SetActive(true);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +155,6 @@ void callback_avatarFavorites(Button* b)
 	else if (b->mId == "use")
 	{
 		avatarFavorites->UseSelected();
-		avatarFavorites->Die();
 	}
 	else if (b->mId == "edit")
 	{
@@ -218,9 +221,18 @@ void AvatarFavorites::EditSelected()
 	if (mList->mSelected == -1) //nothing selected
 		return;
 
-	mAvatarEdit = new AvatarEdit(mAvatars.at(mList->mSelected)); //add a new one~
-	gui->Add(mAvatarEdit); //Not a child of ME, but instead the gui system.
-	SetActive(false);
+	// If it's an avy://, edit with AvatarCreator
+	if (mAvatars.at(mList->mSelected)->url.find("avy://", 0) == 0)
+	{
+		AvatarCreator* ac = new AvatarCreator();
+		ac->ImportUrl(mAvatars.at(mList->mSelected)->url);
+	}
+	else //edit with AvatarEdit
+	{
+		mAvatarEdit = new AvatarEdit(mAvatars.at(mList->mSelected)); //add a new one~
+		gui->Add(mAvatarEdit); //Not a child of ME, but instead the gui system.
+	}
+
 }
 
 void AvatarFavorites::UseSelected()
@@ -230,18 +242,11 @@ void AvatarFavorites::UseSelected()
 
 	avatarProperties* ap = mAvatars.at(mList->mSelected);
 
-/*	if (!mapManager->map->mLockAvatar)
-	{
-*/		game->mPlayer->LoadAvatar(	ap->url, ap->pass, 
-									ap->w, ap->h, ap->delay, 
-									ap->loopStand, ap->loopSit
-									);
-/*	}
-	else //tell them they've been locked out
-	{
-		new ChoiceDialog("", "Error", "Avatars have been disabled in this area.",
-                        false, false);
-	}*/
+	game->mPlayer->LoadAvatar(	ap->url, ap->pass, 
+								ap->w, ap->h, ap->delay, 
+								ap->loopStand, ap->loopSit
+							);
+
 }
 
 void AvatarFavorites::AddNew()
@@ -271,6 +276,9 @@ void AvatarFavorites::EraseSelected()
 
 avatarProperties* AvatarFavorites::Add(avatarProperties* prop)
 {
+	if (!prop)
+		return NULL;
+		
 	//Build an ID off the url
 	int i = prop->url.find_last_of('/')+1;
 	if (i == string::npos || i > prop->url.size()-1)
@@ -297,6 +305,8 @@ avatarProperties* AvatarFavorites::Add(avatarProperties* prop)
 
 	mList->SetTopLine(0);
 
+	Save();
+
 	return prop;
 }
 
@@ -322,6 +332,17 @@ avatarProperties* AvatarFavorites::Add(string url, uShort w, uShort h, string pa
 	prop->loopSit = loopSit;
 
 	return Add(prop);
+}
+
+avatarProperties* AvatarFavorites::Find(string url)
+{
+	for (int i = 0; i < mAvatars.size(); ++i)
+	{
+		if (mAvatars.at(i)->url == url)
+			return mAvatars.at(i);
+	}
+	
+	return NULL;
 }
 
 int callback_avatarFavoritesXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
