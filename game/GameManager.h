@@ -23,13 +23,11 @@ class IrcNet;
 class GameManager : public Frame
 {
   public:
-	GameManager(bool forceLogin);
+	GameManager();
 	~GameManager();
 
 	void ResizeChildren();
 	void SetPosition(rect r);
-
-	void CreateHud();
 
 	void UpdateAppTitle();
 
@@ -91,6 +89,8 @@ class GameManager : public Frame
 	void ToggleGameMode(gameMode mode);
 
   private:
+	void _buildHud();
+	void _buildChatbox();
 	void _hookCommands();
 	void _renderMapLoader(uLong ms);
 	void _addNewAchievement(string title, string desc, int max, string file);

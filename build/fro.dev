@@ -1,7 +1,7 @@
 [Project]
 FileName=fro.dev
 Name=fro
-UnitCount=167
+UnitCount=169
 Type=0
 Ver=1
 ObjFiles=
@@ -473,7 +473,7 @@ BuildCmd=
 Major=1
 Minor=1
 Release=1
-Build=543
+Build=570
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1558,9 +1558,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit168]
-FileName=..\lua\MapLib.cpp
+FileName=..\interface\RemotePlayerMenu.cpp
 CompileCpp=1
-Folder=../lua
+Folder=../interface
 Compile=1
 Link=1
 Priority=1000
@@ -1568,9 +1568,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit169]
-FileName=..\lua\MapLib.h
+FileName=..\interface\RemotePlayerMenu.h
 CompileCpp=1
-Folder=../lua
+Folder=../interface
 Compile=1
 Link=1
 Priority=1000

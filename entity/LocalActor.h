@@ -4,7 +4,7 @@
 
 #include "Actor.h" 
 
-#define ACTION_BUFFER_SEND_DELAY 3000
+#define DEFAULT_ACTION_BUFFER_SEND_DELAY 3000
 
 class LocalActor : public Actor
 {
@@ -57,6 +57,8 @@ class LocalActor : public Actor
 	timer* mActionBufferTimer;
 
 	bool mIsLocked; //if true, user input is ignored
+
+	int mActionBufferSendDelayMs;
 
   private:
 	void _checkInput();

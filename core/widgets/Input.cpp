@@ -579,7 +579,7 @@ void Input::_updateText()
 */
 	
 	color c = mFontColor; 
-	if (!IsActive())
+	if (!IsActive() || mReadOnly)
 		c.r = c.g = c.b = 128;
 	mTextImage = resman->ImageFromSurface( mFont->RenderToSDL(mText.c_str(), c) );
 }

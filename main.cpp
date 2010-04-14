@@ -35,32 +35,10 @@ int main (int argc, char *argv[])
 #ifndef GUI_ONLY
        	if (argc > 1) //argv[0] is full application path
        	{
-/*			if (strcmp(argv[1], "-oe") == 0)
-			{
-				screenFlags |= SDL_RESIZABLE;
-				SetScreenFlags(	screenFlags );
-
-				new GuiManager();
-				new ObjectEditor();
-			}
-			else if (strcmp(argv[1], "-me") == 0)
-			{
-				screenFlags |= SDL_RESIZABLE;
-				SetScreenFlags(	screenFlags );
-				
-				new GuiManager();
-				new MapEditorDialog();
-			}
-
-			else*/ if (strcmp(argv[1], "-terra") == 0)
+			if (strcmp(argv[1], "-terra") == 0)
 			{
 				new GuiManager();
 				new TerrainTest();
-			}
-			else if (strcmp(argv[1], "-nologin") == 0)
-			{
-				new GuiManager();
-				new GameManager(false);
 			}
 		}
 		else //no arguments, run natural game
@@ -68,7 +46,7 @@ int main (int argc, char *argv[])
 			new GuiManager();
 			
 			PRINT("Booting up GM");
-			new GameManager(true);
+			new GameManager();
 		}
 		
 #else

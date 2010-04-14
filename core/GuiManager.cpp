@@ -106,7 +106,7 @@ GuiManager::GuiManager()
 
 //Consoles
 	PRINT("Loading Console");
-	console = new Console("console", "Build " + string(APP_VERSION), "system", "log_", false, true);
+	console = new Console("console", "Build " + string(APP_VERSION), "assets/gui/console/", "log_", false, true);
 	
 	PRINT("Configuring Console");
 	
@@ -124,7 +124,7 @@ GuiManager::GuiManager()
 	
 	console->HookCommand("messenger_debug", callback_ToggleMessengerDebug);
 
-	console->mBackgroundColor = color(180,205,245);
+	console->mBackgroundColor = color(85,90,100);
 	console->ResizeChildren();
 	
 	Add(console);

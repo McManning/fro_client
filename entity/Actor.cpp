@@ -3,9 +3,11 @@
 #include "Actor.h"
 #include "StaticObject.h"
 #include "ActionEffect.h"
+#include "LocalActor.h"
 #include "../map/Map.h"
 #include "../entity/Avatar.h"
 #include "../core/io/FileIO.h"
+#include "../game/GameManager.h"
 
 uShort timer_processMovement(timer* t, uLong ms)
 {
@@ -1031,7 +1033,7 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 		if ( GetAvatar()->Modify( (byte)lua_tonumber(ls, index) ) )
 		{
 			//if we modified our local players avatar, we need to send this mod to the network
-			if (a == (Actor*)game->mPlayer)
+			if (this == (Actor*)game->mPlayer)
 				game->mPlayer->NetSendAvatarMod();
 		}
 	}

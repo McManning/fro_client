@@ -638,16 +638,12 @@ bool buildDirectoryTree(string path)
 	//Traverse the path and construct directories
 	vString v;
 	explode(&v, &path, "/");
-	
-	PRINTF("[buildDirectoryTree] Full Path %s\n", path.c_str());
-	
+
 	string cwd;
 	for (int i = 0; i < v.size(); ++i)
 	{
 		cwd += v.at(i);
-		
-		PRINTF("[buildDirectoryTree] mkdir %s\n", cwd.c_str());
-		
+
 #ifdef WIN32
 		cwd += "\\";
 		if (mkdir(cwd.c_str()) != -1)
@@ -658,8 +654,6 @@ bool buildDirectoryTree(string path)
 			return false;
 #endif
 	}
-	
-	PRINTF("[buildDirectoryTree] Done\n");
 	return true;
 }
 

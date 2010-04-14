@@ -37,6 +37,8 @@ Scrollbar::Scrollbar(Widget* wParent, string sId, rect rPosition,
 	mType = WIDGET_SCROLLBAR;
 	mFont = fonts->Get();
 	mId = sId;
+	mImage = NULL;
+	mTabImage = NULL;
 	
 	SetMax(uMax);
 	SetBigScroll(uBigScroll);
@@ -45,21 +47,17 @@ Scrollbar::Scrollbar(Widget* wParent, string sId, rect rPosition,
 	onValueChangeCallback = onValueChange;
 	mOrientation = bOrientation;
 
-	string s;
-	if (mOrientation == VERTICAL)
-		s = "assets/gui/vscroller";
-	else
-		s = "assets/gui/hscroller";
-
-	mImage = resman->LoadImg(s + "_bg.png");
-	mTabImage = resman->LoadImg(s + "_tab.png");
-
 	mValueDown = new Button(this, "down", rect(0,0,15,15), "", callback_scrollbarButtonDown);
-	mValueDown->mImage = resman->LoadImg(s + "_down.png");
-
 	mValueUp = new Button(this, "up", rect(0,0,15,15), "", callback_scrollbarButtonUp);
-	mValueUp->mImage = resman->LoadImg(s + "_up.png");
 
+	string base;
+	if (mOrientation == VERTICAL)
+		base = "assets/gui/vscroller";
+	else
+		base = "assets/gui/hscroller";
+
+	SetImageBase(base);
+	
 	if (mOrientation == VERTICAL)
 	{
 		rPosition.w = 15;
@@ -308,4 +306,14 @@ void Scrollbar::SetPosition(rect r)
 	}
 }
 
+void Scrollbar::SetImageBase(string base)
+{
+	resman->Unload(mImage);
+	resman->Unload(mTabImage);
+	
+	mImage = resman->LoadImg(base + "_bg.png");
+	mTabImage = resman->LoadImg(base + "_tab.png");
+	mValueDown->SetImage(base + "_down.png");
+	mValueUp->SetImage(base + "_up.png");
+}
 

@@ -656,11 +656,23 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 - Added Player.SetProp("prop", value) and value = Player.GetProp("prop") simply as shorthand
 	to Entity.SetProp(Player.GetActor(), "prop", value) etc.
 - Added /wtf emote
+
+100410
+- Removed Report A Bug button from the hud
+- Fixed writing of default player.save
+- Changed the way the console reads in the image base parameter. Will use subdirectories to skin all widgets.
+- Added a basic RemotePlayerMenu substitute built off the ESC menu structure. 
+	Temporary until the real one is made (Because people would complain if they can't beat/trade).
 - 
 	
 IMMEDIATE TODO:
 
-
+- Map load status bar isn't being drawn or anything. Do that
+	Only draws while loading the map itself, not while connecting to server... :[
+- Chat in trade still behind trade. Also do that.
+- Drop IDs from widget constructors. We don't use them enough for it to be mandatory to supply
+	But then Widget::Get("id") will be like "I NEED ID TO WORK" and leads to some confusion.. Eh.. 
+- Add something that checks if they closed the client properly. If it wasn't, warn them.. or some such.
 - Add lua userdata to yesno, alert, and messagedialog in system lib
 - Widget* w = gui->Get("MiniMenu");  Bug here, it won't delete on the next esc press unless we move it first.
 - Clam Report:
@@ -669,14 +681,6 @@ IMMEDIATE TODO:
 	
 	
 TODO:
-	- MNGs (?) Are doing full-rect clickable. I think it's because our .a > 0 test is failing due to them having a palette.
-	- Add say.. a second userlist (or additional list under the userlist) that lists the players from the previous map
-		So we can privmsg them after moving.. I guess?
-	- Clickable names in the chatbox would be nice. Albeit HARD AS FUCK. But still nice. Basically, if a line starts
-		with "something: " and grab that something, then consider that a user? I guess? Meh.
-		Alternatively:
-		Determine word under mouse. Scan userlist for that word as a name. If it exists, it's a name we clicked! :D
-		Doesn't work if they left though.. :|
 	- Pack avatars into the savefile?
 	- drm welfare check: comes in every week or so, gives you dorra
 	- Need System.EncryptFile and System.DecryptFile for files (just for the hell of it, so we can 

@@ -95,8 +95,3 @@ void Button::Event(SDL_Event* event)
 	Widget::Event(event);	
 }
 
-void Button::SetImage(string file)
-{
-	resman->Unload(mImage);
-	mImage = resman->LoadImg(file);
-}

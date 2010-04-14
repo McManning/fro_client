@@ -47,7 +47,9 @@ class Scrollbar: public Widget
 
 	void ScrollUp(uShort amount = 0);
 	void ScrollDown(uShort amount = 0);
-
+	
+	void SetImageBase(string base);
+	
 	void (*onValueChangeCallback)(Scrollbar*);
 
 	bool mShowValue; //draw the value or not~

@@ -75,61 +75,29 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 	if (hasInput)
 	{			
 		mInput = new Input(this, "input", rect(26,0,0,20), "", 120, true, callback_consoleInput);
-		mInput->SetImage("assets/gui/console_input." + imageFile + ".png");
+		mInput->SetImage(imageFile + "input.png");
 		mInput->mHighlightBackground = HIGHLIGHT_COLOR;
-//		mInput->mFontColor = color(255,255,255);
+		mInput->mFontColor = color(255,255,255);
 	}
 	else
 	{
 		mInput = NULL;
 	}
 	
-//	mTopImage = makeImage(this, "top", imageFile, rect(0,0,26,16), rect(0,0,0,16), 
-//							WIDGETIMAGE_HEDGE, false, false);
-				
-
 	mOutput = new Multiline(this, "output", rect(0, 16, mPosition.w, mPosition.h - 42));
+		mOutput->mScrollbar->SetImageBase(imageFile + "vscroller");
+		
 	resman->Unload(mOutput->mImage);
 	mOutput->mImage = NULL;
 	
 	mOutput->mFont = fonts->Get("", 0, TTF_STYLE_BOLD); //load default font, but bold.
 	mOutput->mFontColor = color(255,255,255);
 
-/*	mOutput->mScrollbar = new Scrollbar();	
-	rect rPosition = rect(0, mTopImage->mDst.h, 20, mOutput->Height());
-	
-	mOutput->mScrollbar->mFont = fonts->Get();
-	mOutput->mScrollbar->onValueChangeCallback = callback_multilineScrollbar;
-
-	rPosition.w = 18;
-	rPosition.h = 18;
-		
-	//replace our images
-	resman->Unload(mOutput->mScrollbar->mImage);
-	resman->Unload(mOutput->mScrollbar->mTabImage);
-	
-	mOutput->mScrollbar->mImage = resman->LoadImg("assets/console_scroller_bg.png");
-	mOutput->mScrollbar->mTabImage = resman->LoadImg("assets/console_scroller_tab.png");
-	
-	mOutput->mScrollbar->mValueDown = new Button(mOutput->mScrollbar, "down", rect(0,0,18,14), "", callback_scrollbarButtonDown);
-		makeImage(mOutput->mScrollbar->mValueDown, "", imageFile, rect(114,0,18,14), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);
-
-	mOutput->mScrollbar->mValueUp = new Button(mOutput->mScrollbar, "up", rect(0,0,18,14), "", callback_scrollbarButtonUp);
-		makeImage(mOutput->mScrollbar->mValueUp, "", imageFile, rect(132,0,18,14), 
-					rect(0,0,20,20), WIDGETIMAGE_FULL, true, false);			
-				
-	mOutput->mScrollbar->SetPosition(rPosition);
-	mOutput->Add(mOutput->mScrollbar);
-
-	mOutput->SetPosition( rect(0, 16, mPosition.w, mPosition.h - 42) );
-	Add(mOutput);
-*/	
 	mExit = NULL;
 	if (hasExit)
 	{
 		mExit = new Button(this, "exit", rect(0, 2, 12, 12), "", callback_consoleExit);
-		mExit->SetImage("assets/gui/console_exit." + imageFile + ".png");
+		mExit->SetImage(imageFile + "exit.png");
 	}
 	
 	mTitle = NULL;
@@ -139,7 +107,7 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 	}
 
 	//don't use mImage b/c Frame will try to render it. Use a custom.
-	mBackgroundImage = resman->LoadImg("assets/gui/console_bg." + imageFile + ".png");
+	mBackgroundImage = resman->LoadImg(imageFile + "bg.png");
 	
 	ResizeChildren();
 

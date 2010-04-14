@@ -142,6 +142,8 @@ class Widget
 	void MoveToTop();
 	void MoveToBottom();
 	
+	virtual void SetImage(string file);
+	
 	string mId;
 	Widget* mParent; //Do not set this directly. Have the parent call an Add()
 	std::vector<Widget*> mChildren; 

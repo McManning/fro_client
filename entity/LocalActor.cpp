@@ -416,7 +416,7 @@ void LocalActor::Warp(string id, point2d position, string targetObjectName)
 int LocalActor::LuaSetProp(lua_State* ls, string& prop, int index)
 {
 	if (prop == "locked") mLocked = lua_toboolean(ls, index);
-	else if (prop == "bufferdelay") mActionBufferSendDelayMs = lua_tonumber(ls, index);
+	else if (prop == "bufferdelay") mActionBufferSendDelayMs = (int)lua_tonumber(ls, index);
 	else return Actor::LuaSetProp(ls, prop, index);
 	
 	return 1;

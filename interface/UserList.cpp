@@ -18,15 +18,15 @@ void callback_UserListDoubleClick(Multiline* m)
 }
 
 UserList::UserList() :
-	Console("userlist", "Characters: 0", "system", "", true, false)
+	Console("userlist", "Characters: 0", "assets/gui/chat/", "", true, false)
 {
 	//convert our output to list format
 	mOutput->mWrap = false;
 	mOutput->mHighlightSelected = true;
 	mOutput->mHighlightBackground = HIGHLIGHT_COLOR;
 	mOutput->onLeftDoubleClickCallback = callback_UserListDoubleClick;
-	mBackgroundColor = color(25, 25, 0, config.GetParamInt("console", "alpha"));
-	mOutput->mHighlightBackground = color(120, 120, 0);
+	//mBackgroundColor = color(25, 25, 0, config.GetParamInt("console", "alpha"));
+	//mOutput->mHighlightBackground = color(120, 120, 0);
 	mShowTimestamps = false;
 	
 	gui->Add(this);

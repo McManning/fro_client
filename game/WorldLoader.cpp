@@ -149,7 +149,7 @@ void WorldLoader::_sendRequestForConfig()
 	game->mChat->AddMessage("\\c139* Sending request to master server for " + m_sWorldName);
 	DEBUGOUT(url);
 
-	string file = DIR_CACHE + string("map.txt");
+	string file = DIR_CACHE + string("map.res");
 
 	if (!downloader->QueueDownload(url, file, 
 									this, 
@@ -184,7 +184,7 @@ void WorldLoader::_sendRequestForConfig()
 void WorldLoader::_parseConfig()
 {
 	string text;
-	if (!fileToString(text, DIR_CACHE + string("map.txt")))
+	if (!fileToString(text, DIR_CACHE + string("map.res")))
 	{
 		_error("Failed to load map config");
 		return;	

@@ -382,5 +382,9 @@ int Widget::CalculateImageOffset(int height)
 	return 0;
 }
 
-
+void Widget::SetImage(string file)
+{
+	resman->Unload(mImage);
+	mImage = resman->LoadImg(file);
+}
 

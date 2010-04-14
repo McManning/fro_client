@@ -7,6 +7,7 @@
 #include "../game/GameManager.h"
 #include "../lua/MapLib.h"
 #include "../interface/AvatarFavoritesDialog.h"
+#include "../interface/RemotePlayerMenu.h"
 
 Map::Map() 
 	: Frame(NULL, "", rect())
@@ -100,7 +101,8 @@ void Map::HandleRightClick()
 
 void Map::ClickRemoteActor(RemoteActor* ra)
 {
-	Console* c = game->GetPrivateChat(ra->mName);
+	//Console* c = game->GetPrivateChat(ra->mName);
+	new RemotePlayerMenu(this, ra);
 }
 
 /*	Will attempt to return the entity directly under the mouse, if it is clickable. */

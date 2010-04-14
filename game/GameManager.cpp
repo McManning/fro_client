@@ -218,7 +218,7 @@ void callback_chatCommandListeningTo(Console* c, string s)
 
 }
 
-void callback_chatCommandLolitrollu(Console* c, string s) { netSendEmote(1); }
+void callback_chatCommandCoolface(Console* c, string s) { netSendEmote(1); }
 void callback_chatCommandBrofist(Console* c, string s) { netSendEmote(2); }
 void callback_chatCommandSpoilereyes(Console* c, string s) { netSendEmote(3); }
 void callback_chatCommandBaww(Console* c, string s) { netSendEmote(4); }
@@ -300,7 +300,7 @@ void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 
 void callback_chatCommandListEmotes(Console* c, string s)
 {
-	c->AddFormattedMessage("\\c990Emotes:\\n  /troll, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf");
+	c->AddFormattedMessage("\\c990Emotes:\\n  /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf");
 }
 
 void callback_chatCommandListCommands(Console* c, string s)
@@ -322,6 +322,25 @@ uShort callback_gameManagerProcess(timer* t, uLong ms)
 	return TIMER_CONTINUE;
 }
 
+void callback_showChatbox(Button* b)
+{
+	b->Die();
+	game->mChat->SetVisible(true);
+	game->ToggleGameMode(GameManager::MODE_CHAT);
+}
+
+void callback_hideChatbox(Button* b)
+{
+	game->mChat->SetVisible(false);
+	Button* b2 = new Button(game, "", rect(game->Width() - 30, game->Height() - 20, 30, 20), 
+							"", callback_showChatbox);
+		b2->mHoverText = "Show Chat";
+		b2->SetImage("assets/buttons/show_chat.png");
+	
+	game->ToggleGameMode(GameManager::MODE_ACTION);
+}
+
+
 void GameManager::_hookCommands()
 {
 	console->HookCommand("net_info", callback_consoleNetInfo);
@@ -341,7 +360,7 @@ void GameManager::_hookCommands()
 	mChat->HookCommand("/pos", consoleCommand::POINT2D, (void*)&mPlayer->mPosition);
 
 	//Emotes
-	mChat->HookCommand("/troll", callback_chatCommandLolitrollu);
+	mChat->HookCommand("/coolface", callback_chatCommandCoolface);
 	mChat->HookCommand("/brofist", callback_chatCommandBrofist);
 	mChat->HookCommand("/spoilereyes", callback_chatCommandSpoilereyes);
 	mChat->HookCommand("/sad", callback_chatCommandBaww);
@@ -358,7 +377,7 @@ void GameManager::_hookCommands()
 	
 }
 
-GameManager::GameManager(bool forceLogin)
+GameManager::GameManager()
 	: Frame( gui, "GameManager", rect(0,0,gui->Width(),gui->Height()) )
 {
 	mMap = NULL;
@@ -386,24 +405,8 @@ GameManager::GameManager(bool forceLogin)
 
 	PRINT("[GM] Loading Chat");
 
-	mChat = new Console("chat", "", "system", "chat_", false, true);
-	//mChat->mInput->mAllowSpecialKeys = false;
-	Add(mChat);
+	_buildChatbox();
 	
-	TiXmlElement* e = mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
-	rect r = mPlayerData.GetParamRect(e, "position");
-	if (isDefaultRect(r))
-	{
-		mChat->SetPosition( rect(mPosition.w - mChat->Width(), 
-								mPosition.h - mChat->Height(),
-								mChat->Width(), mChat->Height()) 
-							);
-	}
-	else
-	{
-		mChat->SetPosition(r);
-	}
-
 	mLoaderImage = resman->LoadImg("assets/maploadbar.png");
 
 	PRINT("[GM] Loading Network");
@@ -433,23 +436,17 @@ GameManager::GameManager(bool forceLogin)
 	inventory->SetVisible(false);
 
 	PRINT("[GM] Loading HUD");
-	CreateHud();
+	_buildHud();
 	
 	ResizeChildren();
 
 	PRINT("[GM] Bringing up Login");
 
-	if (forceLogin)
-		new LoginDialog();
-//	else
-//		mLoader.LoadOfflineWorld("default", point2d());
+	new LoginDialog();
 
 	PRINT("[GM] Finished");
 	
 	ToggleGameMode(MODE_ACTION);
-	
-	new AvatarFavorites();
-
 }
 
 GameManager::~GameManager()
@@ -529,14 +526,14 @@ void callback_gameHudSubButton(Button* b)
 			if (!gui->Get("userlist"))
 				new UserList();
 			break;
-		case 'b': //report a bug
+	/*	case 'b': //report a bug
 			new OpenUrl("http://sybolt.com/tracker/bug_report_page.php");
-			break;
+			break;*/
 		default: break;
 	}
 }
 
-void GameManager::CreateHud()
+void GameManager::_buildHud()
 {
 	string file = "assets/hud_controls.png";
 	uShort x = 0, sx = 0;
@@ -544,12 +541,12 @@ void GameManager::CreateHud()
 
 	mHud = new Frame(this, "", rect(12,12,0,0));
 
-	b = new Button(mHud, "b", rect(x,0,35,35), "", callback_gameHudSubButton);
+/*	b = new Button(mHud, "b", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "Report A Bug";
 		b->SetImage("assets/hud/reportbug.png");
 	x += 40;
 	sx += 35;
-
+*/
 	b = new Button(mHud, "u", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "Userlist";
 		b->SetImage("assets/hud/userlist.png");
@@ -577,6 +574,27 @@ void GameManager::CreateHud()
 	mHud->SetSize(x, 35);
 }
 
+void GameManager::_buildChatbox()
+{
+	mChat = new Console("chat", "", "assets/gui/chat/", "chat_", true, true);
+		mChat->mExit->onClickCallback = callback_hideChatbox;
+		Add(mChat);
+	
+	TiXmlElement* e = mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
+	rect r = mPlayerData.GetParamRect(e, "position");
+	if (isDefaultRect(r))
+	{
+		mChat->SetPosition( rect(mPosition.w - mChat->Width(), 
+								mPosition.h - mChat->Height(),
+								mChat->Width(), mChat->Height()) 
+							);
+	}
+	else
+	{
+		mChat->SetPosition(r);
+	}
+}
+	
 void GameManager::LoadTestWorld(string luafile)
 {
 	SAFEDELETE(mLoader);
@@ -620,16 +638,19 @@ void GameManager::Process(uLong ms)
 
 void GameManager::_renderMapLoader(uLong ms)
 {
+	if (!mLoader)
+		return;
+
 	Image* scr = Screen::Instance();
 
-//	mFont->Render( scr, 5, 5, dts(mLoader.Progress()) + "% " + its(mLoader.mTotalResources) 
-//					+ ":" + its(mLoader.mCompletedResources), color(255) );
+//	mFont->Render( scr, 5, 5, dts(mLoader->Progress()) + "% " + its(mLoader->m_iTotalResources) 
+//					+ ":" + its(mLoader->m_iCompletedResources), color(255) );
 	
 	rect r = GetScreenPosition();
 	
 	//render progress bar, etc
-/*	string msg;
-	switch (mLoader.m_state)
+	string msg;
+	switch (mLoader->m_state)
 	{
 		case WorldLoader::IDLE:
 			msg = "Idle";
@@ -641,7 +662,7 @@ void GameManager::_renderMapLoader(uLong ms)
 			msg = "Getting Config";
 			break;
 		case WorldLoader::GETTING_RESOURCES:
-			msg = "Getting Resource " + its(mLoader.m_iTotalResources) + " / " + its(mLoader.m_iCompletedResources);
+			msg = "Getting Resource " + its(mLoader->m_iTotalResources) + " / " + its(mLoader->m_iCompletedResources);
 			break;
 		case WorldLoader::BUILDING_WORLD:
 			msg = "Building World";
@@ -661,12 +682,12 @@ void GameManager::_renderMapLoader(uLong ms)
 	//top bar
 	mLoaderImage->RenderPattern(scr, rect(10,0,50,22), rect(0,0,Width(),25));
 	
-	mFont->Render( scr, r.x + 5, 4, "You are on your way to: " + mQueuedMapId, color(50,50,50) );
+	mFont->Render( scr, r.x + 5, 4, "You are on your way to: " + mLoader->m_sWorldName, color(50,50,50) );
 	
 	//progress background
 	mLoaderImage->RenderBox(scr, rect(0,22,10,10), rect(0,22,Width(),30));
 	
-	uShort w = (uShort)((double)Width() * mLoader.Progress());
+	int w = (int)((double)Width() * mLoader->Progress());
 	
 	//progress foreground
 	if (w > 0)
@@ -679,7 +700,7 @@ void GameManager::_renderMapLoader(uLong ms)
 	mLoaderImage->Render(scr, r.x+275, r.y+52, rect(35,52,25,25));
 	
 	mFont->Render( scr, r.x + 5, r.y + 57, msg, color(50,50,50) );
-*/
+
 }
 
 void GameManager::UnloadMap()
@@ -754,12 +775,12 @@ Console* GameManager::GetPrivateChat(string nick)
 	Console* c = (Console*)Get("priv" + nick);
 	if (!c)
 	{
-		c = new Console("priv" + nick, "Private: " + nick, "system",
+		c = new Console("priv" + nick, "Private: " + nick, "assets/gui/privmsg/",
 						stripCodes(nick) + "_", true, true);
 		
 		//Change some defaults
-		c->mBackgroundColor = color(0, 25, 0, config.GetParamInt("console", "alpha"));
-		c->mOutput->mHighlightBackground = color(0, 120, 0);
+		//c->mBackgroundColor = color(0, 25, 0, config.GetParamInt("console", "alpha"));
+		//c->mOutput->mHighlightBackground = color(0, 120, 0);
 
 		Add(c);
 		
@@ -779,9 +800,11 @@ Console* GameManager::GetPrivateChat(string nick)
 
 /*	<data>
 		<cash amount="100" />
-		<class name="Storybook Character" />
-		<level base="1" />
+		<login id="" pass="" remember="0" />
+		<avatar url="" pass="" w="" h="" delay="" loopsit="" loopstand="" />
+		<map trading="1" shownames="0" privmsg="1" joinparts="1" addresses="0" />
 		<flags/>
+		<achievements/>
 		<inventory/>
 	</data>
 */
@@ -799,11 +822,23 @@ void GameManager::GenerateDefaultPlayerData()
 	e = mPlayerData.AddChildElement(root, "cash");
 	mPlayerData.SetParamInt(e, "amount", 100);
 
-	e = mPlayerData.AddChildElement(root, "class");
-	mPlayerData.SetParamString(e, "name", "Storybook Character");
-
 	mPlayerData.AddChildElement(root, "flags");
 	mPlayerData.AddChildElement(root, "inventory");
+	mPlayerData.AddChildElement(root, "achievements");
+
+	// <login id="" pass="" remember="0" />
+	e = mPlayerData.AddChildElement(root, "login");
+	mPlayerData.SetParamString(e, "id", "");
+	mPlayerData.SetParamString(e, "pass", "");
+	mPlayerData.SetParamInt(e, "remember", 0);
+	
+	// <avatar url="" pass="" w="" h="" delay="" loopsit="" loopstand="" />
+	e = mPlayerData.AddChildElement(root, "avatar");
+	mPlayerData.SetParamInt(e, "url", 0);
+	mPlayerData.SetParamInt(e, "pass", 0);
+	mPlayerData.SetParamInt(e, "delay", 0);
+	mPlayerData.SetParamInt(e, "loopsit", 0);
+	mPlayerData.SetParamInt(e, "loopstand", 0);
 	
 	//user set game configurations
 	e = mPlayerData.AddChildElement(root, "map");
@@ -971,13 +1006,20 @@ void GameManager::UpdateAppTitle()
 {
 	string title = "fro [Build ";
 	title += APP_VERSION;
-	title += " BETA]";
+	title += "]";
 	
 	if (mNet && mNet->IsConnected())
 	{
 		title += " (" + mNet->mHost + ":" + its(mNet->mPort);
-		if (mNet->GetState() == ONCHANNEL && mNet->GetChannel())
-			title += " - " + mNet->GetChannel()->mId;
+		//if (mNet->GetState() == ONCHANNEL && mNet->GetChannel())
+		//	title += " - " + mNet->GetChannel()->mId;
+		
+		if (mMap)
+			title += " - " + mMap->mId;
+		
+		
+		if (mNet->GetState() != ONCHANNEL)
+			title += " (local)";	
 			
 		title += ")";
 	}
@@ -995,7 +1037,7 @@ void GameManager::ToggleGameMode(gameMode mode)
 		mChat->mInput->mReadOnly = true;
 		mChat->mInput->SetText("Hit TAB to enable or disable chat mode");
 	}
-	else
+	else if (mChat->IsVisible()) //has to be visible for chat mode
 	{
 		mChat->mInput->mReadOnly = false;
 		mChat->mInput->Clear();
