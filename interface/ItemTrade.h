@@ -50,7 +50,8 @@ class ItemTrade : public Frame
 };
 
 /*	Someone is trying to trade with us, see if they can */
-void handleInboundTradeRequest(string nick);
+class RemoteActor;
+void handleInboundTradeRequest(RemoteActor* ra);
 
 /*	We are trying to trade with nick */
 void handleOutboundTradeRequest(string nick);

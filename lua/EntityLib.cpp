@@ -415,7 +415,7 @@ int _parseEntityImage_StaticObjectType(lua_State* ls, StaticObject* so)
 {
 	if (lua_isstring(ls, -1))
 	{
-		so->LoadImage(lua_tostring(ls, -1));
+		so->LoadImage(game->mMap->mWorkingDir + lua_tostring(ls, -1));
 		return 1;
 	}
 	
@@ -432,7 +432,7 @@ int _parseEntityImage_StaticObjectType(lua_State* ls, StaticObject* so)
 		{
 			key = lua_tostring(ls, -2);
 			if (key == "File")
-				so->LoadImage(lua_tostring(ls, -1));
+				so->LoadImage(game->mMap->mWorkingDir + lua_tostring(ls, -1));
 			else if (key == "Width")
 				width = (int)lua_tonumber(ls, -1);
 			else if (key == "Delay")
@@ -486,7 +486,7 @@ int _parseEntityAvatar(lua_State* ls, Actor* a)
 	
 	if (!file.empty())
 	{
-		a->LoadAvatar(file, "", width, height, delay, loopstand, loopsit);
+		a->LoadAvatar(game->mMap->mWorkingDir + file, "", width, height, delay, loopstand, loopsit);
 	}
 	return 1;
 }

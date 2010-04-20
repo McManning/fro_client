@@ -229,6 +229,8 @@ void callback_chatCommandFFFUUU(Console* c, string s) { netSendEmote(8); }
 void callback_chatCommandHeart(Console* c, string s) { netSendEmote(9); }
 void callback_chatCommandAwesome(Console* c, string s) { netSendEmote(10); }
 void callback_chatCommandWtf(Console* c, string s) { netSendEmote(11); }
+void callback_chatCommandTroll(Console* c, string s) { netSendEmote(13); }
+void callback_chatCommandFacepalm(Console* c, string s) { netSendEmote(14); }
 
 void callback_chatCommandJoin(Console* c, string s)
 {
@@ -300,7 +302,7 @@ void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 
 void callback_chatCommandListEmotes(Console* c, string s)
 {
-	c->AddFormattedMessage("\\c990Emotes:\\n  /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf");
+	c->AddFormattedMessage("\\c990Emotes:\\n  /facepalm, /troll, /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf");
 }
 
 void callback_chatCommandListCommands(Console* c, string s)
@@ -361,6 +363,7 @@ void GameManager::_hookCommands()
 
 	//Emotes
 	mChat->HookCommand("/coolface", callback_chatCommandCoolface);
+	mChat->HookCommand("/troll", callback_chatCommandTroll);
 	mChat->HookCommand("/brofist", callback_chatCommandBrofist);
 	mChat->HookCommand("/spoilereyes", callback_chatCommandSpoilereyes);
 	mChat->HookCommand("/sad", callback_chatCommandBaww);
@@ -371,6 +374,7 @@ void GameManager::_hookCommands()
 	mChat->HookCommand("/fff", callback_chatCommandFFFUUU);
 	mChat->HookCommand("/heart", callback_chatCommandHeart);
 	mChat->HookCommand("/awesome", callback_chatCommandAwesome);
+	mChat->HookCommand("/facepalm", callback_chatCommandFacepalm);
 	
 	mChat->HookCommand("/emotes", callback_chatCommandListEmotes);
 	mChat->HookCommand("/commands", callback_chatCommandListCommands);
@@ -406,8 +410,6 @@ GameManager::GameManager()
 	PRINT("[GM] Loading Chat");
 
 	_buildChatbox();
-	
-	mLoaderImage = resman->LoadImg("assets/maploadbar.png");
 
 	PRINT("[GM] Loading Network");
 	mNet = new IrcNet();
@@ -454,8 +456,6 @@ GameManager::~GameManager()
 	PRINT("~GameManager 1");
 	
 	UnloadMap();
-	
-	resman->Unload(mLoaderImage);
 
 	TiXmlElement* e = mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
 	mPlayerData.SetParamRect(e, "position", mChat->GetPosition());
@@ -636,73 +636,6 @@ void GameManager::Process(uLong ms)
 	gameProcessProfiler.Stop();
 }
 
-void GameManager::_renderMapLoader(uLong ms)
-{
-	if (!mLoader)
-		return;
-
-	Image* scr = Screen::Instance();
-
-//	mFont->Render( scr, 5, 5, dts(mLoader->Progress()) + "% " + its(mLoader->m_iTotalResources) 
-//					+ ":" + its(mLoader->m_iCompletedResources), color(255) );
-	
-	rect r = GetScreenPosition();
-	
-	//render progress bar, etc
-	string msg;
-	switch (mLoader->m_state)
-	{
-		case WorldLoader::IDLE:
-			msg = "Idle";
-			break;
-		case WorldLoader::FAILED:
-			msg = "\\c900Failed";
-			break;
-		case WorldLoader::GETTING_CONFIG:
-			msg = "Getting Config";
-			break;
-		case WorldLoader::GETTING_RESOURCES:
-			msg = "Getting Resource " + its(mLoader->m_iTotalResources) + " / " + its(mLoader->m_iCompletedResources);
-			break;
-		case WorldLoader::BUILDING_WORLD:
-			msg = "Building World";
-			break;
-		case WorldLoader::JOINING_WORLD:
-			msg = "Joining World";
-			break;
-		case WorldLoader::WORLD_READY:
-			msg = "World Ready";
-			break;
-		case WorldLoader::WORLD_ACTIVE:
-			msg = "World Active";
-			break;
-		default: break;
-	}
-	
-	//top bar
-	mLoaderImage->RenderPattern(scr, rect(10,0,50,22), rect(0,0,Width(),25));
-	
-	mFont->Render( scr, r.x + 5, 4, "You are on your way to: " + mLoader->m_sWorldName, color(50,50,50) );
-	
-	//progress background
-	mLoaderImage->RenderBox(scr, rect(0,22,10,10), rect(0,22,Width(),30));
-	
-	int w = (int)((double)Width() * mLoader->Progress());
-	
-	//progress foreground
-	if (w > 0)
-		mLoaderImage->RenderBox(scr, rect(30,22,10,10), rect(0,22,w,30));
-	
-	//bottom bar
-	mLoaderImage->RenderPattern(scr, rect(0,52,25,25), rect(r.x,r.y+52,275,25));
-	
-	//bottom bar slanted edge
-	mLoaderImage->Render(scr, r.x+275, r.y+52, rect(35,52,25,25));
-	
-	mFont->Render( scr, r.x + 5, r.y + 57, msg, color(50,50,50) );
-
-}
-
 void GameManager::UnloadMap()
 {
 	if (mMap)
@@ -711,7 +644,7 @@ void GameManager::UnloadMap()
 		mMap->Die();
 		mMap = NULL;
 	}
-
+	
 	mPlayer->mMap = NULL;
 	
 	if (userlist)
@@ -724,15 +657,15 @@ void GameManager::Render(uLong ms)
 	
 	rect r = GetScreenPosition();
 	Image* scr = Screen::Instance();
+
+	if (IsMapLoading() && mLoader)
+	{
+		//render some sort of color overlay surface over mMap?
+		mLoader->Render();
+	}
 	
 	Frame::Render(ms);
 	
-	if (IsMapLoading())
-	{
-		//render some sort of color overlay surface over mMap?
-		_renderMapLoader(ms);
-	}
-
 	gameRenderProfiler.Stop();
 }
 
@@ -851,7 +784,10 @@ void GameManager::GenerateDefaultPlayerData()
 
 void GameManager::LoadPlayerData()
 {
-	if (!fileExists(PLAYERDATA_FILE))
+	string file = DIR_PROFILE;
+	file += PLAYERDATA_FILE;
+	
+	if (!fileExists(file))
 	{
 		GenerateDefaultPlayerData();
 		mPlayerData.mXmlPos = mPlayerData.mDoc.FirstChildElement("data");
@@ -862,7 +798,7 @@ void GameManager::LoadPlayerData()
 	bf.mPassword = PLAYERDATA_ENCRYPTION_KEY;
 	bf.mEncryptLength = 0;
 	
-	bf.Load(PLAYERDATA_FILE);
+	bf.Load(file);
 
 	/*if (bf.Decrypt() == 0)
 	{
@@ -887,7 +823,10 @@ void GameManager::SavePlayerData()
 	if (mPlayer)
 		mPlayer->SaveFlags();
 
-	if (mPlayerData.SaveToFile(PLAYERDATA_FILE)) 
+	string file = DIR_PROFILE;
+	file += PLAYERDATA_FILE;
+
+	if (mPlayerData.SaveToFile(file)) 
 	{
 		/*BoltFile bf;
 		bf.mPassword = PLAYERDATA_ENCRYPTION_KEY;

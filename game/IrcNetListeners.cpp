@@ -389,7 +389,13 @@ void _handleNetMessage_TradeItem(string& nick, DataPacket& data) //trITM id desc
 
 void _handleNetMessage_TradeRequest(string& nick, DataPacket& data) //trREQ
 {
-	handleInboundTradeRequest(nick);
+	if (!game->mMap) return;
+		
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
+
+	if (!ra) { _handleUnknownUser(nick); return; }
+
+	handleInboundTradeRequest(ra);
 }
 
 void _handleNetMessage_Say(string& nick, DataPacket& data)
@@ -400,12 +406,11 @@ void _handleNetMessage_Say(string& nick, DataPacket& data)
 
 	if (!ra) { _handleUnknownUser(nick); return; }
 
-	//if they're too far, ignore
-	if ( !ra->IsVisibleInCamera() )
+	//if they're too far, or blocked, ignore
+	if ( ra->IsBlocked() || !ra->IsVisibleInCamera() )
 		return;
 		
 	string msg = data.ReadString(0);
-	
 	
 	if (msg.at(0) != '/') //Ignore slash commands 
 	{
@@ -431,7 +436,10 @@ void _handleNetMessage_Stamp(string& nick, DataPacket& data)
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (!ra) { _handleUnknownUser(nick); return; }
-
+	
+	if (ra->IsBlocked())
+		return;
+	
 	_stampMapText(data.ReadInt(0), data.ReadInt(1), data.ReadInt(2), data.ReadString(3));
 }
 
@@ -443,8 +451,8 @@ void _handleNetMessage_Act(string& nick, DataPacket& data)
 
 	if (!ra) { _handleUnknownUser(nick); return; }
 
-	//if they're too far, ignore
-	if ( !ra->IsVisibleInCamera() )
+	//if they're too far, or blocked, ignore
+	if ( ra->IsBlocked() || !ra->IsVisibleInCamera() )
 		return;
 		
 	string msg;
@@ -482,6 +490,9 @@ void _handleNetMessage_Avy(string& nick, DataPacket& data)
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (!ra) { _handleUnknownUser(nick); return; }
+		
+	if (ra->IsBlocked())
+		return;
 	
 	ra->ReadAvatarFromPacket(data, 0);
 }
@@ -496,6 +507,13 @@ void _handleNetMessage_Sup(string& nick, DataPacket& data)
 	{
 		console->AddMessage("Double 'sup' from " + ra->mName);
 		return;
+	}
+	
+	//Make sure someone didn't try to clone someone elses 'sup' message to mimic them
+	if (data.ReadString(1) != nick)
+	{
+		console->AddMessage("Illegal 'sup' from " + ra->mName);
+		return;	
 	}
 	
 	/*	Add them to our map w/ their state data. Then reply
@@ -557,6 +575,9 @@ void _handleNetMessage_PlayerEarnedAchievement(string& nick, DataPacket& data) /
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
 	
+	if (ra->IsBlocked())
+		return;
+	
 	if (data.Size() != 1)
 	{
 		console->AddMessage("Malformed 'ern' from " + nick);
@@ -565,6 +586,26 @@ void _handleNetMessage_PlayerEarnedAchievement(string& nick, DataPacket& data) /
 
 	game->mChat->AddMessage("\\c139 * " + nick + "\\c999 achieved: \\c080 " + data.ReadString(1));
 	ra->Emote(11);
+}
+
+void _handleNetMessage_Afk(string& nick, DataPacket& data)
+{
+	if (!game->mMap) return;
+		
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
+	if (!ra) { _handleUnknownUser(nick); return; }
+	
+	ra->SetAfk(true);
+}
+
+void _handleNetMessage_Back(string& nick, DataPacket& data)
+{
+	if (!game->mMap) return;
+
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
+	if (!ra) { _handleUnknownUser(nick); return; }
+	
+	ra->SetAfk(false);
 }
 
 void _handleNetMessage_Mov(string& nick, DataPacket& data)
@@ -597,7 +638,10 @@ void _handleNetMessage_Emo(string& nick, DataPacket& data)
 	
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
-
+	
+	if (ra->IsBlocked())
+		return;
+	
 	if (data.Size() != 1)
 	{
 		console->AddMessage("Malformed 'emo' from " + ra->mName);
@@ -659,13 +703,23 @@ void _handleNetMessage_Private(string& nick, string& msg)
 	//if we don't accept private messages, send an auto respond
 	if ( game->mPlayerData.GetParamInt("map", "privmsg") != 1 )
 	{
-		game->mNet->Privmsg( nick, "\\c900I currently have private messages blocked" );
+		game->mNet->Privmsg( nick, "* I have private messages blocked *" );
 	}
 	else
 	{
-		Console* c = game->GetPrivateChat(nick);
-		c->AddMessage(nick + ": " + msg);
-		gui->GetUserAttention();
+		//If they exist on the map, and are blocked, ignore.
+		//TODO: Address blocking.
+		RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
+		if (ra && ra->IsBlocked())
+		{
+			game->mNet->Privmsg( nick, "* You are blocked *");
+		}
+		else
+		{
+			Console* c = game->GetPrivateChat(nick);
+			c->AddMessage(nick + ": " + msg);
+			gui->GetUserAttention();
+		}
 	}
 }
 
@@ -730,6 +784,10 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 		_handleNetMessage_Mod(nick, data);
 	else if (id == "ach")
 		_handleNetMessage_Ach(nick, data);
+	else if (id == "afk")
+		_handleNetMessage_Afk(nick, data);
+	else if (id == "back")
+		_handleNetMessage_Back(nick, data);
 	else if (id == "trDNY")
 		_handleNetMessage_TradeDeny(nick, data);
 	else if (id == "trOK") 

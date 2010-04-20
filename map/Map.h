@@ -34,7 +34,7 @@ class Map : public Frame, public EntityManager
 	virtual bool IsRectBlocked(rect r);
 	virtual void ResizeChildren();
 	virtual void Die(); //Graceful cleanup
-	
+
 	void HandleLeftClick();
 	void HandleRightClick();
 	
@@ -51,6 +51,7 @@ class Map : public Frame, public EntityManager
 	mapType mType;
 	
 	color mBackground; //fill color for maps
+	string mWorkingDir;
 	
 /*	Camera Procedures */
 

@@ -150,6 +150,10 @@ void callback_LoginDialogRegister(Button* b)
 	new MessagePopup("register", "Register", msg, true);	
 }
 
+Image* test;
+Image* textimg;
+Image* testOver;
+
 LoginDialog::LoginDialog() :
 	Frame(gui, "login", rect(50,50), "Login to Sybolt", true, false, false, true)
 {
@@ -206,6 +210,15 @@ LoginDialog::LoginDialog() :
 		game->SetVisible(false);
 	
 	loginDialog = this;
+	
+	mBackgroundImage = resman->LoadImg("assets/tetrius.jpg");
+/*	testOver = resman->LoadImg("assets/loading_overlay.png");
+	textimg = resman->ImageFromSurface( 
+					mFont->RenderToSDL("Holy shit Downloading Resource 1/100", color(27,14,16)) 
+			);
+
+	textimg->Rotate(81.0, 1.2, 1);
+*/
 }
 
 LoginDialog::~LoginDialog()
@@ -214,13 +227,21 @@ LoginDialog::~LoginDialog()
 	
 	if (game)
 		game->SetVisible(true);
+		
+	resman->Unload(mBackgroundImage);
 }
 
 void LoginDialog::Render(uLong ms)
 {	
-	//if (gui->GetDemandsFocus() == this)
-	//	gui->RenderDarkOverlay();
-
+	Image* scr = Screen::Instance();
+	
+	if (mBackgroundImage)
+		mBackgroundImage->Render(scr, 0, 0);
+	
+//	test->Render(scr, 0, 0);
+//	textimg->Render(scr, 200-textimg->Width(), 229);
+//	testOver->Render(scr, 129, 351);
+	
 	Frame::Render(ms);
 }
 

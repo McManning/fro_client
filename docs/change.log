@@ -663,15 +663,53 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 - Changed the way the console reads in the image base parameter. Will use subdirectories to skin all widgets.
 - Added a basic RemotePlayerMenu substitute built off the ESC menu structure. 
 	Temporary until the real one is made (Because people would complain if they can't beat/trade).
-- 
+
+100414 (After SVN commit to revision 18)
+- Moved player.save and avatars.xml to ./profile/ subdirectory. 
+	Plan on using this to store any consistant settings/configs/data written by the scripting engine
+	because files can be erased or overwritten in ./cache/
+- (NOT DONE) Added Afk Mode to players
+	- Afk mode will display an icon over the head of the player who's currently afk.
+	- Afk mode will be activated when the window has been ignored for 5 minutes. 
+		Note: Due to limitations in SDL, cannot poll events outside the window without getting involved
+			with WinAPI. So instead, afk is more like afw, and will watch multiple things to determine
+			afk state. (Basically, if any SDL events come in, they're not afk)
+	- Trade requests will auto deny when afk
+- Changed Actor.LoadAvatar() to only work for local files in the map working dir
+- Added Map::GetWorkingDir() to return the directory our resources must come from.
+	"cache/" if online mode, "dev/" if edit mode
+- Changed Entity.Create() to only allow access to files where Map::GetWorkingDir() is the root
+	So for example, Image = "entities/bob.png" will load "cache/entities/bob.png" if in online mode
+- Removed ActionEffect entity class (But kept in SVN for possible re-install later)
+- Fixed the custom mouse pointer not disappearing when the pointer was outside the SDL window
+- Added mandatory inclusion of cache/scripts/main.lua (And all resources it requires) to maps, 
+	after the Build() call of the primary lua file in order to inject common code regardless 
+	if the mapper wants it or not. 
+
+100416
+- Added /facepalm and updated /troll
+- Added Map.GetWorkingDir() to lua
+- Fixed Map::mWorkingDir adjustment for test_map to properly work out of the dev/ directory
+- Added various bits of the user blocking system. However, requires a system for saving addresses to 
+	a lookup table, and an overall more robust method of blocking people. It will currently work, but
+	can be circumvented if a blocked player just /join's the channel again
+- Added background image to the login screen
+- Added check for illegal 'sup' packets (mimicked from someone who wasn't the original creator to initialize
+	a presence of themselves on the map, even without a valid client)
+
 	
 IMMEDIATE TODO:
 
+- Should add a timer to avatar changing. (Only let them change it so often, etc)
+	And probably nuke that achievement, since it won't work.
+- Add Entity.SetImage?
 - Map load status bar isn't being drawn or anything. Do that
 	Only draws while loading the map itself, not while connecting to server... :[
 - Chat in trade still behind trade. Also do that.
 - Drop IDs from widget constructors. We don't use them enough for it to be mandatory to supply
 	But then Widget::Get("id") will be like "I NEED ID TO WORK" and leads to some confusion.. Eh.. 
+- Add Image* of the screen to Widget::Render() so we don't have to Screen::Instance() constantly
+	(Why didn't I do this before?)
 - Add something that checks if they closed the client properly. If it wasn't, warn them.. or some such.
 - Add lua userdata to yesno, alert, and messagedialog in system lib
 - Widget* w = gui->Get("MiniMenu");  Bug here, it won't delete on the next esc press unless we move it first.
@@ -681,6 +719,8 @@ IMMEDIATE TODO:
 	
 	
 TODO:
+	- http://tinyurl.com/api-create.php?url=http://scripting.com/
+		Will return just the url of the tinyurl. This service can be embedded into drm. 
 	- Pack avatars into the savefile?
 	- drm welfare check: comes in every week or so, gives you dorra
 	- Need System.EncryptFile and System.DecryptFile for files (just for the hell of it, so we can 

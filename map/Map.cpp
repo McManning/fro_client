@@ -5,6 +5,7 @@
 #include "../core/widgets/OpenUrl.h"
 #include "../core/io/Crypt.h"
 #include "../game/GameManager.h"
+#include "../game/WorldLoader.h"
 #include "../lua/MapLib.h"
 #include "../interface/AvatarFavoritesDialog.h"
 #include "../interface/RemotePlayerMenu.h"
@@ -21,6 +22,11 @@ Map::Map()
 	mShowPlayerNames = game->mPlayerData.GetParamInt("map", "shownames");
 	mGravity = 1;
 	mCameraSpeed = 4;
+	
+	if (game->mLoader && game->mLoader->m_bTestMode)
+		mWorkingDir = DIR_DEV;
+	else
+		mWorkingDir = DIR_CACHE;
 }
 
 Map::~Map()
@@ -432,4 +438,3 @@ void Map::SaveFlags()
 	
 	game->mPlayerData.SetText(e, flags);
 }
-

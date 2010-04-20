@@ -323,8 +323,8 @@ void GuiManager::_renderStats()
 	r.x = 3;
 	r.y = scr->Height() - r.h - 3;
 
-	scr->DrawRect(r, color());
-	mFont->Render(scr, r.x, r.y, s, color(0, 255, 255));
+	//scr->DrawRect(r, color());
+	mFont->Render(scr, r.x, r.y, s, color(128, 128, 0));
 }
 
 void GuiManager::_renderCursor()
@@ -332,7 +332,7 @@ void GuiManager::_renderCursor()
 //	PRINT("Gui::Render");
 	rect pos;
 	Image* scr = Screen::Instance();
-	
+
 	//If the cursor is over an input widget, render a caret version
 	if (hasMouseFocus && hasMouseFocus->mType == WIDGET_INPUT)
 	{
@@ -393,7 +393,9 @@ void GuiManager::Render(uLong ms)
 		mFont->Render(scr, 5, 5, mAlert, color(255,0,0));
 		
 	_renderStats();
-	_renderCursor();
+	
+	if (SDL_GetAppState() & SDL_APPMOUSEFOCUS)
+		_renderCursor();
 
 	//Finally, display the changes to the user
 	scr->Flip();

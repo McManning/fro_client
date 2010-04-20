@@ -18,6 +18,11 @@
 WorldLoader::WorldLoader()
 {
 	PRINT("Creating WorldLoader");
+
+	m_BackgroundImage = resman->LoadImg("assets/loading.jpg");
+	m_OverlayImage = resman->LoadImg("assets/loading_overlay.png");
+	m_StatusTextImage = NULL;
+	
 	SetState(IDLE);
 	PRINT("WorldLoader Done");
 }
@@ -25,6 +30,10 @@ WorldLoader::WorldLoader()
 WorldLoader::~WorldLoader()
 {
 	// TODO: Some sort of cleanup if we're deleted mid-download!
+	
+	resman->Unload(m_BackgroundImage);
+	resman->Unload(m_OverlayImage);
+	resman->Unload(m_StatusTextImage);
 }
 
 void WorldLoader::LoadOnlineWorld(string id, point2d target, string targetObjectName)
@@ -265,7 +274,7 @@ int WorldLoader::_queueResources(string items)
 	replace(&items, "\r", "");
 	explode(&v, &items, "\n");
 
-	for (int i = 1; i < v.size(); ++i)
+	for (int i = 0; i < v.size(); ++i)
 	{
 		//cleanup all whitespace
 		for (pos = 0; pos < v.at(i).length(); ++pos)
@@ -304,8 +313,8 @@ int WorldLoader::_queueResources(string items)
 			//See if this is the first lua file we've encountered (if it has .lua extension). If so, consider it the primary
 			if (m_sPrimaryLuaFile.empty() && path.find(".lua", 0) != string::npos)
 			{
-				console->AddMessage(" * Set Primary Script: " + m_sPrimaryLuaFile);
 				m_sPrimaryLuaFile = path;
+				console->AddMessage(" * Set Primary Script: " + m_sPrimaryLuaFile);
 			}
 			
 			console->AddMessage(" * Queuing master:" + master + " path:" + path + " hash:" + hash);
@@ -354,7 +363,7 @@ void WorldLoader::_buildWorld()
 {
 	lua_State* ls = mapLib_OpenLuaState();
 
-	string file;
+	string mainFile, mapFile;
 	
 	if (m_sPrimaryLuaFile.empty())
 	{
@@ -363,20 +372,42 @@ void WorldLoader::_buildWorld()
 	}
 	
 	if (!m_bTestMode)
-		file = DIR_CACHE + m_sPrimaryLuaFile;
+	{		
+		mainFile = DIR_CACHE;
+		mainFile += COMMON_LUA_INCLUSION; 
+		mapFile = DIR_CACHE + m_sPrimaryLuaFile;
+	}
 	else
-		file = m_sPrimaryLuaFile; 
+	{
+		mainFile = DIR_DEV;
+		mainFile += COMMON_LUA_INCLUSION; 
+		mapFile = DIR_DEV + m_sPrimaryLuaFile;
+	}
 
-	// Load the file itself
-	if ( luaL_dofile( ls, file.c_str() ) != 0 )
+	// Load the maps primary .lua script
+	if ( luaL_dofile( ls, mapFile.c_str() ) != 0 )
 	{
 		string err = lua_tostring(ls, -1);
 		lua_close(ls);
+		
+		console->AddMessage("Primary lua parse error: " + err);
 
-		_error( "Lua parse error: " + err );
+		_error( "Primary lua parse error (see console output)" );
 		return;
 	}
 	
+	// Load the common main.lua script
+	if ( luaL_dofile( ls, mainFile.c_str() ) != 0 )
+	{
+		string err = lua_tostring(ls, -1);
+		lua_close(ls);
+		
+		console->AddMessage("Common lua parse error: " + err);
+
+		_error( "Common lua parse error (see console output)" );
+		return;
+	}
+
 	// Parsed right, now let's run our Build()!
 	if ( !mapLib_luaCallBuild(ls) )
 	{
@@ -393,6 +424,7 @@ void WorldLoader::_buildWorld()
 	}
 	
 	game->mMap->mLuaState = ls;
+	game->mMap->mId = m_sWorldName;
 	
 	//All parsing went well we assume, finalize it!
 	_finalize();
@@ -538,4 +570,66 @@ void WorldLoader::SetState(loaderState state)
 		else
 			game->mChat->SetVisible(false);
 	}
+	
+	UpdateStatusText();
 }
+
+void WorldLoader::Render()
+{
+	Image* scr = Screen::Instance();
+	
+	if (m_BackgroundImage)
+		m_BackgroundImage->Render(scr, 0, 0);
+	
+	if (m_StatusTextImage)
+		m_StatusTextImage->Render(scr, 200-m_StatusTextImage->Width(), 229);
+	
+	if (m_OverlayImage)
+		m_OverlayImage->Render(scr, 129, 351);
+}
+
+void WorldLoader::UpdateStatusText()
+{
+	string msg;
+
+	switch (m_state)
+	{
+		case IDLE:
+			msg = "Bored";
+			break;
+		case FAILED:
+			msg = "WORLD LOAD FAILED";
+			break;
+		case GETTING_CONFIG:
+			msg = "Getting Config";
+			break;
+		case GETTING_RESOURCES:
+			msg = "Getting Resource " + its(m_iTotalResources) + " / " + its(m_iCompletedResources);
+			break;
+		case BUILDING_WORLD:
+			msg = "Constructing World";
+			break;
+		case JOINING_WORLD:
+			msg = "Joining World";
+			break;
+		case WORLD_READY:
+			msg = "World Ready";
+			break;
+		case WORLD_ACTIVE:
+			msg = "World Active";
+			break;
+		default: break;
+	}
+
+	resman->Unload(m_StatusTextImage);
+	if (!msg.empty())
+	{
+		m_StatusTextImage = resman->ImageFromSurface( gui->mFont->RenderToSDL(msg.c_str(), color(27,14,16)) );
+		m_StatusTextImage->Rotate(81.0, 1.2, 1);
+	}
+	else
+	{
+		m_StatusTextImage = NULL;	
+	}
+}
+

@@ -1,5 +1,6 @@
 
 #include "ItemTrade.h"
+#include "../entity/RemoteActor.h"
 #include "../game/GameManager.h"
 #include "../core/Core.h"
 #include "../core/widgets/Button.h"
@@ -29,7 +30,7 @@ class TradeRequest : public Frame
 };
 
 /*	Someone is trying to trade with us, see if they can */
-void handleInboundTradeRequest(string nick)
+void handleInboundTradeRequest(RemoteActor* ra)
 {
 	string reason;
 	
@@ -42,6 +43,10 @@ void handleInboundTradeRequest(string nick)
 	{
 		reason = "Does not accept trade requests";	
 	}
+	else if (ra->IsBlocked())
+	{
+		reason = "You are blocked";	
+	}
 	
 	//denied
 	if (!reason.empty())
@@ -51,12 +56,12 @@ void handleInboundTradeRequest(string nick)
 			DataPacket data("trDNY");
 			data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
 			data.WriteString(reason);
-			game->mNet->Privmsg( nick, data.ToString() );
+			game->mNet->Privmsg( ra->mName, data.ToString() );
 		}
 	}
 	else
 	{
-		new TradeRequest(nick);
+		new TradeRequest(ra->mName);
 	}
 }
 

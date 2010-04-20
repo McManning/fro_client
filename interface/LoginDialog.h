@@ -21,7 +21,8 @@ class LoginDialog : public Frame
 
 	string mUsername;
 	string mPassword;
-
+	
+	Image* mBackgroundImage;
 };
 extern LoginDialog* loginDialog;
 

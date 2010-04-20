@@ -20,6 +20,8 @@
 int main (int argc, char *argv[])
 {
 	buildDirectoryTree("logs/");
+	buildDirectoryTree(DIR_PROFILE);
+	
 	freopen("logs/out.log", "w", stdout);
 	removeFile("logs/time_profile.log");
 	

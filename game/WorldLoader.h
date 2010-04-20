@@ -4,6 +4,8 @@
 
 #include "../core/Core.h"
 
+const char* const COMMON_LUA_INCLUSION = "scripts/main.lua";
+
 class WorldLoader
 {
   public:
@@ -45,13 +47,16 @@ class WorldLoader
 	double Progress();
 	void SetState(loaderState state);
 	
+	void Render();
+	void UpdateStatusText();
+	
 	/*	Routines for loading online maps only */
 	void _sendRequestForConfig();
 	void _parseConfig();
 	int _queueResources(string items);
 	void _resourceDownloadSuccess(string url, string file);
 	void _resourceDownloadFailure(string url, string file);
-	
+
 	loaderState m_state;
 	
 	point2d m_warpDestinationPoint;
@@ -69,6 +74,10 @@ class WorldLoader
 
 	point2d m_previousPosition;
 	string m_sPreviousMap;
+	
+	Image* m_BackgroundImage;
+	Image* m_OverlayImage;
+	Image* m_StatusTextImage;
 };
 
 #endif //_WORLDLOADER_H_

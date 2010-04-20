@@ -8,11 +8,9 @@
 
 const int JOIN_INTERVAL_MS = (60*1000);
 
-const char* const DIR_ENTITIES = "entities/";
-const char* const DIR_SCRIPTS = "scripts/";
-const char* const DIR_MAPS = "maps/";
-const char* const DIR_EDITOR = "editor/";
+const char* const DIR_DEV = "dev/";
 const char* const DIR_AVA = "ava/";
+const char* const DIR_PROFILE = "profile/";
 
 const char* const PLAYERDATA_ENCRYPTION_KEY = "JV4872JP64BJHD4X2JX";
 const char* const PLAYERDATA_FILE = "player.save";
@@ -92,10 +90,7 @@ class GameManager : public Frame
 	void _buildHud();
 	void _buildChatbox();
 	void _hookCommands();
-	void _renderMapLoader(uLong ms);
 	void _addNewAchievement(string title, string desc, int max, string file);
-
-	Image* mLoaderImage;
 };
 
 extern GameManager* game;

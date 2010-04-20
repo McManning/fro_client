@@ -246,7 +246,7 @@ void AvatarFavorites::UseSelected()
 								ap->w, ap->h, ap->delay, 
 								ap->loopStand, ap->loopSit
 							);
-
+	Die();
 }
 
 void AvatarFavorites::AddNew()
@@ -371,8 +371,11 @@ bool AvatarFavorites::Load()
 	XmlFile xf;
 	xf.SetParser(callback_avatarFavoritesXmlParser);
 
+	string file = DIR_PROFILE;
+	file += AVATAR_FAVORITES_FILENAME;
+
 	//Load file contents into XML elements
-	if (!xf.LoadFromFile(AVATAR_FAVORITES_FILENAME))
+	if (!xf.LoadFromFile(file))
 	{
 		WARNING(xf.GetError());
 		return false;
@@ -408,9 +411,12 @@ bool AvatarFavorites::Save()
 		xf.SetParamInt(e, "loopsit", mAvatars.at(i)->loopSit);
 		xf.SetParamInt(e, "loopstand", mAvatars.at(i)->loopStand);
 	}
+	
+	string file = DIR_PROFILE;
+	file += AVATAR_FAVORITES_FILENAME;
 
 	//save and close
-	bool success = xf.SaveToFile(AVATAR_FAVORITES_FILENAME);
+	bool success = xf.SaveToFile(file);
 	return success;
 }
 

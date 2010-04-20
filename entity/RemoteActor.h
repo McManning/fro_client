@@ -18,7 +18,14 @@ class RemoteActor : public Actor
 	bool LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, 
 							bool loopStand, bool loopSit);
 	
-	bool mMuted; //can we hear this player?
+	// Set to true if this player is considered "away from keyboard"
+	void SetAfk(bool b) { mAfk = b; };
+	
+	void SetBlocked(bool b);
+	bool IsBlocked() const { return mBlocked; };
+	
+	bool mBlocked; //can we hear/see this player?
+	bool mAfk;
 };
 
 #endif //_REMOTEACTOR_H_

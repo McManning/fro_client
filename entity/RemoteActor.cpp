@@ -11,7 +11,8 @@ RemoteActor::RemoteActor()
 	mType = ENTITY_REMOTEACTOR;
 	mShadow = true;
 	mLimitedAvatarSize = true;
-	mMuted = false;
+	mBlocked = false;
+	SetAfk(false);
 	
 	LoadAvatar("assets/default.png", "", 32, 64, 1000, false, false);
 	SwapAvatars();
@@ -25,6 +26,18 @@ RemoteActor::~RemoteActor()
 void RemoteActor::Render(uLong ms)
 {
 	Actor::Render(ms);
+}
+
+void RemoteActor::SetBlocked(bool b)
+{
+	mBlocked = b;
+	//TODO: Store blocked address in a file, yadda yadda
+	
+	if (mBlocked)
+	{
+		//Change their avatar to the blocked form
+		LoadAvatar("assets/blocked.png", "", 32, 64, 1000, false, false);
+	}
 }
 
 void RemoteActor::ReadAvatarFromPacket(DataPacket& data, uShort startOffset)
@@ -67,7 +80,11 @@ bool RemoteActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShor
 
 	bool result = false;
 
-	//only allow remote files, composite avatars, or local files, for remote actors
+	// only allow local files to be loaded if blocked
+	if (IsBlocked() && file.find("assets", 0) != 0)
+		return false;
+
+	// only allow remote files, composite avatars, or local files, for remote actors
 	if ( file.find("http://", 0) == 0 || file.find("avy://", 0) == 0 || file.find("assets", 0) == 0)
 	{	
 		result = Actor::LoadAvatar(file, pass, w, h, delay, loopStand, loopSit);

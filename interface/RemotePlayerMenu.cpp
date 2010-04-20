@@ -74,6 +74,16 @@ void callback_playerMenuTrade(Button* b)
 	handleOutboundTradeRequest(r->mLinked->mName);
 }
 
+void callback_playerMenuToggleBlock(Button* b)
+{
+	RemotePlayerMenu* r = (RemotePlayerMenu*)b->GetParent();
+	r->Die(); //queue up menu deletion
+
+	if (game->mMap != r->mMap || !r->mLinked) return;
+	
+	r->mLinked->SetBlocked(!r->mLinked->IsBlocked());
+}
+
 RemotePlayerMenu::RemotePlayerMenu(Map* map, RemoteActor* linked)
 	: Frame(gui, "RemotePlayerMenu", rect(0,0,200,100), linked->mName, true, false, true, true)
 {
@@ -81,6 +91,7 @@ RemotePlayerMenu::RemotePlayerMenu(Map* map, RemoteActor* linked)
 	mMap = map;
 
 	Button* b;
+	string s;
 
 	rect r(10, 30, Width()-20, 20);
 	
@@ -91,6 +102,14 @@ RemotePlayerMenu::RemotePlayerMenu(Map* map, RemoteActor* linked)
 	r.y += 25;
 
 	b = new Button(this, "", r, "Request Trade", callback_playerMenuTrade);
+	r.y += 25;
+	
+	if (linked->IsBlocked())
+		s = "Unblock Player";
+	else
+		s = "Block Player";
+
+	b = new Button(this, "", r, s, callback_playerMenuToggleBlock);
 	r.y += 25;
 
 	r.y += 5;

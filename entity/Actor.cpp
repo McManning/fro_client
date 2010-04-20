@@ -2,7 +2,6 @@
 #include <lua.hpp>
 #include "Actor.h"
 #include "StaticObject.h"
-#include "ActionEffect.h"
 #include "LocalActor.h"
 #include "../map/Map.h"
 #include "../entity/Avatar.h"

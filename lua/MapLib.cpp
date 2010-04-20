@@ -186,6 +186,15 @@ int map_SetFlag(lua_State* ls)
 	return 0;
 }
 
+//	string = .GetWorkingDir() - Returns working directory of the map (either dev/ or cache/)
+int map_GetWorkingDir(lua_State* ls)
+{
+	ASSERT(game->mMap);
+
+	lua_pushstring(ls, game->mMap->mWorkingDir.c_str());
+	return 1;
+}
+
 static const luaL_Reg functions[] = {
 	{"NewBasic", map_NewBasic},
 	{"SetSpawn", map_SetSpawn},
@@ -193,6 +202,7 @@ static const luaL_Reg functions[] = {
 	{"SetColor", map_SetColor},
 	{"GetFlag", map_GetFlag},
 	{"SetFlag", map_SetFlag},
+	{"GetWorkingDir", map_GetWorkingDir},
 	{NULL, NULL}
 };
 
