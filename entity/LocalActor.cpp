@@ -312,6 +312,9 @@ void LocalActor::NetSendActionBuffer() //mov #x #y $buffer
 	
 	DEBUGOUT("Sending: (" + its(mLastSavedPosition.x) + "," + its(mLastSavedPosition.y)
 				+ ") " + mOutputActionBuffer);
+			
+	// add position correction to the end of the buffer
+	mOutputActionBuffer += 'c' + its(mPosition.x) + '.' + its(mPosition.y) + '.';
 						
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{

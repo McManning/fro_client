@@ -697,9 +697,22 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 - Added check for illegal 'sup' packets (mimicked from someone who wasn't the original creator to initialize
 	a presence of themselves on the map, even without a valid client)
 
+100423
+- Added scrollbar visibility flag to Multiline widget. Can choose to always hide the scroller.
+- Added info multiline to login screen, to output server connecting information 
+- Login Screen will now remain visible until we actually go to the map loading state.
+	Meaning, it will remain open while we're being verified by the server.
+- Fixed private message button in trade window. Will now display the privmsg console at the top right.
+- Added "entity" userdata to NET_LUA messenger event to point to the player that triggered the event
+- Added "reqAvy" net message to request a privmsg of avatar information from a specific nick. 
+- Fixed bug where avatars would not reload after unblocking a player.
+- Added an additional cXXXX.YYYY. to the player movement buffer in order to fix position sync issues even more.
+	(Although, it unfortunately makes the movement strings longer than one would like).
+- Added a message to tell people to /join something if the world fails to load
 	
 IMMEDIATE TODO:
 
+- NET_LUA does not send any info regarding who triggered the event!
 - Should add a timer to avatar changing. (Only let them change it so often, etc)
 	And probably nuke that achievement, since it won't work.
 - Add Entity.SetImage?
@@ -719,6 +732,8 @@ IMMEDIATE TODO:
 	
 	
 TODO:
+	- Rewrite movement buffer system to use a binary format to condense size considerably. 
+	- Rewrite DataPacket to use binary rather than converting integers to strings and all that jazz.
 	- http://tinyurl.com/api-create.php?url=http://scripting.com/
 		Will return just the url of the tinyurl. This service can be embedded into drm. 
 	- Pack avatars into the savefile?

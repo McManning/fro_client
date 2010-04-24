@@ -15,8 +15,9 @@ void netSendMusic(string song); //act 1 song
 void netSendMe(string text); //act $text
 void netSendStamp(string text); //stp x y rotation color $text
 void netSendSay(string text); //say $message || act $message
-void netSendAvatar(Avatar* a); //avy $url #w #h ...
+void netSendAvatar(Avatar* a, string nick = ""); //avy $url #w #h ...
 void netSendEmote(uShort num); //emo #id
+void netSendRequestAvatar(string nick); // reqAvy
 void netSendAchievement(string title); // ern $title (earn, get it, get it!?)
 
 void hookNetListeners();

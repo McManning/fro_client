@@ -5,6 +5,7 @@
 #include "../core/Core.h"
 #include "../core/widgets/Frame.h"
 
+class Multiline;
 class LoginDialog : public Frame 
 {
   public:
@@ -23,6 +24,7 @@ class LoginDialog : public Frame
 	string mPassword;
 	
 	Image* mBackgroundImage;
+	Multiline* mText;
 };
 extern LoginDialog* loginDialog;
 

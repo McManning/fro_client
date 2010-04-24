@@ -64,6 +64,7 @@ class Multiline: public Widget
 	bool mWrap;
 	bool mHighlightSelected;
 	bool mSelectOnHover;
+	bool mHideScrollbar;
 	sShort mSelected;
 	color mHighlightBackground;
 

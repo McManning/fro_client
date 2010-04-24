@@ -4,6 +4,7 @@
 #include "../core/net/DataPacket.h"
 #include "../map/Map.h"
 #include "../game/GameManager.h"
+#include "../game/IrcNetListeners.h"
 
 RemoteActor::RemoteActor()
 	: Actor()
@@ -36,7 +37,11 @@ void RemoteActor::SetBlocked(bool b)
 	if (mBlocked)
 	{
 		//Change their avatar to the blocked form
-		LoadAvatar("assets/blocked.png", "", 32, 64, 1000, false, false);
+		LoadAvatar("assets/blocked.png", "", 48, 48, 1000, false, false);
+	}
+	else
+	{
+		netSendRequestAvatar(mName);
 	}
 }
 

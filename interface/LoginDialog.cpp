@@ -8,6 +8,7 @@
 #include "../core/widgets/Button.h"
 #include "../core/widgets/Checkbox.h"
 #include "../core/widgets/Multiline.h"
+#include "../core/widgets/Scrollbar.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/io/FileIO.h"
 #include "../core/net/IrcNet2.h"
@@ -57,7 +58,7 @@ int callback_welcomeXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 	}
 	else if (id == "start")
 	{
-		loginDialog->Die();
+		//loginDialog->Die();
 
 		game->mUsername = loginDialog->mUsername;
 		game->mPassword = loginDialog->mPassword;
@@ -65,7 +66,7 @@ int callback_welcomeXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 		game->mStartingWorldId = xf->GetText(e);
 		game->mNet->TryNextServer();
 		
-		loginDialog = NULL;
+		//loginDialog = NULL;
 	}
 	
 	return XMLPARSE_SUCCESS;
@@ -95,10 +96,10 @@ void dlCallback_welcomeXmlSuccess(downloadData* data)
 	{
 		console->AddMessage(error);
 		new MessagePopup("loginerror", "Login Error", error);
+		
+		if (loginDialog)
+			loginDialog->SetControlState(true);
 	}
-
-	if (loginDialog)
-		loginDialog->SetControlState(true);
 }
 
 void dlCallback_welcomeXmlFailure(downloadData* data)
@@ -150,13 +151,11 @@ void callback_LoginDialogRegister(Button* b)
 	new MessagePopup("register", "Register", msg, true);	
 }
 
-Image* test;
-Image* textimg;
-Image* testOver;
-
 LoginDialog::LoginDialog() :
 	Frame(gui, "login", rect(50,50), "Login to Sybolt", true, false, false, true)
 {
+	mSortable = false;
+	
 	ASSERT(!loginDialog); //there can be only one
 	
 	uShort y = 30;
@@ -202,6 +201,13 @@ LoginDialog::LoginDialog() :
 		l->SetVisible(false);
 
 	y += 25;
+	
+	mText = new Multiline(gui, "", rect(10,SCREEN_HEIGHT - 150,300,120));
+		mText->mHideScrollbar = true;
+		resman->Unload(mText->mImage);
+		mText->mImage = NULL;
+		mText->mFont = fonts->Get("", 0, TTF_STYLE_BOLD); //load default font, but bold.
+		mText->mFontColor = color(255,255,255);
 
 	SetSize(220, y);
 	ResizeChildren();
@@ -212,18 +218,14 @@ LoginDialog::LoginDialog() :
 	loginDialog = this;
 	
 	mBackgroundImage = resman->LoadImg("assets/tetrius.jpg");
-/*	testOver = resman->LoadImg("assets/loading_overlay.png");
-	textimg = resman->ImageFromSurface( 
-					mFont->RenderToSDL("Holy shit Downloading Resource 1/100", color(27,14,16)) 
-			);
-
-	textimg->Rotate(81.0, 1.2, 1);
-*/
 }
 
 LoginDialog::~LoginDialog()
 {
 	loginDialog = NULL;
+	
+	if (mText)
+		mText->Die();
 	
 	if (game)
 		game->SetVisible(true);
@@ -237,11 +239,7 @@ void LoginDialog::Render(uLong ms)
 	
 	if (mBackgroundImage)
 		mBackgroundImage->Render(scr, 0, 0);
-	
-//	test->Render(scr, 0, 0);
-//	textimg->Render(scr, 200-textimg->Width(), 229);
-//	testOver->Render(scr, 129, 351);
-	
+
 	Frame::Render(ms);
 }
 

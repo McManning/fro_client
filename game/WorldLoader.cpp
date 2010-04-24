@@ -535,6 +535,11 @@ void WorldLoader::_error(string msg)
 	//TODO: Downloader might still be active! Kill all linked downloads!
 	
 	new MessagePopup("", "Map Load Error", msg);
+	
+	game->mChat->AddMessage("\\c721Since the world load has failed, we suggest typing "
+							"\\c900/join worldname \\c721where worldname is the name of "
+							"some existing world."
+							);
 }
 	
 /*	************************************

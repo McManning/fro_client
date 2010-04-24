@@ -130,8 +130,7 @@ void Avatar::Deserialize(DataPacket& src, uShort offset)
 	mLoopSit = src.ReadInt(offset+5);
 			
 	//Following two members don't exist in the older client versions
-			
-	//TODO: Figure out a way to apply this modifier after load, internally!
+
 	if (src.Size() > offset+6)
 		mModifier = src.ReadInt(offset+6);
 	else
@@ -183,7 +182,7 @@ void Avatar::LoadComposite()
 	vString v;
 	explode(&v, &url, ".");
 	
-	if (v.size() < 7) //TODO: Some sort of error thing here to tell the actor it's bad?
+	if (v.size() < 7)
 		return;
 	
 	string base = v.at(0);

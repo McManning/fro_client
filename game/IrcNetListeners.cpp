@@ -3,6 +3,7 @@
 #include "GameManager.h"
 #include "Achievements.h"
 #include "../core/widgets/MessagePopup.h"
+#include "../core/widgets/Multiline.h"
 #include "../interface/UserList.h"
 #include "../interface/LoginDialog.h"
 #include "../interface/ItemTrade.h"
@@ -13,7 +14,6 @@
 #include "../entity/TextObject.h"
 #include "../core/io/FileIO.h"
 #include "../core/widgets/Button.h"
-#include "../core/net/IrcNet2.h"
 #include "../core/net/DataPacket.h"
 #include "../core/io/Crypt.h"
 #include "../entity/RemoteActor.h"
@@ -28,6 +28,9 @@ void printMessage(string& msg)
 		console->AddMessage(msg);
 	else
 		game->mChat->AddMessage(msg);
+		
+	if (loginDialog)
+		loginDialog->mText->AddMessage(msg);
 }
 
 string compressActionBuffer(string buffer)
@@ -281,7 +284,7 @@ void netSendBeat(Entity* target, string item) //act 2 target item
 	}	
 }
 
-void netSendAvatar(Avatar* a) //avy $url #w #h ...
+void netSendAvatar(Avatar* a, string nick) //avy $url #w #h ...
 {
 	if (!a || !game || !game->mNet || game->mNet->GetState() != ONCHANNEL)
 		return;
@@ -291,7 +294,10 @@ void netSendAvatar(Avatar* a) //avy $url #w #h ...
 	
 	a->Serialize(data);
 
-	game->mNet->MessageToChannel( data.ToString() );
+	if (nick.empty())
+		game->mNet->MessageToChannel( data.ToString() );
+	else
+		game->mNet->Privmsg( nick, data.ToString() );
 }
 
 void netSendEmote(uShort num) //emo num
@@ -308,6 +314,17 @@ void netSendEmote(uShort num) //emo num
 		data.WriteInt(num);
 
 		game->mNet->MessageToChannel( data.ToString() );
+	}
+}
+
+void netSendRequestAvatar(string nick)
+{
+	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
+	{
+		DataPacket data("reqAvy");
+		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+
+		game->mNet->Privmsg(nick, data.ToString() );
 	}
 }
 
@@ -396,6 +413,11 @@ void _handleNetMessage_TradeRequest(string& nick, DataPacket& data) //trREQ
 	if (!ra) { _handleUnknownUser(nick); return; }
 
 	handleInboundTradeRequest(ra);
+}
+
+void _handleNetMessage_RequestAvatar(string& nick, DataPacket& data) //reqAvy
+{
+	netSendAvatar(game->mPlayer->GetAvatar(), nick);
 }
 
 void _handleNetMessage_Say(string& nick, DataPacket& data)
@@ -671,6 +693,7 @@ void _handleNetMessage_Lua(string& nick, DataPacket& data)
 	MessageData md;
 	md.SetId("NET_LUA");
 	md.WriteString("id", id);
+	md.WriteUserdata("entity", ra);
 	md.WriteString("message", msg);
 	
 	messenger.Dispatch(md, ra);
@@ -788,6 +811,8 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 		_handleNetMessage_Afk(nick, data);
 	else if (id == "back")
 		_handleNetMessage_Back(nick, data);
+	else if (id == "reqAvy")
+		_handleNetMessage_RequestAvatar(nick, data);
 	else if (id == "trDNY")
 		_handleNetMessage_TradeDeny(nick, data);
 	else if (id == "trOK") 
@@ -1092,13 +1117,16 @@ void listener_NetNewState(MessageListener* ml, MessageData& md, void* sender)
 	
 	timers->Remove("resetNm"); //so we can send it again immediately
 
+	string s;
 	switch (state)
 	{
 		case CONNECTING:
-			game->mChat->AddMessage("\\c090* Connecting to server...");
+			s = "\\c050 * Connecting to server...";
+			printMessage(s);
 			break;
 		case AWAITINGSERVERVERIFY: //Connected, awaiting verify. Send nick.
-			game->mChat->AddMessage("\\c139* Waiting for verification");
+			s = "\\c139 * Waiting for verification";
+			printMessage(s);
 			net->ChangeNick(game->mPlayer->mName);
 			break;
 		case ONSERVER:
@@ -1142,6 +1170,9 @@ void listener_NetNickInUse(MessageListener* ml, MessageData& md, void* sender)
 // Nothing in message
 void listener_NetVerified(MessageListener* ml, MessageData& md, void* sender)
 {
+	if (loginDialog)
+		loginDialog->Die();
+	
 	game->LoadOnlineWorld(game->mStartingWorldId);
 }
 

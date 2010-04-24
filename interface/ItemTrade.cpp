@@ -297,7 +297,9 @@ void callback_ItemTradePrivmsg(Button* b)
 {
 	ItemTrade* i = (ItemTrade*)b->GetParent();
 
-	game->GetPrivateChat(i->mTrader);
+	Console* c = game->GetPrivateChat(i->mTrader);
+	if (c)
+		c->SetPosition(rect(gui->Width() - c->Width(), 0, c->Width(), c->Height()));
 }
 
 ItemTrade::ItemTrade(string trader)

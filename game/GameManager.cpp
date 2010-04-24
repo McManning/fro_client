@@ -736,6 +736,7 @@ Console* GameManager::GetPrivateChat(string nick)
 		<login id="" pass="" remember="0" />
 		<avatar url="" pass="" w="" h="" delay="" loopsit="" loopstand="" />
 		<map trading="1" shownames="0" privmsg="1" joinparts="1" addresses="0" />
+		<chat position=""/>
 		<flags/>
 		<achievements/>
 		<inventory/>
@@ -758,6 +759,10 @@ void GameManager::GenerateDefaultPlayerData()
 	mPlayerData.AddChildElement(root, "flags");
 	mPlayerData.AddChildElement(root, "inventory");
 	mPlayerData.AddChildElement(root, "achievements");
+
+	// <chat position=""/>
+	e = mPlayerData.AddChildElement(root, "chat");
+	mPlayerData.SetParamString(e, "position", "");
 
 	// <login id="" pass="" remember="0" />
 	e = mPlayerData.AddChildElement(root, "login");

@@ -90,8 +90,7 @@ rect StaticObject::GetBoundingRect()
 {
 	if (!mImage)
 		return rect();
-		
-	//TODO: this is wrong!
+
 	return rect( mPosition.x - mOrigin.x,
 				mPosition.y - mOrigin.y,
 				mImage->Width(), mImage->Height() );

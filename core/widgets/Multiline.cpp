@@ -35,6 +35,7 @@ void callback_multilineScrollbar(Scrollbar* caller)
 Multiline::Multiline(Widget* wParent, string sId, rect rPosition)
 {
 	mClickedOnce = false;
+	mHideScrollbar = false;
 	mType = WIDGET_MULTILINE;
 	mBottomLine = 0; //at the start
 	mWrap = true;
@@ -286,7 +287,9 @@ void Multiline::RecalculateScrollbarMax()
 	if (s > 0)
 	{
 		mScrollbar->SetMax(s);
-		mScrollbar->SetVisible(true);
+		
+		if (!mHideScrollbar)
+			mScrollbar->SetVisible(true);
 	}
 	else
 	{
