@@ -58,7 +58,7 @@ StaticObject::~StaticObject()
 
 TimeProfiler soRenderProfiler("StaticObject::Render");
 
-void StaticObject::Render(uLong ms)
+void StaticObject::Render()
 {
 	ASSERT(mMap);
 

@@ -66,12 +66,12 @@ MessagePopup::~MessagePopup()
 	
 }
 
-void MessagePopup::Render(uLong ms)
+void MessagePopup::Render()
 {
 	if (gui->GetDemandsFocus() == this)
 		gui->RenderDarkOverlay();
 	
-	Frame::Render(ms);
+	Frame::Render();
 }
 
 /*

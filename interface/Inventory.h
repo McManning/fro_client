@@ -26,7 +26,7 @@ class IncinerateAmountRequest : public Frame
   public:
 	IncinerateAmountRequest(itemProperties* item);
 	~IncinerateAmountRequest();
-	void Render(uLong ms);
+	void Render();
 	
 	itemProperties* mItem;
 	Input* mInput;

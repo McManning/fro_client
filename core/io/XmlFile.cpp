@@ -30,14 +30,10 @@ bool XmlFile::LoadFromMemory(const char* buff, int size)
 {
 	if (!buff || size < 1)
 		return false;
-	
-	string hack(buff, size);
-	printf(hack.c_str());
-	// ^ hack for the below todo, lolol
 
 	//TODO: Currently, buff must be null terminated and size isn't used.
 	//need to add a check to ensure null is @ the end.
-	if(mDoc.Parse(hack.c_str()) == NULL)
+	if(mDoc.Parse(buff) == NULL)
 	{
 		mErrorText = mDoc.ErrorDesc();
 		return false;

@@ -14,7 +14,7 @@ class OpenUrl : public Frame
 	OpenUrl(string url);
 	~OpenUrl();
 	
-	void Render(uLong ms);
+	void Render();
 
 	string mUrl;
 };

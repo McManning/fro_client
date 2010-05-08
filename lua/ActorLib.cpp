@@ -1,5 +1,6 @@
 
 #include <lua.hpp>
+#include "ActorLib.h"
 #include "EntityLib.h"
 #include "LuaCommon.h"
 #include "../entity/Actor.h"
@@ -17,12 +18,12 @@ bool _verifyActor(Entity* e)
 
 // Referenced actor is always the first parameter of the state
 // This should always return a valid entity pointer. If it's invalid, there will be a longjmp from within lua.
-Actor* _getReferencedActor(lua_State* ls, int index = 1)
+Actor* getReferencedActor(lua_State* ls, int index)
 {
 	Actor* a = (Actor*)lua_touserdata(ls, 1);
 	if (!_verifyActor(a))
 	{
-		string err = "index " + its(index) + " not a valid entity pointer.";
+		string err = "index " + its(index) + " not a valid actor pointer.";
 		lua_pushstring( ls, err.c_str() );
 		lua_error( ls );
 	}
@@ -40,7 +41,7 @@ int actor_IsIdle(lua_State* ls)
 	PRINT("actor_IsIdle");
 	luaCountArgs(ls, 1);
 
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 	
 	lua_pushnumber( ls, !a->IsMoving() );
 	return 1;
@@ -52,7 +53,7 @@ int actor_IsJumping(lua_State* ls)
 	PRINT("actor_IsJumping");
 	luaCountArgs(ls, 1);
 
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 	
 	lua_pushnumber( ls, !a->IsJumping() );
 	return 1;
@@ -64,7 +65,7 @@ int actor_Emote(lua_State* ls)
 	PRINT("actor_Emote");
 	luaCountArgs(ls, 2);
 
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 	
 	a->Emote( (uShort)lua_tonumber(ls, 2) );
 	return 0;
@@ -76,7 +77,7 @@ int actor_Jump(lua_State* ls)
 	PRINT("actor_Jump");
 	luaCountArgs(ls, 2);
 
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 	
 	a->Jump( (byte)lua_tonumber(ls, 2) );
 	return 0;
@@ -88,7 +89,7 @@ int actor_GetDestination(lua_State* ls)
 	PRINT("actor_GetDestination");
 	luaCountArgs(ls, 1);
 
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 	
 	point2d p = a->GetDestination();
 	lua_pushnumber(ls, p.x);
@@ -103,7 +104,7 @@ int actor_CanMove(lua_State* ls)
 	PRINT("actor_CanMove");
 	luaCountArgs(ls, 3);
 
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 	
 	bool canMove = a->CanMove( stringToDirection(lua_tostring(ls, 2)), 
 												(sShort)lua_tonumber(ls, 3)
@@ -121,7 +122,7 @@ int actor_MoveTo(lua_State* ls)
 
 	int numArgs = lua_gettop( ls );
 	
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 	
 	byte speed = 0;
 	if (numArgs > 3)
@@ -139,7 +140,7 @@ int actor_Move(lua_State* ls)
 	PRINT("actor_Move");
 	luaCountArgs(ls, 4);
 
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 	
 	a->Move( stringToDirection(lua_tostring(ls, 2)), (sShort)lua_tonumber(ls, 3), (byte)lua_tonumber(ls, 4) );
 	
@@ -152,7 +153,7 @@ int actor_AddToBuffer(lua_State* ls)
 	PRINT("actor_AddToBuffer");
 	luaCountArgs(ls, 2);
 
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 	
 	a->AddToActionBuffer( lua_tostring(ls, 2) );
 	
@@ -165,7 +166,7 @@ int actor_LoadAvatar(lua_State* ls)
 	PRINT("actor_LoadAvatar");
 	luaCountArgs(ls, 8);
 
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 
 	bool result = a->LoadAvatar( game->mMap->mWorkingDir + lua_tostring(ls, 2), lua_tostring(ls, 3),
 							(uShort)lua_tonumber(ls, 4), (uShort)lua_tonumber(ls, 5),
@@ -183,7 +184,7 @@ int actor_Face(lua_State* ls)
 	PRINT("actor_Face");
 	luaCountArgs(ls, 2);
 	
-	Actor* a = _getReferencedActor(ls);
+	Actor* a = getReferencedActor(ls);
 
 	Entity* e = (Entity*)lua_touserdata(ls, 2);
 	

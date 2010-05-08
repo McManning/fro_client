@@ -31,14 +31,14 @@ Label::~Label()
 
 }
 
-void Label::Render(uLong ms)
+void Label::Render()
 {
 	rect pos = GetScreenPosition();
 
 	if (mFont && !mCaption.empty())
 		mFont->Render(Screen::Instance(), pos.x, pos.y, mCaption, mFontColor, mMaxWidth);
 
-	Widget::Render(ms);
+	Widget::Render();
 }
 
 void Label::SetCaption(string text)

@@ -28,9 +28,9 @@ class Map : public Frame, public EntityManager
 		MAZE
 	};
 
-	virtual void Render(uLong ms);
+	virtual void Render();
 	virtual void Event(SDL_Event* event);
-	virtual void Process(uLong ms);
+	virtual void Process();
 	virtual bool IsRectBlocked(rect r);
 	virtual void ResizeChildren();
 	virtual void Die(); //Graceful cleanup
@@ -68,7 +68,7 @@ class Map : public Frame, public EntityManager
 	void OffsetCamera(point2d p);
 	
 	/*	Update the position of our camera based on various internal states */
-	virtual void UpdateCamera(uLong ms);
+	virtual void UpdateCamera();
 	
 	/*	Returns true if the MAP POSITION rect is visible in our camera */
 	bool IsRectInCamera(rect mapRect);

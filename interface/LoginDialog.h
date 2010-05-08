@@ -12,7 +12,7 @@ class LoginDialog : public Frame
 	LoginDialog();
 	~LoginDialog();
 	
-	void Render(uLong ms);
+	void Render();
 	
 	/*	If skip = true, will not send id & pass to the login server */
 	void SendLoginQuery(bool skip);

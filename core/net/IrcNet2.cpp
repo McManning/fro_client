@@ -14,9 +14,13 @@ string getWord(string text, int n)
 	return text.substr(pos, text.find (' ', pos) - pos);
 }
 
-uShort timer_NetProcess(timer* t, uLong ms)
+uShort timer_netProcess(timer* t, uLong ms)
 {
 	IrcNet* net = (IrcNet*)t->userData;
+	
+	if (!net)
+		return TIMER_DESTROY;
+		
 	net->Process();
 	return TIMER_CONTINUE;
 }
@@ -33,7 +37,20 @@ uShort timer_netTimeout(timer* t, uLong ms)
 		net->Disconnect();
 		net->TryNextServer();
 	}
+	
 	return TIMER_DESTROY;
+}
+
+uShort timer_netPing(timer* t, uLong ms)
+{
+	IrcNet* net = (IrcNet*)t->userData;
+	
+	if (!net)
+		return TIMER_DESTROY;
+
+	net->PingServer();
+	
+	return TIMER_CONTINUE;
 }
 
 /*	Does simplistic socket connecting outside the main thread so we don't get locked up.
@@ -55,8 +72,10 @@ IrcNet::IrcNet()
 	mServerListIndex = 0;
 	mState = DISCONNECTED;
 	mConnectThread = NULL;
+	mWaitingForPong = false;
 	
-	timers->AddProcess("ircnet", timer_NetProcess, NULL, this);
+	timers->AddProcess("netProcess", timer_netProcess, NULL, this);
+//	timers->Add("netPing", PING_INTERVAL_MINUTES*60*1000, false, timer_netPing, NULL, this);
 }
 
 IrcNet::~IrcNet() 
@@ -173,6 +192,24 @@ void IrcNet::OnConnect()
 	
 	msg = "USER FroUser 0 * :" + mRealname + "\r\n";
 	SendLine(msg); 
+}
+
+void IrcNet::PingServer()
+{	
+	string s;
+	if (IsConnected())
+	{
+		if (mWaitingForPong) //the previous ping timed out
+		{
+			Disconnect();
+		}
+		else
+		{
+			mWaitingForPong = true;
+			s = "PING " + mRealServerAddress + "\r\n";
+			SendLine(s);
+		}
+	}
 }
 
 IrcChannel* IrcNet::CreateChannel(string chan, string pass)
@@ -316,11 +353,11 @@ void IrcNet::_setState(connectionState newState)
 	//add timeout timers
 	if (newState == AWAITINGSERVERVERIFY || newState == CONNECTING)
 	{
-		timers->Add("nettimeout", NET_TIMEOUT_MS, false, timer_netTimeout, NULL, this);
+		timers->Add("netTimeout", NET_TIMEOUT_SECONDS*1000, false, timer_netTimeout, NULL, this);
 	}
 	else //make sure timeout timers don't activate
 	{
-		timers->Remove("nettimeout", this);
+		timers->Remove("netTimeout", this);
 	}
 	
 	mState = newState;
@@ -360,6 +397,7 @@ bool IrcNet::_checkState()
 			result = false;
 			break;
 		case AWAITINGSERVERVERIFY:
+		case VERIFYING:
 			break;
 		case ONCHANNEL: //Our channel died somehow but we never updated the state change.
 			if (!mChannel)
@@ -556,6 +594,11 @@ bool IrcNet::Process()
 
 				messenger.Dispatch(md, this);
 			}
+			else if (cmd == "pong")
+			{
+				DEBUGOUT("PONG");
+				mWaitingForPong = false; //should probably double check the address, but I don't care.	
+			}
 			else if (cmd == "332") //channel topic when joining
 			{ 
 				s1 = getWord (line, 4);
@@ -584,16 +627,28 @@ bool IrcNet::Process()
 				messenger.Dispatch(md, this);
 			} 
 			else if (cmd == "001") //successful registration
-			{
+			{		
+				// Get the real host name
+				mRealServerAddress = getWord(line, 1);
+				mRealServerAddress.erase(0, 1); //erase prefix colon
+
 				_setState(ONSERVER);
 
 				md.Clear();
 				md.SetId("NET_VERIFIED");
 				
 				messenger.Dispatch(md, this);
-				
+
 				return true; //gotta break out so we can stop the doConnect loop
 			} 
+			else if (cmd == "439") // Please wait while we process your connection
+			{
+				// Get the real host name
+				mRealServerAddress = getWord(line, 1);
+				mRealServerAddress.erase(0, 1); //erase prefix colon
+			
+				_setState(VERIFYING);
+			}
 			else if (cmd == "353") //userlist
 			{	
 				md.Clear();
@@ -602,7 +657,7 @@ bool IrcNet::Process()
 				
 				messenger.Dispatch(md, this);
 			}
-			else if (cmd == "366") //:irc.lunarforums.org 366 ircNet_Nick #drm-testing :End of /NAMES list.
+			else if (cmd == "366") // :irc.lunarforums.org 366 ircNet_Nick #drm-testing :End of /NAMES list.
 			{ 		
 				mChannel->mSuccess = true;
 				_setState(ONCHANNEL);			

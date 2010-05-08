@@ -9,11 +9,11 @@
 const int JOIN_INTERVAL_MS = (60*1000);
 
 const char* const DIR_DEV = "dev/";
-const char* const DIR_AVA = "ava/";
+const char* const DIR_AVA = "assets/ava/";
 const char* const DIR_PROFILE = "profile/";
 
 const char* const PLAYERDATA_ENCRYPTION_KEY = "JV4872JP64BJHD4X2JX";
-const char* const PLAYERDATA_FILE = "player.save";
+const char* const PLAYERDATA_FILE = "profile.save";
 
 class Map;
 class LocalActor;
@@ -36,7 +36,7 @@ class GameManager : public Frame
 	void LoadOnlineWorld(string id, point2d target = point2d(), string targetObjectName = "");
 
 	void Process(uLong ms);
-	void Render(uLong ms);
+	void Render();
 	void Event(SDL_Event* event);
 
 	void GenerateDefaultPlayerData();

@@ -179,7 +179,7 @@ Input::~Input()
 	resman->Unload(mTextImage);
 }
 
-void Input::Render(uLong ms) 
+void Input::Render() 
 {
 	if (mNeedUpdate) { //rerender text if necessary
 		_updateText();
@@ -189,8 +189,8 @@ void Input::Render(uLong ms)
 	Image* scr = Screen::Instance();
 	
 	//Do a little bit of calculating
-	if (ms > mLastBlink && !mReadOnly) {
-		mLastBlink = ms + 600;
+	if (gui->GetTick() > mLastBlink && !mReadOnly) {
+		mLastBlink = gui->GetTick() + 600;
 		mDrawCaret = !mDrawCaret;
 	}
 	
@@ -262,7 +262,7 @@ void Input::Render(uLong ms)
 
 	}
 	
-	Widget::Render(ms);
+	Widget::Render();
 }
 
 void Input::RecalculatePixelX() 

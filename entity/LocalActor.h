@@ -12,7 +12,7 @@ class LocalActor : public Actor
 	LocalActor();
 	~LocalActor();
 	
-	void Render(uLong ms);
+	void Render();
 	
 	/* Overloaded to do _checkInput when we are capable of accepting new input */
 	bool ProcessMovement();

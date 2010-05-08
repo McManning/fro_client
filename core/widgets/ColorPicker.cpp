@@ -85,12 +85,12 @@ ColorPicker::~ColorPicker()
 
 }
 
-void ColorPicker::Render(uLong ms)
+void ColorPicker::Render()
 {
 	if (gui->GetDemandsFocus() == this)
 		gui->RenderDarkOverlay();
 
-	Frame::Render(ms);
+	Frame::Render();
 	
 	//draw color box
 	rect r = GetScreenPosition();

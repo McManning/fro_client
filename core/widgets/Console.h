@@ -54,7 +54,7 @@ class Console : public Frame
 				bool hasExit, bool hasInput);
 	~Console();
 
-	void Render(uLong ms); 
+	void Render(); 
 	void Event(SDL_Event* event); 
 
 	void SetPosition(rect r);

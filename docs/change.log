@@ -455,7 +455,7 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 - Moved /assets/achievements/ to /cache/achievements/
 
 ----- RELEASED AS 1.1.0 BETA (PUBLIC) -----
------ Start Of 1.1.1 Beta Notes -----
+----- Start Of 1.2.0 Notes -----
 
 100215
 - {Report:0000018} Moved game_config to assets/game.cfg, config to assets/system.cfg, playersave to assets/player.save, 
@@ -635,8 +635,10 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 	id + message length should be no longer than ~200 characters. And of course, this cannot be used heavily over an irc network
 	that throttles channels after too much chatter. Third party servers are required if heavy data transfer is necessary.
 	It is not possible to override an existing network message, as "lua" is the REAL header of this packet (while id is the first member)
+	This data can only be recieved by those in the same world as the sender. This does not work between worlds.
 	NET_LUA
 		[string] id
+		[userdata] entity - The player that sent the message
 		[string] message
 - Added Image::IsPixelTransparent()
 - Fixed bug with the pixel-level testing for map entity interaction not working for colorkey based images.
@@ -710,21 +712,45 @@ Changelog for fro/drm restructuring, following the Build 1.0.3 release.
 	(Although, it unfortunately makes the movement strings longer than one would like).
 - Added a message to tell people to /join something if the world fails to load
 	
+100423 (After SVN commit to revision 20)
+- Removed Game.NetSendToNick() in lua and replaced it with Game.NetSendToPlayer(entity, "id", "message")
+	to avoid ambiguity in what it can actually do. (ie: Only works for players currently on the map)
+- Added 5 second wait timer to avatar changing in the favorites, and removed the Die() command when an avy is selected.
+- Removed Fashion Addict achievement (Wouldn't work with the above limitations in place)
+
+(At this point, there is confirmation that it works on a fresh install of Windows 7 32bit
+without either compatibility mode enabled, or security warnings, as seen with the previous release)
+
+100428
+- Fixed memory leak warning in SmallSelect widget
+- Added server pinging with a 4 minute interval. If a response is not retrieved in that time, the client will
+	know it's disconnected (An attempt to avoid the bug where it seemed we've been connected for hours, when we aren't).
+- Added additional state to IrcNet, VERIFYING, to be activated while we're being verified as a valid client by the server
+- Added IrcNet::mRealServerAddress to store the address of the actual server we are connected to, after being bounced. 
+	(Common occurance on large IRC server networks)
+
+100502
+- Removed previous pinging system temporarily. Causing some weird bugs.
+
+100507
+- Removed renderCallback & eventCallback from Widget base (Unused)
+- Removed uLong ms parameter from Widget::Render() (Unused)
+- Added nick change nag message when someone joins a channel with a fro_* nick
+- Removed a hack when parsing XmlFile's from const char* (Not necessarily fixed though)
+- Fixed default avatar not loading when the profile does not yet exist. 
+
 IMMEDIATE TODO:
 
-- NET_LUA does not send any info regarding who triggered the event!
-- Should add a timer to avatar changing. (Only let them change it so often, etc)
-	And probably nuke that achievement, since it won't work.
+
+- When someone puts <3 in chat, send heart emote instead. 
+- 
+- When disconnected from server, the list of servers to connect to must be started from the beginning.
 - Add Entity.SetImage?
-- Map load status bar isn't being drawn or anything. Do that
-	Only draws while loading the map itself, not while connecting to server... :[
-- Chat in trade still behind trade. Also do that.
 - Drop IDs from widget constructors. We don't use them enough for it to be mandatory to supply
 	But then Widget::Get("id") will be like "I NEED ID TO WORK" and leads to some confusion.. Eh.. 
 - Add Image* of the screen to Widget::Render() so we don't have to Screen::Instance() constantly
 	(Why didn't I do this before?)
 - Add something that checks if they closed the client properly. If it wasn't, warn them.. or some such.
-- Add lua userdata to yesno, alert, and messagedialog in system lib
 - Widget* w = gui->Get("MiniMenu");  Bug here, it won't delete on the next esc press unless we move it first.
 - Clam Report:
 	European, uses standard US keyboard but when the '" key is pressed, then a letter that isn't aeiouy,

@@ -21,7 +21,7 @@ class ExplodingEntity : public Entity
 		byte life;
 	};
 
-	void Render(uLong ms);
+	void Render();
 	void Think(uLong ms);
 
 	void _build(Image* img, point2d position, rect clip);

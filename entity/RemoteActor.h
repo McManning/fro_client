@@ -11,7 +11,7 @@ class RemoteActor : public Actor
 	RemoteActor();
 	~RemoteActor();
 	
-	void Render(uLong ms);
+	void Render();
 
 	void ReadAvatarFromPacket(DataPacket& data, uShort startOffset);
 	

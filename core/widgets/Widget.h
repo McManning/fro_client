@@ -35,22 +35,17 @@ class Widget
   public:
 	Widget();
 	virtual ~Widget();
-	
-	//Optional callbacks linked to each event type
-	void (*eventCallback)(Widget*, SDL_Event*);
-	void (*renderCallback)(Widget*, uLong);
-	
+
 	Widget* GetParent();
 	
 	sShort GetScreenX();
-
 	sShort GetScreenY();
 
 	//GuiManager decides if any of these are called or not. 
 	virtual void Event(SDL_Event* event);
 
 	//Renders this widget and all children
-	virtual void Render(uLong ms);
+	virtual void Render();
 
 	rect GetPosition()
 	{

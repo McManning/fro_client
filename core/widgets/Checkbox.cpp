@@ -40,7 +40,7 @@ Checkbox::~Checkbox()
 }
 
 //TODO: Fix this code. There isn't supposed to be ANY position changing during render phase.
-void Checkbox::Render(uLong ms)
+void Checkbox::Render()
 {
 	if (!mImage) return;
 	
@@ -72,7 +72,7 @@ void Checkbox::Render(uLong ms)
 						mCaption, mFontColor
 					);
 	
-	Widget::Render(ms); //TODO: do I need this?
+	Widget::Render(); //TODO: do I need this?
 }
 
 void Checkbox::Event(SDL_Event* event)

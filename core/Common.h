@@ -58,7 +58,7 @@ struct exception //Structure for a basic exception error
 
 #define DIR_CACHE "cache/"
 
-#define DEBUG
+//#define DEBUG
 
 //Uncomment to use the (unfinished) render optimization system
 //#define OPTIMIZED

@@ -65,7 +65,7 @@ Multiline::~Multiline()
 	mUrls.clear();
 }
 
-void Multiline::Render(uLong ms)
+void Multiline::Render()
 {
     rect r = GetScreenPosition();
 
@@ -141,7 +141,7 @@ void Multiline::Render(uLong ms)
     }
 	scr->SetClip();
 
-	Widget::Render(ms);
+	Widget::Render();
 }
 
 void Multiline::Event(SDL_Event* event)

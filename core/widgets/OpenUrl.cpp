@@ -76,12 +76,12 @@ OpenUrl::~OpenUrl()
 	
 }
 
-void OpenUrl::Render(uLong ms)
+void OpenUrl::Render()
 {
 	if (gui->GetDemandsFocus() == this)
 		gui->RenderDarkOverlay();
 	
-	Frame::Render(ms);
+	Frame::Render();
 }
 
 

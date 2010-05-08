@@ -46,7 +46,7 @@ class Entity
 	//Return a string representation of this entity type
 	string GetTypeName();
 	
-	virtual void Render(uLong ms) {};
+	virtual void Render() {};
 	void RenderShadow();
 	
 	virtual Image* GetImage() { return NULL; };

@@ -16,7 +16,7 @@ class MapEditorDialog : public Frame
 	MapEditorDialog();
 	~MapEditorDialog();
 
-	void Render(uLong ms);
+	void Render();
 
 	void Event(SDL_Event* event);
 

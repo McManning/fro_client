@@ -219,9 +219,9 @@ MapEditorDialog::~MapEditorDialog()
 	console->UnhookCommand("me_help");
 }
 
-void MapEditorDialog::Render(uLong ms)
+void MapEditorDialog::Render()
 {
-	Frame::Render(ms);
+	Frame::Render();
 }
 
 void MapEditorDialog::Event(SDL_Event* event)

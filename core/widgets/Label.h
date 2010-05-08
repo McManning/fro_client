@@ -17,7 +17,7 @@ class Label: public Widget
 	Label(Widget* wParent, string sId, rect rPosition, string sCaption = "");
 	~Label();
 
-	void Render(uLong ms);
+	void Render();
 	
 	string GetCaption() { return mCaption; };
 	void SetCaption(string text);

@@ -68,10 +68,10 @@ SmallSelect::SmallSelect(Widget* wParent, string sId, rect rPosition,
 
 SmallSelect::~SmallSelect()
 {
-
+	resman->Unload(mBackgroundImage);
 }
 
-void SmallSelect::Render(uLong ms)
+void SmallSelect::Render()
 {
 	rect r = GetScreenPosition();
 	Image* scr = Screen::Instance();
@@ -103,7 +103,7 @@ void SmallSelect::Render(uLong ms)
 		scr->SetClip(oldClip);
 	}
 	
-	Widget::Render(ms); //draws children
+	Widget::Render(); //draws children
 }
 
 void SmallSelect::Event(SDL_Event* event)

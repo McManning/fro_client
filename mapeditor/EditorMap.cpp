@@ -140,7 +140,7 @@ void EditorMap::Event(SDL_Event* event)
 	}
 }
 
-void EditorMap::Render(uLong ms)
+void EditorMap::Render()
 {
 	Process(ms); //Here until we have a timer for it
 
@@ -198,7 +198,7 @@ void EditorMap::Render(uLong ms)
 	
 	scr->SetClip();
 		
-	Map::Render(ms);
+	Map::Render();
 }
 
 void EditorMap::RenderGrid(rect r)

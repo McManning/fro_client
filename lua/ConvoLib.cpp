@@ -28,7 +28,7 @@ class ConvoDialog : public Frame
 
 	void SetPosition(rect r);
 	void ResizeChildren();
-	void Render(uLong ms);
+	void Render();
 	
 	//called when an option is selected. Returns whatever lua returns, or 0 if an error occured.
 	int DoOption(sShort index);
@@ -99,12 +99,12 @@ void ConvoDialog::SetPosition(rect r)
 		Frame::SetPosition(r);
 }
 
-void ConvoDialog::Render(uLong ms)
+void ConvoDialog::Render()
 {	
 	if (gui->GetDemandsFocus() == this)
 		gui->RenderDarkOverlay();
 
-	Frame::Render(ms);
+	Frame::Render();
 }
 
 int ConvoDialog::DoOption(sShort index)

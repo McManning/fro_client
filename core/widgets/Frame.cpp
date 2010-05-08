@@ -59,7 +59,7 @@ Frame::~Frame()
 	resman->Unload(mSizer);
 }
 
-void Frame::Render(uLong ms)
+void Frame::Render()
 {
 	rect r = GetScreenPosition();
 	string s;
@@ -96,7 +96,7 @@ void Frame::Render(uLong ms)
 		scr->SetClip();
 
 		//draw children
-		Widget::Render(ms);
+		Widget::Render();
 	}
 }
 

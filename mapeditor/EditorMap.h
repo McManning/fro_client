@@ -31,7 +31,7 @@ class EditorMap : public Map
 	
 	void Event(SDL_Event* event);
 	void Process(uLong ms);
-	void Render(uLong ms);
+	void Render();
 		
 	void RenderGrid(rect r);
 

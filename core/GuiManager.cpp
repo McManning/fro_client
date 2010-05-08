@@ -373,10 +373,11 @@ void GuiManager::_renderCursor()
 	}
 }
 
-void GuiManager::Render(uLong ms)
+void GuiManager::Render()
 {
 //	PRINT("GuiMan::Render");
-
+	uLong ms;
+	
 	rect r;
 	uLong renderStart = SDL_GetTicks(); //keep track of how long this render takes
 	Screen* scr = Screen::Instance();
@@ -387,7 +388,7 @@ void GuiManager::Render(uLong ms)
 	scr->DrawRect(scr->GetClip(), color(237, 236, 235));
 
 	//Render widget tree
-	Widget::Render(ms);
+	Widget::Render();
 
 	if (!mAlert.empty())
 		mFont->Render(scr, 5, 5, mAlert, color(255,0,0));
@@ -692,7 +693,7 @@ void GuiManager::MainLoop()
 				&& Screen::Instance()->NeedsUpdate() )
 		{
 			guiRenderProfiler.Start();
-			Render(mTick);
+			Render();
 			guiRenderProfiler.Stop();
 		}
 

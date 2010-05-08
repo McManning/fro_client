@@ -29,7 +29,7 @@ class UserlistButton : public Button
 	UserlistButton();
 	~UserlistButton();
 	
-	void Render(uLong ms);
+	void Render();
 	
   private:
 	Image* mNumbersImage; //renderable numbers to indicate user count

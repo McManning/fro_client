@@ -23,7 +23,7 @@ class Checkbox: public Widget
 	Checkbox(Widget* wParent, string sId, rect rPosition, string sCaption, byte bGroup);
 	~Checkbox();
 
-	void Render(uLong ms);
+	void Render();
 	void Event(SDL_Event* event);
 	
 	/* TODO: Do I need to FlagRender on EventMouseMotion since it 

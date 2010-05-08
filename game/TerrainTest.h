@@ -44,7 +44,7 @@ class TerrainTest : public Frame
 		tiletype type; 
 	};
 
-	void Render(uLong ms); 
+	void Render(); 
 	void Event(SDL_Event* event); 
 
 	void NewGrid(int w, int h);

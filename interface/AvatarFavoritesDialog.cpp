@@ -241,12 +241,23 @@ void AvatarFavorites::UseSelected()
 		return;
 
 	avatarProperties* ap = mAvatars.at(mList->mSelected);
-
+	
+	timer* t = timers->Find("avywait");
+	if (t)
+	{
+		int seconds = (t->lastMs + t->interval - gui->GetTick()) / 1000;
+		game->mChat->AddMessage("\\c900 * You must wait " + its(seconds) + " seconds.");
+		return;
+	}
+	else
+	{
+		timers->Add("avywait", AVYCHANGE_INTERVAL_MS, false, NULL, NULL, NULL);
+	}
+	
 	game->mPlayer->LoadAvatar(	ap->url, ap->pass, 
 								ap->w, ap->h, ap->delay, 
 								ap->loopStand, ap->loopSit
 							);
-	Die();
 }
 
 void AvatarFavorites::AddNew()
@@ -436,6 +447,6 @@ void AvatarFavorites::ResizeChildren() //overridden so we can move things around
 
 void AvatarFavorites::SetPosition(rect r)
 {
-	if (r.w > 135 && r.h > 99)
+	if (r.w > 155 && r.h > 99)
 		Frame::SetPosition(r);
 }

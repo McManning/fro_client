@@ -38,7 +38,7 @@ Button::~Button()
 	resman->Unload(mCaptionImage);
 }
 
-void Button::Render(uLong ms)
+void Button::Render()
 {
 	rect r = GetScreenPosition();
 	Image* scr = Screen::Instance();
@@ -60,7 +60,7 @@ void Button::Render(uLong ms)
 							r.x + (r.w / 2) - (mCaptionImage->Width() / 2),
 							r.y + (r.h / 2) - (mCaptionImage->Height() / 2)
 						);
-	Widget::Render(ms);
+	Widget::Render();
 }
 
 void Button::SetCaption(string text)

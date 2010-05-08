@@ -130,12 +130,12 @@ IncinerateAmountRequest::~IncinerateAmountRequest()
 	inventory->SetActive(true);
 }
 
-void IncinerateAmountRequest::Render(uLong ms)
+void IncinerateAmountRequest::Render()
 {
 	if (gui->GetDemandsFocus() == this)
 		gui->RenderDarkOverlay();
 	
-	Frame::Render(ms);
+	Frame::Render();
 }
 
 Inventory::Inventory() :

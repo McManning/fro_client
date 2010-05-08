@@ -119,7 +119,7 @@ Console::~Console()
 	resman->Unload(mBackgroundImage);
 }
 
-void Console::Render(uLong ms)
+void Console::Render()
 {
 	Image* scr = Screen::Instance();
 	
@@ -156,7 +156,7 @@ void Console::Render(uLong ms)
 		}
 	}
 
-	Frame::Render(ms);
+	Frame::Render();
 }
 
 void Console::Event(SDL_Event* event)

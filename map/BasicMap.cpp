@@ -20,10 +20,10 @@ BasicMap::~BasicMap()
 	PRINT("BasicMap::~BasicMap");
 }
 
-void BasicMap::Render(uLong ms)
+void BasicMap::Render()
 {
 	mapProcessProfiler.Start();
-	Process(ms); //Here until we have a timer for it
+	Process(); //Here until we have a timer for it
 	mapProcessProfiler.Stop();
 	
 	mapRenderProfiler.Start();
@@ -37,11 +37,11 @@ void BasicMap::Render(uLong ms)
 	scr->DrawRect(r, mBackground);
 	
 	mapEntityRenderProfiler.Start();
-	_renderEntities(ms);
+	_renderEntities();
 	mapEntityRenderProfiler.Stop();
 
 	mapBaseRenderProfiler.Start();
-	Map::Render(ms);
+	Map::Render();
 	mapBaseRenderProfiler.Stop();
 		
 	scr->SetClip();
@@ -51,7 +51,7 @@ void BasicMap::Render(uLong ms)
 
 TimeProfiler mapEntitesProfiler1("::_renderEntities::Render");
 
-void BasicMap::_renderEntities(uLong ms)
+void BasicMap::_renderEntities()
 {
 	Image* scr = Screen::Instance();
 
@@ -67,7 +67,7 @@ void BasicMap::_renderEntities(uLong ms)
 		if (e && e->IsVisibleInCamera())
 		{
 			mapEntitesProfiler1.Start();
-			e->Render(ms); //draw entity
+			e->Render(); //draw entity
 			mapEntitesProfiler1.Stop();
 
 			/*if (mShowInfo)

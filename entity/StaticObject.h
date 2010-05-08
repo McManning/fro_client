@@ -11,7 +11,7 @@ class StaticObject : public Entity
 	StaticObject();
 	~StaticObject();
 
-	void Render(uLong ms);
+	void Render();
 
 	void LoadImage(string file);
 	

@@ -233,7 +233,7 @@ void TerrainTest::Repair()
 	}*/
 }
 
-void TerrainTest::Render(uLong ms)
+void TerrainTest::Render()
 {
 	Image* scr = Screen::Instance();
 	if (!grid)

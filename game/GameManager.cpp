@@ -465,6 +465,8 @@ GameManager::~GameManager()
 	//erase all entities before it gets deleted, so we can unlink localactor
 	if (mMap)
 		mMap->FlushEntities();
+
+	SAFEDELETE(mLoader);
 	
 	PRINT("~GameManager 4");
 	
@@ -640,6 +642,12 @@ void GameManager::UnloadMap()
 {
 	if (mMap)
 	{
+		// Memorize player position!
+		//TODO: Differentiate between test maps and the reel deel!
+		mPlayerData.SetParamString("map", "lastid", mMap->mId);
+		mPlayerData.SetParamInt("map", "lastx", mPlayer->GetPosition().x);
+		mPlayerData.SetParamInt("map", "lasty", mPlayer->GetPosition().y);
+	
 		//kill the map class itself, gracefully
 		mMap->Die();
 		mMap = NULL;
@@ -651,7 +659,7 @@ void GameManager::UnloadMap()
 		userlist->mOutput->Clear();
 }
 
-void GameManager::Render(uLong ms)
+void GameManager::Render()
 {
 	gameRenderProfiler.Start();
 	
@@ -664,7 +672,7 @@ void GameManager::Render(uLong ms)
 		mLoader->Render();
 	}
 	
-	Frame::Render(ms);
+	Frame::Render();
 	
 	gameRenderProfiler.Stop();
 }
@@ -772,8 +780,8 @@ void GameManager::GenerateDefaultPlayerData()
 	
 	// <avatar url="" pass="" w="" h="" delay="" loopsit="" loopstand="" />
 	e = mPlayerData.AddChildElement(root, "avatar");
-	mPlayerData.SetParamInt(e, "url", 0);
-	mPlayerData.SetParamInt(e, "pass", 0);
+	mPlayerData.SetParamString(e, "url", "");
+	mPlayerData.SetParamString(e, "pass", "");
 	mPlayerData.SetParamInt(e, "delay", 0);
 	mPlayerData.SetParamInt(e, "loopsit", 0);
 	mPlayerData.SetParamInt(e, "loopstand", 0);
@@ -785,6 +793,10 @@ void GameManager::GenerateDefaultPlayerData()
 	mPlayerData.SetParamInt(e, "privmsg", 1);
 	mPlayerData.SetParamInt(e, "joinparts", 1);
 	mPlayerData.SetParamInt(e, "addresses", 0);
+	mPlayerData.SetParamString(e, "lastid", "");
+	mPlayerData.SetParamInt(e, "lastx", 0);
+	mPlayerData.SetParamInt(e, "lasty", 0);
+	
 }
 
 void GameManager::LoadPlayerData()
@@ -809,6 +821,8 @@ void GameManager::LoadPlayerData()
 	{
 		FATAL("Could not decrypt Player Data");
 	}*/
+	
+	bf.mData[bf.mLength] = 0; //TODO: Fix this hack?
 
 	//Load file contents into XML elements
 	if ( !mPlayerData.LoadFromMemory(bf.mData, bf.mLength) )
@@ -954,7 +968,8 @@ void GameManager::UpdateAppTitle()
 	
 	if (mNet && mNet->IsConnected())
 	{
-		title += " (" + mNet->mHost + ":" + its(mNet->mPort);
+		title += " (" + ((mNet->mRealServerAddress.empty()) ? mNet->mHost : mNet->mRealServerAddress)
+				+ ":" + its(mNet->mPort);
 		//if (mNet->GetState() == ONCHANNEL && mNet->GetChannel())
 		//	title += " - " + mNet->GetChannel()->mId;
 		

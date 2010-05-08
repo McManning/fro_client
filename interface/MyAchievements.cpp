@@ -133,9 +133,9 @@ uShort MyAchievements::_renderSingle(rect r, uShort index)
 	return y + 5;
 }
 
-void MyAchievements::Render(uLong ms)
+void MyAchievements::Render()
 {
-	Frame::Render(ms);
+	Frame::Render();
 	
 	if (mResizing)
 		return;

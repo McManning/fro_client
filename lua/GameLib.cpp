@@ -1,11 +1,13 @@
 
 #include <lua.hpp>
 #include "GameLib.h"
+#include "ActorLib.h" //for getReferencedActor
 #include "LuaCommon.h"
 #include "../game/GameManager.h"
 #include "../map/Map.h"
 #include "../core/net/IrcNet2.h"
 #include "../core/net/DataPacket.h"
+#include "../entity/RemoteActor.h"
 
 // .Print("Message")
 int game_Print(lua_State* ls)
@@ -37,14 +39,17 @@ int game_NetSendToChannel(lua_State* ls)
 	}
 }
 
-//	.NetSendToNick("nick", "id", "message")
-//		Send a custom packet over the network to the specified nick
-int game_NetSendToNick(lua_State* ls)
+//	.NetSendToPlayer(ent, "id", "message")
+//		Send a custom packet over the network to the specified entity
+int game_NetSendToPlayer(lua_State* ls)
 {
-	PRINT("game_NetSendToNick");
+	PRINT("game_NetSendToPlayer");
 	luaCountArgs(ls, 3);
 
-	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
+	RemoteActor* ra = (RemoteActor*)getReferencedActor(ls, 1);
+
+	if (ra && ra->mType == ENTITY_REMOTEACTOR 
+		&& game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("lua");
 		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
@@ -52,14 +57,14 @@ int game_NetSendToNick(lua_State* ls)
 		data.WriteString( lua_tostring(ls, 2) );
 		data.WriteString( lua_tostring(ls, 3) );
 		
-		game->mNet->Privmsg( lua_tostring(ls, 1), data.ToString() );
+		game->mNet->Privmsg( ra->mName, data.ToString() );
 	}
 }
 
 static const luaL_Reg functions[] = {
 	{"Print", game_Print},
 	{"NetSendToChannel", game_NetSendToChannel},
-	{"NetSendToNick", game_NetSendToNick},
+	{"NetSendToPlayer", game_NetSendToPlayer},
 	{NULL, NULL}
 };
 

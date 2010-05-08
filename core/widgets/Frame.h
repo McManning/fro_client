@@ -14,7 +14,7 @@ class Frame : public Widget
 			bool bBackground = false);
 	~Frame();
 
-	virtual void Render(uLong ms); 
+	virtual void Render(); 
 	virtual void Event(SDL_Event* event); 
 
 	virtual void SetPosition(rect r);

@@ -22,7 +22,10 @@ LOSE_ITEM
 	id
 	amount
 	
-(DISABLED) PLAYER_ACTION (Hit the enter key while on a map, and no chat input)
+NET_LUA
+	id
+	message
+	[user] entity
 
 **** DISPATCHED BY ENTITIES ****
 

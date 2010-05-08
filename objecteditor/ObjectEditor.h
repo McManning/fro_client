@@ -80,7 +80,7 @@ class ObjectEditor : public Frame
 	/*	Renders (in order): 
 			Frame, mImage in frame, collision rects, origin point, position of cursor relative to our image
 	*/
-	void Render(uLong ms);
+	void Render();
 	void RenderGrid(rect r);
 
 	void SetPosition(rect r);

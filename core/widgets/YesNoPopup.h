@@ -13,7 +13,7 @@ class YesNoPopup : public Frame
 	YesNoPopup(string id, string title, string msg, bool useMultiline = false);
 	~YesNoPopup();
 	
-	void Render(uLong ms);
+	void Render();
 
 	Button* mYes;
 	Button* mNo;

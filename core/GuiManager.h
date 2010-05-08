@@ -35,7 +35,7 @@ class GuiManager : public Widget
 
 	Widget* GrabWidgetUnderXY(Widget* root, sShort x, sShort y) const;
 
-	void Render(uLong ms); //Overloaded from Widget
+	void Render(); //Overloaded from Widget
 	void RenderDarkOverlay();
 	
 	bool IsMouseButtonDown(byte button, int* x = NULL, int* y = NULL) const;

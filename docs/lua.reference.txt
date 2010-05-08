@@ -172,8 +172,10 @@ Game
 	.Print("Message") - Prints the message to the main chatbox. \cRGB and \n supported
 	.NetSendToChannel("id", "message")
 		Send a custom packet over the network to all members of the channel
-	.NetSendToNick("nick", "id", "message")
-		Send a custom packet over the network to the specified nick
+		Use NET_LUA messenger event to catch and process.
+	.NetSendToPlayer(entity, "id", "message")
+		Send a custom packet over the network to the nick attached to the specified RemoteActor entity.
+		Use NET_LUA messenger event to catch and process.
 
 Map
 	.NewBasic() - Sets Game::mMap to a new initialized BasicMap class.
@@ -192,8 +194,10 @@ Map
 		
 Using Flags:
 	.GetFlag/.SetFlag can be used to store information on a per-entity basis. Entity flags are cleared after the map is unloaded, 
-	HOWEVER, the flags set to the entity: Player.GetActor() are saved to disk, and remain persistant. 
-	All entity flags may be persistant in the future, but that is not true right now. 
+	HOWEVER, the flags set to the entity: Player.GetActor() are saved to disk, and remain persistant. Map.SetFlag/GetFlag also are
+	persistant flags on a per-map basis. 
+	- Flags are saved to the user profile, and will not be removed when the user decides to clear the cache
+	
 	
 	
 	

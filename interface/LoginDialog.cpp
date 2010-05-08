@@ -202,7 +202,7 @@ LoginDialog::LoginDialog() :
 
 	y += 25;
 	
-	mText = new Multiline(gui, "", rect(10,SCREEN_HEIGHT - 150,300,120));
+	mText = new Multiline(gui, "", rect(10,SCREEN_HEIGHT - 150,350,120));
 		mText->mHideScrollbar = true;
 		resman->Unload(mText->mImage);
 		mText->mImage = NULL;
@@ -233,14 +233,14 @@ LoginDialog::~LoginDialog()
 	resman->Unload(mBackgroundImage);
 }
 
-void LoginDialog::Render(uLong ms)
+void LoginDialog::Render()
 {	
 	Image* scr = Screen::Instance();
 	
 	if (mBackgroundImage)
 		mBackgroundImage->Render(scr, 0, 0);
 
-	Frame::Render(ms);
+	Frame::Render();
 }
 
 void LoginDialog::Skip()

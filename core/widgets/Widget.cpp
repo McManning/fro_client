@@ -9,8 +9,6 @@
 Widget::Widget() 
 {
 	mParent = NULL;
-	eventCallback = NULL;
-	renderCallback = NULL;
 	mVisible = true;
 	mActive = true;
 	mSortable = true;
@@ -144,8 +142,10 @@ void Widget::MoveToTop()
 
 void Widget::MoveToBottom()
 {
-	if (!mParent || mParent->mChildren.empty() || !mSortable) 
+	if (!mParent || !mSortable) 
 		return;
+		
+	ASSERT( !mParent->mChildren.empty() );
 		
 	//if we're already at bottom, don't do the equations below
 	if (mParent->mChildren.at(0) == this)
@@ -186,9 +186,6 @@ sShort Widget::GetScreenY()
 
 void Widget::Event(SDL_Event* event)
 {
-	if (eventCallback) 
-		eventCallback(this, event);
-		
 	/*	TODO: This doesn't work with our current event system
 		Because as the widget is added to global event handlers when created, the
 		mousebuttonup or keyup that creates the event will also be passed to this
@@ -200,12 +197,9 @@ void Widget::Event(SDL_Event* event)
 		Die();
 }
 
-void Widget::Render(uLong ms)
+void Widget::Render()
 {
 	Image* scr = Screen::Instance();
-	
-	if (renderCallback) 
-		renderCallback(this, ms);
 
 	if (mBorderColor.a != 0) //default will have a zero alpha
 		scr->DrawRound(GetScreenPosition(), 0, mBorderColor);
@@ -213,7 +207,7 @@ void Widget::Render(uLong ms)
 	for (uShort i = 0;  i < mChildren.size(); i++)
 	{
 		if (mChildren.at(i)->IsVisible())
-			mChildren.at(i)->Render(ms);	
+			mChildren.at(i)->Render();	
 	}
 }
 

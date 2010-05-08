@@ -19,7 +19,7 @@ class TradeRequest : public Frame
 	TradeRequest(string nick);
 	~TradeRequest();
 	
-	void Render(uLong ms);
+	void Render();
 	
 	void SendAccept();
 	void SendDeny(string reason);
@@ -165,12 +165,12 @@ TradeRequest::~TradeRequest()
 	timers->RemoveMatchingUserData(this);	
 }
 
-void TradeRequest::Render(uLong ms)
+void TradeRequest::Render()
 {
 	if (gui->GetDemandsFocus() == this)
 		gui->RenderDarkOverlay();
 	
-	Frame::Render(ms);
+	Frame::Render();
 }
 
 void TradeRequest::SendAccept()
@@ -201,7 +201,7 @@ class AmountRequest : public Frame
 {
   public:
 	AmountRequest(ItemTrade* trade, itemProperties* item);
-	void Render(uLong ms);
+	void Render();
 	
 	uShort mMax;
 	ItemTrade* mTrade;
@@ -263,12 +263,12 @@ AmountRequest::AmountRequest(ItemTrade* trade, itemProperties* item)
 	DemandFocus();
 }
 
-void AmountRequest::Render(uLong ms)
+void AmountRequest::Render()
 {
 	if (gui->GetDemandsFocus() == this)
 		gui->RenderDarkOverlay();
 	
-	Frame::Render(ms);
+	Frame::Render();
 }
 
 

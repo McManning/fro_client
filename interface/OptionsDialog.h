@@ -11,6 +11,8 @@ class OptionsDialog : public Frame
 	OptionsDialog();
 	~OptionsDialog();
 
+	void Render();
+
 	void Save();
 	
 	void Toggle(string id);

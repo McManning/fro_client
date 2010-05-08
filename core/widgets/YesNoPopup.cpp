@@ -90,10 +90,10 @@ YesNoPopup::~YesNoPopup()
 	
 }
 
-void YesNoPopup::Render(uLong ms)
+void YesNoPopup::Render()
 {
 	if (gui->GetDemandsFocus() == this)
 		gui->RenderDarkOverlay();
 	
-	Frame::Render(ms);
+	Frame::Render();
 }

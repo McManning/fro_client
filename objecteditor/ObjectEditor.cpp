@@ -519,7 +519,7 @@ void ObjectEditor::RenderGrid(rect r)
 	mGridImage->RenderPattern(scr, rect(0, 0, mGridImage->Width(), mGridImage->Height()), r);
 }
 
-void ObjectEditor::Render(uLong ms)
+void ObjectEditor::Render()
 {
 	Image* scr = Screen::Instance();
 	rect oldclip = scr->GetClip();
@@ -527,7 +527,7 @@ void ObjectEditor::Render(uLong ms)
 	rect r;
 
 	//Frame, mImage in frame, collision rects, origin point, position of cursor relative to our image
-	Frame::Render(ms);
+	Frame::Render();
 	
 	if (mResizing)
 		return;

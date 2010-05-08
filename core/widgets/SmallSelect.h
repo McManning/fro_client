@@ -22,7 +22,7 @@ class SmallSelect: public Widget
 			void (*cbOnChange)(SmallSelect*));
 	~SmallSelect();
 
-	void Render(uLong ms);
+	void Render();
 	
 	void Event(SDL_Event* event);
 	

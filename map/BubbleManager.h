@@ -22,8 +22,8 @@ class BubbleManager
 	BubbleManager();
 	~BubbleManager();
 	
-	void Render(uLong ms);
-	void Process(uLong ms);
+	void Render();
+	void Process();
 	
 	bool CreateBubble(Entity* owner, string msg);
 	bool PopBubble(Entity* owner);

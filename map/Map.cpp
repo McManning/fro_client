@@ -38,10 +38,10 @@ Map::~Map()
 		mapLib_CloseLuaState(mLuaState);
 }
 
-void Map::Render(uLong ms)
+void Map::Render()
 {
-	mBubbles.Render(ms);
-	Frame::Render(ms);
+	mBubbles.Render();
+	Frame::Render();
 }
 
 void Map::Event(SDL_Event* event)
@@ -154,10 +154,10 @@ Entity* Map::GetEntityUnderMouse(bool mustBeClickable, bool playersOnly)
 	return NULL;
 }
 
-void Map::Process(uLong ms)
+void Map::Process()
 {
-	mBubbles.Process(ms);
-	UpdateCamera(ms);
+	mBubbles.Process();
+	UpdateCamera();
 	ResortEntities();
 }
 
@@ -221,7 +221,7 @@ void Map::OffsetCamera(point2d p)
 	OffsetCamera(p.x, p.y);
 }
 
-void Map::UpdateCamera(uLong ms)
+void Map::UpdateCamera()
 {
 	//If we have any destinations, pan toward the oldest
 	if (!mCameraDestinationStack.empty())

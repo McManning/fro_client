@@ -138,11 +138,9 @@ bool ResourceManager::FramesToImage(SDL_Image* img, SDL_Frame* frames, uShort co
 		return false;
 
 	img->filename = filename;
-//	PRINT("[FramesToImage] File: " + filename);
+	PRINT("[FramesToImage] File: " + filename);
 	for (i = 0; i < count; i++) //go through all frames and organize
 	{
-		PRINTF("[FramesToImage] Adding Frame %i Key: %s\n", i, frames[i].key);
-		
 		if ( !frames[i].key) //no key, dump into most recent frameset
 		{
 			if (img->framesets.empty())
@@ -180,6 +178,7 @@ bool ResourceManager::FramesToImage(SDL_Image* img, SDL_Frame* frames, uShort co
 	}
 
 	free(frames); //we've eaten these all up, we're done.
+	PRINT("[FramesToImage] Done");
 	
 	return true;
 }

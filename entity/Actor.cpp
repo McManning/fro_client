@@ -737,7 +737,7 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 	return result;
 }
 
-void Actor::Render(uLong ms)
+void Actor::Render()
 {
 	ASSERT(mMap);
 

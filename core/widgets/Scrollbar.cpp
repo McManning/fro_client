@@ -82,7 +82,7 @@ Scrollbar::~Scrollbar()
 	resman->Unload(mTabImage);
 }
 
-void Scrollbar::Render(uLong ms)
+void Scrollbar::Render()
 {
 	rect r = GetScreenPosition();
 	uShort ss;
@@ -116,7 +116,7 @@ void Scrollbar::Render(uLong ms)
 			mTabImage->Render(scr, ss, r.y);
 	}
 
-	Widget::Render(ms); //draws buttons
+	Widget::Render(); //draws buttons
 }
 
 void Scrollbar::Event(SDL_Event* event)

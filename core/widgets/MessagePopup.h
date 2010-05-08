@@ -13,7 +13,7 @@ class MessagePopup : public Frame
 	MessagePopup(string id, string title, string msg, bool useMultiline = false);
 	~MessagePopup();
 	
-	void Render(uLong ms);
+	void Render();
 	
 	//void ResizeChildren();
 

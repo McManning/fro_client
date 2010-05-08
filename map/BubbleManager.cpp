@@ -22,8 +22,9 @@ BubbleManager::~BubbleManager()
 	resman->Unload(mImage);
 }
 
-void BubbleManager::Process(uLong ms)
+void BubbleManager::Process()
 {
+	uLong ms = gui->GetTick();
 	for (int i = 0; i < mBubbles.size(); i++)
 	{
 		if (mBubbles.at(i)->killTick < ms)
@@ -36,7 +37,7 @@ void BubbleManager::Process(uLong ms)
 	}
 }
 
-void BubbleManager::Render(uLong ms)
+void BubbleManager::Render()
 {
 	Image* scr = Screen::Instance();
 	Entity* e;

@@ -91,7 +91,7 @@ void ExplodingEntity::Think(uLong ms)
 }
 
 //draw all particle clips at their specified locations
-void ExplodingEntity::Render(uLong ms)
+void ExplodingEntity::Render()
 {
 	if (!mImage) return;
 

@@ -455,7 +455,7 @@ void AvatarCreator::_redraw()
 
 }
 
-void AvatarCreator::Render(uLong ms)
+void AvatarCreator::Render()
 {
 	//redraw (if necessary) and render mCompositePreview and the background image.
 	if (mRedraw)
@@ -464,7 +464,7 @@ void AvatarCreator::Render(uLong ms)
 	Image* scr = Screen::Instance();
 	rect r = GetScreenPosition();
 	
-	Frame::Render(ms);	
+	Frame::Render();	
 	
 	if (mCompositePreview)
 	{

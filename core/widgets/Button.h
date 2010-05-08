@@ -14,7 +14,7 @@ class Button: public Widget
 			void (*cbOnClick)(Button*));
 	~Button();
 
-	void Render(uLong ms);
+	void Render();
 	
 	void Event(SDL_Event* event);
 	

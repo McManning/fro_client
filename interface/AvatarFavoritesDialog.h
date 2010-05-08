@@ -7,6 +7,8 @@
 
 const char* const AVATAR_FAVORITES_FILENAME = "avatars.xml";
  
+const int AVYCHANGE_INTERVAL_MS = 5000;
+ 
 //TODO: Just use Avatar class!
 struct avatarProperties
 {

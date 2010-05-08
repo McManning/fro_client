@@ -39,7 +39,7 @@ class Actor : public Entity
 
 	rect GetBoundingRect();
 	
-	void Render(uLong ms);
+	void Render();
 	
 	Image* GetImage();
 	

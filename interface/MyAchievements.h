@@ -12,7 +12,7 @@ class MyAchievements : public Frame
 	MyAchievements();
 	~MyAchievements();
 	
-	void Render(uLong ms);
+	void Render();
 	void SetPosition(rect r);
 	void ResizeChildren();
 	

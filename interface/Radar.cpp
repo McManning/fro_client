@@ -70,9 +70,9 @@ void Radar::ZoomOut()
 		mZoom++;
 }
 
-void Radar::Render(uLong ms)
+void Radar::Render()
 {
-	Frame::Render(ms);
+	Frame::Render();
 	
 	if (mResizing) 
 		return;

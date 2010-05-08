@@ -25,6 +25,10 @@
 	NET_ERROR		error message
 	NET_PING			server that sent the ping
 	NET_TIMEOUT 	(Sent when CONNECTING or AWAITINGVERIFY states time out)
+	
+	
+	Reference Material
+		http://www.mirc.com/help/rfc2812.txt
 */
 
 #ifndef _IRCNET2_H_
@@ -36,7 +40,8 @@
 const char* const SEPERATOR = "\x01";
 const char* const SECONDARY_PACKET_PASS = "DivineRightToRule";
 
-const uShort NET_TIMEOUT_MS = (60*1000);
+const int NET_TIMEOUT_SECONDS = 60;
+const int PING_INTERVAL_MINUTES = 1;
 
 /* Channels were initially a container that held lists of members
 	and all those fancy user control functions. However,
@@ -66,6 +71,7 @@ enum connectionState
 	CONNECTING, //if our thread is currently negotiating a connection
 	CONNECTED, //transfers to AWAITINGSERVERVERIFY once OnConnect is called.
 	AWAITINGSERVERVERIFY, //Here until we receive 001 welcome
+	VERIFYING, //Currently in the middle of negotiating a verified connection, this usually takes a few seconds
 	ONSERVER, //Post 001 welcome, or were kicked from a channel
 	ONCHANNEL //Once we get on a channel
 };
@@ -92,6 +98,8 @@ class IrcNet : public TextSocketConnection
 
 	connectionState GetState() const { return mState; };
 		
+	void PingServer();
+		
 	//CHANNEL RELATED
 	IrcChannel* CreateChannel(string chan, string pass = "");
 	void JoinChannel(IrcChannel* chan);
@@ -116,14 +124,15 @@ class IrcNet : public TextSocketConnection
 	//OTHER FUNCTIONS
 	void StateToString(string& s) const;
 
-	//GLOBAL PROPERTIES
-	
  	string mRealname;
 	string mServerPassword;
 
 	vString mServerList; //list of servers to try to connect to
-	uShort mServerListIndex;
-
+	int mServerListIndex;
+	
+	// When IRC hubs bounce us, this will be different than the connect address
+	string mRealServerAddress;
+	
   private:
 	void _setState(connectionState newState);
 	bool _connectServer(string address);
@@ -136,6 +145,8 @@ class IrcNet : public TextSocketConnection
 	IrcChannel* mChannel;
 	
 	string mNickname;
+	
+	bool mWaitingForPong; 
 };
 
 #endif //_IRCNET2_H_

@@ -7,6 +7,7 @@
 #include "../interface/UserList.h"
 #include "../interface/LoginDialog.h"
 #include "../interface/ItemTrade.h"
+#include "../interface/OptionsDialog.h"
 #include "../map/Map.h"
 #include "../core/net/IrcNet2.h"
 #include "../entity/LocalActor.h"
@@ -1129,12 +1130,26 @@ void listener_NetNewState(MessageListener* ml, MessageData& md, void* sender)
 			printMessage(s);
 			net->ChangeNick(game->mPlayer->mName);
 			break;
+		case VERIFYING:
 		case ONSERVER:
 			break;
 		case ONCHANNEL:
 			DEBUGOUT("ONCHANNEL");
 			if (game->mLoader)
 				game->mLoader->SetState(WorldLoader::WORLD_READY);
+			
+			// if we have a default nick still, bring up a request to change it
+			if (net->GetNick().find("fro_", 0) == 0)
+			{
+				if (!gui->Get("optionsdialog"))
+				{
+					OptionsDialog* o = new OptionsDialog();
+					o->DemandFocus(true);
+				}	
+				new MessagePopup("", "Change your nick!", 
+					"We recommend changing your nick from the default to something new!"
+					" When you enter a new nickname, hit the green checkmark to save!");
+			}
 			break;
 		case DISCONNECTED:
 			game->UnloadMap();

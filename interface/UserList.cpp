@@ -126,7 +126,7 @@ UserlistButton::~UserlistButton()
 	resman->Unload(mNumbersImage);	
 }
 
-void UserlistButton::Render(uLong ms)
+void UserlistButton::Render()
 {
 	Image* scr = Screen::Instance();
 	

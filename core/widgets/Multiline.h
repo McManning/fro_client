@@ -16,7 +16,7 @@ class Multiline: public Widget
 	Multiline(Widget* wParent, string sId, rect rPosition);
 	~Multiline();
 
-	void Render(uLong ms);
+	void Render();
 	void Event(SDL_Event* event);
 
 	void SetPosition(rect r);

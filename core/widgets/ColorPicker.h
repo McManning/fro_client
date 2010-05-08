@@ -12,7 +12,7 @@ class ColorPicker : public Frame
 	ColorPicker(Input* creator = NULL);
 	~ColorPicker();
 	
-	void Render(uLong ms);
+	void Render();
 	void Update();
 	
 	Scrollbar* mRed;

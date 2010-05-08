@@ -24,9 +24,9 @@ RemoteActor::~RemoteActor()
 
 }
 
-void RemoteActor::Render(uLong ms)
+void RemoteActor::Render()
 {
-	Actor::Render(ms);
+	Actor::Render();
 }
 
 void RemoteActor::SetBlocked(bool b)

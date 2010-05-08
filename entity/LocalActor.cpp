@@ -44,6 +44,7 @@ LocalActor::LocalActor()
 	string url = game->mPlayerData.GetParamString("avatar", "url");
 
 	LoadAvatar("assets/default.png", "", 32, 64, 1000, false, false);
+	SwapAvatars();
 
 	PRINT("[LA] Load Custom Avatar");
 	if (!url.empty())
@@ -237,7 +238,7 @@ bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort
 		game->mPlayerData.SetParamInt("avatar", "loopsit", loopSit);
 		game->SavePlayerData();
 		
-		achievement_FashionAddict();
+		//achievement_FashionAddict();
 
 		netSendAvatar(mLoadingAvatar);
 	}
@@ -247,9 +248,9 @@ bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort
 	return result;
 }
 
-void LocalActor::Render(uLong ms)
+void LocalActor::Render()
 {
-	Actor::Render(ms);
+	Actor::Render();
 }
 
 void LocalActor::AddToActionBuffer(string data)

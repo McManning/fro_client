@@ -16,7 +16,7 @@ class Input: public Widget {
 				uShort uMaxLen, bool bSpecialKeys, void (*callbackOnEnter)(Input*));
 	~Input();
 
-	void Render(uLong ms);
+	void Render();
 
 	void Event(SDL_Event* event);
 	

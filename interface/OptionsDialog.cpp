@@ -91,6 +91,14 @@ OptionsDialog::~OptionsDialog()
 
 }
 
+void OptionsDialog::Render()
+{
+	if (gui->GetDemandsFocus() == this)
+		gui->RenderDarkOverlay();
+		
+	Frame::Render();
+}
+
 void OptionsDialog::Toggle(string id)
 {
 	mFrameUser->SetVisible( (id == mFrameUser->mId)  );
@@ -120,6 +128,7 @@ void OptionsDialog::_buildFrameUser()
 		ss->AddItem("On");
 		ss->AddItem("On While Inactive");
 		ss->mSelectedIndex = config.GetParamInt("system", "alerts");
+		ss->mHoverText = "Ex: Titlebar flashing when a message is received.";
 	y += 25;
 	
 	c = new Checkbox(mFrameUser, "names", rect(0,y), "Show Player Names", 0);

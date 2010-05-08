@@ -13,7 +13,7 @@ class Radar : public Frame
 	Radar();
 	~Radar();
 	
-	void Render(uLong ms);
+	void Render();
 	
 	void ResizeChildren();
 	void SetPosition(rect r);

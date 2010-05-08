@@ -20,7 +20,7 @@ class Scrollbar: public Widget
 	~Scrollbar();
 
 	void Event(SDL_Event* event);
-	void Render(uLong ms); //ran on render loops or .. w/e
+	void Render(); //ran on render loops or .. w/e
 
 	void SetPosition(rect r);
 
