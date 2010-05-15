@@ -10,6 +10,14 @@ void throwError(const char* file, int line, int num)
 {
 	systemErrorMessage("Fatal Error", "[" + string(file) + "] Code ln" + its(line) + " [" + its(num)
 							+ "] \n\nREPORT THIS IMMEDIATELY!");
+	
+	FILE* f = fopen("logs/error.log", "a");
+	if (f)
+	{			
+		fprintf(f, "[%s] THROW - %s:%i - %i\n", timestamp(true).c_str(), file, line, num);
+		fclose(f);
+	}
+
 	exit(0); //Hateful, but necessary on fatal errors
 }
 
@@ -17,6 +25,13 @@ void warning(const char* file, int line, string msg)
 {
 	printf("WARNING [%s:%i] %s\n", file, line, msg.c_str());
 	fflush(stdout); //make sure this outputs
+	
+	FILE* f = fopen("logs/error.log", "a");
+	if (f)
+	{
+		fprintf(f, "[%s] WARNING - %s:%i - %s\n", timestamp(true).c_str(), file, line, msg.c_str());
+		fclose(f);
+	}
 }
 
 void fatal(const char* file, int line, string msg) 
@@ -26,6 +41,14 @@ void fatal(const char* file, int line, string msg)
 	systemErrorMessage("Fatal Error", 
 						"[" + string(file) + ":" + its(line) + "] "
 							+ msg + "\n\nREPORT THIS IMMEDIATELY!");
+
+	FILE* f = fopen("logs/error.log", "a");
+	if (f)
+	{
+		fprintf(f, "[%s] FATAL - %s:%i - %s\n", timestamp(true).c_str(), file, line, msg.c_str());
+		fclose(f);
+	}
+							
 	exit(0); //Hateful, but necessary on fatal errors
 }
 

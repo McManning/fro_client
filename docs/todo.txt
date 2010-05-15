@@ -1,0 +1,180 @@
+
+
+
+-Randomly says private messages are blocked on startup
+
+
+Still a fucking horrible hack in XmlFile::LoadFromMemory, regarding the addition of a null terminator.
+For the love of all that is holy, fix this!
+
+Item boxes:
+	Common image and behavior
+	we'll start off simple, one item in the box. Eventually, we'll move onto multiple items with a pick window.
+	Build it at first to actually support multiple items in the future, without changing how things are saved.
+	
+Add an option to disable achievement earned notifications
+
+
+
+IMMEDIATE TODO:
+
+
+- When someone puts <3 in chat, send heart emote instead. 
+- When disconnected from server, the list of servers to connect to must be started from the beginning.
+- Add Entity.SetImage?
+- Drop IDs from widget constructors. We don't use them enough for it to be mandatory to supply
+	But then Widget::Get("id") will be like "I NEED ID TO WORK" and leads to some confusion.. Eh.. 
+- Add Image* of the screen to Widget::Render() so we don't have to Screen::Instance() constantly
+	(Why didn't I do this before?)
+- Add something that checks if they closed the client properly. If it wasn't, warn them.. or some such.
+- Widget* w = gui->Get("MiniMenu");  Bug here, it won't delete on the next esc press unless we move it first.
+- Clam Report:
+	European, uses standard US keyboard but when the '" key is pressed, then a letter that isn't aeiouy,
+	it'll fuck up. Probably trying to put accents on the letters. Try to test in Euro IME mode in windows, or some shit
+	
+	
+TODO:
+	- Rewrite movement buffer system to use a binary format to condense size considerably. 
+	- Rewrite DataPacket to use binary rather than converting integers to strings and all that jazz.
+	- http://tinyurl.com/api-create.php?url=http://scripting.com/
+		Will return just the url of the tinyurl. This service can be embedded into drm. 
+	- Pack avatars into the savefile?
+	- drm welfare check: comes in every week or so, gives you dorra
+	- Need System.EncryptFile and System.DecryptFile for files (just for the hell of it, so we can 
+		encrypt things like the farm file)
+	-Allow object editing while map editing. And live updating the edited objects.
+	-warp people to spawn if they are detected to be inside a solid object. 
+		However, there could be an issue with solids moving around, and deciding to sit right onto the player. 
+	-waypoint movement for actors
+	-Add memorization for last map & last position (This can either be clientside or serverside)
+	-Might need to send position correction post jump? Or if we hit a wall 
+
+	-Add alphabetical sort button to avatar favorites and inventory
+		Or a sort button that has a dropdown that's like "sort by name, sort by amount, etc"
+	-Add some sort of crude lua call tracer to better track errors that cause the app to just die
+	-Replace mJumpHeight with Z coordinate and add to ENTITY_MOVE
+	-Dispatch ENTITY_MOVE more? (Such as every movement update, and include the Z coordinate)? 
+		Not entirely sure if this is necessary. True, it helps keep accuracy, but when we do pathfinding and such, it'll
+		cause re-pathing all too often (Of course, we could determine distance b/w current position and pathing destination,
+		and if it's too far, it'll then repath. But still...)
+	-Actor::CanMove needs to be finished. (Currently only checks if final destination is blocked, not the path to said destination)
+	-Avatars use their _stop_ frames while in a jump, shouldn't it be _move_?
+	-Should convert loopStand, loopSit, etc in avatars to a single integer with bit flags. 
+	-Add avatar change locking
+		Script it: Map.LockAvatar(1)
+	-Fix reload previous world system in WorldLoader
+	-Need to keep better track of who's on channels, and make sure we don't get privmsg's from people outside channels that should be on the chan.
+	-GIFs with 0 delay actually have 0.1 second delays... should we do this in drm too?
+	-need to change how warps work. I don't like setting destination map and object id in the OE itself. This should be per-map.. or something.
+	-Add a max stamp counter, start deleting stamps if the max is hit.
+	-ava dir live updating (or just general updater!111)
+	-settable stamp rotation range, and size within a certain range
+
+	-button image is fucked on trade for privmsg
+	-privmsg shows up behind trade, not in front (trade is taking front priority~)
+	-chatbox needs a button to send it to the bottom corner again, like before, so we can HIDE DAT SHIT
+	-add font resizing for chatbox (and general system?)
+	-Add an internal achievement for wallhacking (Derp)
+	-If player data file doesn't exist, have a popup in the startup asking them if they want to set up
+		basic settings for new users (Create an avatar, set a nickname, etc)
+
+	-Not actually using entityType anywhere. Please do.
+	- There's currently a bug with the Font class. Wrapping message rendering will ignore colors, due to calculation errors it creates. This needs to be resolved.
+	- 
+	
+make some sort of drag & drop item crafting system.
+If it doesnt' craft into something, it destroys all the items.
+Otherwise, creates something awesome.
+(Or another crafter that says NO if it can't craft with the current stuff)
+
+	I send a movement buffer out when I join a channel.
+	Right after said join.
+	contents are: rcX.Y.
+
+	Regarding downloading each objects xml, could simply make an xml document out of that xml's subsection from the map, and then
+	save THAT to a file. Then we'd have object data continuously updated and good for editing. 
+	But then again, do we want normal users to be able to edit shit? No we do not.
+
+Jig is a prime example of someone who has difficulties with drm. There needs to be ways to simplify various things. This includes:
+	-Updating the client. (Copying avatars to the new folder, unzipping, etc)
+	-Setting avatar properties (like width/height)
+	-Coloring names
+
+	
+	
+
+Will not add ENTITYLEVEL_GUI. It's a stupid idea. Instead, add the ability to add onscreen text and images
+without that crap (Widgets, or something). 
+
+OR, give staticObject the ability to do this itself. Don't implement into every entity type, but allow SO's
+and SO-inherited classes to do this. (This includes text, image displays, etc). Then maybe just add another basic
+overlay layer that they can stick themselves in, but not necessarily force entities to have that prop. This way
+we can have a weather overlay, but also have stuff under that, but which is still over actors. 
+
+Then again, that's also problematic. Maybe add ENTITYLEVEL_SCREEN, but don't let Actors on it. Or, if they try, 
+just have them behave like others, while StaticObjects will be screen relative. 
+COULD give a mPositionRelativeToScreen value to Entity, but it'll only be used by SO's and their inherited forms...
+(It needs to be in the base class so that we can query it while iterating through entities in map render and such)
+
+	
+	
+> Tutorial World
+
+> Startup settings 
+	-Ask user to input an initial nickname
+	-Ask them if they want to start up the AC to set an avatar
+
+> Seperate set of collision rects for objects that let you do "if player is touching this rect, do shit" in scripting
+	So we can still have COLLIDED stuff, but also have IF IN RECT stuff
+	 
+> Word breaking in multilines!
+
+
+> Login dialog buttons
+
+
+> Add something in the top right corner saying how many users online there are
+
+
+
+
+smf2_themes stores the value of the custom value
+
+would have to find a match for both id_member and variable 
+
+Say, if we wanna access their start location, it would be:
+
+smf2_themes:
+	return 'value' where 'id_member' == myid and variable == 'cust_frosta'
+	
+
+Should add an "inventor" attribute to items.
+	
+	http://notkyat.helloismileyou.com/avy/
+	
+	
+	
+Hal Achievement:
+	- !roulette six times in a row, and don't die.
+	- Win a game of poker with 3+ players
+	- 
+	
+	
+	
+
+issue with diff internal names than external..
+
+When we package them into the - wait.. that's not a problem... because that crap is never stored.
+Hurrrm... images will be a problem.. We have to do a subdir creation sort of check.. the downloader
+should do that >:[
+
+SOMETIMES lua reports an error in OnLoad, and other times it doesn't (basically every other time)
+if we constantly test_map.. Is this skipping the func?
+
+
+
+Add:
+
+Need some HIDE ALL PLAYERS option, that basically turns everyone into floating orbs with names, but 
+	you and the npcs. This way we can do certain things without intervention.
+	(replaces all their avatars with something else. Not the block avy, but .. ya know)

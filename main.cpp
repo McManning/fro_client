@@ -16,14 +16,37 @@
 #	include "game/TerrainTest.h"
 #endif
 
+/*	If the last time we ran this, it didn't shut down properly, log it */
+void checkLastRun()
+{
+	FILE* f;
+
+	if (fileExists("logs/marker"))
+	{
+		f = fopen("logs/error.log", "a");
+		if (f)
+		{
+			fprintf(f, "[%s] MARKER\n", timestamp(true).c_str());
+			fclose(f);
+		}
+	}
+	else
+	{
+		f = fopen("logs/marker", "w");
+		fclose(f);	
+	}
+}
+
 //TODO: A main that doesn't look SO FUCKING BAD. 
 int main (int argc, char *argv[])
 {
 	buildDirectoryTree("logs/");
 	buildDirectoryTree(DIR_PROFILE);
-	
+
 	freopen("logs/out.log", "w", stdout);
 	removeFile("logs/time_profile.log");
+
+	checkLastRun();
 	
 	appState = APPSTATE_STARTING;
 
@@ -85,6 +108,9 @@ int main (int argc, char *argv[])
 
 	appState = APPSTATE_CLOSING; //in case it wasn't set elsewhere
 	delete gui;
+
+	// Avoid reporting that the shutdown was a failure
+	removeFile("logs/marker");
 
 	printf("[main] Closing app at %s, have a nice day.\n", timestamp(true).c_str());
 

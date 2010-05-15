@@ -146,7 +146,7 @@ void netSendSay(string text) //say $message
 
 	//do a few modifications
 	if (text.find_last_of(">") == 0 && text.find("<", 0) == string::npos)
-		text.insert(0, "\\c090");
+		text.insert(0, "\\c561");
 
 	if (text.at(0) != '/') //Ignore slash commands 
 	{
@@ -607,7 +607,7 @@ void _handleNetMessage_PlayerEarnedAchievement(string& nick, DataPacket& data) /
 		return;
 	}
 
-	game->mChat->AddMessage("\\c139 * " + nick + "\\c999 achieved: \\c080 " + data.ReadString(1));
+	game->mChat->AddMessage("\\c139 * " + nick + "\\c999 achieved: \\c080 " + data.ReadString(0));
 	ra->Emote(11);
 }
 

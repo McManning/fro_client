@@ -228,7 +228,7 @@ void callback_chatCommandOmg(Console* c, string s) { netSendEmote(7); }
 void callback_chatCommandFFFUUU(Console* c, string s) { netSendEmote(8); }
 void callback_chatCommandHeart(Console* c, string s) { netSendEmote(9); }
 void callback_chatCommandAwesome(Console* c, string s) { netSendEmote(10); }
-void callback_chatCommandWtf(Console* c, string s) { netSendEmote(11); }
+void callback_chatCommandWtf(Console* c, string s) { netSendEmote(12); }
 void callback_chatCommandTroll(Console* c, string s) { netSendEmote(13); }
 void callback_chatCommandFacepalm(Console* c, string s) { netSendEmote(14); }
 
@@ -282,7 +282,7 @@ void callback_chatCommandNick(Console* c, string s)
 		game->mNet->ChangeNick(s);
 	else
 		game->mPlayer->mName = s;
-		
+	
 	game->mPlayerData.SetParamString("user", "nick", s);
 }
 
@@ -373,6 +373,7 @@ void GameManager::_hookCommands()
 	mChat->HookCommand("/wtf", callback_chatCommandWtf);
 	mChat->HookCommand("/fff", callback_chatCommandFFFUUU);
 	mChat->HookCommand("/heart", callback_chatCommandHeart);
+	mChat->HookCommand("<3", callback_chatCommandHeart);
 	mChat->HookCommand("/awesome", callback_chatCommandAwesome);
 	mChat->HookCommand("/facepalm", callback_chatCommandFacepalm);
 	
@@ -821,8 +822,6 @@ void GameManager::LoadPlayerData()
 	{
 		FATAL("Could not decrypt Player Data");
 	}*/
-	
-	bf.mData[bf.mLength] = 0; //TODO: Fix this hack?
 
 	//Load file contents into XML elements
 	if ( !mPlayerData.LoadFromMemory(bf.mData, bf.mLength) )
@@ -833,6 +832,7 @@ void GameManager::LoadPlayerData()
 	mPlayerData.mAutoSave = true;
 	
 	mPlayerData.mXmlPos = mPlayerData.mDoc.FirstChildElement("data");
+
 }
 
 void GameManager::SavePlayerData()
