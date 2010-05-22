@@ -373,7 +373,6 @@ void GameManager::_hookCommands()
 	mChat->HookCommand("/wtf", callback_chatCommandWtf);
 	mChat->HookCommand("/fff", callback_chatCommandFFFUUU);
 	mChat->HookCommand("/heart", callback_chatCommandHeart);
-	mChat->HookCommand("<3", callback_chatCommandHeart);
 	mChat->HookCommand("/awesome", callback_chatCommandAwesome);
 	mChat->HookCommand("/facepalm", callback_chatCommandFacepalm);
 	

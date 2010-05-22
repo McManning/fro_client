@@ -10,6 +10,7 @@
 #include "../ResourceManager.h"
 #include "../FontManager.h"
 #include "../io/XmlFile.h"
+#include "../io/FileIO.h"
 
 Console* console;
 
@@ -341,6 +342,7 @@ void Console::SaveText()
 	
 	string s;
 	s = "saved/" + mSavePrefix + timestamp(true) + ".html";
+	buildDirectoryTree(s);
 	
 	FILE* f = fopen(s.c_str(), "w");
 	if (!f)

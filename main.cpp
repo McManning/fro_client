@@ -29,11 +29,22 @@ void checkLastRun()
 			fprintf(f, "[%s] MARKER\n", timestamp(true).c_str());
 			fclose(f);
 		}
+		copyFile("logs/out.log", "logs/crashlog_" + timestamp(true) + ".log");
 	}
 	else
 	{
 		f = fopen("logs/marker", "w");
 		fclose(f);	
+	}
+}
+
+/*	If we have an updater_update.exe, replace updater.exe and erase */
+void checkForUpdaterUpdate()
+{
+	if (fileExists("updater_update.exe"))
+	{
+		copyFile("updater_update.exe", "updater.exe");
+		removeFile("updater_update.exe");	
 	}
 }
 
@@ -47,6 +58,7 @@ int main (int argc, char *argv[])
 	removeFile("logs/time_profile.log");
 
 	checkLastRun();
+	checkForUpdaterUpdate();
 	
 	appState = APPSTATE_STARTING;
 

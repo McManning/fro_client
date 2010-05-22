@@ -725,7 +725,7 @@ void _handleNetMessage_Mod(string& nick, DataPacket& data) //avatar mod: mod #
 void _handleNetMessage_Private(string& nick, string& msg)
 {
 	//if we don't accept private messages, send an auto respond
-	if ( game->mPlayerData.GetParamInt("map", "privmsg") != 1 )
+	if ( game->mPlayerData.GetParamInt("map", "privmsg") == 0 )
 	{
 		game->mNet->Privmsg( nick, "* I have private messages blocked *" );
 	}
@@ -1014,7 +1014,7 @@ void listener_NetCouldNotConnect(MessageListener* ml, MessageData& md, void* sen
 	IrcNet* net = (IrcNet*)sender;
 	
 	string msg;
-	msg = "\\c900 * Could not connect to " + net->mHost + ": " + its(net->mPort);
+	msg = "\\c900 * Could not connect to " + net->mHost + ":" + its(net->mPort);
 	printMessage(msg);
 
 	net->TryNextServer();

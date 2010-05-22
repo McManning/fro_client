@@ -459,6 +459,12 @@ bool Image::ConvertToAvatarFormat(uShort w, uShort h, uShort delay, bool loopSta
 			
 		if (h < 1)
 			h = Height();
+			
+		if (w > Width())
+			w = Width();
+			
+		if (h > Height())
+			h = Height();
 
 		SDL_Surface* src = mImage->framesets.at(0).frames.at(0).surf;
 		mImage->framesets.clear();
@@ -665,12 +671,11 @@ bool Image::Render(SDL_Surface* dst, sShort x, sShort y, rect clip)
 {
 	SDL_Surface* src = Surface();
 
-#ifdef DEBUG
 	if (!src || !dst) 
 	{
-		FATAL("Invalid Src:" + pts(src) + " or Dst:" + pts(dst) + " File:" + Filename());
+		WARNING("Invalid Src:" + pts(src) + " or Dst:" + pts(dst) + " File:" + Filename());
+		return false;
 	}
-#endif
 
 	if (clip.w == 0)
 		clip.w = src->w;

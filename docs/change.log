@@ -752,10 +752,20 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Added a marker file to detect when the client shuts down prematurely
 - Fixed error occurances when reading profile save. 
 - Fixed /wtf command to display the right emote
+
+[Took a break from main client work to develop the updater, and assisting updatePackager tool]
+
+100522
+- Fixed a bug where /save command would not create saved/ directory if it did not exist, thus failing.
+- Added copying of out.log to crashlog_TIMESTAMP.log when the marker is present at startup
+	(indicating a previous client crash)
+- Fixed a crash that occured when someone used an avatar with defined dimensions larger than the
+	avatars image itself.
+- Finally fixed the icon not being displayed in the titlebar and alt+tab (It had to be a 16bit bmp
+	with a colorkey to work. 32bit wouldn't render the colorkey properly in Windows).
+- Added routine to the startup that will replace updater.exe with updater_update.exe if it exists
+	(To do an update of the updater when necessary)
 - 
-
-
-
 
 
 

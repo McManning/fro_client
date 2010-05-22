@@ -14,11 +14,29 @@ void SetScreenFlags(Uint32 flags)
 Screen::Screen() 
 	: Image()
 {
+	Uint32 colorkey;
+	SDL_Surface* image;
+	SDL_Surface* image2;
+	
 	//Since we don't have a screen since now, it's safe to assume SDL hasn't been initialized yet.
 	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) < 0) 
 		FATAL(SDL_GetError());
-
-	SDL_WM_SetIcon(SDL_LoadBMP("assets/icon.bmp"), NULL);
+	
+	// Set icon. The icon must be 16bit, BMP format. Using pink as a colorkey.
+	image = SDL_LoadBMP("assets/icon.bmp");
+	if (image)
+	{
+		colorkey = SDL_MapRGB(image->format, 255, 0, 255);
+		SDL_SetColorKey(image, SDL_SRCCOLORKEY, colorkey);  
+		
+	//	image2 = SDL_DisplayFormat(image);
+		//	else //Yes. It matters.
+		//		temp = SDL_DisplayFormat(imgf.frames[0].surf);
+		
+	//	SDL_FreeSurface(image);
+		SDL_WM_SetIcon(image, NULL);
+	}
+	
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
 	Resize(SCREEN_WIDTH, SCREEN_HEIGHT);
