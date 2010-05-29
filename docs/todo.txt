@@ -1,5 +1,26 @@
 
 
+if they run another copy of drm, the marker file will be killed when that copy dies, and
+they won't be able to create a crashlog later on. 
+
+Might need to make sure only one instance of fro runs at a time...
+
+
+
+
+
+Should be able to define flags in entity definition table!
+
+Or set all flags via an array, and get all flags via an array.
+
+Or shit, use a lua table as a flag type. That'll turn some heads!
+
+
+Wonderland:
+	Fireflies,
+	if you have a jar item and use it near fireflies, you catch some.
+	
+	
 
 -Randomly says private messages are blocked on startup
 
@@ -15,18 +36,19 @@ Item boxes:
 Add an option to disable achievement earned notifications
 
 
-
 IMMEDIATE TODO:
 
+- Run two clients, same profile, trade with yourself to double your items. 
+	Solutions?
+	Not.. sure. Other than YOU CAN'T RUN MORE THAN ONE CLIENT AT A TIME.
+	But that doesn't help if they have two computers to do it.
 
-- When someone puts <3 in chat, send heart emote instead. 
+
 - When disconnected from server, the list of servers to connect to must be started from the beginning.
-- Add Entity.SetImage?
 - Drop IDs from widget constructors. We don't use them enough for it to be mandatory to supply
 	But then Widget::Get("id") will be like "I NEED ID TO WORK" and leads to some confusion.. Eh.. 
 - Add Image* of the screen to Widget::Render() so we don't have to Screen::Instance() constantly
 	(Why didn't I do this before?)
-- Add something that checks if they closed the client properly. If it wasn't, warn them.. or some such.
 - Widget* w = gui->Get("MiniMenu");  Bug here, it won't delete on the next esc press unless we move it first.
 - Clam Report:
 	European, uses standard US keyboard but when the '" key is pressed, then a letter that isn't aeiouy,
@@ -38,15 +60,11 @@ TODO:
 	- Rewrite DataPacket to use binary rather than converting integers to strings and all that jazz.
 	- http://tinyurl.com/api-create.php?url=http://scripting.com/
 		Will return just the url of the tinyurl. This service can be embedded into drm. 
-	- Pack avatars into the savefile?
 	- drm welfare check: comes in every week or so, gives you dorra
-	- Need System.EncryptFile and System.DecryptFile for files (just for the hell of it, so we can 
-		encrypt things like the farm file)
 	-Allow object editing while map editing. And live updating the edited objects.
 	-warp people to spawn if they are detected to be inside a solid object. 
 		However, there could be an issue with solids moving around, and deciding to sit right onto the player. 
 	-waypoint movement for actors
-	-Add memorization for last map & last position (This can either be clientside or serverside)
 	-Might need to send position correction post jump? Or if we hit a wall 
 
 	-Add alphabetical sort button to avatar favorites and inventory
@@ -67,16 +85,12 @@ TODO:
 	-GIFs with 0 delay actually have 0.1 second delays... should we do this in drm too?
 	-need to change how warps work. I don't like setting destination map and object id in the OE itself. This should be per-map.. or something.
 	-Add a max stamp counter, start deleting stamps if the max is hit.
-	-ava dir live updating (or just general updater!111)
 	-settable stamp rotation range, and size within a certain range
 
 	-button image is fucked on trade for privmsg
 	-privmsg shows up behind trade, not in front (trade is taking front priority~)
-	-chatbox needs a button to send it to the bottom corner again, like before, so we can HIDE DAT SHIT
 	-add font resizing for chatbox (and general system?)
 	-Add an internal achievement for wallhacking (Derp)
-	-If player data file doesn't exist, have a popup in the startup asking them if they want to set up
-		basic settings for new users (Create an avatar, set a nickname, etc)
 
 	-Not actually using entityType anywhere. Please do.
 	- There's currently a bug with the Font class. Wrapping message rendering will ignore colors, due to calculation errors it creates. This needs to be resolved.

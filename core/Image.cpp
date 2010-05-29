@@ -92,10 +92,13 @@ bool SDL_Image::Load(string file, string pass)
 			|| (imgf.format == IMG_FORMAT_PNG && c.a == ALPHA_OPAQUE))
 				//&& imgf.frames[0].surf->format->BytesPerPixel < 4))
 		{
+			LOCKSURF(imgf.frames[0].surf);
+			Uint32 key = SDL_GetPixel(imgf.frames[0].surf, 0, 0);
+			UNLOCKSURF(imgf.frames[0].surf);
+			
 			//pngs/bmps only have one frame, so we don't need to loop
-			SDL_SetColorKey(imgf.frames[0].surf, SDL_SRCCOLORKEY | SDL_RLEACCEL, 
-								SDL_GetPixel(imgf.frames[0].surf, 0, 0));
-								
+			SDL_SetColorKey(imgf.frames[0].surf, SDL_SRCCOLORKEY | SDL_RLEACCEL, key);
+			
 		//	if (alphaChannel)
 				temp = SDL_DisplayFormatAlpha(imgf.frames[0].surf);
 		//	else //Yes. It matters.
@@ -757,10 +760,16 @@ color Image::GetPixel(sShort x, sShort y) const
 {
     color c;
     SDL_Surface* surf = Surface();
-    
+
     if (surf)
-    	SDL_GetRGBA( SDL_GetPixel(surf, x, y), surf->format, &c.r, &c.g, &c.b, &c.a );
-    	
+    {
+		LOCKSURF(surf);
+		Uint32 u = SDL_GetPixel(surf, x, y);
+		UNLOCKSURF(surf);
+
+		SDL_GetRGBA( u, surf->format, &c.r, &c.g, &c.b, &c.a );
+	}
+    
     return c;
 }
 
@@ -768,25 +777,30 @@ bool Image::SetPixel(sShort x, sShort y, color rgb, bool copy)
 {
 	SDL_Surface* surf = Surface();
 	if (!surf) return false;
-
-	return SDL_SetPixel(surf, x, y, rgb.r, rgb.g, rgb.b, rgb.a, copy);
+	
+	LOCKSURF(surf);
+	int r = SDL_SetPixel(surf, x, y, rgb.r, rgb.g, rgb.b, rgb.a, copy);
+	UNLOCKSURF(surf);
+	
+	return r;
 }
 
 bool Image::IsPixelTransparent(int x, int y)
 {
 	SDL_Surface* surf = Surface();
-	if (!surf) return false;
+	if (!surf) return true;
 
 	color c = GetPixel(x, y);
-	
+
 	if (c.a == 0)
 		return true;
-		
+
+	LOCKSURF(surf);
 	//Some images don't have alpha channel. Check for colorkey
-	if (SDL_GetPixel(surf, x, y) == surf->format->colorkey)
-		return true;
-		
-	return false;
+	Uint32 p = SDL_GetPixel(surf, x, y);
+	UNLOCKSURF(surf);
+	
+	return (p == surf->format->colorkey);
 }
 
 bool Image::DrawRect(rect r, color c, bool filled) 

@@ -2,9 +2,31 @@
 #include <lua.hpp>
 #include "PlayerLib.h"
 #include "LuaCommon.h"
+#include "../core/TimerManager.h"
 #include "../entity/LocalActor.h"
 #include "../game/GameManager.h"
 #include "../interface/Inventory.h"
+
+struct queuedPlayerWarp
+{
+	string id;
+	point2d point;
+	string obj;
+};
+
+uShort timer_doWarpQueue(timer* t, uLong ms)
+{
+	queuedPlayerWarp* w = (queuedPlayerWarp*)t->userData;
+	game->mPlayer->Warp(w->id, w->point, w->obj);
+	
+	return TIMER_DESTROY;
+}
+
+void timer_destroyWarpQueue(timer* t)
+{
+	delete (queuedPlayerWarp*)t->userData;
+	t->userData = NULL;
+}
 
 /********************************
 *	MISC
@@ -38,11 +60,11 @@ int player_Warp(lua_State* ls)
 	string id;
 	string name;
 	point2d p;
-	
+
 	if (lua_isstring(ls, 1))
 	{
-		name = lua_tostring(ls, 1);
-		
+		id = lua_tostring(ls, 1);
+
 		if (numArgs > 1)
 		{
 			if (lua_isstring(ls, 2))
@@ -55,14 +77,21 @@ int player_Warp(lua_State* ls)
 				p.y = (int)lua_tonumber(ls, 3);
 			}
 		}
+		// By calling Warp here, we destroy the lua script from within. This cannot be done.
+		// So it's time to rig a timer!
+		//game->mPlayer->Warp(id, p, name);
 		
-		game->mPlayer->Warp(id, p, name);
+		queuedPlayerWarp* w = new queuedPlayerWarp;
+		w->id = id;
+		w->point = p;
+		w->obj = name;
+		timers->Add("", 0, true, timer_doWarpQueue, timer_destroyWarpQueue, w); 
 	}
 	else if (lua_isnumber(ls, 1) && numArgs > 1) //change coordinates on current map
 	{
 		p.x = (int)lua_tonumber(ls, 1);
 		p.y = (int)lua_tonumber(ls, 2);
-		game->mPlayer->SetPosition(p);
+		game->mPlayer->Warp(p);
 	}
 
 	return 0;

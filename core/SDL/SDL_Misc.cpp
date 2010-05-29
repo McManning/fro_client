@@ -1,11 +1,17 @@
 
 #include "SDL_Misc.h"
 
-Uint32 SDL_GetPixel(SDL_Surface* surf, sShort x, sShort y)
+Uint32 SDL_GetPixel(SDL_Surface* surf, Uint32 x, Uint32 y)
 {
 	if (!surf) {
 //		WARNING("NULL SURF");
 		return 0;
+	}
+
+	// Somewhere, we didn't lock. That is bad ]:<
+	if (!surf->pixels)
+	{
+		FATAL("SDL_GetPixel called on " + pts(surf) + " without lock.");
 	}
 	
 	if (x >= surf->w || y >= surf->h || x < 0 || y < 0) {
@@ -41,7 +47,7 @@ Uint32 SDL_GetPixel(SDL_Surface* surf, sShort x, sShort y)
     }
 }
 
-bool SDL_SetPixel(SDL_Surface* surf, sShort x, sShort y, 
+bool SDL_SetPixel(SDL_Surface* surf, Uint32 x, Uint32 y, 
 					Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool copy)
 {
 	if (!surf)
@@ -169,7 +175,7 @@ bool SDL_SetPixel(SDL_Surface* surf, sShort x, sShort y,
 }
 
 
-SDL_Surface* SDL_NewSurface(uShort width, uShort height, color colorKey, bool alphaChannel)
+SDL_Surface* SDL_NewSurface(Uint32 width, Uint32 height, color colorKey, bool alphaChannel)
 {
 	SDL_Surface *blankImg = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32,
 													 RMASK, GMASK, BMASK, AMASK);
@@ -246,7 +252,9 @@ SDL_Surface* SDL_CopySurface(SDL_Surface* src, SDL_Rect r)
 
 	if (SDL_MUSTLOCK(dst))
 		SDL_LockSurface(dst);
-		
+	if (SDL_MUSTLOCK(tmp))
+		SDL_LockSurface(tmp);
+	
 	//Copy the subsection of pixels over
 	for (y = r.y; y < r.y + r.h; y++)
 	{
@@ -258,9 +266,11 @@ SDL_Surface* SDL_CopySurface(SDL_Surface* src, SDL_Rect r)
 	
 	if (SDL_MUSTLOCK(dst))
 		SDL_UnlockSurface(dst);
-
+	if (SDL_MUSTLOCK(tmp))
+		SDL_UnlockSurface(tmp);
+		
 	SDL_FreeSurface(tmp);
-
+	
 	return dst;
 }
 

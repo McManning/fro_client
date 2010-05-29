@@ -43,7 +43,7 @@ void WorldLoader::LoadOnlineWorld(string id, point2d target, string targetObject
 	
 	if (!game->mNet->IsConnected())
 	{
-		game->mChat->AddMessage("\\c900* Not connected!");
+		game->mChat->AddMessage("\\c900* No server connection! Could not jump worlds!");
 		return;
 	}
 	
@@ -327,12 +327,15 @@ int WorldLoader::_queueResources(string items)
 		}
 	}
 	
+	UpdateStatusText(); // update the output of how many resources we have
+	
 	return 1;
 }
 
 void WorldLoader::_resourceDownloadSuccess(string url, string file)
 {
 	++m_iCompletedResources;
+	UpdateStatusText(); // will update the output of how many resources are done
 	
 	console->AddMessage("\\c990Completed: " + its(m_iCompletedResources) + " Total: " + its(m_iTotalResources));
 	
@@ -478,6 +481,10 @@ void WorldLoader::_syncPlayerWithWorld()
 	p->SetLayer(EntityManager::LAYER_USER);
 	p->ClearActionBuffer();
 	
+	// Fix "ghost replay" of our previous position from the previous map
+	p->mLastSavedPosition.x = 0;
+	p->mLastSavedPosition.y = 0;
+	
 	p->mMap->AddEntity(p);
 	p->mMap->SetCameraFollow(p);
 	
@@ -502,6 +509,17 @@ void WorldLoader::_syncPlayerWithWorld()
 
 	if (userlist)
 		userlist->AddNick(p->mName);
+
+	// Memorize player position (If we're playing normally)
+	if (!m_bTestMode)
+	{
+		TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("map");
+		game->mPlayerData.SetParamString(e, "lastid", p->mMap->mId);
+		game->mPlayerData.SetParamInt(e, "lastx", p->GetPosition().x);
+		game->mPlayerData.SetParamInt(e, "lasty", p->GetPosition().y);
+		game->SavePlayerData();
+	}
+	
 }
 
 	
@@ -609,7 +627,7 @@ void WorldLoader::UpdateStatusText()
 			msg = "Getting Config";
 			break;
 		case GETTING_RESOURCES:
-			msg = "Getting Resource " + its(m_iTotalResources) + " / " + its(m_iCompletedResources);
+			msg = "Getting Resource " + its(m_iCompletedResources) + " / " + its(m_iTotalResources);
 			break;
 		case BUILDING_WORLD:
 			msg = "Constructing World";

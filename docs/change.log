@@ -753,7 +753,10 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Fixed error occurances when reading profile save. 
 - Fixed /wtf command to display the right emote
 
-[Took a break from main client work to develop the updater, and assisting updatePackager tool]
+(SVN Commit to revision 24)
+
+100514
+- Started development of the seperate Updater tool, and the UpdatePackager dev tool
 
 100522
 - Fixed a bug where /save command would not create saved/ directory if it did not exist, thus failing.
@@ -765,7 +768,64 @@ without either compatibility mode enabled, or security warnings, as seen with th
 	with a colorkey to work. 32bit wouldn't render the colorkey properly in Windows).
 - Added routine to the startup that will replace updater.exe with updater_update.exe if it exists
 	(To do an update of the updater when necessary)
-- 
+
+(SVN Commit to revision 26)
+
+100523
+- Added handling of mandatory update alerts from the login reply
+- Fixed bug where irc channel chatter would bleed through as a private message to clients
+
+100524 - (Reintegrating older concepts into newer code!)
+- Added Collision Blob support to entities. Basically will allow them to read in collision rects 
+	from a seperate binary file, rather than an array in lua.
+- Added makecol console command to construct collision blob files from black & white images. 
+	(More than 10% white pixels on a tile of the 16x16 grid indicates that it is blocked)
+	However, makecol is not as optimized as it could be, and uses a sort of scanline-like method
+	when creating the collision rects, which does horribly when there are a lot of vertical rects.
+
+100525
+- Fixed bug in Image::IsTransparentPixel() with RLE accelerated surfaces crashing when calling 
+	SDL_GetPixel due to not being locked first. (Surfaces that require locking, but are not locked,
+	will have a null SDL_Surface::pixels member)
+- Fixed bug where empty crashlogs would be saved. 
+
+----- PUBLIC RELEASE AS 1.2.1 -----
+
+100526
+- Fixed image leak in createCollisionBlob()
+- Increased _isTileWhiteEnough() from 10% to 25% white to be required for a true return
+- Fixed crash in Timers::RemoveByHandle() that occured when there were any null timers in the list
+
+100527
+- Added Entity.SetImage() and Entity.SetAvatar() to map lua that work the same way as the entity table.
+	(That is, SetImage can either take a string or a table, as Image = in the table can. And SetAvatar takes
+	the sub-table Avatar = { ... }, used by Entity.Create())
+- Added Game.Version() to lua
+- Added Entity.Explode() to lua
+- Changed .GetProp/.SetProp "noclip" to a boolean in lua
+- Added automatic saving to disk when an item is gained or lost in the inventory to help
+	prevent item loss
+- Added &lm=WORLD_ID to login request to ask the server to return us to the last accessed map
+- Fixed Getting Resources loading screen message. Will now display completed resources / total resources
+- Fixed bug that would cause crashing when loading entities with animated images. Caused by using an 
+	offset index (negative index) for lua_next() in _parseEntityImage(). Due to values being pushed
+	onto the stack when lua_next() is called, it lost track of the table. An absolute index was necessary.
+- Fixed Player.Warp() lua routine. Originally would destroy the lua script mid-run, which is a big no-no. 
+	Now sets a one-time timer to run asap.
+- Improved map memorization by memorizing when joining the map, rather than leaving.
+	However this also means the join coordinates are saved, and not the parting coordinates.
+- Reduced /join wait to 10 seconds
+- Added System.Encrypt() and System.Decrypt() to lua (untested)
+- Renamed Class to ID in entity definition table, to remain consistant with the rest of the code
+- Fixed "ghost replay" bug where a player would appear elsewhere on the map while joining, walk, then teleport
+	back to their proper location. (Caused by LocalActor::mLastSavedPosition not being cleared when syncing 
+	to the new map, and then sent with the first action buffer)
+
+100528
+- Added /pedo emote
+
+
+
 
 
 

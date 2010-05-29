@@ -29,11 +29,13 @@ void checkLastRun()
 			fprintf(f, "[%s] MARKER\n", timestamp(true).c_str());
 			fclose(f);
 		}
-		copyFile("logs/out.log", "logs/crashlog_" + timestamp(true) + ".log");
+		if (getFilesize("logs/out.log") > 0)
+			copyFile("logs/out.log", "logs/crashlog_" + timestamp(true) + ".log");
 	}
 	else
 	{
 		f = fopen("logs/marker", "w");
+		fprintf(f, ":P");
 		fclose(f);	
 	}
 }

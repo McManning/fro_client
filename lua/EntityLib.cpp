@@ -5,6 +5,7 @@
 #include "../entity/Entity.h"
 #include "../entity/TextObject.h"
 #include "../entity/SceneActor.h"
+#include "../entity/ExplodingEntity.h"
 #include "../game/GameManager.h"
 #include "../map/BasicMap.h"
 
@@ -408,26 +409,44 @@ int _parseEntityCollision(lua_State* ls, Entity* e)
 	return 1;
 }
 
+/*		Read in	t.CollisionFile = "Filename" 
+*/
+int _parseEntityCollisionFile(lua_State* ls, Entity* e)
+{
+	if (lua_isstring(ls, -1))
+		return e->LoadCollisionFile(game->mMap->mWorkingDir + lua_tostring(ls, -1));
+	
+	return 0;
+}
 /*		Read in	t.Image = { File = "Something", Width = #, Delay = # }	
 			OR 	t.Image = "Filename"
 */
-int _parseEntityImage_StaticObjectType(lua_State* ls, StaticObject* so)
+int _parseEntityImage(lua_State* ls, StaticObject* so, int virtualIndex = -1)
 {
-	if (lua_isstring(ls, -1))
+	//Virtual index can NOT be an offset from the top, must be an absolute position.
+	// This is because the lua_next() will screw up unless we specify an absolute.
+	if (virtualIndex < 0)
+		virtualIndex = lua_gettop(ls) + virtualIndex + 1;
+	
+	printf("vi: %i top:%i\n", virtualIndex, lua_gettop(ls));
+	luaStackdump(ls);
+	
+	if (lua_isstring(ls, virtualIndex))
 	{
-		so->LoadImage(game->mMap->mWorkingDir + lua_tostring(ls, -1));
+		so->LoadImage(game->mMap->mWorkingDir + lua_tostring(ls, virtualIndex));
 		return 1;
 	}
 	
-	if (!lua_istable(ls, -1))
+	if (!lua_istable(ls, virtualIndex))
 		return 0;
 	
 	string key;
 	int width = 0, delay = 1000;
 	
-	lua_pushnil(ls);
-	while (lua_next(ls, -2) != 0)
+	lua_pushnil(ls); /* first key */
+	while (lua_next(ls, virtualIndex) != 0)
 	{
+		/* key = index -2, value = index -1 */
 		if (lua_isstring(ls, -2))
 		{
 			key = lua_tostring(ls, -2);
@@ -438,11 +457,11 @@ int _parseEntityImage_StaticObjectType(lua_State* ls, StaticObject* so)
 			else if (key == "Delay")
 				delay = (int)lua_tonumber(ls, -1);
 		}
-		lua_pop(ls, 1); //pop value	
+		lua_pop(ls, 1); //pop value, keep key for next iteration
 	}
 
 	// TODO: A better way to handle this?
-	if (width != 0 && so)
+	if (width > 0)
 	{
 		if (so->mImage)
 			so->mImage->ConvertToHorizontalAnimation(rect(0, 0, width, so->mImage->Height()), delay);
@@ -453,9 +472,14 @@ int _parseEntityImage_StaticObjectType(lua_State* ls, StaticObject* so)
 	return 1;
 }
 
-int _parseEntityAvatar(lua_State* ls, Actor* a)
+int _parseEntityAvatar(lua_State* ls, Actor* a, int virtualIndex = -1)
 {
-	if (!lua_istable(ls, -1))
+	//Virtual index can NOT be an offset from the top, must be an absolute position.
+	// This is because the lua_next() will screw up unless we specify an absolute.
+	if (virtualIndex < 0)
+		virtualIndex = lua_gettop(ls) + virtualIndex + 1;
+	
+	if (!lua_istable(ls, virtualIndex))
 		return 0;
 	
 	string key, file;
@@ -463,7 +487,7 @@ int _parseEntityAvatar(lua_State* ls, Actor* a)
 	bool loopsit = false, loopstand = false;
 	
 	lua_pushnil(ls);
-	while (lua_next(ls, -2) != 0)
+	while (lua_next(ls, virtualIndex) != 0)
 	{
 		if (lua_isstring(ls, -2))
 		{
@@ -524,7 +548,7 @@ int _parseEntityOrigin(lua_State* ls, Entity* e)
 */
 int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 {
-	if (key == "Class")
+	if (key == "ID")
 	{
 		e->mId = lua_tostring(ls, -1);
 	}
@@ -556,21 +580,24 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 	{
 		return _parseEntityCollision(ls, e);
 	}
+	else if (key == "CollisionFile")
+	{
+		return _parseEntityCollisionFile(ls, e);	
+	}
 	else if (key == "Origin")
 	{
-		_parseEntityOrigin(ls, e); //don't really care if it fails
+		return _parseEntityOrigin(ls, e); //don't really care if it fails
 	}
-	else if (key == "Image")
+	else if (key == "Image" && e->mType == ENTITY_STATICOBJECT)
 	{
-		if (e->mType == ENTITY_STATICOBJECT)
-			_parseEntityImage_StaticObjectType(ls, (StaticObject*)e);
-			
-		// TODO: Avatar load support
+		return _parseEntityImage(ls, (StaticObject*)e);
 	}
 	else if (key == "Avatar" && e->mType >= ENTITY_ACTOR && e->mType < ENTITY_END_ACTORS)
 	{
-		_parseEntityAvatar(ls, (Actor*)e);
+		return _parseEntityAvatar(ls, (Actor*)e);
 	}
+	
+	return 1;
 }
 	
 /*	Iterates through all members of the entity table, 
@@ -590,7 +617,7 @@ int _parseEntityProperties(lua_State* ls, Entity* e, int tableIndex)
 		}
 		else
 		{
-			FATAL("Key in stack isn't a string!");	
+			console->AddMessage("[_parseEntityProperties] key != string");	
 		}
 		lua_pop(ls, 1); //pop value	
 		
@@ -665,6 +692,56 @@ int entity_Create(lua_State* ls)
 	return 1;
 }
 
+//	Set the image of the specified static object entity. Can take either string or table form.
+//	.SetImage(entity, "entities/world/file.png");
+//	.SetImage(entity, {...});
+int entity_SetImage(lua_State* ls)
+{
+	PRINT("entity_SetImage");
+	luaCountArgs(ls, 2);
+
+	Entity* e = _getReferencedEntity(ls);
+	if (!e || e->mType != ENTITY_STATICOBJECT)
+		return 0;
+	
+	return _parseEntityImage(ls, (StaticObject*)e, 2);
+}
+
+//	Set the avatar of the actor entity
+//	.SetAvatar(entity, {...});
+int entity_SetAvatar(lua_State* ls)
+{
+	PRINT("entity_SetAvatar");
+	luaCountArgs(ls, 2);
+
+	Entity* e = _getReferencedEntity(ls);
+	if (!e || !(e->mType >= ENTITY_ACTOR && e->mType < ENTITY_END_ACTORS))
+		return 0;
+	
+	return _parseEntityAvatar(ls, (Actor*)e, 2);
+}
+
+// .Explode(ent) - Will create an explosion entity at ent's position
+// 		This will not remove ent from the map!
+int entity_Explode(lua_State* ls)
+{
+	Image* img;
+	rect r;
+	Entity* e = _getReferencedEntity(ls);
+	
+	if (e)
+	{
+		img = e->GetImage();
+		if (img)
+		{
+			r = e->GetBoundingRect();
+			new ExplodingEntity(e->mMap, img, point2d(r.x, r.y));
+		}
+	}
+	
+	return 0;
+}
+
 static const luaL_Reg functions[] = {
 	{"Exists", entity_Exists},
 	{"FindById", entity_FindById},
@@ -685,6 +762,9 @@ static const luaL_Reg functions[] = {
 	{"RemoveAllById", entity_RemoveAllById},
 	{"NewTextObject", entity_NewTextObject},
 	{"Create", entity_Create},
+	{"SetImage", entity_SetImage},
+	{"SetAvatar", entity_SetAvatar},
+	{"Explode", entity_Explode},
 	{NULL, NULL}
 };
 

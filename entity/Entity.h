@@ -103,6 +103,15 @@ class Entity
 
 	void SetLayer(int l);
 	
+	/**
+		Load a collision map file into this entities collision rect array. Where collision 
+		map is a binary file containing a bunch of raw rects
+		
+		@param file the collision map file to load in
+		@return 1 on success, 0 otherwise
+	*/
+	int LoadCollisionFile(string file);
+		
 	bool IsSolid() const { return mSolid; };
 	void SetSolid(bool b) { mSolid = b; };
 	

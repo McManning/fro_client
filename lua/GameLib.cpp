@@ -61,10 +61,18 @@ int game_NetSendToPlayer(lua_State* ls)
 	}
 }
 
+// .Version() - Return version number of the client as a string (ex: "1.2.1")
+int game_Version(lua_State* ls)
+{
+	lua_pushstring(ls, APP_VERSION);
+	return 1;	
+}
+
 static const luaL_Reg functions[] = {
 	{"Print", game_Print},
 	{"NetSendToChannel", game_NetSendToChannel},
 	{"NetSendToPlayer", game_NetSendToPlayer},
+	{"Version", game_Version},
 	{NULL, NULL}
 };
 

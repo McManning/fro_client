@@ -129,7 +129,8 @@ bool TimerManager::RemoveByHandle(uLong handle)
 	{
 		for (int i = 0; i < mTimers.size(); i++)
 		{
-			if ( mTimers.at(i)->handle == handle ) {
+			if ( mTimers.at(i) && mTimers.at(i)->handle == handle ) 
+			{
 				_delete(i);
 				return true;
 			}
@@ -144,7 +145,7 @@ bool TimerManager::RemoveMatchingUserData(void* userData)
     bool found = false;
 	for (int i = 0; i < mTimers.size(); i++)
 	{
-		if ( mTimers.at(i) != NULL &&
+		if ( mTimers.at(i) &&
 			mTimers.at(i)->userData == userData )
 		{
 			_delete(i);

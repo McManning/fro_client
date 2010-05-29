@@ -6,6 +6,11 @@
 #include "../core/widgets/OpenUrl.h"
 #include "../core/widgets/YesNoPopup.h"
 #include "../core/io/FileIO.h"
+#include "../game/GameManager.h"
+#include "../map/Map.h"
+
+const char* const LUA_CRYPT_PASSWORD = "luaisneat";
+const int LUA_CRYPT_LENGTH = 50;
 
 struct luaCallback
 {
@@ -279,6 +284,38 @@ int system_GenerateFilename(lua_State* ls)
 	return 1;
 }
 
+//	bool = .Encrypt("file") - Encrypts the file WORKING_DIR/file
+int system_Encrypt(lua_State* ls)
+{
+	PRINT("system_Encrypt");
+	luaCountArgs(ls, 1);
+	
+	string file = game->mMap->mWorkingDir + lua_tostring(ls, 1);
+
+	bool result = encryptFile(file, file + "_", LUA_CRYPT_PASSWORD, LUA_CRYPT_LENGTH);
+	copyFile(file + "_", file);
+	removeFile(file + "_");
+	
+	lua_pushboolean(ls, result);
+	return 1;
+}
+
+//	bool = .Decrypt("file") - Decrypts the file WORKING_DIR/file
+int system_Decrypt(lua_State* ls)
+{
+	PRINT("system_Decrypt");
+	luaCountArgs(ls, 1);
+	
+	string file = game->mMap->mWorkingDir + lua_tostring(ls, 1);
+
+	bool result = decryptFile(file, file + "_", LUA_CRYPT_PASSWORD, LUA_CRYPT_LENGTH);
+	copyFile(file + "_", file);
+	removeFile(file + "_");
+	
+	lua_pushboolean(ls, result);
+	return 1;
+}
+
 static const luaL_Reg functions[] = {
 	{"Print", system_Print},
 	{"Fatal", system_Fatal},
@@ -292,6 +329,8 @@ static const luaL_Reg functions[] = {
 	{"OffsetByTheta", system_OffsetByTheta},
 	{"StringToNumber", system_StringToNumber},
 	{"GenerateFilename", system_GenerateFilename},
+	{"Encrypt", system_Encrypt},
+	{"Decrypt", system_Decrypt},
 	{NULL, NULL}
 };
 

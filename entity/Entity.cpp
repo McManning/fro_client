@@ -4,6 +4,7 @@
 #include "EntityManager.h"
 #include "../map/Map.h"
 #include "../core/io/Crypt.h"
+#include "../core/io/FileIO.h" //getTemporaryCacheFilename
 #include "../core/SDL/SDL_gfxPrimitives.h"
 
 Entity::Entity()
@@ -155,6 +156,40 @@ void Entity::RenderShadow()
 void Entity::SetLayer(int l)
 {
 	mLayer = l;
+}
+
+int Entity::LoadCollisionFile(string file)
+{
+	string tmpFile = getTemporaryCacheFilename();
+	if (!decompressFile(file, tmpFile))
+		return 0;
+		
+	FILE* fin = fopen(tmpFile.c_str(), "r");
+
+	if (!fin)
+	{
+		removeFile(tmpFile);
+		return 0;
+	}
+	
+	rect r;
+	while (true)
+	{
+		if (fread((void*)&r.x, sizeof(r.x), 1, fin) != 1)
+			break;
+		if (fread((void*)&r.y, sizeof(r.y), 1, fin) != 1)
+			break;
+		if (fread((void*)&r.w, sizeof(r.w), 1, fin) != 1)
+			break;
+		if (fread((void*)&r.h, sizeof(r.h), 1, fin) != 1)
+			break;
+			
+		mCollisionRects.push_back(r);
+	}
+
+	fclose(fin);
+	removeFile(tmpFile);
+	return 1;
 }
 
 void Entity::SetFlag(string flag, string value)

@@ -285,7 +285,10 @@ itemProperties* Inventory::Add(string id, string description, uShort amount, uSh
 	
 	achievement_TreasureHunter();
 	
-	return _add(id, description, amount, cost);
+	itemProperties* prop = _add(id, description, amount, cost);
+	Save();
+	
+	return prop;
 }
 
 itemProperties* Inventory::_add(string id, string description, uShort amount, uShort cost) 
@@ -401,6 +404,8 @@ void Inventory::Erase(sShort index, uShort amount, bool removeOnlyIfHasEnough)
 			mList->SetLine(index, its(mInventory.at(index)->amount) + "x " 
 								+ mInventory.at(index)->id);
 		}
+		
+		Save();
 	}
 }
 

@@ -42,7 +42,8 @@ class LocalActor : public Actor
 	void PrintFlags();
 	
 	void Warp(string id, point2d position, string targetObjectName);
-
+	void Warp(point2d pos); //override to warp on the same map
+	
 	/* Information that was sent out in the last NetSendActionBuffer */
 	point2d mLastSavedPosition;
 	byte mLastSavedSpeed;

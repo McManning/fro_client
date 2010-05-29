@@ -6,7 +6,7 @@
 #include <vector>
 #include <math.h>
 
-#define APP_VERSION "1.2.0"
+#define APP_VERSION "1.2.2"
 
 /*	In case the compiler doesn't define it for us */
 #ifndef WIN32
@@ -58,7 +58,9 @@ struct exception //Structure for a basic exception error
 
 #define DIR_CACHE "cache/"
 
-#define DEBUG
+#ifdef __DEBUG__
+#	define DEBUG
+#endif
 
 //Uncomment to use the (unfinished) render optimization system
 //#define OPTIMIZED

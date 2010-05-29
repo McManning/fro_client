@@ -15,8 +15,7 @@
 	if ( SDL_MUSTLOCK(_surf) ) \
 	{ \
 		if ( SDL_LockSurface(_surf) < 0) { \
-			WARNING("Lock Failed: " + string(SDL_GetError())); \
-			THROWNUM(2); \
+			FATAL("Lock Failed: " + string(SDL_GetError())); \
 		} \
 	}
 
@@ -40,12 +39,12 @@
     #define AMASK 0xff000000
 #endif
 
-Uint32 SDL_GetPixel(SDL_Surface* surf, sShort x, sShort y);
+Uint32 SDL_GetPixel(SDL_Surface* surf, Uint32 x, Uint32 y);
 
-bool SDL_SetPixel(SDL_Surface* surf, sShort x, sShort y, 
+bool SDL_SetPixel(SDL_Surface* surf, Uint32 x, Uint32 y, 
 					Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool copy);
 
-SDL_Surface* SDL_NewSurface(uShort width, uShort height, color colorKey, bool alphaChannel);
+SDL_Surface* SDL_NewSurface(Uint32 width, Uint32 height, color colorKey, bool alphaChannel);
 
 /*	Creates an exact duplication of the given rect as a new SDL_Surface */
 SDL_Surface* SDL_CopySurface(SDL_Surface* src, SDL_Rect r);

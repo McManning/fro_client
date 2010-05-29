@@ -6,7 +6,7 @@
 #include "../core/widgets/Frame.h"
 #include "WorldLoader.h"
 
-const int JOIN_INTERVAL_MS = (60*1000);
+const int JOIN_INTERVAL_MS = (10*1000);
 
 const char* const DIR_DEV = "dev/";
 const char* const DIR_AVA = "assets/ava/";

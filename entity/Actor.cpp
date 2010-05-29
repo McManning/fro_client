@@ -167,6 +167,9 @@ void Actor::MoveTo(point2d destination, byte speed)
 bool Actor::CanMove(direction d, sShort distance)
 {
 	ASSERT(mMap);
+	
+	if (IgnoreSolids())
+		return true;
 
 	point2d temp = mPosition;
 	
@@ -194,7 +197,7 @@ bool Actor::CanMove(direction d, sShort distance)
 		result = false;
 	
 	//if we're still on the map, check for entity collisions if we actually collide with others
-	if (result && !IgnoreSolids())
+	if (result)
 		result = !IsCollidingWithSolid();
 	
 	mPosition = temp; //reset mPosition to it's original
@@ -601,20 +604,23 @@ void Actor::_stepTowardDestination()
 		else
 			mPosition.y -= mSpeed;
 	}
-
+	
 	//Make sure we can move!
 	bool canMove = true;
 	
-	if ((mPosition.x >= mMap->mWidth && mMap->mWidth > 0) || mPosition.x < 0)
-		canMove = false;
+	if (!IgnoreSolids())
+	{
+		if ((mPosition.x >= mMap->mWidth && mMap->mWidth > 0) || mPosition.x < 0)
+			canMove = false;
+			
+		if ((mPosition.y >= mMap->mHeight && mMap->mHeight > 0) || mPosition.y < 0)
+			canMove = false;
 		
-	if ((mPosition.y >= mMap->mHeight && mMap->mHeight > 0) || mPosition.y < 0)
-		canMove = false;
+		//if we're still on the map, check for entity collisions
+		if (canMove)
+			canMove = !IsCollidingWithSolid();
+	}
 	
-	//if we're still on the map, check for entity collisions
-	if (canMove && !IgnoreSolids())
-		canMove = !IsCollidingWithSolid();
-		
 	if (!canMove) //revert mPosition back to original, and cancel destination. We hit a block.
 	{
 		mPosition = p;
@@ -1026,7 +1032,7 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 	if (prop == "direction") SetDirection( stringToDirection(lua_tostring(ls, index)) );
 	else if (prop == "speed") SetSpeed( (byte)lua_tonumber(ls, index) );
 	else if (prop == "action") SetAction( (byte)lua_tonumber(ls, index) );
-	else if (prop == "noclip") SetIgnoreSolids( lua_tonumber(ls, index) );
+	else if (prop == "noclip") SetIgnoreSolids( lua_toboolean(ls, index) );
 	else if (prop == "mod" && GetAvatar())
 	{
 		if ( GetAvatar()->Modify( (byte)lua_tonumber(ls, index) ) )
@@ -1046,7 +1052,7 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 	if (prop == "direction") lua_pushnumber( ls, GetDirection() );
 	else if (prop == "speed") lua_pushnumber( ls, GetSpeed() );
 	else if (prop == "action") lua_pushnumber( ls, GetAction() );
-	else if (prop == "noclip") lua_pushnumber( ls, IgnoreSolids() );
+	else if (prop == "noclip") lua_pushboolean( ls, IgnoreSolids() );
 	else if (prop == "mod" && GetAvatar()) lua_pushnumber( ls, GetAvatar()->mModifier );
 	else return Entity::LuaGetProp(ls, prop);
 

@@ -15,14 +15,24 @@
 
 LoginDialog* loginDialog;
 
+void callback_doUpdate(MessagePopup* m)
+{
+#ifdef WIN32	
+	int result = (int)ShellExecute(NULL, "open", "./updater.exe", NULL, NULL, SW_SHOWNORMAL);
+	if (result <= 32)
+	{
+		systemErrorMessage("Error!", "Encountered error code " + its(result) + " while trying to run updater.exe!\n\nPlease complain at http://sybolt.com/community/");
+	}	
+#endif
+
+	appState = APPSTATE_CLOSING;
+}
+
 /* Welcome, sent after login
 <welcome>
 	<msg title="News">
 		Message
 	</msg>
-	<update title="New Shit Yo!" version="1.0.1"> <!-- Would only appear if client version doesn't match -->
-		Message
-	</update>
 	<server>addr:port</server>
 	<server>addr:port</server>
 	<server>addr:port</server>
@@ -44,13 +54,19 @@ int callback_welcomeXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 	{
 		new MessagePopup("", xf->GetParamString(e, "title"), xf->GetText(e));	
 	}
-	else if (id == "error")
+	else if (id == "error") // <error>TEXT</error>
 	{
 		new MessagePopup("", "Error", xf->GetText(e));	
 		//game->syboltId.clear();
 		//game->syboltPass.clear();
 		game->mUsername.clear();
 		game->mPassword.clear();
+	}
+	else if (id == "update") // <update title="??">TEXT</update>
+	{
+		MessagePopup* m = new MessagePopup("", xf->GetParamString(e, "title"), xf->GetText(e), true);	
+			m->onCloseCallback = callback_doUpdate;
+			m->DemandFocus();
 	}
 	else if (id == "server")
 	{
@@ -329,6 +345,9 @@ void LoginDialog::SendLoginQuery(bool skip)
 			}
 		}
 	}
+	
+	e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("map");
+	query += "&lm=" + game->mPlayerData.GetParamString(e, "lastid");
 	
 	downloader->QueueDownload(query, getTemporaryCacheFilename(),
 									NULL, dlCallback_welcomeXmlSuccess,

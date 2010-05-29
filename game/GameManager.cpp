@@ -6,6 +6,7 @@
 #include "GameManager.h"
 #include "Achievements.h"
 #include "IrcNetListeners.h"
+#include "CollisionBlob.h"
 #include "../map/BasicMap.h"
 #include "../entity/LocalActor.h"
 #include "../entity/ExplodingEntity.h"
@@ -87,7 +88,7 @@ void callback_consoleTestMap(Console* c, string s) //test_map
 {
 	if (s.length() < 10)
 	{
-		c->AddMessage("Invalid. test_map id");
+		c->AddMessage("Syntax: test_map id");
 		return;
 	}
 	
@@ -95,6 +96,22 @@ void callback_consoleTestMap(Console* c, string s) //test_map
 	
 	ASSERT(game);
 	game->LoadTestWorld(id);
+}
+
+void callback_consoleMakeCol(Console* c, string s) // /makecol file -m (-m tag is optional)
+{
+	vString v;
+	explode(&v, &s, " ");
+
+	if (v.size() > 1)
+	{
+		createCollisionBlob(v.at(1), (v.size() > 2 && v.at(2) == "-m"));
+	}
+	else
+	{
+		console->AddMessage("Syntax: makecol FILENAME -m");
+		console->AddMessage("  The -m flag is optional, used to output a debugging image and a lua table version");
+	}
 }
 
 void callback_consolePlayerFlags(Console* c, string s)
@@ -231,6 +248,7 @@ void callback_chatCommandAwesome(Console* c, string s) { netSendEmote(10); }
 void callback_chatCommandWtf(Console* c, string s) { netSendEmote(12); }
 void callback_chatCommandTroll(Console* c, string s) { netSendEmote(13); }
 void callback_chatCommandFacepalm(Console* c, string s) { netSendEmote(14); }
+void callback_chatCommandPedo(Console* c, string s) { netSendEmote(15); }
 
 void callback_chatCommandJoin(Console* c, string s)
 {
@@ -239,7 +257,7 @@ void callback_chatCommandJoin(Console* c, string s)
 
 	if (!game->mNet->IsConnected())
 	{
-		game->mChat->AddMessage("\\c900* Not connected!");
+		game->mChat->AddMessage("\\c900* No server connection! Could not jump worlds!");
 		return;
 	}
 
@@ -271,7 +289,7 @@ void callback_chatCommandJoin(Console* c, string s)
 #endif
 }
 
-void callback_chatCommandNick(Console* c, string s)
+void callback_chatCommandNick(Console* c, string s) // /nick nickname
 {	
 	if (s.length() < 7)
 		return;
@@ -292,7 +310,7 @@ void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 	explode(&v, &s, " ");
 	if (v.size() < 3)
 	{
-		c->AddMessage("Invalid. /msg nick message");
+		c->AddMessage("Syntax: /msg nick message");
 		return;
 	}
 	
@@ -302,7 +320,7 @@ void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 
 void callback_chatCommandListEmotes(Console* c, string s)
 {
-	c->AddFormattedMessage("\\c990Emotes:\\n  /facepalm, /troll, /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf");
+	c->AddFormattedMessage("\\c990Emotes:\\n  /facepalm, /troll, /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf, /pedo");
 }
 
 void callback_chatCommandListCommands(Console* c, string s)
@@ -349,6 +367,7 @@ void GameManager::_hookCommands()
 	console->HookCommand("avatar_info", callback_consoleAvatarInfo);
 	console->HookCommand("avatarout", callback_consoleOutputAvatar);
 	console->HookCommand("test_map", callback_consoleTestMap);
+	console->HookCommand("makecol", callback_consoleMakeCol);
 	console->HookCommand("player_flags", callback_consolePlayerFlags);
 	
 	mChat->HookCommand("", callback_chatNoCommand);
@@ -375,6 +394,7 @@ void GameManager::_hookCommands()
 	mChat->HookCommand("/heart", callback_chatCommandHeart);
 	mChat->HookCommand("/awesome", callback_chatCommandAwesome);
 	mChat->HookCommand("/facepalm", callback_chatCommandFacepalm);
+	mChat->HookCommand("/pedo", callback_chatCommandPedo);
 	
 	mChat->HookCommand("/emotes", callback_chatCommandListEmotes);
 	mChat->HookCommand("/commands", callback_chatCommandListCommands);
@@ -389,7 +409,7 @@ GameManager::GameManager()
 	mChat = NULL;
 	mNet = NULL;
 	mLoader = NULL;
-	
+
 	PRINT("[GM] Starting");
 	
 	game = this;
@@ -642,12 +662,6 @@ void GameManager::UnloadMap()
 {
 	if (mMap)
 	{
-		// Memorize player position!
-		//TODO: Differentiate between test maps and the reel deel!
-		mPlayerData.SetParamString("map", "lastid", mMap->mId);
-		mPlayerData.SetParamInt("map", "lastx", mPlayer->GetPosition().x);
-		mPlayerData.SetParamInt("map", "lasty", mPlayer->GetPosition().y);
-	
 		//kill the map class itself, gracefully
 		mMap->Die();
 		mMap = NULL;

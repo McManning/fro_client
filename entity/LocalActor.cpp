@@ -416,6 +416,12 @@ void LocalActor::Warp(string id, point2d position, string targetObjectName)
 	game->LoadOnlineWorld(id, position, targetObjectName);
 }
 
+void LocalActor::Warp(point2d pos)
+{
+	AddToActionBuffer('c' + its(pos.x) + '.' + its(pos.y) + '.');
+	mLastSavedPosition = pos;	
+}
+
 /*	index - Index of the stack where our new value for the property should be */
 int LocalActor::LuaSetProp(lua_State* ls, string& prop, int index)
 {
@@ -434,6 +440,4 @@ int LocalActor::LuaGetProp(lua_State* ls, string& prop)
 	
 	return 1;
 }
-
-
 

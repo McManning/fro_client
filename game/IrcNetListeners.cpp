@@ -94,9 +94,9 @@ void _removeRemoteActor(RemoteActor* a)
 	if (!a) return;
 
 	Image* img;
-	if (a->GetAvatar())
+	img = a->GetImage();
+	if (img)
 	{
-		img = a->GetAvatar()->GetImage();
 		rect r = a->GetBoundingRect();
 		new ExplodingEntity(a->mMap, img, point2d(r.x, r.y));
 	}
@@ -766,8 +766,8 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 	DataPacket data;
 	data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
 	
-	//Couldn't decrypt. Assume plaintext and privmsg
-	if (!data.FromString(msg))
+	//Couldn't decrypt. Assume plaintext and privmsg to us
+	if (!data.FromString(msg) && target == game->mPlayer->mName)
 	{
 		_handleNetMessage_Private(nick, msg);
 		return;
