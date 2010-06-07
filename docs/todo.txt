@@ -38,6 +38,23 @@ Add an option to disable achievement earned notifications
 
 IMMEDIATE TODO:
 
+- Remove ID strings from timers (useless)
+- Remove ID strings from widget constructors (useless)
+- Use int & unsigned & char more, rather than uShort, sShort, byte, etc
+
+- Treasure Hunter achievement triggered when raven got 30 memory orbs
+	Probably should instead check how many slots are used in the inventory and trigger for that,
+	instead of Inventory::Add() or wherever it is
+
+- Entity.FindAllById() is only returning one?   NEVERMIND, seems to work now. Wtf?
+- Certain worlds should not be accessible by /join. Set it up so we can only get there via linking by other worlds.
+	(question: Should they be accessible by the login world join? Depends)
+	We should add a permission file to worlds, like .htaccess
+	wonderland.access
+	Readable by php, can specify access levels based on source location, join method, user account, etc.
+- 
+
+
 - Run two clients, same profile, trade with yourself to double your items. 
 	Solutions?
 	Not.. sure. Other than YOU CAN'T RUN MORE THAN ONE CLIENT AT A TIME.

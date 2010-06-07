@@ -824,7 +824,15 @@ without either compatibility mode enabled, or security warnings, as seen with th
 100528
 - Added /pedo emote
 
+----- PUBLIC RELEASE AS 1.2.2 -----
 
+100603
+- Moved NET_ONCHANNEL message to receiving the JOIN irc message, instead of End of /NAMES
+- Attempted to write support for /names CHANNEL irc command, however Rizon blocks user listing of all 
+	channels unless we are occupying them. :( /names still exists, however it will show the LIST command
+	raw results instead, which will list channel modes, topic, and total users in it, in a messy fashion.
+- 
+	
 
 
 

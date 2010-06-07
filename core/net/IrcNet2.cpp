@@ -487,6 +487,21 @@ bool IrcNet::Process()
 				md.WriteString("address", s2); //Joiner Address
 
 				messenger.Dispatch(md, this);
+				
+				// We have joined our channel, trigger an ONCHANNEL event
+				if (s1 == GetNick())
+				{
+					mChannel->mSuccess = true;
+					_setState(ONCHANNEL);			
+					
+					mChannel->mId = getWord(line, 4);
+					
+					md.Clear();
+					md.SetId("NET_ONCHANNEL");
+					md.WriteString("channel", mChannel->mId); //channel
+					
+					messenger.Dispatch(md, this);
+				}
 			}
 			else if (cmd == "kick")
 			{
@@ -659,6 +674,7 @@ bool IrcNet::Process()
 			}
 			else if (cmd == "366") // :irc.lunarforums.org 366 ircNet_Nick #drm-testing :End of /NAMES list.
 			{ 		
+				/* Can't use 366, this'll be repeated for /names requests
 				mChannel->mSuccess = true;
 				_setState(ONCHANNEL);			
 				
@@ -669,6 +685,7 @@ bool IrcNet::Process()
 				md.WriteString("channel", mChannel->mId); //channel
 				
 				messenger.Dispatch(md, this);
+				*/
 			}
 			else if (cmd == "372" || cmd == "375" || cmd == "376") //MOTD from server
 			{

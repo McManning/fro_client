@@ -304,6 +304,16 @@ void callback_chatCommandNick(Console* c, string s) // /nick nickname
 	game->mPlayerData.SetParamString("user", "nick", s);
 }
 
+void callback_chatCommandNames(Console* c, string s) // /names CHANNEL
+{	
+	if (s.length() < 8)
+		return;
+		
+	s = s.substr(7);
+	
+	game->mNet->Rawmsg("LIST #drm." + s);
+}
+
 void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 {
 	vString v;
@@ -376,6 +386,7 @@ void GameManager::_hookCommands()
 	mChat->HookCommand("/music", callback_chatCommandListeningTo);
 	mChat->HookCommand("/join", callback_chatCommandJoin);
 	mChat->HookCommand("/nick", callback_chatCommandNick);
+	mChat->HookCommand("/names", callback_chatCommandNames);
 	mChat->HookCommand("/msg", callback_chatCommandMsg);
 	mChat->HookCommand("/emo", callback_chatCommandEmote);
 	mChat->HookCommand("/pos", consoleCommand::POINT2D, (void*)&mPlayer->mPosition);
