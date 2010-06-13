@@ -139,7 +139,7 @@ void IncinerateAmountRequest::Render()
 }
 
 Inventory::Inventory() :
-	Frame(gui, "inventory", rect(), "Inventory", true, true, true, true)
+	Frame(gui, "inventory", rect(), "My Backpack", true, true, true, true)
 {
 	SetSize(250, 250);
 	Center();
@@ -283,8 +283,9 @@ itemProperties* Inventory::Add(string id, string description, uShort amount, uSh
 	md.WriteInt("amount", amount);
 	messenger.Dispatch(md, this);
 	
-	achievement_TreasureHunter();
-	
+	if (!Has(id, 1))
+		achievement_TreasureHunter();
+
 	itemProperties* prop = _add(id, description, amount, cost);
 	Save();
 	

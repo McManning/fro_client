@@ -3,7 +3,7 @@
 #include "../game/GameManager.h"
 
 MyAchievements::MyAchievements() :
-	Frame(gui, "achievements", rect(0, 0, 500, 400), "My Achievements (BETA)", true, true, true, true)
+	Frame(gui, "achievements", rect(0, 0, 500, 400), "My Achievements", true, true, true, true)
 {
 	Center();
 	

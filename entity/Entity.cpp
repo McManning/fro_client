@@ -39,9 +39,8 @@ string Entity::GetTypeName()
 	{
 		case ENTITY_REMOTEACTOR: return "remote";
 		case ENTITY_LOCALACTOR: return "local";
-		case ENTITY_SCENEACTOR: return "actor";
+		case ENTITY_ACTOR: return "actor";
 		case ENTITY_STATICOBJECT: return "object";
-		case ENTITY_EFFECT: return "effect";
 		case ENTITY_TEXT: return "text";
 		default: return "unknown";
 	}

@@ -425,7 +425,7 @@ void LocalActor::Warp(point2d pos)
 /*	index - Index of the stack where our new value for the property should be */
 int LocalActor::LuaSetProp(lua_State* ls, string& prop, int index)
 {
-	if (prop == "locked") mLocked = lua_toboolean(ls, index);
+	if (prop == "locked") mIsLocked = lua_toboolean(ls, index);
 	else if (prop == "bufferdelay") mActionBufferSendDelayMs = (int)lua_tonumber(ls, index);
 	else return Actor::LuaSetProp(ls, prop, index);
 	
@@ -434,7 +434,7 @@ int LocalActor::LuaSetProp(lua_State* ls, string& prop, int index)
 
 int LocalActor::LuaGetProp(lua_State* ls, string& prop)
 {
-	if (prop == "locked") lua_pushboolean( ls, mLocked );
+	if (prop == "locked") lua_pushboolean( ls, mIsLocked );
 	else if (prop == "bufferdelay") lua_pushnumber( ls, mActionBufferSendDelayMs );
 	else return Actor::LuaGetProp(ls, prop);
 	

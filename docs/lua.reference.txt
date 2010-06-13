@@ -78,8 +78,6 @@ Player
 	.TakeItem("id", amount) Takes up to amount number of "id" from our inventory. id can't be blank.
 	.GetCash() - Returns total dorra 
 	.AddCash(amount) - Adds (or subtracts if the amount is negative) to our dorra total
-	bool = .IsLocked() - Returns true if player input is being ignored
-	.Lock(bool) - Lock the player. If locked (true), player cannot move their actor.
 	.EarnAchievement(title, desc<can only be set once>, max<can only be set once>, file<can only be set once>)
 		Will +1 the total for the achievement. If total == max, display to the player.
 		File is the filename on http://sybolt.com/drm/achievements/ that'll be downloaded into /assets/achievements/ and displayed 
@@ -188,7 +186,7 @@ Map
 	.SetFlag("flag", "value")
 		Map flags are persistant, and saved to the player.save file. Each map will have its own unique collection of flags.
 		If you want to set flags that are persistant between all maps, you have to use Player.SetFlag/GetFlag
-	
+	string = .GetWorkingDir() - Returns working directory of the map (either dev/ or cache/)
 	
 	
 		

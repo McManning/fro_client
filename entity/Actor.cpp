@@ -66,6 +66,8 @@ Actor::Actor()
 	mFalling = true;
 	SetIgnoreSolids(false);
 	
+	m_pActor = this; //HACK: This. Completely.
+	
 	mMovementTimer = timers->Add("movproc", 
 								PROCESS_MOVE_INTERVAL, false,
 								timer_processMovement,
@@ -727,15 +729,18 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 	mLoadingAvatar->mLoopStand = loopStand;
 	mLoadingAvatar->mLoopSit = loopSit;
 	
-	//rig it so that there's a tighter limit on avatar filesizes
 	int oldcap = downloader->GetByteCap();
-	downloader->SetByteCap(MAX_AVATAR_FILESIZE);
-	
+
+	//rig it so that there's a tighter limit on avatar filesizes
+	if (mLimitedAvatarSize)
+		downloader->SetByteCap(MAX_AVATAR_FILESIZE);
+
 	mLoadingAvatar->Load();
-	
 	downloader->SetByteCap(oldcap);
 
 	bool result = (mLoadingAvatar != NULL);
+	
+	//TODO: If it's a map actor, and the file is from disk, just load it.
 	
 	// If it loads from disk (avy://, etc), we'll swap here.
 	// Screws up LocalActor::LoadAvatar()	 _checkLoadingAvatar();

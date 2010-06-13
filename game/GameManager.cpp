@@ -29,6 +29,7 @@
 #include "../interface/MyAchievements.h"
 #include "../interface/AvatarCreator.h"
 #include "../interface/MiniMenu.h"
+#include "../interface/LunemParty.h"
 
 GameManager* game;
 
@@ -84,15 +85,15 @@ void callback_consoleAvatarInfo(Console* c, string s)
 	c->AddFormattedMessage(ss);
 }
 
-void callback_consoleTestMap(Console* c, string s) //test_map
+void callback_consoleTestMap(Console* c, string s) //map <file>
 {
 	if (s.length() < 10)
 	{
-		c->AddMessage("Syntax: test_map id");
+		c->AddMessage("Syntax: map id");
 		return;
 	}
 	
-	string id = s.substr(9);
+	string id = s.substr(4);
 	
 	ASSERT(game);
 	game->LoadTestWorld(id);
@@ -376,7 +377,7 @@ void GameManager::_hookCommands()
 	console->HookCommand("net_info", callback_consoleNetInfo);
 	console->HookCommand("avatar_info", callback_consoleAvatarInfo);
 	console->HookCommand("avatarout", callback_consoleOutputAvatar);
-	console->HookCommand("test_map", callback_consoleTestMap);
+	console->HookCommand("map", callback_consoleTestMap);
 	console->HookCommand("makecol", callback_consoleMakeCol);
 	console->HookCommand("player_flags", callback_consolePlayerFlags);
 	
@@ -480,6 +481,7 @@ GameManager::GameManager()
 	PRINT("[GM] Finished");
 	
 	ToggleGameMode(MODE_ACTION);
+	
 }
 
 GameManager::~GameManager()
@@ -559,9 +561,10 @@ void callback_gameHudSubButton(Button* b)
 			if (!gui->Get("userlist"))
 				new UserList();
 			break;
-	/*	case 'b': //report a bug
-			new OpenUrl("http://sybolt.com/tracker/bug_report_page.php");
-			break;*/
+		case 'p': //party
+			if (!gui->Get("userlist"))
+				new LunemParty();
+			break;
 		default: break;
 	}
 }
@@ -587,22 +590,30 @@ void GameManager::_buildHud()
 	sx += 35;
 
 	b = new Button(mHud, "c", rect(x,0,35,35), "", callback_gameHudSubButton);
-		b->mHoverText = "Achievements";
+		b->mHoverText = "My Achievements";
 		b->SetImage("assets/hud/achievements.png");
 	x += 40;
 	sx += 35;
 
 	b = new Button(mHud, "a", rect(x,0,35,35), "", callback_gameHudSubButton);
-		b->mHoverText = "Avatar Favorites";
+		b->mHoverText = "My Avatars";
 		b->SetImage("assets/hud/avatars.png");
 	x += 40;
 	sx += 35;
 	
 	b = new Button(mHud, "i", rect(x,0,35,35), "", callback_gameHudSubButton);
-		b->mHoverText = "Inventory";
+		b->mHoverText = "My Backpack";
 		b->SetImage("assets/hud/inventory.png");
 	x += 40;
 	sx += 35;
+	
+	b = new Button(mHud, "p", rect(x,0,35,35), "", callback_gameHudSubButton);
+		b->mHoverText = "My Party";
+		b->SetImage("assets/hud/party.png");
+	x += 40;
+	sx += 35;
+	
+	
 	
 	mHud->SetSize(x, 35);
 }

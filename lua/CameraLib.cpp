@@ -245,6 +245,24 @@ int camera_SetSpeed(lua_State* ls)
 	return 0;
 }
 
+//	.StopsAtEdge() - Returns true if the camera doesn't go off the edge of the map
+int camera_StopsAtEdge(lua_State* ls)
+{
+	ASSERT(game->mMap);
+
+	lua_pushboolean(ls, game->mMap->mStopCameraAtMapEdge);
+	return 1;
+}
+
+//	.SetEdgeStop(bool) - Set edge behavior of the camera
+int camera_SetEdgeStop(lua_State* ls)
+{
+	ASSERT(game->mMap);
+	game->mMap->mStopCameraAtMapEdge = lua_toboolean(ls, 1);
+
+	return 0;
+}
+
 static const luaL_Reg functions[] = {
 	{"SetPosition", camera_SetPosition},
 	{"GetPosition", camera_GetPosition},
@@ -257,6 +275,8 @@ static const luaL_Reg functions[] = {
 	{"GetFollowOffset", camera_GetFollowOffset},
 	{"IsRectVisible", camera_IsRectVisible},
 	{"IsEntityVisible", camera_IsEntityVisible},
+	{"StopsAtEdge", camera_StopsAtEdge},
+	{"SetEdgeStop", camera_SetEdgeStop},
 	
 	//WORK IN PROGRESS
 	{"IsPanning", camera_IsPanning},

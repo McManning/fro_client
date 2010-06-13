@@ -168,7 +168,7 @@ void ConvoDialog::SetText(string text)
 
 ConvoDialog* _getConvo(lua_State* ls)
 {
-	ConvoDialog* cd = (ConvoDialog*)lua_touserdata(ls, 1);
+	ConvoDialog* cd = (ConvoDialog*)(lua_touserdata(ls, 1));
 	if (!cd)
 	{
 		string err = "index 1 not a valid convo pointer.";

@@ -3,13 +3,14 @@
 #define _ACTOR_H_
 
 #include "Entity.h"
+#include "Combatant.h"
 
 #define SPEED_RUN (8)
 #define SPEED_WALK (4)
 
 #define PROCESS_MOVE_INTERVAL 40
 
-#define EMOTE_DISPLAY_MS 5000
+#define EMOTE_DISPLAY_MS 7000
 #define EMOTE_MOVE_DELAY 100
 
 const int MAX_AVATAR_FILESIZE = (200 * 1024); //200 KB
@@ -18,7 +19,7 @@ const int MAX_AVATAR_FILESIZE = (200 * 1024); //200 KB
 	have avatars that change based on their actions, etc. 
  */
 class Avatar;
-class Actor : public Entity
+class Actor : public Entity, public Combatant
 {
   public:
 

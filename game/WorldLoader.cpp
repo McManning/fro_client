@@ -488,6 +488,8 @@ void WorldLoader::_syncPlayerWithWorld()
 	p->mMap->AddEntity(p);
 	p->mMap->SetCameraFollow(p);
 	
+	p->mIsLocked = false;
+	
 	//spawn our player in a different position, based on the destination type
 	if (!m_sWarpDestinationEntityName.empty()) //warp us to the center of this object
 	{

@@ -831,10 +831,34 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Attempted to write support for /names CHANNEL irc command, however Rizon blocks user listing of all 
 	channels unless we are occupying them. :( /names still exists, however it will show the LIST command
 	raw results instead, which will list channel modes, topic, and total users in it, in a messy fashion.
-- 
+
+100606
+- Fixed player locking 
+- Added Camera.StopsAtEdge() and Camera.SetEdgeStop() to lua
+- Fixed player movement locking (would carry onto the next map load)
+- Fixed Treasure Hunter achievement to not count multiples of the same item
+
+100608
+- Added shell of Lunem Party dialog and added hud button
+- Renamed Inventory to Backpack (Pointlessness, woo!)
+- Renamed command test_map to just map
+
+100610
+- Fixed bug that imposed the same avatar filesize limits given to players to map actors also.
+	Map actors now have no limit either avatar dimensions or download filesize.
+- Created Combatant class and used it as a second base class for Actors. 
+	Combatant contains rpg-like elements, including stats, species, experience points handling, 
+	and level information. It will be used heavily by Lua for combat purposes.
+- Removed SceneActor class. Will just use pure Actor for map actors.
+- Changed entity Type values for Lua. Actor is now 1000, StaticObject is now 2000
+- Fixed bug where Map.GetWorkingDir() would not work until a map was created in lua Build()
+	(This made dofile() impossible to do prior to calling Build())
+
+100612
+- IrcNet2.cpp:62 
+	mChannelId = getWord(line, 4) changed to mChannelId = getWord(line, 3).substr(1);
+	Don't understand how it worked before with the JOIN message format. 
 	
-
-
 
 
 

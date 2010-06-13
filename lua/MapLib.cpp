@@ -189,9 +189,21 @@ int map_SetFlag(lua_State* ls)
 //	string = .GetWorkingDir() - Returns working directory of the map (either dev/ or cache/)
 int map_GetWorkingDir(lua_State* ls)
 {
-	ASSERT(game->mMap);
+	string dir;
 
-	lua_pushstring(ls, game->mMap->mWorkingDir.c_str());
+	if (game->mMap)
+	{
+		dir = game->mMap->mWorkingDir;
+	}
+	else if (game->mLoader)
+	{
+		if (game->mLoader->m_bTestMode)
+			dir = DIR_DEV;
+		else
+			dir = DIR_CACHE;
+	}
+		
+	lua_pushstring(ls, dir.c_str());
 	return 1;
 }
 

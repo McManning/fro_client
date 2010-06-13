@@ -2,9 +2,8 @@
 #include <lua.hpp>
 #include "EntityLib.h"
 #include "LuaCommon.h"
-#include "../entity/Entity.h"
+#include "../entity/Actor.h"
 #include "../entity/TextObject.h"
-#include "../entity/SceneActor.h"
 #include "../entity/ExplodingEntity.h"
 #include "../game/GameManager.h"
 #include "../map/BasicMap.h"
@@ -19,7 +18,7 @@ bool _verifyEntity(Entity* e)
 // This should always return a valid entity pointer. If it's invalid, there will be a longjmp from within lua.
 Entity* _getReferencedEntity(lua_State* ls, int index = 1)
 {
-	Entity* e = (Entity*)lua_touserdata(ls, index);
+	Entity* e = (Entity*)(lua_touserdata(ls, index));
 	if (!_verifyEntity(e))
 	{
 		string err = "index " + its(index) + " not a valid entity pointer.";
@@ -634,8 +633,8 @@ Entity* _createEntity(int type)
 		case ENTITY_STATICOBJECT:
 			e = new StaticObject;
 			break;
-		case ENTITY_SCENEACTOR:
-			e = new SceneActor;
+		case ENTITY_ACTOR:
+			e = new Actor;
 			break;
 		case ENTITY_TEXT:
 			e = new TextObject;

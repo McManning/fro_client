@@ -5,7 +5,6 @@
 #include "LuaCommon.h"
 #include "../entity/Actor.h"
 #include "../entity/Avatar.h"
-#include "../entity/SceneActor.h"
 #include "../entity/LocalActor.h"
 #include "../game/GameManager.h"
 #include "../map/Map.h"
@@ -13,14 +12,14 @@
 // Returns true if the entity is a valid actor. (TODO: Make sure it's on the map) 
 bool _verifyActor(Entity* e)
 {
-	return (e != NULL && e->mType > ENTITY_ACTOR && e->mType < ENTITY_END_ACTORS);
+	return (e != NULL && e->mType >= ENTITY_ACTOR && e->mType < ENTITY_END_ACTORS);
 }
 
 // Referenced actor is always the first parameter of the state
 // This should always return a valid entity pointer. If it's invalid, there will be a longjmp from within lua.
 Actor* getReferencedActor(lua_State* ls, int index)
 {
-	Actor* a = (Actor*)lua_touserdata(ls, 1);
+	Actor* a = (Actor*)(lua_touserdata(ls, 1));
 	if (!_verifyActor(a))
 	{
 		string err = "index " + its(index) + " not a valid actor pointer.";
@@ -195,6 +194,89 @@ int actor_Face(lua_State* ls)
 	return 0;
 }
 
+/**	
+	@return 0 on error, 1 otherwise
+*/
+int _parseSingleSpeciesProperty(lua_State* ls, string key, combatantSpecies& s)
+{
+	// Key is index -2, value is index -1
+	if (key == "Name")
+		strncpy(s.name, lua_tostring(ls, -1), sizeof(s.name));
+	else if (key == "Attack")
+		s.attack = (int)lua_tonumber(ls, -1);
+	else if (key == "Defense")
+		s.defense = (int)lua_tonumber(ls, -1);
+	else if (key == "Speed")
+		s.speed = (int)lua_tonumber(ls, -1);
+	else if (key == "Health")
+		s.health = (int)lua_tonumber(ls, -1);
+	else if (key == "TypeA")
+		s.typeA = (int)lua_tonumber(ls, -1);
+	else if (key == "TypeB")
+		s.typeB = (int)lua_tonumber(ls, -1);
+	else if (key == "TypeC")
+		s.typeC = (int)lua_tonumber(ls, -1);
+
+	return 1;
+}
+
+// .SetSpecies(actor, speciesTable)
+int actor_SetSpecies(lua_State* ls)
+{
+	Actor* a = getReferencedActor(ls);
+
+	combatantSpecies species;
+	lua_pushnil(ls);
+	while (lua_next(ls, 2) != 0)
+	{
+		if (lua_isstring(ls, -2))
+			_parseSingleSpeciesProperty(ls, lua_tostring(ls, -2), species);
+
+		lua_pop(ls, 1); //pop value	
+	} //while lua_next != 0
+
+	a->SetSpecies(species);
+	
+	return 0;
+}
+
+// Table management shorthand
+#define LUAT_ADD_STRING(_key, _string) {\
+		lua_pushstring(ls, _key); \
+		lua_pushstring(ls, _string.c_str()); \
+		lua_settable(ls, top); \
+	}
+	
+// Table management shorthand
+#define LUAT_ADD_INT(_key, _int) {\
+		lua_pushstring(ls, _key); \
+		lua_pushnumber(ls, _int); \
+		lua_settable(ls, top); \
+	}
+
+// speciesTable = .GetSpecies(actor) - Returns a table consisting of all the species stats of a specific combatant
+// 	Should basically return a table formatted the same as the one used in .SetSpecies()
+int actor_GetSpecies(lua_State* ls)
+{
+	Actor* a = getReferencedActor(ls);
+
+	//Construct a table to store all data
+	lua_newtable(ls);
+	int top = lua_gettop(ls);
+	
+	// TODO: Add rest of the species information?
+	LUAT_ADD_STRING("Name", string(a->m_species.name)); //from char[] to string to const char*? Hackyyy
+	LUAT_ADD_INT("Attack", a->m_species.attack);
+	LUAT_ADD_INT("Defense", a->m_species.defense);
+	LUAT_ADD_INT("Speed", a->m_species.speed);
+	LUAT_ADD_INT("Health", a->m_species.health);
+	LUAT_ADD_INT("TypeA", a->m_species.typeA);
+	LUAT_ADD_INT("TypeB", a->m_species.typeB);
+	LUAT_ADD_INT("TypeC", a->m_species.typeC);
+	
+	return 1;
+}
+
 static const luaL_Reg functions[] = {
 	{"IsIdle", actor_IsIdle},
 	{"IsJumping", actor_IsJumping},
@@ -207,6 +289,8 @@ static const luaL_Reg functions[] = {
 	{"AddToBuffer", actor_AddToBuffer},
 	{"LoadAvatar", actor_LoadAvatar},
 	{"Face", actor_Face},
+	{"SetSpecies", actor_SetSpecies},
+	{"GetSpecies", actor_GetSpecies},
 	{NULL, NULL}
 };
 

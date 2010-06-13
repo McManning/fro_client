@@ -110,13 +110,14 @@ class Map : public Frame, public EntityManager
 	
 	lua_State* mLuaState;
 	
+	bool mStopCameraAtMapEdge;
+	
   private:
 	void _constrainCameraToMap();
 	void _constrainCameraX();
 	void _constrainCameraY();
 
 	Entity* mFollowedEntity; //entity the camera is following
-	bool mStopCameraAtMapEdge;
 	
 	point2d mCameraPosition;
 	point2d mCameraFollowOffset;

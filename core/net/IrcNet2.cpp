@@ -494,7 +494,7 @@ bool IrcNet::Process()
 					mChannel->mSuccess = true;
 					_setState(ONCHANNEL);			
 					
-					mChannel->mId = getWord(line, 4);
+					mChannel->mId = getWord(line, 3).substr(1);
 					
 					md.Clear();
 					md.SetId("NET_ONCHANNEL");

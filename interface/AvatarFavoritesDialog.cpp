@@ -169,7 +169,7 @@ void callback_createAvatar(Button* b)
 
 AvatarFavorites::AvatarFavorites() :
 	Frame(gui, "avyfavs", rect(0, 0, 250,250),
-			"Avatar Favorites", true, true, true, true)
+			"My Avatars", true, true, true, true)
 {
 	mList = makeList(this, "list", rect(0,0,0,0));
 
