@@ -30,6 +30,7 @@
 #include "../interface/AvatarCreator.h"
 #include "../interface/MiniMenu.h"
 #include "../interface/LunemParty.h"
+#include "../interface/WorldsViewer.h"
 
 GameManager* game;
 
@@ -305,14 +306,10 @@ void callback_chatCommandNick(Console* c, string s) // /nick nickname
 	game->mPlayerData.SetParamString("user", "nick", s);
 }
 
-void callback_chatCommandNames(Console* c, string s) // /names CHANNEL
+void callback_chatCommandWorldsViewer(Console* c, string s)
 {	
-	if (s.length() < 8)
-		return;
-		
-	s = s.substr(7);
-	
-	game->mNet->Rawmsg("LIST #drm." + s);
+	if (!gui->Get("worldsviewer"))
+		new WorldsViewer();
 }
 
 void callback_chatCommandMsg(Console* c, string s) // /msg nick message
@@ -387,7 +384,7 @@ void GameManager::_hookCommands()
 	mChat->HookCommand("/music", callback_chatCommandListeningTo);
 	mChat->HookCommand("/join", callback_chatCommandJoin);
 	mChat->HookCommand("/nick", callback_chatCommandNick);
-	mChat->HookCommand("/names", callback_chatCommandNames);
+	mChat->HookCommand("/worlds", callback_chatCommandWorldsViewer);
 	mChat->HookCommand("/msg", callback_chatCommandMsg);
 	mChat->HookCommand("/emo", callback_chatCommandEmote);
 	mChat->HookCommand("/pos", consoleCommand::POINT2D, (void*)&mPlayer->mPosition);
@@ -481,7 +478,6 @@ GameManager::GameManager()
 	PRINT("[GM] Finished");
 	
 	ToggleGameMode(MODE_ACTION);
-	
 }
 
 GameManager::~GameManager()

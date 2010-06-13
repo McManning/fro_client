@@ -672,19 +672,12 @@ bool IrcNet::Process()
 				
 				messenger.Dispatch(md, this);
 			}
-			else if (cmd == "366") // :irc.lunarforums.org 366 ircNet_Nick #drm-testing :End of /NAMES list.
+			else if (cmd == "366" || cmd == "323" || cmd == "321") //ignore!
 			{ 		
-				/* Can't use 366, this'll be repeated for /names requests
-				mChannel->mSuccess = true;
-				_setState(ONCHANNEL);			
-				
-				mChannel->mId = getWord(line, 4);
-				
-				md.Clear();
-				md.SetId("NET_ONCHANNEL");
-				md.WriteString("channel", mChannel->mId); //channel
-				
-				messenger.Dispatch(md, this);
+				/*
+					 :irc.lunarforums.org 366 ircNet_Nick #drm-testing :End of /NAMES list.
+					 :server 321 NICK Channel :Users Name
+					 :server 323 NICK :End of /LIST
 				*/
 			}
 			else if (cmd == "372" || cmd == "375" || cmd == "376") //MOTD from server
@@ -695,7 +688,15 @@ bool IrcNet::Process()
 				
 				messenger.Dispatch(md, this);
 			}
-			else if (atoi(cmd.c_str()) > 400 && atoi(cmd.c_str()) < 503) //command ERROR reply from IRC server
+			else if (cmd == "322") //:irc.server.net 322 MYNICK channel users :topic
+			{
+				md.Clear();
+				md.SetId("NET_CHANNEL_COUNT");
+				md.WriteString("channel", getWord(line, 4));
+				md.WriteInt("count", sti(getWord(line, 5))); 	
+				messenger.Dispatch(md, this);
+			}
+			else if ((atoi(cmd.c_str()) > 400 && atoi(cmd.c_str()) < 503) || cmd == "263") //command ERROR reply from IRC server
 			{		
 				md.Clear();
 				md.SetId("NET_CMDERROR");

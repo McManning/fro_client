@@ -323,6 +323,42 @@ int DownloadManager::CountActiveDownloads()
 	return result;
 }
 
+int DownloadManager::CountMatchingUserData(void* userData)
+{
+	int count = 0;
+	int i;
+	
+	//lock these together to stop the threads from processing further COMPLETELY
+	SDL_LockMutex(mCompletedMutex);
+	SDL_LockMutex(mQueuedMutex);
+
+	for (i = 0; i < mCompleted.size(); i++)
+	{
+		if (mCompleted.at(i)->userData == userData)
+			++count;
+	}
+
+	for (i = 0; i < mQueued.size(); i++)
+	{
+		if (mQueued.at(i)->userData == userData)
+			++count;
+	}
+
+	for (i = 0; i < mThreads.size(); i++)
+	{
+		/*	TODO: Do we need a mutex for currentData? Since the other two are locked, threads
+			can't really move anything in/out currentData..
+		*/
+		if (mThreads.at(i)->currentData && mThreads.at(i)->currentData->userData == userData)
+			++count;
+	}
+
+	SDL_UnlockMutex(mCompletedMutex);
+	SDL_UnlockMutex(mQueuedMutex);
+	
+	return count;
+}
+
 /*
 	Locking is necessary because the thread might add/remove list members during
 	iteration, and the .size() could be wrong, causing iteration to go out of scope.

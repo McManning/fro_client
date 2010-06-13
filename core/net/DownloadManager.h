@@ -87,12 +87,15 @@ class DownloadManager
 						void (*onSuccess)(downloadData*), void (*onFailure)(downloadData*),
 						bool overwrite, bool overrideQueueLock = false, string md5hash = "");
 
-	/*Will NULL out the userData of all downloadData* in both lists if it matches
+	/** Will NULL out the userData of all downloadData* in both lists if it matches
 		the passed userData. This won't actually delete the downloadData due to the fact
 		that it might be called during Process(); and fucking with vectors order while
 		fucking with vectors order isn't a good idea. Ever.
 	*/
 	bool NullMatchingUserData(void* userData);
+
+	/**	Returns the number of downloads that match our userdata */
+	int CountMatchingUserData(void* userData);
 
 	int CountActiveDownloads();
 

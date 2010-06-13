@@ -859,6 +859,17 @@ without either compatibility mode enabled, or security warnings, as seen with th
 	mChannelId = getWord(line, 4) changed to mChannelId = getWord(line, 3).substr(1);
 	Don't understand how it worked before with the JOIN message format. 
 	
+100613
+- Asset added: assets/button/refresh.png
+- Added DownloadManager::CountMatchingUserData()
+- Added messenger event to IrcNet2: NET_CHANNEL_COUNT{"channel", "count"} to handle /LIST responses
+- Added WorldsViewer (currently accessible via /worlds command). Will send a request to the master
+	for a list of worlds, and after displaying the list, will request a user count for each world 
+		from the irc server.
+	TODO: Make worlds clickable and let the player warp right there from the list instead of /join
+	Also, the user count feature will most likely not work on larger IRC networks such as Rizon,
+		as they love to give LOL TOO HEAVY OF A LOAD, TRY AGAIN LATER messags.
+- 
 
 
 

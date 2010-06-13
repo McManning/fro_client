@@ -1,7 +1,7 @@
 [Project]
 FileName=fro.dev
 Name=fro
-UnitCount=173
+UnitCount=175
 Type=0
 Ver=1
 ObjFiles=
@@ -473,7 +473,7 @@ BuildCmd=
 Major=1
 Minor=2
 Release=2
-Build=949
+Build=987
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1578,9 +1578,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit175]
-FileName=..\game\Achievements.h
+FileName=..\interface\WorldsViewer.cpp
 CompileCpp=1
-Folder=../game
+Folder=../interface
 Compile=1
 Link=1
 Priority=1000
@@ -1881,6 +1881,16 @@ BuildCmd=
 FileName=..\core\widgets\MessagePopup.h
 CompileCpp=1
 Folder=../core/widgets
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit174]
+FileName=..\interface\WorldsViewer.h
+CompileCpp=1
+Folder=../interface
 Compile=1
 Link=1
 Priority=1000
