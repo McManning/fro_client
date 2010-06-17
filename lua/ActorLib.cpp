@@ -277,6 +277,29 @@ int actor_GetSpecies(lua_State* ls)
 	return 1;
 }
 
+// .GainExp(actor, number)
+int actor_GainExp(lua_State* ls)
+{
+	Actor* a = getReferencedActor(ls);
+	a->AddExperience((int)lua_tonumber(ls, 2));
+	return 0;
+}
+
+// .TakeDamage(actor, attacker, damage) - If attacker is nil, can be considered world damage.
+//	Otherwise, attacker is a pointer to another actor
+int actor_TakeDamage(lua_State* ls)
+{
+	Actor* defender = getReferencedActor(ls, 1);
+	Actor* attacker;
+	if (lua_isnil(ls, 2))
+		attacker = NULL;
+	else
+		attacker = getReferencedActor(ls, 2);
+
+	defender->TakeDamage(attacker, (int)lua_tonumber(ls, 3));
+	return 0;
+}
+
 static const luaL_Reg functions[] = {
 	{"IsIdle", actor_IsIdle},
 	{"IsJumping", actor_IsJumping},
@@ -291,6 +314,8 @@ static const luaL_Reg functions[] = {
 	{"Face", actor_Face},
 	{"SetSpecies", actor_SetSpecies},
 	{"GetSpecies", actor_GetSpecies},
+	{"GainExp", actor_GainExp},
+	{"TakeDamage", actor_TakeDamage},
 	{NULL, NULL}
 };
 

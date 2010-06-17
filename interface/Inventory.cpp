@@ -100,7 +100,7 @@ IncinerateAmountRequest::IncinerateAmountRequest(itemProperties* item)
 
 	mInput = new Input(this, "amt", rect(5,55,100,20), "0123456789", 0, true, NULL);
 		mInput->mHoverText = "1 to " + its(item->amount);
-		mInput->SetText(its(item->amount));
+		mInput->SetText("1");
 		mInput->SetMenuEnabled(false);
 	
 	//set width based on label caption

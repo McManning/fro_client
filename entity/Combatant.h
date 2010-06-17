@@ -26,7 +26,6 @@ struct combatantSpecies
 	events for its various inner workings, as it will rely mostly on working with Lua, rather than 
 	having hardcoded methods. 
 */
-class Actor;
 class Combatant
 {
   public:
@@ -44,7 +43,7 @@ class Combatant
 		(things such as health, attack, defense, etc) based on our current level, DNA, and
 		other factors.
 	*/	
-	void RecalculateStats();
+	virtual void RecalculateStats() = 0;
 
 	/**
 		Set to a specific level. Do not use for leveling up calculations,
@@ -70,15 +69,15 @@ class Combatant
 		Increases m_iLevel by one, recalculates stats, and sends
 		out ENTITY_LEVEL for anyone to pick up and mess with
 	*/
-	void LevelUp();
+	virtual void LevelUp() = 0;
 	
 	/**	
 		Will reduce mCurrentHealth, and indicate as such. Will either
 		trigger ENTITY_HURT or ENTITY_DEATH (if m_iCurrentHealth < 1) events.
-		@param attacker If null, will be considered to be world-damage
+		@param attacker If null, will be considered to be world-damage. 
 		@param damage The amount of damage taken
 	*/
-	void TakeDamage(Combatant* attacker, int damage);
+	virtual void TakeDamage(Combatant* attacker, int damage) = 0;
 
 	int m_iLevel;
 	int m_iGene;
@@ -97,11 +96,6 @@ class Combatant
 	combatantSpecies m_species;
 	
 	bool m_bDisplayStats; // if true, an overhead display of stats will be shown
-	
-	/*	A very hacky hack that lets us know the address of the class that derived
-		from this one, since 'this' returns an unwanted offset
-	*/
-	Actor* m_pActor;
 };
 
 #endif //_COMBATANT_H_

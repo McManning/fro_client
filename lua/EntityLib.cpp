@@ -212,7 +212,7 @@ int entity_GetProp(lua_State* ls)
 	
 	Entity* e = _getReferencedEntity(ls);
 
-	string prop = lua_tostring(ls, 2);
+	string prop = lowercase(lua_tostring(ls, 2));
 
 	int result = e->LuaGetProp(ls, prop);
 
@@ -230,7 +230,7 @@ int entity_SetProp(lua_State* ls)
 
 	Entity* e = _getReferencedEntity(ls);
 
-	string prop = lua_tostring(ls, 2);
+	string prop = lowercase(lua_tostring(ls, 2));
 
 	int result = e->LuaSetProp(ls, prop, 3);
 

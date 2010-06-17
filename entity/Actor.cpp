@@ -65,9 +65,7 @@ Actor::Actor()
 	mJumpHeight = 0;
 	mFalling = true;
 	SetIgnoreSolids(false);
-	
-	m_pActor = this; //HACK: This. Completely.
-	
+
 	mMovementTimer = timers->Add("movproc", 
 								PROCESS_MOVE_INTERVAL, false,
 								timer_processMovement,
@@ -1047,6 +1045,18 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 				game->mPlayer->NetSendAvatarMod();
 		}
 	}
+	
+	// Combatant properties
+	else if (prop == "level") SetLevel((int)lua_tonumber(ls, index));
+	else if (prop == "gene") SetGene((int)lua_tonumber(ls, index));
+	else if (prop == "attack") m_iAttack = (int)lua_tonumber(ls, index);
+	else if (prop == "defense") m_iDefense = (int)lua_tonumber(ls, index);
+	else if (prop == "speed") m_iSpeed = (int)lua_tonumber(ls, index);
+	else if (prop == "maxhealth") m_iMaxHealth = (int)lua_tonumber(ls, index);
+	else if (prop == "health") m_iCurrentHealth = (int)lua_tonumber(ls, index);
+	//else if (prop == "exp") m_iExp = (int)lua_tonumber(ls, index);
+	else if (prop == "maxexp") m_iMaxExp = (int)lua_tonumber(ls, index);
+	
 	else return Entity::LuaSetProp(ls, prop, index);
 
 	return 1;
@@ -1059,9 +1069,66 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "action") lua_pushnumber( ls, GetAction() );
 	else if (prop == "noclip") lua_pushboolean( ls, IgnoreSolids() );
 	else if (prop == "mod" && GetAvatar()) lua_pushnumber( ls, GetAvatar()->mModifier );
+	
+	// Combatant properties
+	else if (prop == "level") lua_pushnumber(ls, m_iLevel);
+	else if (prop == "gene") lua_pushnumber(ls, m_iGene);
+	else if (prop == "attack") lua_pushnumber( ls, m_iAttack );
+	else if (prop == "defense") lua_pushnumber( ls, m_iDefense );
+	else if (prop == "speed") lua_pushnumber( ls, m_iSpeed );
+	else if (prop == "maxhealth") lua_pushnumber(ls, m_iMaxHealth);
+	else if (prop == "health") lua_pushnumber(ls, m_iCurrentHealth);
+	else if (prop == "exp") lua_pushnumber(ls, m_iExp);
+	else if (prop == "maxexp") lua_pushnumber(ls, m_iMaxExp);
+	
 	else return Entity::LuaGetProp(ls, prop);
 
 	return 1;
+}
+
+void Actor::TakeDamage(Combatant* attacker, int damage)
+{
+	m_iCurrentHealth -= damage;
+	
+	// We died! Trigger an event!
+	if (m_iCurrentHealth <= 0)
+	{
+		m_iCurrentHealth = 0;
+		
+		MessageData md("ENTITY_DEATH");
+		md.WriteUserdata("entity", this);
+		md.WriteUserdata("attacker", attacker);
+		md.WriteInt("damage", damage);
+		messenger.Dispatch(md);
+	}
+	else 
+	{
+		MessageData md("ENTITY_HURT");
+		md.WriteUserdata("entity", this);
+		md.WriteUserdata("attacker", attacker);
+		md.WriteInt("damage", damage);
+		messenger.Dispatch(md);
+	}
+}
+
+void Actor::RecalculateStats()
+{
+	// Send out a request for SOMEONE to recalculate our stats (hopefully picked up by lua)
+	// TODO: Should we use this particular method to calculate? Couldn't this be dangerous? 
+	//		Yet, still don't want to hard code it.
+	MessageData md("ENTITY_RECALC");
+	md.WriteUserdata("entity", this);
+	messenger.Dispatch(md);
+}
+
+void Actor::LevelUp()
+{
+	++m_iLevel;
+	RecalculateStats();
+	
+	MessageData md("ENTITY_LEVEL");
+	md.WriteUserdata("entity", this);
+	messenger.Dispatch(md);
 }
 
 

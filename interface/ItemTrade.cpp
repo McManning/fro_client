@@ -244,7 +244,7 @@ AmountRequest::AmountRequest(ItemTrade* trade, itemProperties* item)
 
 	mInput = new Input(this, "amt", rect(5,55,100,20), "0123456789", 0, true, NULL);
 		mInput->mHoverText = "1 to " + its(mMax);
-		mInput->SetText(its(mMax));
+		mInput->SetText("1");
 		mInput->SetMenuEnabled(false);
 	
 	//set width based on label caption, up to max

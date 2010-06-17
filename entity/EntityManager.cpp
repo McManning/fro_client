@@ -34,7 +34,7 @@ bool EntityManager::RemoveEntity(Entity* e)
 	return false;
 }
 
-bool EntityManager::RemoveEntityById(string id, byte type)
+bool EntityManager::RemoveEntityById(string id, entityType type)
 {
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
@@ -49,7 +49,7 @@ bool EntityManager::RemoveEntityById(string id, byte type)
 	return false;
 }
 
-bool EntityManager::RemoveEntityByName(string name, byte type)
+bool EntityManager::RemoveEntityByName(string name, entityType type)
 {
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
@@ -64,7 +64,7 @@ bool EntityManager::RemoveEntityByName(string name, byte type)
 	return false;
 }
 
-bool EntityManager::RemoveAllEntitiesById(string id, byte type)
+bool EntityManager::RemoveAllEntitiesById(string id, entityType type)
 {
 	bool found = false;
 	for (int i = 0; i < mEntities.size(); ++i)
@@ -82,7 +82,7 @@ bool EntityManager::RemoveAllEntitiesById(string id, byte type)
 	return found;
 }
 
-bool EntityManager::RemoveAllEntitiesByName(string name, byte type)
+bool EntityManager::RemoveAllEntitiesByName(string name, entityType type)
 {
 	bool found = false;
 	for (int i = 0; i < mEntities.size(); ++i)
@@ -108,7 +108,7 @@ void EntityManager::FlushEntities()
 	mEntities.clear();
 }
 
-Entity* EntityManager::FindEntityById(string id, byte type)
+Entity* EntityManager::FindEntityById(string id, entityType type)
 {
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
@@ -121,14 +121,16 @@ Entity* EntityManager::FindEntityById(string id, byte type)
 	return NULL;
 }
 
-Entity* EntityManager::FindEntityByName(string name, byte type)
+Entity* EntityManager::FindEntityByName(string name, entityType type)
 {
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
-		if (mEntities.at(i) && mEntities.at(i)->mName == name 
-			&& (mEntities.at(i)->mType == type || type == ENTITY_ANY))
+		if (mEntities.at(i) && mEntities.at(i)->mName == name)
 		{
-			return mEntities.at(i);
+			if (mEntities.at(i)->mType == type || type == ENTITY_ANY)
+			{
+				return mEntities.at(i);
+			}
 		}
 	}
 	return NULL;

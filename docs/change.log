@@ -869,8 +869,14 @@ without either compatibility mode enabled, or security warnings, as seen with th
 	TODO: Make worlds clickable and let the player warp right there from the list instead of /join
 	Also, the user count feature will most likely not work on larger IRC networks such as Rizon,
 		as they love to give LOL TOO HEAVY OF A LOAD, TRY AGAIN LATER messags.
+- Added case insensitivity to Entity.GetProp/SetProp, Player.GetProp/SetProp
+- Moved Combatant implementation to Actor as overloaded functions to remove a lazy hack. 
+
+100614
+- Changed trade item amount request and incinerate amount request to default to 1 instead of all
+	the items you own of that type
+- Fixed issue where EntityManager would only accept a single byte as an entity type number, which
+	contradicted our current system of starting actors at index 1000
 - 
-
-
 
 

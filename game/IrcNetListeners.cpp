@@ -953,8 +953,8 @@ void listener_NetChannelPart(MessageListener* ml, MessageData& md, void* sender)
 	}
 	
 	//Remove them from our map if they were on it
-	Entity* e = game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
-	_removeRemoteActor((RemoteActor*)e);
+	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
+	_removeRemoteActor(ra);
 }
 
 void listener_NetChannelQuit(MessageListener* ml, MessageData& md, void* sender)
@@ -979,14 +979,12 @@ void listener_NetChannelQuit(MessageListener* ml, MessageData& md, void* sender)
 	{
 		msg = "User Quit";
 		printMessage(msg);
-		//SAFEDELETE(mChannel);
-		//Disconnect();
 	}
 	else if (game->mMap)
 	{
 		//Remove them from our map if they were on it
-		Entity* e = game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
-		_removeRemoteActor((RemoteActor*)e);
+		RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
+		_removeRemoteActor(ra);
 	}
 }
 

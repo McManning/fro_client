@@ -1,7 +1,7 @@
 [Project]
 FileName=fro.dev
 Name=fro
-UnitCount=175
+UnitCount=177
 Type=0
 Ver=1
 ObjFiles=
@@ -473,7 +473,7 @@ BuildCmd=
 Major=1
 Minor=2
 Release=2
-Build=987
+Build=1019
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1588,7 +1588,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit176]
-FileName=..\interface\MiniMenu.h
+FileName=..\interface\PlayerActionMenu.cpp
 CompileCpp=1
 Folder=../interface
 Compile=1
@@ -1598,7 +1598,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit177]
-FileName=..\interface\MiniMenu.cpp
+FileName=..\interface\PlayerActionMenu.h
 CompileCpp=1
 Folder=../interface
 Compile=1

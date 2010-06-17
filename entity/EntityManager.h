@@ -21,11 +21,11 @@ class EntityManager
 
 	bool RemoveEntity(Entity* e);
 	
-	bool RemoveEntityById(string id, byte type = ENTITY_ANY);
-	bool RemoveEntityByName(string name, byte type = ENTITY_ANY);
+	bool RemoveEntityById(string id, entityType type = ENTITY_ANY);
+	bool RemoveEntityByName(string name, entityType type = ENTITY_ANY);
 	
-	bool RemoveAllEntitiesById(string id, byte type = ENTITY_ANY);
-	bool RemoveAllEntitiesByName(string name, byte type = ENTITY_ANY);
+	bool RemoveAllEntitiesById(string id, entityType type = ENTITY_ANY);
+	bool RemoveAllEntitiesByName(string name, entityType type = ENTITY_ANY);
 	
 	//Delete all entities in this manager
 	void FlushEntities();
@@ -33,12 +33,12 @@ class EntityManager
 	/*	Locate entity by Entity::mId. Can define specific types and levels. Leave as default to search anywhere and anyone.
 		Returns NULL if not found, the entity otherwise
 	*/
-	Entity* FindEntityById(string id, byte type = ENTITY_ANY);
+	Entity* FindEntityById(string id, entityType type = ENTITY_ANY);
 		
 	/*	Locate entity by Entity::mName. Can define specific types and levels. Leave as default to search anywhere and anyone.
 		Returns NULL if not found, the entity otherwise
 	*/
-	Entity* FindEntityByName(string name, byte type = ENTITY_ANY);
+	Entity* FindEntityByName(string name, entityType type = ENTITY_ANY);
 	
 	//	Returns the index number of the selected entity. Or -1 if it isn't found
 	int FindEntity(Entity* e);

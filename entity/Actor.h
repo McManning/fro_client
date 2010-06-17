@@ -124,6 +124,11 @@ class Actor : public Entity, public Combatant
 	/*	Change direction to face the other entity */
 	void Face(Entity* e);
 	
+	/* Inherited from Combatant */
+	virtual void LevelUp();
+	virtual void RecalculateStats();
+	virtual void TakeDamage(Combatant* attacker, int damage);
+	
 	uShort mEmoteOffset;
 	Image* mEmoticon;
 

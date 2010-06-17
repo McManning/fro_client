@@ -34,7 +34,7 @@
 #ifndef _IRCNET2_H_
 #define _IRCNET2_H_
 
-#include "../../core/Core.h"
+#include "../Core.h"
 #include "TextSocketConnection.h"
 
 const char* const SEPERATOR = "\x01";

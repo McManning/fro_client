@@ -6,6 +6,7 @@
 #include "../entity/LocalActor.h"
 #include "../game/GameManager.h"
 #include "../interface/Inventory.h"
+#include "../interface/PlayerActionMenu.h"
 
 struct queuedPlayerWarp
 {
@@ -206,7 +207,7 @@ int player_GetProp(lua_State* ls)
 
 	ASSERT(game->mPlayer);
 	
-	string prop = lua_tostring(ls, 1);
+	string prop = lowercase(lua_tostring(ls, 1));
 	int result = game->mPlayer->LuaGetProp(ls, prop);
 
 	if (!result)
@@ -223,7 +224,7 @@ int player_SetProp(lua_State* ls)
 
 	ASSERT(game->mPlayer);
 	
-	string prop = lua_tostring(ls, 1);
+	string prop = lowercase(lua_tostring(ls, 1));
 	int result = game->mPlayer->LuaSetProp(ls, prop, 2);
 
 	if (!result)
@@ -314,6 +315,17 @@ int player_GetAchievement(lua_State* ls)
 	return 1;
 }
 
+//	.RequestDuelAction(entity, timeoutInSeconds)
+int player_RequestDuelAction(lua_State* ls)
+{
+	Actor* a = (Actor*)lua_touserdata(ls, 1);
+	int timeout = (int)lua_tonumber(ls, 2);
+	
+	new PlayerActionMenu(timeout, a);
+	
+	return 0;
+}
+
 static const luaL_Reg functions[] = {
 	{"GetActor", player_GetActor},
 	{"IsInChatMode", player_IsInChatMode},
@@ -327,6 +339,7 @@ static const luaL_Reg functions[] = {
 	{"SetProp", player_SetProp},
 	{"EarnAchievement", player_EarnAchievement},
 	{"GetAchievement", player_GetAchievement},
+	{"RequestDuelAction", player_RequestDuelAction},
 	{NULL, NULL}
 };
 
