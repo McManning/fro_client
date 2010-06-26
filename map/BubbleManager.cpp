@@ -53,7 +53,8 @@ void BubbleManager::Render()
 		r.h = mBubbles.at(i)->img->Height();
 		r.x = e->mPosition.x - (r.w / 2);
 
-		r = mMap->ToScreenPosition( r );
+		if (!e->IsPositionRelativeToScreen())
+			r = mMap->ToScreenPosition( r );
 
 		mBubbles.at(i)->img->Render(scr, r.x, r.y);
 	}

@@ -1,7 +1,7 @@
 [Project]
 FileName=fro.dev
 Name=fro
-UnitCount=177
+UnitCount=179
 Type=0
 Ver=1
 ObjFiles=
@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=1000000001000001000000
+CompilerSettings=1000000001000000000100
 
 [Unit1]
 FileName=..\core\Common.cpp
@@ -472,8 +472,8 @@ BuildCmd=
 [VersionInfo]
 Major=1
 Minor=2
-Release=2
-Build=1019
+Release=3
+Build=1175
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1608,7 +1608,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit178]
-FileName=..\entity\ActionEffect.cpp
+FileName=..\interface\ScreenText.h
 CompileCpp=1
 Folder=../interface
 Compile=1
@@ -1618,7 +1618,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit179]
-FileName=..\entity\ActionEffect.h
+FileName=..\interface\ScreenText.cpp
 CompileCpp=1
 Folder=../interface
 Compile=1

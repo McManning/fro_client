@@ -32,7 +32,8 @@ class Actor : public Entity, public Combatant
 	{
 		STANDING_JUMP = 0,
 		WALKING_JUMP,
-		RUNNING_JUMP
+		RUNNING_JUMP,
+		CUSTOM_JUMP
 	};
 
 	Actor();
@@ -76,6 +77,9 @@ class Actor : public Entity, public Combatant
 
 	/*	Jump in our current direction, using the specified jump type (running, walking, standing) */
 	void Jump(byte type);
+	
+	/*	Fall down using a custom velocity */
+	void Fall(int height, int velocity);
 	
 	/*	Code to be ran after a jump */
 	virtual void Land();
@@ -171,6 +175,7 @@ class Actor : public Entity, public Combatant
 	
 	//Jumping related
 	byte mJumpType;
+	int mJumpVelocity;
 	bool mFalling;
 	
 	bool mLimitedAvatarSize; //does this actor follow size limit guidelines for avatars

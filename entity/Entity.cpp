@@ -21,7 +21,7 @@ Entity::Entity()
 	mLocked = false;
 	mShadow = false;
 	mJumpHeight = 0;
-	mCanClick = false;
+	mClickRange = 0;
 }
 
 Entity::~Entity()
@@ -53,7 +53,27 @@ void Entity::SetVisible(bool v)
 
 bool Entity::IsVisibleInCamera() 
 { 
-	return IsVisible() && mMap && mMap->IsRectInCamera(GetBoundingRect());
+	if (!IsVisible() || !mMap)
+		return false;
+	
+	rect r = GetBoundingRect();	
+	if (IsPositionRelativeToScreen())
+	{
+		return areRectsIntersecting(r, mMap->GetScreenPosition());
+	}
+	else
+	{
+		return mMap->IsRectInCamera(GetBoundingRect());
+	}
+}
+
+bool Entity::IsPositionRelativeToScreen()
+{
+	return ((mLayer >= EntityManager::LAYER_STATIC_LOWER_START 
+				&& mLayer <= EntityManager::LAYER_STATIC_LOWER_END)
+			|| (mLayer >= EntityManager::LAYER_STATIC_UPPER_START 
+				&& mLayer <= EntityManager::LAYER_STATIC_UPPER_END)
+			);
 }
 
 void Entity::SetPosition(point2d position)
@@ -81,6 +101,10 @@ void Entity::SetPosition(point2d position)
 
 bool Entity::CollidesWith(rect r)
 {
+	// Screen relative entities can't have collision info
+	if (IsPositionRelativeToScreen())
+		return false; 
+		
 	rect rr;
 	for (uShort i = 0; i < mCollisionRects.size(); i++)
 	{
@@ -97,6 +121,9 @@ bool Entity::CollidesWith(rect r)
 /*	Returns true if any of this entities rects are intersecting a solid entity */
 bool Entity::IsCollidingWithSolid()
 {
+	if (IsPositionRelativeToScreen())
+		return false;
+		
 	ASSERT(mMap);
 	rect r;
 	for (uShort i = 0; i < mCollisionRects.size(); i++)
@@ -112,6 +139,9 @@ bool Entity::IsCollidingWithSolid()
 
 bool Entity::IsCollidingWithEntity(Entity* e)
 {
+	if (IsPositionRelativeToScreen())
+		return false;
+		
 	rect r;
 	for (uShort i = 0; i < mCollisionRects.size(); i++)
 	{
@@ -141,7 +171,10 @@ void Entity::RenderShadow()
 	rect r = GetBoundingRect();
 	r.x = mPosition.x;
 	r.y = mPosition.y;
-	r = mMap->ToScreenPosition( r );
+	
+	// if we're based on map position, convert
+	if (!IsPositionRelativeToScreen())
+		r = mMap->ToScreenPosition( r );
 
 	r.w = (r.w / 4) - 1;
 	r.h = r.w / 2;
@@ -209,6 +242,12 @@ string Entity::GetFlag(string flag)
 	return base64_decode(value.c_str(), value.length());
 }
 
+void Entity::ClearFlag(string flag)
+{
+	flag = base64_encode(flag.c_str(), flag.length());
+	mFlags.erase(flag);
+}
+
 /*	index - Index of the stack where our new value for the property should be */
 int Entity::LuaSetProp(lua_State* ls, string& prop, int index)
 {
@@ -218,7 +257,7 @@ int Entity::LuaSetProp(lua_State* ls, string& prop, int index)
 	else if (prop == "solid") SetSolid( lua_toboolean(ls, index) );
 	else if (prop == "shadow") mShadow = lua_toboolean(ls, index);
 	else if (prop == "layer") SetLayer( (int)lua_tonumber(ls, index) );
-	else if (prop == "clickable") mCanClick = lua_toboolean(ls, index);
+	else if (prop == "clickable") mClickRange = (int)lua_tonumber(ls, index);
 	else return 0;
 	
 	return 1;
@@ -233,7 +272,7 @@ int Entity::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "shadow") lua_pushboolean( ls, mShadow );
 	else if (prop == "layer") lua_pushnumber( ls, GetLayer() );
 	else if (prop == "type") lua_pushstring( ls, GetTypeName().c_str() );
-	else if (prop == "clickable") lua_pushboolean( ls, mCanClick );
+	else if (prop == "clickable") lua_pushnumber( ls, mClickRange );
 	else return 0;
 	
 	return 1;

@@ -142,20 +142,14 @@ PlayerActionMenu::PlayerActionMenu(int timeout, Actor* controlled)
 
 		r.y = 0;
 		
-		b = new Button(m_pSkillsFrame, "1", r, "SKILL 1", callback_UseSkill);
-		r.y += 25;
-		
-		b = new Button(m_pSkillsFrame, "2", r, "SKILL 2", callback_UseSkill);
-		r.y += 25;
-		
-		b = new Button(m_pSkillsFrame, "3", r, "SKILL 3", callback_UseSkill);
-		r.y += 25;
-		
-		b = new Button(m_pSkillsFrame, "4", r, "SKILL 4", callback_UseSkill);
-		r.y += 25;
-
-		b = new Button(m_pSkillsFrame, "4", r, "Back to actions", callback_BackToActions);
-		r.y += 25;
+		for (int i = 0; i < 5; ++i)
+		{
+			if (!controlled->m_sSkills[i].id.empty())
+			{
+				b = new Button(m_pSkillsFrame, its(i), r, controlled->m_sSkills[i].id, callback_UseSkill);
+				r.y += 25;	
+			}
+		}
 		
 		m_pSkillsFrame->SetSize(Width()-20, r.y);
 		m_pSkillsFrame->SetVisible(false);

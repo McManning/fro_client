@@ -40,6 +40,8 @@ void callback_ToggleMessengerDebug(Console* c, string s)
 GuiManager::GuiManager()
 {
 	gui = this;
+	mConstrainChildrenToRect = false;
+	mCustomCursorSourceY = 0;
 	
 	PRINT("--------------------------------------------------");
 	PRINT("-Begin Gui Initialization-------------------------\n  *\n *\n*\n");
@@ -102,7 +104,9 @@ GuiManager::GuiManager()
 	mCursorImage = resman->LoadImg("assets/gui/gui.png");
 	mPosition = scr->GetClip();
 	mFont = fonts->Get();
-	mDarkOverlay = NULL;
+	
+	mDarkOverlay = resman->NewImage(scr->Width(), scr->Height(), color(255,255,255), true);
+	mDarkOverlay->DrawRect(mDarkOverlay->GetClip(), color(0,0,0,200));
 
 //Consoles
 	PRINT("Loading Console");
@@ -301,12 +305,11 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 //	PRINT("Gui::EventEnd");
 }
 
-void GuiManager::_renderStats()
+void GuiManager::_renderStats(Image* scr)
 {
 	if (!mShowStats)
 		return;
 
-	Image* scr = Screen::Instance();
 	string s;
 	
 	s += " [DL " + its(downloader->mQueued.size()); // Count of queued files to download
@@ -327,12 +330,8 @@ void GuiManager::_renderStats()
 	mFont->Render(scr, r.x, r.y, s, color(128, 128, 0));
 }
 
-void GuiManager::_renderCursor()
+void GuiManager::_renderCursor(Image* scr)
 {
-//	PRINT("Gui::Render");
-	rect pos;
-	Image* scr = Screen::Instance();
-
 	//If the cursor is over an input widget, render a caret version
 	if (hasMouseFocus && hasMouseFocus->mType == WIDGET_INPUT)
 	{
@@ -340,49 +339,47 @@ void GuiManager::_renderCursor()
 	}
 	else //render normal cursor
 	{
-		mCursorImage->Render(scr, GetMouseX(), GetMouseY(), rect(1, 0, 16, 22));
+		mCursorImage->Render(scr, GetMouseX(), GetMouseY(), rect(1, mCustomCursorSourceY, 16, 22));
 	}
+}
 
-	//if we have text to be drawn on hover, do it.
-	if (mFont && hasMouseFocus)
-	{
-		string text = stripCodes(hasMouseFocus->mHoverText);
-		if (!text.empty())
-		{
-			mFont->GetTextSize(text, &pos.w, &pos.h);
-			pos.h += 2;
-			pos.w += 8;
-			pos.x = GetMouseX();
-			pos.y = GetMouseY() - pos.h;
+void GuiManager::_renderCursorTipText(Image* scr, string& text)
+{
+	rect pos;
 	
-			//constrain to screen
-			if (pos.x + pos.w > scr->Width())
-				pos.x = scr->Width() - pos.w;
-			if (pos.y + pos.h > scr->Height())
-				pos.y = scr->Height() - pos.h;
-			if (pos.y < 0)
-				pos.y = 0;
-			if (pos.x < 0)
-				pos.x = 0;
+	//TODO: WRAP!
 	
-			if (mCursorImage)
-				mCursorImage->RenderBox(scr, rect(24, 0, 5, 5), pos);
-	
-			mFont->Render(scr, pos.x+4, pos.y+1, hasMouseFocus->mHoverText, color(0, 0, 0));
-		}
-	}
+	mFont->GetTextSize(text, &pos.w, &pos.h);
+	pos.h += 2;
+	pos.w += 8;
+	pos.x = GetMouseX();
+	pos.y = GetMouseY() - pos.h;
+
+	//constrain to screen
+	if (pos.x + pos.w > scr->Width())
+		pos.x = scr->Width() - pos.w;
+	if (pos.y + pos.h > scr->Height())
+		pos.y = scr->Height() - pos.h;
+	if (pos.y < 0)
+		pos.y = 0;
+	if (pos.x < 0)
+		pos.x = 0;
+
+	if (mCursorImage)
+		mCursorImage->RenderBox(scr, rect(24, 0, 5, 5), pos);
+
+	mFont->Render(scr, pos.x+4, pos.y+1, hasMouseFocus->mHoverText, color(0, 0, 0));
 }
 
 void GuiManager::Render()
 {
 //	PRINT("GuiMan::Render");
 	uLong ms;
+	string text;
 	
 	rect r;
 	uLong renderStart = SDL_GetTicks(); //keep track of how long this render takes
 	Screen* scr = Screen::Instance();
-
-	_updateDarkOverlay();
 
 	//TODO: Do pre-rendering crap
 	scr->DrawRect(scr->GetClip(), color(237, 236, 235));
@@ -393,10 +390,22 @@ void GuiManager::Render()
 	if (!mAlert.empty())
 		mFont->Render(scr, 5, 5, mAlert, color(255,0,0));
 		
-	_renderStats();
+	_renderStats(scr);
 	
 	if (SDL_GetAppState() & SDL_APPMOUSEFOCUS)
-		_renderCursor();
+	{
+		_renderCursor(scr);
+		
+		//if we have text to be drawn on hover, do it.
+		if (mFont && hasMouseFocus)
+		{
+			text = stripCodes(hasMouseFocus->mHoverText);
+			if (!text.empty())
+			{
+				_renderCursorTipText(scr, text);
+			}
+		}	
+	}
 
 	//Finally, display the changes to the user
 	scr->Flip();
@@ -438,20 +447,6 @@ void GuiManager::_getNextRenderTick(uLong ms)
 		sl = 0;
 		
 	mNextRenderTick = sl;
-}
-
-void GuiManager::_updateDarkOverlay()
-{
-	Image* scr = Screen::Instance();
-	
-	//reload overlay if it doesn't exist or the window size changed
-	if (!mDarkOverlay || mDarkOverlay->Width() != scr->Width()
-		|| mDarkOverlay->Height() != scr->Height())
-	{
-		resman->Unload(mDarkOverlay);
-		mDarkOverlay = resman->NewImage(scr->Width(), scr->Height(), color(255,255,255), true);
-		mDarkOverlay->DrawRect(mDarkOverlay->GetClip(), color(0,0,0,200));
-	}
 }
 
 bool GuiManager::IsKeyDown(int key) const

@@ -1,6 +1,7 @@
 
 #include "Map.h"
 #include "../entity/RemoteActor.h"
+#include "../entity/LocalActor.h"
 #include "../core/widgets/Input.h"
 #include "../core/widgets/OpenUrl.h"
 #include "../core/io/Crypt.h"
@@ -19,7 +20,17 @@ Map::Map()
 	mStopCameraAtMapEdge = true;
 	mLuaState = NULL;
 	mBubbles.mMap = this;
-	mShowPlayerNames = game->mPlayerData.GetParamInt("map", "shownames");
+	
+	TiXmlElement* top = game->mPlayerData.mDoc.FirstChildElement();
+	TiXmlElement* e;
+	ASSERT(top);
+
+	e = top->FirstChildElement("map");
+	if (e)
+		mShowPlayerNames = game->mPlayerData.GetParamInt(e, "shownames");
+	else
+		mShowPlayerNames = false;
+		
 	mGravity = 1;
 	mCameraSpeed = 4;
 	
@@ -80,9 +91,13 @@ void Map::Event(SDL_Event* event)
 
 void Map::HandleLeftClick()
 {
+	if (!HasMouseFocus())
+		return;
+		
 	Entity* e = GetEntityUnderMouse(true, false);
 	
-	if (e)
+	if (e && (getDistance(game->mPlayer->GetPosition(), e->GetPosition()) <= e->mClickRange
+			|| e->IsPositionRelativeToScreen()))
 	{
 		MessageData md("ENTITY_CLICK");
 		md.WriteUserdata("entity", e);
@@ -92,6 +107,9 @@ void Map::HandleLeftClick()
 
 void Map::HandleRightClick()
 {
+	if (!HasMouseFocus())
+		return;
+		
 	Entity* e = GetEntityUnderMouse(false, true);
 	
 	if (e == (Entity*)game->mPlayer)
@@ -128,13 +146,17 @@ Entity* Map::GetEntityUnderMouse(bool mustBeClickable, bool playersOnly)
 		if (!e || !e->IsVisibleInCamera())
 			continue;
 	
-		if (mustBeClickable && !e->mCanClick)
+		if (mustBeClickable && e->mClickRange < 1)
 			continue;
 			
 		if (playersOnly && e->mType != ENTITY_LOCALACTOR && e->mType != ENTITY_REMOTEACTOR)
 			continue;
 
-		r = ToScreenPosition(e->GetBoundingRect());
+		r = e->GetBoundingRect();
+		
+		if (!e->IsPositionRelativeToScreen())
+			r = ToScreenPosition(r);
+		
 		if ( areRectsIntersecting(gui->GetMouseRect(), r) )
 		{
 			//Otherwise, if the mouse is touching a non transparent pixel
@@ -159,6 +181,38 @@ void Map::Process()
 	mBubbles.Process();
 	UpdateCamera();
 	ResortEntities();
+	CheckForClickableEntity();
+}
+
+/**
+	If the entity under our mouse is clickable, change our system cursor.
+	Otherwise, use default.
+	Possible modes:
+		1. clickable, and in range. 
+		2. clickable, but not in range
+		3. not clickable (default)
+	The reason this is called from Process() is because entities could move 
+	around, and screw up the thing. Unfortunately, this is a CPU hog, and 
+	there's an obviously more efficient way to do it, but.. laziness.. 
+	it'll be the death of this project.
+*/
+void Map::CheckForClickableEntity()
+{
+	int y = 0;
+	
+	if (HasMouseFocus())
+	{
+		Entity* e = GetEntityUnderMouse(true, false);
+		if (e)
+		{
+			if (getDistance(game->mPlayer->GetPosition(), e->GetPosition()) <= e->mClickRange
+				|| e->IsPositionRelativeToScreen())
+				y = 22;
+			else //not in range
+				y = 44;
+		}
+	}
+	gui->mCustomCursorSourceY = y;
 }
 
 /*	A graceful cleanup was issued. Do some special cleanup */
@@ -268,15 +322,12 @@ void Map::UpdateCamera()
 	}
 	else
 	{
-		point2d p = GetCameraFollowOffset();
 		Entity* e = GetCameraFollow();
 		
 		//If we're following, track their position.
 		if (e)
 		{
-			p.x += e->mPosition.x;
-			p.y += e->mPosition.y;
-			SetCameraPosition( p, true);
+			SetCameraPosition(e->mPosition, true);
 		}
 			
 		if (mStopCameraAtMapEdge)
@@ -300,9 +351,16 @@ rect Map::ToCameraPosition(rect screenRect)
 rect Map::ToScreenPosition(rect mapRect)
 {
 	rect r = GetScreenPosition();
-	return rect(mapRect.x - mCameraPosition.x + r.x, 
-				mapRect.y - mCameraPosition.y + r.y, 
-				mapRect.w, mapRect.h);
+	r.x += mapRect.x - mCameraPosition.x;
+	r.y += mapRect.y - mCameraPosition.y;
+	r.w = mapRect.w;
+	r.h = mapRect.h;
+	
+	//do offsets for camera shaking
+	r.x += mCameraFollowOffset.x;
+	r.y += mCameraFollowOffset.y;
+	
+	return r;
 }
 
 void Map::_constrainCameraToMap() 
@@ -314,7 +372,7 @@ void Map::_constrainCameraToMap()
 void Map::_constrainCameraX()
 {	
 	//If the map width is smaller than our camera, center map on camera
-	if (mWidth < Width() && mWidth != 0)
+	/*if (mWidth < Width() && mWidth != 0)
 	{
 		mCameraPosition.x = -(Width() - mWidth) / 2;
 	}
@@ -326,12 +384,21 @@ void Map::_constrainCameraX()
 		if (mCameraPosition.x < 0) 
 			mCameraPosition.x = 0;
 	}
+	*/
+	
+	if (mCameraBounds.w > 0)
+	{
+		if (mCameraPosition.x < mCameraBounds.x)
+			mCameraPosition.x = mCameraBounds.x;
+		else if (mCameraPosition.x + Width() > mCameraBounds.x + mCameraBounds.w)
+			mCameraPosition.x = mCameraBounds.x + mCameraBounds.w - Width();
+	}
 }
 
 void Map::_constrainCameraY()
 {
 	//If the map height is smaller than our camera, center map on camera
-	if (mHeight < Height() &&  mHeight != 0)
+	/*if (mHeight < Height() &&  mHeight != 0)
 	{
 		mCameraPosition.y = -(Height() - mHeight) / 2;
 	} 
@@ -342,6 +409,15 @@ void Map::_constrainCameraY()
 	
 		if (mCameraPosition.y < 0) 
 			mCameraPosition.y = 0;
+	}
+	*/
+	
+	if (mCameraBounds.h > 0)
+	{
+		if (mCameraPosition.y < mCameraBounds.y)
+			mCameraPosition.y = mCameraBounds.y;
+		else if (mCameraPosition.y + Height() > mCameraBounds.y + mCameraBounds.h)
+			mCameraPosition.y = mCameraBounds.y + mCameraBounds.h - Height();
 	}
 }
 

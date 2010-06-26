@@ -105,7 +105,8 @@ void ExplodingEntity::Render()
 		r.x = p.position.x;
 		r.y = p.position.y;
 
-		r = mMap->ToScreenPosition(r);
+		if (!IsPositionRelativeToScreen())
+			r = mMap->ToScreenPosition(r);
 
 		mImage->Render(scr, r.x, r.y, p.src);
 	}

@@ -54,7 +54,7 @@ void handleInboundTradeRequest(RemoteActor* ra)
 		if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 		{
 			DataPacket data("trDNY");
-			data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+			data.SetKey( game->mNet->GetEncryptionKey() );
 			data.WriteString(reason);
 			game->mNet->Privmsg( ra->mName, data.ToString() );
 		}
@@ -76,7 +76,7 @@ void handleOutboundTradeRequest(string nick)
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("trREQ");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 		game->mNet->Privmsg( nick, data.ToString() );
 	}
 }
@@ -179,7 +179,7 @@ void TradeRequest::SendAccept()
 	{
 		//Tell the remote trader to bring up their trade window
 		DataPacket data("trOK");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 		game->mNet->Privmsg( mNick, data.ToString() );
 	}
 }
@@ -190,7 +190,7 @@ void TradeRequest::SendDeny(string reason)
 	{
 		//tell them we denied
 		DataPacket data("trDNY");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 		data.WriteString("Denied Request");
 		game->mNet->Privmsg( mNick, data.ToString() );
 	}
@@ -370,7 +370,7 @@ void ItemTrade::CancelTrade()
 	{
 		//send our cancel to the trader
 		DataPacket data("trDNY");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 		data.WriteString("Cancelled the trade");
 	
 		game->mNet->Privmsg( mTrader, data.ToString() );
@@ -408,7 +408,7 @@ void ItemTrade::TradeReady()
 	{
 		//Send our ready state to the trader
 		DataPacket data("trRDY");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 		game->mNet->Privmsg( mTrader, data.ToString() );
 	
 	}
@@ -462,7 +462,7 @@ void ItemTrade::UpdateMyItem(uShort amt)
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("trITM");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 		data.WriteString(mMyItem.id);
 		data.WriteString(mMyItem.description);
 		data.WriteInt(mMyItem.amount);

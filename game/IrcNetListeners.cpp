@@ -170,7 +170,7 @@ void netSendSay(string text) //say $message
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("say");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 
 		data.WriteString(text);
 
@@ -183,7 +183,7 @@ void netSendAchievement(string title) // ern $title (earn, get it, get it!?)
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("ern");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 
 		data.WriteString(title);
 
@@ -204,7 +204,7 @@ void netSendStamp(string text) //stp x y rotation color $text
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("stp");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 
 		data.WriteInt(p.x);
 		data.WriteInt(p.y);
@@ -227,7 +227,7 @@ void netSendMe(string text) //act $text
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("act");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 
 		data.WriteString(text);
 
@@ -250,7 +250,7 @@ void netSendMusic(string song) //act 1 song
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("act");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 
 		data.WriteInt(1);
 		data.WriteString(song);
@@ -275,7 +275,7 @@ void netSendBeat(Entity* target, string item) //act 2 target item
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("act");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 
 		data.WriteInt(2);
 		data.WriteString(targetName);
@@ -291,7 +291,7 @@ void netSendAvatar(Avatar* a, string nick) //avy $url #w #h ...
 		return;
 		
 	DataPacket data("avy");
-	data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+	data.SetKey( game->mNet->GetEncryptionKey() );
 	
 	a->Serialize(data);
 
@@ -310,7 +310,7 @@ void netSendEmote(uShort num) //emo num
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("emo");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 
 		data.WriteInt(num);
 
@@ -323,7 +323,7 @@ void netSendRequestAvatar(string nick)
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("reqAvy");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 
 		game->mNet->Privmsg(nick, data.ToString() );
 	}
@@ -375,7 +375,7 @@ void _handleNetMessage_TradeOkay(string& nick, DataPacket& data) //trOK
 		if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 		{
 			DataPacket data("trDNY");
-			data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+			data.SetKey( game->mNet->GetEncryptionKey() );
 			data.WriteString("Already in a trade");
 			game->mNet->Privmsg( nick, data.ToString() );
 		}
@@ -532,10 +532,17 @@ void _handleNetMessage_Sup(string& nick, DataPacket& data)
 		return;
 	}
 	
+	// make sure this sup is coming from our channel only
+	if (data.ReadString(0) != game->mNet->GetChannel()->mId)
+	{
+		console->AddMessage("Illegal 'sup' from " + ra->mName + " (chan)");
+		return;
+	}
+	
 	//Make sure someone didn't try to clone someone elses 'sup' message to mimic them
 	if (data.ReadString(1) != nick)
 	{
-		console->AddMessage("Illegal 'sup' from " + ra->mName);
+		console->AddMessage("Illegal 'sup' from " + ra->mName + " (nick)");
 		return;	
 	}
 	
@@ -562,7 +569,13 @@ void _handleNetMessage_Nm(string& nick, DataPacket& data)
 
 	if (ra)
 	{
-		console->AddMessage("Double 'nm' from " + ra->mId);
+		console->AddMessage("Double 'nm' from " + ra->mName);
+		return;
+	}
+
+	if (data.ReadString(0) != game->mNet->GetChannel()->mId)
+	{
+		console->AddMessage("Illegal 'nm' from " + ra->mName + " (chan)");
 		return;
 	}
 
@@ -764,7 +777,7 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 
 	//Convert our message to a data packet.
 	DataPacket data;
-	data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+	data.SetKey( game->mNet->GetEncryptionKey() );
 	
 	//Couldn't decrypt. Assume plaintext and privmsg to us
 	if (!data.FromString(msg) && target == game->mPlayer->mName)

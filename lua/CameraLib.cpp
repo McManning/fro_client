@@ -92,7 +92,11 @@ int camera_GetFollowed(lua_State* ls)
 
 	Map* m = _getMap();
 
-	lua_pushlightuserdata( ls, m->GetCameraFollow() );
+	if (m->GetCameraFollow() == NULL)
+		lua_pushnil(ls);
+	else
+		lua_pushlightuserdata( ls, m->GetCameraFollow() );
+		
 	return 1;
 }
 
@@ -113,7 +117,7 @@ int camera_SetFollowOffset(lua_State* ls)
 	PRINT("camera_SetFollowOffset");
 	luaCountArgs(ls, 2);
 
-	point2d p( (sShort)lua_tonumber(ls, 1), (sShort)lua_tonumber(ls, 2) );
+	point2d p( (int)lua_tonumber(ls, 1), (int)lua_tonumber(ls, 2) );
 	
 	Map* m = _getMap();
 	m->SetCameraFollowOffset( p );
@@ -263,6 +267,38 @@ int camera_SetEdgeStop(lua_State* ls)
 	return 0;
 }
 
+
+//	.SetBounds(x, y, w, h) - Camera will not scroll past these values
+int camera_SetBounds(lua_State* ls)
+{
+	luaCountArgs(ls, 4);
+	ASSERT(game->mMap);
+	
+	rect r;
+	r.x = (int)lua_tonumber(ls, 1);
+	r.y = (int)lua_tonumber(ls, 2);
+	r.w = (int)lua_tonumber(ls, 3);
+	r.h = (int)lua_tonumber(ls, 4);
+	
+	game->mMap->mCameraBounds = r;
+	
+	return 0;	
+}
+
+//	x, y, w, h = .GetBounds()
+int camera_GetBounds(lua_State* ls)
+{
+	ASSERT(game->mMap);
+
+	lua_pushnumber(ls, game->mMap->mCameraBounds.x);
+	lua_pushnumber(ls, game->mMap->mCameraBounds.y);
+	lua_pushnumber(ls, game->mMap->mCameraBounds.w);
+	lua_pushnumber(ls, game->mMap->mCameraBounds.h);
+	
+	return 4;	
+}
+
+
 static const luaL_Reg functions[] = {
 	{"SetPosition", camera_SetPosition},
 	{"GetPosition", camera_GetPosition},
@@ -277,6 +313,8 @@ static const luaL_Reg functions[] = {
 	{"IsEntityVisible", camera_IsEntityVisible},
 	{"StopsAtEdge", camera_StopsAtEdge},
 	{"SetEdgeStop", camera_SetEdgeStop},
+	{"SetBounds", camera_SetBounds},
+	{"GetBounds", camera_GetBounds},
 	
 	//WORK IN PROGRESS
 	{"IsPanning", camera_IsPanning},

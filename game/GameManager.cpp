@@ -31,6 +31,7 @@
 #include "../interface/MiniMenu.h"
 #include "../interface/LunemParty.h"
 #include "../interface/WorldsViewer.h"
+#include "../interface/ScreenText.h"
 
 GameManager* game;
 
@@ -86,15 +87,15 @@ void callback_consoleAvatarInfo(Console* c, string s)
 	c->AddFormattedMessage(ss);
 }
 
-void callback_consoleTestMap(Console* c, string s) //map <file>
+void callback_consoleTestMap(Console* c, string s) //test <file>
 {
 	if (s.length() < 10)
 	{
-		c->AddMessage("Syntax: map id");
+		c->AddMessage("Syntax: test id");
 		return;
 	}
 	
-	string id = s.substr(4);
+	string id = s.substr(5);
 	
 	ASSERT(game);
 	game->LoadTestWorld(id);
@@ -193,6 +194,15 @@ void callback_chatCommandEmote(Console* c, string s)
 		return;
 
 	netSendEmote(sti(s.substr(5)));
+}
+
+void callback_chatCommandPos(Console* c, string s)
+{
+	c->AddMessage("Player: " + its(game->mPlayer->mPosition.x) + ", " + its(game->mPlayer->mPosition.y));
+	c->AddMessage("Cursor (Real): " + its(gui->GetMouseX()) + ", " + its(gui->GetMouseY()));
+	
+	rect r = game->mMap->ToCameraPosition(gui->GetMouseRect());
+	c->AddMessage("Cursor (Map): " + its(r.x) + ", " + its(r.y));
 }
 
 #ifdef WIN32
@@ -374,7 +384,7 @@ void GameManager::_hookCommands()
 	console->HookCommand("net_info", callback_consoleNetInfo);
 	console->HookCommand("avatar_info", callback_consoleAvatarInfo);
 	console->HookCommand("avatarout", callback_consoleOutputAvatar);
-	console->HookCommand("map", callback_consoleTestMap);
+	console->HookCommand("test", callback_consoleTestMap);
 	console->HookCommand("makecol", callback_consoleMakeCol);
 	console->HookCommand("player_flags", callback_consolePlayerFlags);
 	
@@ -387,7 +397,7 @@ void GameManager::_hookCommands()
 	mChat->HookCommand("/worlds", callback_chatCommandWorldsViewer);
 	mChat->HookCommand("/msg", callback_chatCommandMsg);
 	mChat->HookCommand("/emo", callback_chatCommandEmote);
-	mChat->HookCommand("/pos", consoleCommand::POINT2D, (void*)&mPlayer->mPosition);
+	mChat->HookCommand("/pos", callback_chatCommandPos);
 
 	//Emotes
 	mChat->HookCommand("/coolface", callback_chatCommandCoolface);
@@ -558,7 +568,7 @@ void callback_gameHudSubButton(Button* b)
 				new UserList();
 			break;
 		case 'p': //party
-			if (!gui->Get("userlist"))
+			if (!gui->Get("party"))
 				new LunemParty();
 			break;
 		default: break;

@@ -123,6 +123,8 @@ class IrcNet : public TextSocketConnection
 
 	//OTHER FUNCTIONS
 	void StateToString(string& s) const;
+	
+	string GetEncryptionKey() const; 
 
  	string mRealname;
 	string mServerPassword;

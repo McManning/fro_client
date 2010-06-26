@@ -73,6 +73,8 @@ class Entity
 
 	void SetVisible(bool v);
 	bool IsVisible() { return mVisible; };
+	
+	bool IsPositionRelativeToScreen();
 
 	//Return a rectangle that marks this entities bounds. This can be a collision rect, or it can be the bounds of 
 	//the entities renderable image.  just depends on the inherited entity in question.
@@ -119,17 +121,18 @@ class Entity
 	
 	void SetFlag(string flag, string value);
 	string GetFlag(string flag);
+	void ClearFlag(string flag);
 	
 	bool mLocked; //Map Editor only
 	bool mShadow; //does this entity cast a shadow
 	
-	sShort mJumpHeight;
+	int mJumpHeight; // Here because BubbleManager is stupid
  // protected:
 	bool mSolid; //can other entities pass through our collision rects?
 	bool mVisible;
 	int mLayer;
 
-	bool mCanClick;
+	int mClickRange;
 	
 	std::map<string, string> mFlags;
 };

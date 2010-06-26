@@ -74,7 +74,8 @@ void StaticObject::Render()
 		r = rect( mPosition.x - mOrigin.x, mPosition.y - mOrigin.y, 
 					mImage->Width(), mImage->Height() );
 
-		r = mMap->ToScreenPosition( r );
+		if (!IsPositionRelativeToScreen())
+			r = mMap->ToScreenPosition( r );
 
 /*
 		rect mapScreenRect = mMap->GetScreenPosition();

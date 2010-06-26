@@ -79,6 +79,11 @@ class Combatant
 	*/
 	virtual void TakeDamage(Combatant* attacker, int damage) = 0;
 
+	struct skill
+	{
+		string id;	
+	};
+
 	int m_iLevel;
 	int m_iGene;
 	
@@ -91,7 +96,7 @@ class Combatant
 	int m_iExp; //experience points
 	int m_iMaxExp; //read-only. exp needed to reach the next level
 	
-	int m_iSkills[5]; // skills are ID based
+	skill m_sSkills[5]; // skills are ID based
 	
 	combatantSpecies m_species;
 	

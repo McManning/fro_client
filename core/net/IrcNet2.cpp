@@ -217,7 +217,7 @@ IrcChannel* IrcNet::CreateChannel(string chan, string pass)
 	IrcChannel* c = new IrcChannel();
 	c->mId = lowercase(chan);
 	c->mPassword = pass;
-	c->mEncryptionKey = makePassword(c->mId, SECONDARY_PACKET_PASS);
+	//c->mEncryptionKey = makePassword(c->mId, SECONDARY_PACKET_PASS);
 	return c;
 }
 
@@ -346,6 +346,19 @@ void IrcNet::StateToString(string& s) const
 	}
 	if (mChannel)
 		s += "\\nChannel: " + mChannel->mId + " [" + mChannel->mPassword + "]"; 
+}
+
+string IrcNet::GetEncryptionKey() const
+{
+	/*
+		Changes of encryption from 1.2.2 to 1.2.3:
+			Due to some design issues with multi-channel bots (helios), 
+			we can no longer use channel IDs as part of the encryption.
+			However, since we're still scrambling text AND using a custom
+			base64 method, the extra protection isn't really necessary
+			for the time being. 
+	*/
+	return SECONDARY_PACKET_PASS;
 }
 
 void IrcNet::_setState(connectionState newState)
@@ -478,8 +491,8 @@ bool IrcNet::Process()
 			{
 				s1 = line.substr(1, line.find ('!',0) - 1); //joiner				
 				s2 = line.substr(s1.length() + 2, line.find(' ', s1.length()) - s1.length() - 2);	
-				if (s2.find("@", 2) != string::npos) //trash the realname
-					s2.erase(2, s2.find("@", 2) - 2);
+				if (s2.find("@", 0) != string::npos) //trash the realname
+					s2.erase(0, s2.find("@", 0)+1);
 
 				md.Clear();
 				md.SetId("NET_JOIN");
@@ -494,7 +507,7 @@ bool IrcNet::Process()
 					mChannel->mSuccess = true;
 					_setState(ONCHANNEL);			
 					
-					mChannel->mId = getWord(line, 3).substr(1);
+					mChannel->mId = msg; //getWord(line, 3).substr(1);
 					
 					md.Clear();
 					md.SetId("NET_ONCHANNEL");
@@ -538,8 +551,8 @@ bool IrcNet::Process()
 				s1 = line.substr(1, line.find ('!',0) - 1); //nick
 				
 				s2 = line.substr(s1.length() + 2, line.find(' ', s1.length()) - s1.length() - 2);	
-				if (s2.find("@", 2) != string::npos) //trash the realname
-					s2.erase(2, s2.find("@", 2) - 2);
+				if (s2.find("@", 0) != string::npos) //trash the realname
+					s2.erase(0, s2.find("@", 0)+1);
 				
 				md.Clear();
 				md.SetId("NET_PART");
@@ -586,8 +599,8 @@ bool IrcNet::Process()
 				s2 = line.substr(line.find(':',1) + 1); //reason
 				s3 = line.substr(s1.length() + 2, line.find(' ', s1.length()) - s1.length() - 2); //address
 				
-				if (s3.find("@", 2) != string::npos) //trash the realname
-					s3.erase(2, s3.find("@", 2) - 2);
+				if (s3.find("@", 0) != string::npos) //trash the realname
+					s3.erase(0, s3.find("@", 0)+1);
 				
 				md.Clear();
 				md.SetId("NET_QUIT");

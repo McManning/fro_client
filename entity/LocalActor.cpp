@@ -275,9 +275,9 @@ void LocalActor::NetSendState(string targetNick, string header) //header VERSION
 	}
 	
 	DataPacket data(header);
-	data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+	data.SetKey( game->mNet->GetEncryptionKey() );
 	
-	data.WriteString(APP_VERSION);
+	data.WriteString(game->mNet->GetChannel()->mId);
 	data.WriteString(mName);
 	data.WriteInt(mPosition.x);
 	data.WriteInt(mPosition.y);
@@ -320,7 +320,7 @@ void LocalActor::NetSendActionBuffer() //mov #x #y $buffer
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("mov");
-		data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+		data.SetKey( game->mNet->GetEncryptionKey() );
 	
 		data.WriteInt(mLastSavedPosition.x);
 		data.WriteInt(mLastSavedPosition.y);
@@ -347,7 +347,7 @@ void LocalActor::NetSendAvatarMod()
 		return;
 	
 	DataPacket data("mod");
-	data.SetKey( game->mNet->GetChannel()->mEncryptionKey );
+	data.SetKey( game->mNet->GetEncryptionKey() );
 	
 	data.WriteInt(GetAvatar()->mModifier);
 	

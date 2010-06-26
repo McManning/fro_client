@@ -23,7 +23,7 @@
 class ConvoDialog : public Frame
 {
   public:
-	ConvoDialog(string id, string title);
+	ConvoDialog(string title);
 	~ConvoDialog();
 
 	void SetPosition(rect r);
@@ -45,20 +45,22 @@ class ConvoDialog : public Frame
 	Multiline* mText;
 };
 
+ConvoDialog* convo;
+
 void callback_convoDialogOption(Multiline* m)
 {
-	if (m->mSelected > -1 && m->mSelected < m->mLines.size())
+	if (m->mSelected > -1 && m->mSelected < m->mLines.size() && convo)
 	{
-		((ConvoDialog*)m->GetParent())->DoOption(m->mSelected);
+		convo->DoOption(m->mSelected);
 	}
 }
 
-ConvoDialog::ConvoDialog(string id, string title)
-	: Frame(NULL, id, rect(), title, true, true, false, true)
+ConvoDialog::ConvoDialog(string title)
+	: Frame(gui, "ConvoDialog", rect(), title, true, true, false, true)
 {
 	luaState = NULL;
 	luaReference = LUA_NOREF;
-	
+
 	uShort y = 30;
 
 	mText = new Multiline(this, "", rect());
@@ -72,15 +74,25 @@ ConvoDialog::ConvoDialog(string id, string title)
 	y += mList->Height() + 10;
 
 	SetSize(CHOICE_WIDTH, y);
-	DemandFocus();
+//	DemandFocus();
 	ResizeChildren();
-	game->mChat->SetVisible(false);
+	Center();
+	
+	if (game && game->mChat)
+		game->mChat->SetVisible(false);
+	
+	convo = this;
 }
 
 ConvoDialog::~ConvoDialog()
 {
-	luaL_unref(luaState, LUA_REGISTRYINDEX, luaReference);
-	game->mChat->SetVisible(true);
+	if (luaState)
+		luaL_unref(luaState, LUA_REGISTRYINDEX, luaReference);
+	
+	if (game && game->mChat)
+		game->mChat->SetVisible(true);
+	
+	convo = NULL;
 }
 
 void ConvoDialog::ResizeChildren() //overridden so we can move things around properly
@@ -101,8 +113,8 @@ void ConvoDialog::SetPosition(rect r)
 
 void ConvoDialog::Render()
 {	
-	if (gui->GetDemandsFocus() == this)
-		gui->RenderDarkOverlay();
+//	if (gui->GetDemandsFocus() == this)
+//		gui->RenderDarkOverlay();
 
 	Frame::Render();
 }
@@ -166,121 +178,107 @@ void ConvoDialog::SetText(string text)
 	mText->SetTopLine(0);
 }
 
-ConvoDialog* _getConvo(lua_State* ls)
+void _checkConvo(lua_State* ls)
 {
-	ConvoDialog* cd = (ConvoDialog*)(lua_touserdata(ls, 1));
-	if (!cd)
+	if (!convo)
 	{
-		string err = "index 1 not a valid convo pointer.";
+		string err = "No current Convo";
 		lua_pushstring( ls, err.c_str() );
 		lua_error( ls );
 	}
-	
-	return cd;
 }
 
 /***********************************************
  * Lua Functions
  ***********************************************/
  
-// .New("id", "title") - Creates a new conversation dialog and returns it
+// .New("title") - Creates a new conversation dialog and returns it
 int convo_New(lua_State* ls)
 {
-	PRINT("convo_New");
-	luaCountArgs(ls, 2);
+	luaCountArgs(ls, 1);
 	
-	if (!lua_isstring(ls, 1) || !lua_isstring(ls, 2))
+	if (!lua_isstring(ls, 1))
 		return luaError(ls, "Convo.New", "Bad Params");
 	
-	ConvoDialog* cd = new ConvoDialog( lua_tostring(ls, 1), lua_tostring(ls, 2) );
-	cd->luaState = ls;
-	game->mMap->Add(cd); //Add it as a child of map to let it be destroyed whenever the map is destroyed.
-	cd->Center();
-	
-	lua_pushlightuserdata(ls, cd);
+	if (convo != NULL)
+	{
+		lua_pushboolean(ls, false);
+	}
+	else
+	{
+		convo = new ConvoDialog(lua_tostring(ls, 1));
+		convo->luaState = ls;
+		
+		lua_pushboolean(ls, true);
+	}
 	return 1;
 }
 
-// .SetUserdata(convo, userdata) - Sets data associated with this convo dialog instance
+// .SetUserdata(userdata) - Sets data associated with this convo dialog instance
 // Accepts strings, numbers, or c pointers
 int convo_SetUserdata(lua_State* ls)
 {
-	PRINT("convo_SetUserdata");
-	luaCountArgs(ls, 2);
-	
-	ConvoDialog* cd = _getConvo(ls);
-	
-	lua_pushvalue(ls, 2); //copy the value at index to the top of the stack
-	cd->luaReference = luaL_ref(ls, LUA_REGISTRYINDEX); //create a reference to the stack top and 
+	_checkConvo(ls);
+	luaCountArgs(ls, 1);
+
+	lua_pushvalue(ls, 1); //copy the value at index to the top of the stack
+	convo->luaReference = luaL_ref(ls, LUA_REGISTRYINDEX); //create a reference to the stack top and 
 
 	return 0;
 }
 
-// .GetUserdata(convo) - Returns associated user data. Either a string, number, or c ptr
+// .GetUserdata() - Returns associated user data. Either a string, number, or c ptr
 int convo_GetUserdata(lua_State* ls)
 {
-	PRINT("convo_GetUserdata");
-	luaCountArgs(ls, 1);
-	
-	ConvoDialog* cd = _getConvo(ls);
-	
+	_checkConvo(ls);
+
 	//Push our reference to a lua object
-	lua_rawgeti(ls, LUA_REGISTRYINDEX, cd->luaReference);
+	lua_rawgeti(ls, LUA_REGISTRYINDEX, convo->luaReference);
 	
 	return 1;
 }
 
-// .SetText(convo, "message")
+// .SetText("message")
 int convo_SetText(lua_State* ls)
 {
-	PRINT("convo_SetText");
-	luaCountArgs(ls, 2);
-
-	if (!lua_isstring(ls, 2))
+	_checkConvo(ls);
+	luaCountArgs(ls, 1);
+	
+	if (!lua_isstring(ls, 1))
 		return luaError(ls, "Convo.SetText", "Bad Params");
 
-	ConvoDialog* cd = _getConvo(ls);
-	cd->SetText( lua_tostring(ls, 2) );
+	convo->SetText( lua_tostring(ls, 1) );
 		
 	return 0;
 }
 
-// .AddOption(convo, "text", "lua_callback") - Add a selectable option that'll do the call when chosen
+// .AddOption("text", "lua_callback") - Add a selectable option that'll do the call when chosen
 int convo_AddOption(lua_State* ls)
 {
-	PRINT("convo_AddOption");
-	luaCountArgs(ls, 3);
-
-	if (!lua_isstring(ls, 2) || !lua_isstring(ls, 3))
+	_checkConvo(ls);
+	luaCountArgs(ls, 2);
+	
+	if (!lua_isstring(ls, 1) || !lua_isstring(ls, 2))
 		return luaError(ls, "Convo.AddOption", "Bad Params");
 
-	ConvoDialog* cd = _getConvo(ls);
-	cd->AddOption( lua_tostring(ls, 2), lua_tostring(ls, 3) );
+	convo->AddOption( lua_tostring(ls, 1), lua_tostring(ls, 2) );
 	
 	return 0;
 }
 
-// .Clear(convo) - Clear all options of the convo
+// .Clear() - Clear all options of the convo
 int convo_Clear(lua_State* ls)
 {
-	PRINT("convo_Clear");
-	luaCountArgs(ls, 1);
-	
-	ConvoDialog* cd = _getConvo(ls);
-	cd->Clear();
-
+	_checkConvo(ls);
+	convo->Clear();
 	return 0;
 }
 
-// .Close(convo) - Close the specified convo dialog
+// .Close() - Close the specified convo dialog
 int convo_Close(lua_State* ls)
 {
-	PRINT("convo_Close");
-	luaCountArgs(ls, 1);
-	
-	ConvoDialog* cd = _getConvo(ls);
-	cd->Die();
-	
+	_checkConvo(ls);
+	convo->Die();
 	return 0;
 }
 
@@ -298,6 +296,16 @@ static const luaL_Reg functions[] = {
 void RegisterConvoLib(lua_State* ls)
 {
 	luaL_register( ls, "Convo", functions );
+	convo = NULL;
 }
 
+void UnregisterConvoLib(lua_State* ls)
+{
+	if (convo)
+	{
+		convo->Die();	
+		convo->luaState = NULL; //the state will be unloaded right after Unregister.. ends
+	}
+	convo = NULL;
+}
 

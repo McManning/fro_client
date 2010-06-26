@@ -134,7 +134,7 @@ void MessageManager::Dispatch(MessageData& data, void* sender)
 	for (int i = 0; i < mListeners.size(); i++)
 	{
 		m = mListeners.at(i);
-		if (m && m->id == data.mId)
+		if ( m && wildmatch(m->id.c_str(), data.mId.c_str()) )
 		{
 			if (!m->onActivate)
 				FATAL("No activate for id " + data.mId);

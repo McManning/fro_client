@@ -771,7 +771,8 @@ void Actor::Render()
 		r.h = mMap->mLoadingAvatarIcon->Height();
 		r.x = mPosition.x - (r.w / 2);
 		r.y = mPosition.y - (r.h / 2) - 4;
-		r = mMap->ToScreenPosition( r );
+		if (!IsPositionRelativeToScreen())
+			r = mMap->ToScreenPosition( r );
 
 		mMap->mLoadingAvatarIcon->Render(scr, r.x, r.y);
 	}
@@ -779,7 +780,10 @@ void Actor::Render()
 	//render mAvatar
 	if (mAvatar && mAvatar->GetImage())
 	{
-		r = mMap->ToScreenPosition( GetBoundingRect() );
+		r = GetBoundingRect();
+		if (!IsPositionRelativeToScreen())
+			r = mMap->ToScreenPosition( r );
+			
 		r.y -= mJumpHeight; //calculate in jump
 
 		mAvatar->GetImage()->Render(scr, r.x, r.y);
@@ -788,7 +792,9 @@ void Actor::Render()
 	_doDepthRender();
 
 	//render mName
-	r = mMap->ToScreenPosition( GetBoundingRect() );
+	r = GetBoundingRect();
+	if (!IsPositionRelativeToScreen())
+		r = mMap->ToScreenPosition( r );
 
 	if ( !mName.empty() && (areRectsIntersecting( r, gui->GetMouseRect() ) || mMap->mShowPlayerNames) )
 	{
@@ -803,6 +809,9 @@ void Actor::Render()
 
 void Actor::_doDepthRender()
 {
+	if (IsPositionRelativeToScreen()) // Don't worry about for screen relative entities
+		return;
+		
 	rect dst;
 	rect src;
 	StaticObject* o;
@@ -842,7 +851,10 @@ void Actor::RenderEmote()
 	Image* scr = Screen::Instance();
 	rect r;
 	
-	r = mMap->ToScreenPosition( GetBoundingRect() );
+	r = GetBoundingRect();
+	if (!IsPositionRelativeToScreen())
+		r = mMap->ToScreenPosition( r );
+		
 	r.y -= mJumpHeight; //calculate in jump
 	
 	r.x = r.x + r.w / 2 - (mEmoticon->Width() / 2);
@@ -889,9 +901,21 @@ void Actor::Jump(byte type)
 	SetAction(IDLE);
 	mJumpType = type;
 	mJumpHeight = 0;
+	mJumpVelocity = 0; // Use generic velocity
 	mFalling = false;
 	
 	mPreviousPosition = mPosition;
+}
+
+void Actor::Fall(int height, int velocity)
+{
+	SetAction(IDLE);
+	mJumpType = CUSTOM_JUMP;
+	mJumpHeight = height;
+	mJumpVelocity = velocity;
+	mFalling = true;
+	
+	mPreviousPosition = mPosition;	
 }
 
 bool Actor::IsJumping() const 
@@ -904,6 +928,10 @@ void Actor::Land() //code to run after we land from a jump
 {
 	mFalling = true;
 	mJumpHeight = 0;
+	
+	MessageData md("ENTITY_LAND");
+	md.WriteUserdata("entity", this);
+	messenger.Dispatch(md);
 }
 
 //Variables to tweak for jumping
@@ -922,8 +950,8 @@ void Actor::_processJump()
 {
 	if (!IsJumping() || !mMap) return;
 
-	uShort yVelocity;
-	uShort maxHeight;
+	int yVelocity;
+	int maxHeight;
 
 	if (mMap->GetGravity() == 0) //not 0g. Just.. don't jump.
 	{
@@ -946,8 +974,15 @@ void Actor::_processJump()
 			yVelocity = RUNNING_JUMP_VELOCITY;
 			maxHeight = RUNNING_JUMP_HEIGHT * mMap->GetGravity();
 			break;
+	//	case FALL_AND_BOUNCE:
+	//		yVelocity = 10;
+	//		maxHeight = ?
 		default: break;
 	}
+	
+	// Change velocity if we have a custom
+	if (mJumpVelocity != 0)
+		yVelocity = mJumpVelocity;
 	
 	if (!mFalling)
 	{
@@ -967,7 +1002,7 @@ void Actor::_processJump()
 		}
 	}
 	
-	if (mJumpType != STANDING_JUMP) //no moving while standing jump
+	if (mJumpType != STANDING_JUMP && mJumpType != CUSTOM_JUMP) //no moving while standing jump
 	{
 		//don't offset destination more if we're still moving toward a destination point
 		if (mDestination.x != mPosition.x || mDestination.y != mPosition.y)
@@ -1033,7 +1068,7 @@ void Actor::Face(Entity* e)
 int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 {
 	if (prop == "direction") SetDirection( stringToDirection(lua_tostring(ls, index)) );
-	else if (prop == "speed") SetSpeed( (byte)lua_tonumber(ls, index) );
+	else if (prop == "movespeed") SetSpeed( (byte)lua_tonumber(ls, index) );
 	else if (prop == "action") SetAction( (byte)lua_tonumber(ls, index) );
 	else if (prop == "noclip") SetIgnoreSolids( lua_toboolean(ls, index) );
 	else if (prop == "mod" && GetAvatar())
@@ -1044,6 +1079,11 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 			if (this == (Actor*)game->mPlayer)
 				game->mPlayer->NetSendAvatarMod();
 		}
+	}
+	else if (prop == "zheight") //forces them to fall from a certain height
+	{
+		mJumpHeight = (int)lua_tonumber(ls, index);
+		mJumpType = STANDING_JUMP;
 	}
 	
 	// Combatant properties
@@ -1065,7 +1105,7 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 int Actor::LuaGetProp(lua_State* ls, string& prop)
 {
 	if (prop == "direction") lua_pushnumber( ls, GetDirection() );
-	else if (prop == "speed") lua_pushnumber( ls, GetSpeed() );
+	else if (prop == "movespeed") lua_pushnumber( ls, GetSpeed() );
 	else if (prop == "action") lua_pushnumber( ls, GetAction() );
 	else if (prop == "noclip") lua_pushboolean( ls, IgnoreSolids() );
 	else if (prop == "mod" && GetAvatar()) lua_pushnumber( ls, GetAvatar()->mModifier );
@@ -1088,6 +1128,9 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 
 void Actor::TakeDamage(Combatant* attacker, int damage)
 {
+	if (m_iMaxHealth < 1)
+		return;
+	
 	m_iCurrentHealth -= damage;
 	
 	// We died! Trigger an event!

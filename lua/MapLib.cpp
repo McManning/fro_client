@@ -79,6 +79,7 @@ void mapLib_CloseLuaState(lua_State* ls)
 	
 	unregisterAllEventListeners(ls);
 	unregisterAllLuaTimers(ls);
+	UnregisterConvoLib(ls);
 
 	lua_close(ls);
 }
@@ -134,7 +135,7 @@ int map_SetSpawn(lua_State* ls)
 		behaves (will stop at the edges of the world) (0, 0) will let
 		the camera free roam.
 */
-int map_SetSize(lua_State* ls)
+/*int map_SetSize(lua_State* ls)
 {
 	luaCountArgs(ls, 2);
 	ASSERT(game->mMap);
@@ -144,6 +145,7 @@ int map_SetSize(lua_State* ls)
 
 	return 0;
 }
+*/
 
 //	.SetColor(r, g, b) - Set background color of the map
 int map_SetColor(lua_State* ls)
@@ -210,7 +212,6 @@ int map_GetWorkingDir(lua_State* ls)
 static const luaL_Reg functions[] = {
 	{"NewBasic", map_NewBasic},
 	{"SetSpawn", map_SetSpawn},
-	{"SetSize", map_SetSize},
 	{"SetColor", map_SetColor},
 	{"GetFlag", map_GetFlag},
 	{"SetFlag", map_SetFlag},

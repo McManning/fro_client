@@ -123,6 +123,9 @@ class GuiManager : public Widget
 	Image* mDarkOverlay;
 	
 	string mAlert;
+
+	// Replace default cursor with another image
+	int mCustomCursorSourceY;
 	
   private:
 	point2d mMousePosition;
@@ -141,15 +144,14 @@ class GuiManager : public Widget
 	/*	Free memory of all widgets queued to delete. */
 	void _cleanDeletionStack();
 	
-	void _renderStats();
-	void _renderCursor();
+	void _renderStats(Image* scr);
+	void _renderCursor(Image* scr);
 	
 		/*	Recalculate the next tick we should do a full render call on */
 	void _getNextRenderTick(uLong ms);
-	
-	/*	Resize mDarkOverlay to the screen if it isn't already. */
-	void _updateDarkOverlay();
-	
+
+	void _renderCursorTipText(Image* scr, string& text);
+
 	std::vector<Widget*> mDeletionStack;
 
 };

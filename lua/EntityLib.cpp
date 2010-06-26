@@ -267,6 +267,17 @@ int entity_SetFlag(lua_State* ls)
 	return 0;	
 }
 
+//	.ClearFlag(entity, "key")
+int entity_ClearFlag(lua_State* ls)
+{
+	luaCountArgs(ls, 2);
+	Entity* e = _getReferencedEntity(ls);
+
+	e->ClearFlag(lua_tostring(ls, 2));
+
+	return 0;	
+}
+
 // .IsTouching(ent, ent) - Returns 1 if the two entities are intersecting collision rects, 0 otherwise. 
 //Also note, if the second ent is a bad pointer, it'll return 0 also.
 int entity_IsTouching(lua_State* ls)
@@ -569,7 +580,7 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 	}
 	else if (key == "Clickable")
 	{
-		e->mCanClick = lua_toboolean(ls, -1);	
+		e->mClickRange = (int)lua_tonumber(ls, -1);	
 	}
 	else if (key == "Layer")
 	{
@@ -754,6 +765,7 @@ static const luaL_Reg functions[] = {
 	{"SetProp", entity_SetProp},
 	{"GetFlag", entity_GetFlag},
 	{"SetFlag", entity_SetFlag},
+	{"ClearFlag", entity_ClearFlag},
 	{"IsTouching", entity_IsTouching},
 	{"GetDistance", entity_GetDistance},
 	{"Say", entity_Say},

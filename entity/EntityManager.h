@@ -14,9 +14,13 @@ class EntityManager
 	
 	enum //Some common entity levels
 	{
+		LAYER_STATIC_LOWER_START = 0,
+		LAYER_STATIC_LOWER_END = 500,
 		LAYER_GROUND = 1000,
 		LAYER_USER = 1001,
 		LAYER_SKY = 1002,
+		LAYER_STATIC_UPPER_START = 5000,
+		LAYER_STATIC_UPPER_END  = 5500,
 	};
 
 	bool RemoveEntity(Entity* e);

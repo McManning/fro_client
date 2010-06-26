@@ -43,6 +43,8 @@ class Map : public Frame, public EntityManager
 	/*	Will attempt to return the entity directly under the mouse, if it is clickable. */
 	Entity* GetEntityUnderMouse(bool mustBeClickable, bool playersOnly);
 		
+	void CheckForClickableEntity();
+		
 	point2d mSpawnPoint;
 	
 	uShort mWidth;
@@ -111,6 +113,8 @@ class Map : public Frame, public EntityManager
 	lua_State* mLuaState;
 	
 	bool mStopCameraAtMapEdge;
+	
+	rect mCameraBounds; 
 	
   private:
 	void _constrainCameraToMap();

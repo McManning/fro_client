@@ -841,7 +841,7 @@ without either compatibility mode enabled, or security warnings, as seen with th
 100608
 - Added shell of Lunem Party dialog and added hud button
 - Renamed Inventory to Backpack (Pointlessness, woo!)
-- Renamed command test_map to just map
+- Renamed command test_map to just test
 
 100610
 - Fixed bug that imposed the same avatar filesize limits given to players to map actors also.
@@ -877,6 +877,83 @@ without either compatibility mode enabled, or security warnings, as seen with th
 	the items you own of that type
 - Fixed issue where EntityManager would only accept a single byte as an entity type number, which
 	contradicted our current system of starting actors at index 1000
-- 
+
+100616
+- Added Actor.GetSkill() and Actor.SetSkill() to Lua
+- Actor::TakeDamage() will now do nothing if m_iMaxHealth < 1
+- Added zheight to Actor SetProp to allow entities to arbitrarily fall from various heights
+	(Will be used for the dueling system)
+- Added ScreenText widget to display colored & animated text on the screen. Will be used for dueling-related
+	stuff. (Skill callouts and whatnot)
+	
+100617
+- Improved how the map camera determines "visibility bounds", as in, how it determines what edges
+	to stop on. Will now use an abstract rect as our bounds, so this allows Lua to change this rect
+	whenever it sees fit. HOWEVER, it no longer centers maps that are smaller than 800x600 so the rect
+	should be positioned with some negative offset from the map object we want centered.
+		Ex: Entire map (say, a small home) is 500x320. Position camera with: 
+		Camera.SetBounds(ROOM_X - (SCREEN_WIDTH-500)/2, ROOM_Y - (SCREEN_HEIGHT-320)/2, SCREEN_WIDTH, SCREEN_HEIGHT)
+		So if the top left corner of the room is (0,0), the minimum top left bound of the camera should be (-150,-140)
+- Added Camera.SetBounds(x,y,w,h) and Camera.GetBounds() to Lua
+- Removed Map.SetSize() from Lua. For a replacement, use Camera.SetBounds(0,0,MAP_WIDTH,MAP_HEIGHT) instead
+
+100618
+- Added Entity.ClearFlag() to Lua to fix the issue of not being able to delete flags once created
+	(Which causes unnecessary bulk in player.save file)
+- Added ENTITY_LAND{entity} event triggered after an entity has landed from a jump/fall
+- Added Actor.Fall() to Lua to create a custom fall at a certain height and speed
+- Changed the way SetCameraOffset() works. The offset will only apply when rendering, and does not affect
+	the actual camera position. This change was made to better support the ShakeCamera() effect in camera_utils.lua
+- Made an adjustment to the setting for always displaying player names on the map, in order to fix a possible bug.
+- Removed convo pointer from all functions in Convo Lua library, since we can only access one at a time anyway, 
+	storing pointers was redundant.
+- Changed Convo.New() to only one parameter (title), and it will return a boolean. False if a convo already exists,
+	true if it created a new one.
+- Removed DemandFocus() call from ConvoDialog. 
+- Fixed a bug that caused a crash when the map was changed while a convo dialog was up
+- Asset Added: assets/action.png
+
+100620
+- Removed _updateDarkOverlay() from GuiManager
+- Removed multiple unnecessary instances of Screen::Instance() and replaced it with an Image* parameter to routines
+	in GuiManager
+- added _renderCursorTipText() to GuiManager to clean things up. (TODO: Wrapping this)
+- Added the ability to change the gui cursor
+- Changed how the "clickable" nature of entities works. Now an integer, defining a maximum distance between the player
+	and the entity for it to be considered clickable. If set to 0, the entity will not be clickable. 
+	For Lua, entity table and GetProp are using the same "Clickable" IDs, however their data type has been changed to int
+- Added a check in Map::Process() to determine if the entity under the mouse is clickable, and if so, changes the cursor.
+	TODO: This could be a total CPU hog if there's a lot of entities and isn't as optimized as it should be.
+	This should be handled the same way widget mouse focused is handled. 
+- Changed ENTITY_CLICK event to only fire when we're in clickable range of an entity.
+	This removes the need to GetDistance() check from within Lua
+- Added two special entity layer sections: 0->500 & 5000->5500. Entities on these layers are positioned relative to 
+	screen coordinates and NOT relative to map coordinates. There are two sections so that the 0->500 layer entities
+	can be placed under the normal map entities, giving it a static-background appearance.
+- Added cursor map & real positions to /pos command
+- Added Game.ToggleChat(bool) to Lua to toggle visibility of the chatbox
+
+100621
+- Added Game.SetScreenText() to Lua to manipulate the ScreenText widget
+- Renamed "speed" to "movespeed" for SetProp/GetProp of actor that affects actual entity walk speed.
+	This collided with the new "speed" for combatant stats. 
+
+100622
+- Fixed the bug of sending mouse click events to the map even when the event took place on another widget
+
+100625
+- Changed encryption scheme for network messages. Channel ID will no longer be one of the several keys used for 
+	encrypting data as it interfered with the design of the multi-channel automated manager (Helios). 
+	This means that backwards compatibility with 1.2.2 is officially broken. Thank Server for mandatory auto updates!
+- Changed first parameter in sup/nm network messages to relay the channel ID of the sender, instead of client version.
+	Client version is unused and unnecessary, however since the messages are sent through privmsg, we need assurances
+	that they are coming from a client on our current channel. This is also mainly for the multi-channel Helios to 
+	operate properly.
+- MessageManager messages can now use wildcards * ? in the message ID to hook. Ex: NET_* would run the callback for
+	all messages fired by IrcNet, while * would run the callback for all messages fired ever.
+- Fixed parsing of user hostnames in IrcNet. Would keep random bits of the real name section
+
+----- PUBLIC RELEASE AS 1.2.3 -----
+
 
 

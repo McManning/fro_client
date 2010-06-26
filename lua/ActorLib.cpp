@@ -82,6 +82,16 @@ int actor_Jump(lua_State* ls)
 	return 0;
 }
 
+// .Fall(actor, height, velocity)
+int actor_Fall(lua_State* ls)
+{
+	luaCountArgs(ls, 3);
+	Actor* a = getReferencedActor(ls);
+	
+	a->Fall( (int)lua_tonumber(ls, 2), (int)lua_tonumber(ls, 3) );
+	return 0;
+}
+
 // x, y = .GetDestination(actor)
 int actor_GetDestination(lua_State* ls) 
 {
@@ -300,11 +310,51 @@ int actor_TakeDamage(lua_State* ls)
 	return 0;
 }
 
+//	"str" = .GetSkill(actor, slot) - Returns skill ID string,
+//		or nil if there isn't a skill in the slot, or the slot is invalid
+int actor_GetSkill(lua_State* ls)
+{
+	if (!lua_isnumber(ls, 2))
+		return luaError(ls, "Actor.GetSkill", "Bad Params");
+
+	Actor* a = getReferencedActor(ls, 1);
+	int slot = (int)lua_tonumber(ls, 2);
+	if (slot >= 0 && slot < 5 && !a->m_sSkills[slot].id.empty())
+	{
+		lua_pushstring(ls, a->m_sSkills[slot].id.c_str());
+	}
+	else
+	{
+		lua_pushnil(ls);	
+	}
+	
+	return 1;	
+}
+
+//	.SetSkill(actor, slot, "id") - Sets the slot to the specified skill ID
+int actor_SetSkill(lua_State* ls)
+{
+	if (!lua_isnumber(ls, 2) || !lua_isstring(ls, 3))
+		return luaError(ls, "Actor.SetSkill", "Bad Params");
+
+	Actor* a = getReferencedActor(ls, 1);
+	int slot = (int)lua_tonumber(ls, 2);
+	string s = lua_tostring(ls, 3);
+	
+	if (slot >= 0 && slot < 5)
+	{
+		a->m_sSkills[slot].id = s;
+	}
+	
+	return 0;	
+}
+
 static const luaL_Reg functions[] = {
 	{"IsIdle", actor_IsIdle},
 	{"IsJumping", actor_IsJumping},
 	{"Emote", actor_Emote},
 	{"Jump", actor_Jump},
+	{"Fall", actor_Fall},
 	{"GetDestination", actor_GetDestination},
 	{"CanMove", actor_CanMove},
 	{"MoveTo", actor_MoveTo},
@@ -316,6 +366,8 @@ static const luaL_Reg functions[] = {
 	{"GetSpecies", actor_GetSpecies},
 	{"GainExp", actor_GainExp},
 	{"TakeDamage", actor_TakeDamage},
+	{"GetSkill", actor_GetSkill},
+	{"SetSkill", actor_SetSkill},
 	{NULL, NULL}
 };
 

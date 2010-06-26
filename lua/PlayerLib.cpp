@@ -61,8 +61,14 @@ int player_Warp(lua_State* ls)
 	string id;
 	string name;
 	point2d p;
-
-	if (lua_isstring(ls, 1))
+	
+	if (lua_isnumber(ls, 1) && numArgs > 1) //change coordinates on current map
+	{
+		p.x = (int)lua_tonumber(ls, 1);
+		p.y = (int)lua_tonumber(ls, 2);
+		game->mPlayer->Warp(p);
+	}
+	else if (lua_isstring(ls, 1))
 	{
 		id = lua_tostring(ls, 1);
 
@@ -87,12 +93,6 @@ int player_Warp(lua_State* ls)
 		w->point = p;
 		w->obj = name;
 		timers->Add("", 0, true, timer_doWarpQueue, timer_destroyWarpQueue, w); 
-	}
-	else if (lua_isnumber(ls, 1) && numArgs > 1) //change coordinates on current map
-	{
-		p.x = (int)lua_tonumber(ls, 1);
-		p.y = (int)lua_tonumber(ls, 2);
-		game->mPlayer->Warp(p);
 	}
 
 	return 0;
