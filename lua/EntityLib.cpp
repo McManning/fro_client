@@ -5,6 +5,7 @@
 #include "../entity/Actor.h"
 #include "../entity/TextObject.h"
 #include "../entity/ExplodingEntity.h"
+#include "../entity/DamageIcon.h"
 #include "../game/GameManager.h"
 #include "../map/BasicMap.h"
 
@@ -552,13 +553,47 @@ int _parseEntityOrigin(lua_State* ls, Entity* e)
 	
 	return 1;
 }
+
+/**	Table at the top of the stack will be in the form { R, G, B, A }
+	@return 0 if it didn't manage to read in the entire RGBA, 1 otherwise.
+*/
+int _getColorTable(lua_State* ls, color& c)
+{
+	if (!lua_istable(ls, -1))
+		return 0;
+	
+	lua_pushnil(ls);
+	
+	if (!lua_next(ls, -2)) return 0;
+	c.r = (int)lua_tonumber(ls, -1);
+	lua_pop(ls, 1);
+	
+	if (!lua_next(ls, -2)) return 0;	
+	c.g = (int)lua_tonumber(ls, -1);
+	lua_pop(ls, 1);
+	
+	if (!lua_next(ls, -2)) return 0;	
+	c.b = (int)lua_tonumber(ls, -1);
+	lua_pop(ls, 1);
+	
+	if (!lua_next(ls, -2)) return 0;	
+	c.a = (int)lua_tonumber(ls, -1);
+	lua_pop(ls, 1);
+	
+	//Have to manually pop off the table because we're not running lua_next() to completion
+	lua_pop(ls, 1); 
+	
+	return 1;
+}
+
 	
 /* 	key is index -2, value is index -1 
 	@return 0 on error, 1 otherwise
 */
 int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 {
-	if (key == "ID")
+	color c;
+	if (key == "ID" || (e->mType == ENTITY_DAMAGEICON && key == "Amount"))
 	{
 		e->mId = lua_tostring(ls, -1);
 	}
@@ -606,6 +641,16 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 	{
 		return _parseEntityAvatar(ls, (Actor*)e);
 	}
+	else if (key == "BgColor" && e->mType == ENTITY_DAMAGEICON)
+	{
+		_getColorTable(ls, c);
+		((DamageIcon*)e)->mImage->ColorizeGreyscale(c);
+	}
+	else if (key == "FontColor" && e->mType == ENTITY_DAMAGEICON)
+	{
+		_getColorTable(ls, c);
+		((DamageIcon*)e)->mFontImage->ColorizeGreyscale(c);
+	}
 	
 	return 1;
 }
@@ -649,6 +694,10 @@ Entity* _createEntity(int type)
 			break;
 		case ENTITY_TEXT:
 			e = new TextObject;
+			break;
+		case ENTITY_DAMAGEICON:
+			e = new DamageIcon;
+			break;
 		default:
 			break;
 	}
@@ -752,6 +801,24 @@ int entity_Explode(lua_State* ls)
 	return 0;
 }
 
+/*
+// ent  = .NewDamageIcon(dmg, bgR, bgG, bgB, fontR, fontG, fontB)
+int entity_NewDamageIcon(lua_State* ls)
+{
+	luaCountArgs(ls, 7);
+
+	color bg((byte)lua_tonumber(ls, 2), (byte)lua_tonumber(ls, 3), (byte)lua_tonumber(ls, 4));
+	color fg((byte)lua_tonumber(ls, 5), (byte)lua_tonumber(ls, 6), (byte)lua_tonumber(ls, 7));
+	
+	DamageIcon* d = new DamageIcon((int)lua_tonumber(ls, 1), 3000, bg, fg);
+	game->mMap->AddEntity(d);
+	d->mMap = game->mMap;
+	
+	lua_pushlightuserdata(ls, d);
+	return 1;
+}
+*/
+
 static const luaL_Reg functions[] = {
 	{"Exists", entity_Exists},
 	{"FindById", entity_FindById},
@@ -776,6 +843,7 @@ static const luaL_Reg functions[] = {
 	{"SetImage", entity_SetImage},
 	{"SetAvatar", entity_SetAvatar},
 	{"Explode", entity_Explode},
+	//{"NewDamageIcon", entity_NewDamageIcon},
 	{NULL, NULL}
 };
 

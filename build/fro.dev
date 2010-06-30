@@ -1,7 +1,7 @@
 [Project]
 FileName=fro.dev
 Name=fro
-UnitCount=179
+UnitCount=181
 Type=0
 Ver=1
 ObjFiles=
@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=1000000001000000000100
+CompilerSettings=1000000001000001000000
 
 [Unit1]
 FileName=..\core\Common.cpp
@@ -473,7 +473,7 @@ BuildCmd=
 Major=1
 Minor=2
 Release=3
-Build=1175
+Build=1244
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1628,9 +1628,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit180]
-FileName=..\game\Achievements.cpp
+FileName=..\entity\DamageIcon.cpp
 CompileCpp=1
-Folder=../game
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000
@@ -1638,9 +1638,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit181]
-FileName=..\game\Achievements.h
+FileName=..\entity\DamageIcon.h
 CompileCpp=1
-Folder=../game
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000

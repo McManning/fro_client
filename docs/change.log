@@ -955,5 +955,11 @@ without either compatibility mode enabled, or security warnings, as seen with th
 
 ----- PUBLIC RELEASE AS 1.2.3 -----
 
+100628
+- Added DamageIcon entity with Entity.NewDamageIcon() for Lua
+	NOTE: Might want to attach it to Entity.Create() instead...
+
+
+
 
 

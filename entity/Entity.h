@@ -25,6 +25,7 @@ typedef enum
 	ENTITY_END_ACTORS, //Do not use, just as a marker
 	ENTITY_STATICOBJECT = 2000,
 	ENTITY_TEXT,
+	ENTITY_DAMAGEICON,
 	
 	// Unused
 	ENTITY_EFFECT,
