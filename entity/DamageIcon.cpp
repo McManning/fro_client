@@ -57,6 +57,9 @@ DamageIcon::DamageIcon()
 				timer_DeleteDamageIcon, NULL, this);
 	timers->Add("", DAMAGE_ICON_THINK, false, 
 				timer_DamageIconThink, NULL, this);
+				
+	mOrigin.y = mImage->Height();
+	mOrigin.x = mImage->Width()/2;
 }
 
 DamageIcon::~DamageIcon()
@@ -85,7 +88,12 @@ void DamageIcon::Render()
 	for (i = 0; i < mId.length(); ++i)
 	{
 		index = mId.at(i) - '0';
-		x = mBorders.at(index - 1) + 1;
+
+		if (index - 1 < 0)
+			x = 0;
+		else
+			x = mBorders.at(index - 1) + 1;
+			
 		width += (mBorders.at(index) - x) - LETTER_CROWDING;
 	}
 
@@ -105,9 +113,13 @@ void DamageIcon::Render()
 	for (i = 0; i < mId.length(); ++i)
 	{
 		index = mId.at(i) - '0';
-		x = mBorders.at(index - 1) + 1;
+		if (index - 1 < 0)
+			x = 0;
+		else
+			x = mBorders.at(index - 1) + 1;
+			
 		width = mBorders.at(index) - x;
-		
+
 		mFontImage->Render(scr, dx, r.y + (mImage->Height() - mFontImage->Height()) / 2, 
 							rect(x, 0, width, mFontImage->Height()));
 		dx += width - LETTER_CROWDING;

@@ -4,22 +4,6 @@
 
 #include "../core/Core.h"
 
-/**
-	Base species information. Each combatant have a species that will determine 
-	its current stats, strengths, and weaknesses. 
-*/
-struct combatantSpecies
-{
-	char name[64]; // Necessary?
-	int attack;
-	int defense;
-	int speed;
-	int health;
-	int typeA;
-	int typeB;
-	int typeC;
-};
-
 /**	
 	A base class that Actors will inherit from to give them RPG-like statistics used for combat. 
 	Will manage things like stats, health, getting hurt, gaining exp, etc. Will mostly use messenger
@@ -31,17 +15,11 @@ class Combatant
   public:
 	Combatant();
 	virtual ~Combatant() {};
-	
-	/**
-		Convert this entity into a new species.
-		@param species a struct containing base stat information to use for stat calculations
-	*/
-	void SetSpecies(combatantSpecies s);
 
 	/**	
-		Using the species base information, it will attempt to recalculate our current stats
-		(things such as health, attack, defense, etc) based on our current level, DNA, and
-		other factors.
+		Using the base stats, it will attempt to recalculate our current stats
+		(things such as health, attack, defense, etc) based on our current level, 
+		DNA, and other factors.
 	*/	
 	virtual void RecalculateStats() = 0;
 
@@ -87,7 +65,12 @@ class Combatant
 	int m_iLevel;
 	int m_iGene;
 	
-	//current stats
+	// Type information slots
+	int m_iType1;
+	int m_iType2;
+	int m_iType3;
+	
+	// current stats
 	int m_iAttack; // read-only
 	int m_iDefense; // read-only
 	int m_iSpeed; //read-only
@@ -96,10 +79,14 @@ class Combatant
 	int m_iExp; //experience points
 	int m_iMaxExp; //read-only. exp needed to reach the next level
 	
-	skill m_sSkills[5]; // skills are ID based
-	
-	combatantSpecies m_species;
-	
+	// base stats
+	int m_iBaseAttack;
+	int m_iBaseDefense;
+	int m_iBaseSpeed;
+	int m_iBaseHealth;
+
+	skill m_sSkills[5];
+
 	bool m_bDisplayStats; // if true, an overhead display of stats will be shown
 };
 

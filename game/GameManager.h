@@ -79,7 +79,8 @@ class GameManager : public Frame
 	enum gameMode
 	{
 		MODE_CHAT = 0,
-		MODE_ACTION,	
+		MODE_ACTION,
+		MODE_DUEL,	
 	};
 	
 	gameMode mGameMode;

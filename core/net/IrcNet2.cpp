@@ -283,7 +283,7 @@ void IrcNet::SetTopic(IrcChannel* chan, string topic)
 void IrcNet::ChangeNick(string newNick) 
 {
 	string msg = "NICK " + newNick + "\r\n";
-	mNickname = newNick;
+	//mNickname = newNick;
 	SendLine(msg);
 }
 
@@ -539,6 +539,9 @@ bool IrcNet::Process()
 				s1 = line.substr(1, line.find ('!',0) - 1); //old nick
 				s2 = line.substr(line.find (':',1)+1); //new nick
 		
+				if (s1 == mNickname)
+					mNickname = s2;
+		
 				md.Clear();
 				md.SetId("NET_NICK");
 				md.WriteString("oldnick", s1); //Old Nick
@@ -654,11 +657,14 @@ bool IrcNet::Process()
 				
 				messenger.Dispatch(md, this);
 			} 
-			else if (cmd == "001") //successful registration
+			else if (cmd == "001") //successful registration: :in.sybolt 001 MYNICK :Welcome to the drm.server [etc]
 			{		
 				// Get the real host name
 				mRealServerAddress = getWord(line, 1);
 				mRealServerAddress.erase(0, 1); //erase prefix colon
+				
+				// Get our real nick (Bug fix for when nicks at server connect are too long, and it cuts it down)
+				mNickname = getWord(line, 3);
 
 				_setState(ONSERVER);
 

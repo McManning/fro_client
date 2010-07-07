@@ -53,7 +53,7 @@ void WorldLoader::LoadOnlineWorld(string id, point2d target, string targetObject
 		m_sPreviousMap = game->mMap->mId;
 	}
 	
-	m_sWorldName = id;
+	m_sWorldName = lowercase(id);
 	m_warpDestinationPoint = target;
 	m_sWarpDestinationEntityName = targetObjectName;
 	m_bTestMode = false;
@@ -489,6 +489,7 @@ void WorldLoader::_syncPlayerWithWorld()
 	p->mMap->SetCameraFollow(p);
 	
 	p->mIsLocked = false;
+	game->ToggleGameMode(GameManager::MODE_ACTION);
 	
 	//spawn our player in a different position, based on the destination type
 	if (!m_sWarpDestinationEntityName.empty()) //warp us to the center of this object

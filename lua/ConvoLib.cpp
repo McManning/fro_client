@@ -143,7 +143,7 @@ int ConvoDialog::DoOption(sShort index)
 	int result = 0;
 	if (lua_pcall(luaState, 3, 1, 0) != 0)
 	{
-		console->AddFormattedMessage("\\c900 * LUACONVO [" + luaFunction + "] " + string(lua_tostring(luaState, -1)));
+		console->AddMessage("\\c900 * LUACONVO [" + luaFunction + "] " + string(lua_tostring(luaState, -1)));
         result = 0;
 	}
 	else
@@ -174,7 +174,7 @@ void ConvoDialog::AddOption(string text, string luaFunction)
 void ConvoDialog::SetText(string text)
 {
 	mText->Clear();
-	mText->AddFormattedMessage(text);
+	mText->AddMessage(text);
 	mText->SetTopLine(0);
 }
 

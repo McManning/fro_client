@@ -222,18 +222,6 @@ void Console::AddMessage(string msg)
 	mOutput->AddMessage(msg);
 }
 
-void Console::AddFormattedMessage(string msg)
-{
-	if (msg.empty()) return;
-	
-	if (mShowTimestamps && config.GetParamInt("console", "timestamps") == 1)
-		msg = shortTimestamp() + " " + msg;
-	
-	PRINT("[Console] " + msg);
-
-	mOutput->AddFormattedMessage(msg);
-}
-
 void Console::ShowCommands()
 {
 	string s = mInput->GetText();

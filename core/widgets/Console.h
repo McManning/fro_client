@@ -61,8 +61,7 @@ class Console : public Frame
 	void ResizeChildren();
 
 	void AddMessage(string msg);
-	void AddFormattedMessage(string msg);
-		
+
 	/*	Will list all commands that start with the text in the input. 
 		If input is empty, will list all commands.
 		TODO: How will I implement this?

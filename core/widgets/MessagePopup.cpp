@@ -35,7 +35,7 @@ MessagePopup::MessagePopup(string id, string title, string msg, bool useMultilin
 		Multiline* m;
 		m = new Multiline(this, "msg", rect(5,30,Width()-10,Height()-60));
 		//TODO: m->mScrollbar->mTabImage->mDst.h = 10; //shrink our scrollbar a bit to give more room
-		m->AddFormattedMessage(msg);	
+		m->AddMessage(msg);	
 		m->SetTopLine(0); //set it to display the top of the list.
 	}
 	else //label version, resizes itself based on the label size.

@@ -6,6 +6,15 @@ Combatant::Combatant()
 	m_iLevel = 0;
 	m_iGene = 0;
 
+	m_iType1 = 0;
+	m_iType2 = 0;
+	m_iType3 = 0;
+	
+	m_iBaseAttack = 0;
+	m_iBaseDefense = 0;
+	m_iBaseSpeed = 0;
+	m_iBaseHealth = 0;
+
 	m_iAttack = 0;
 	m_iDefense = 0;
 	m_iSpeed = 0;
@@ -15,12 +24,6 @@ Combatant::Combatant()
 	m_iMaxExp = 1;
 
 	m_bDisplayStats = false;
-}
-
-void Combatant::SetSpecies(combatantSpecies s)
-{
-	m_species = s;
-	RecalculateStats();
 }
 
 void Combatant::SetLevel(int level)
@@ -33,7 +36,7 @@ void Combatant::SetLevel(int level)
 void Combatant::SetGene(int gene)
 {
 	m_iGene = gene;
-	RecalculateStats();
+	//RecalculateStats();
 }
 
 void Combatant::AddExperience(int exp)

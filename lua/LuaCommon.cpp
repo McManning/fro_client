@@ -45,7 +45,7 @@ int luaError(lua_State* ls, string func, string msg)
 		line = dbg.currentline;
 	}
 
-	console->AddFormattedMessage("\\c900 * LUA [" + func + ":" + its(line) + ":" + dbg.short_src + "] " + msg);
+	console->AddMessage("\\c900 * LUA [" + func + ":" + its(line) + ":" + dbg.short_src + "] " + msg);
 	*/
 
 	string error = "[" + func + "] " + msg;

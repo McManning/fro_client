@@ -71,7 +71,7 @@ void callback_consoleNetInfo(Console* c, string s)
 {
 	string ss;
 	game->mNet->StateToString(ss);
-	c->AddFormattedMessage(ss);	
+	c->AddMessage(ss);	
 }
 
 void callback_consoleOutputAvatar(Console* c, string s)
@@ -84,7 +84,7 @@ void callback_consoleAvatarInfo(Console* c, string s)
 	string ss;
 	if (game->mPlayer->GetAvatar())
 		game->mPlayer->GetAvatar()->mImage->StateToString(ss);
-	c->AddFormattedMessage(ss);
+	c->AddMessage(ss);
 }
 
 void callback_consoleTestMap(Console* c, string s) //test <file>
@@ -313,7 +313,9 @@ void callback_chatCommandNick(Console* c, string s) // /nick nickname
 	else
 		game->mPlayer->mName = s;
 	
-	game->mPlayerData.SetParamString("user", "nick", s);
+	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
+	game->mPlayerData.SetParamString(e, "nick", s);
+	game->SavePlayerData();
 }
 
 void callback_chatCommandWorldsViewer(Console* c, string s)
@@ -338,12 +340,12 @@ void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 
 void callback_chatCommandListEmotes(Console* c, string s)
 {
-	c->AddFormattedMessage("\\c990Emotes:\\n  /facepalm, /troll, /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf, /pedo");
+	c->AddMessage("\\c990Emotes:\\n  /facepalm, /troll, /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf, /pedo");
 }
 
 void callback_chatCommandListCommands(Console* c, string s)
 {
-	c->AddFormattedMessage("\\c990Commands:\\n  /emotes - Display emotes list\\n  /save - Save chat log to an html file\\n"
+	c->AddMessage("\\c990Commands:\\n  /emotes - Display emotes list\\n  /save - Save chat log to an html file\\n"
 							"  /clear - Clear the chatbox\\n  /exit - Close the program\\n  /ss - Save a screenshot (same as PRTSCRN)\\n"
 							"  /stamp <text> - Stamp the text onto the map\\n  /nick <name> - Change your nickname\\n"
 							"  /music <text> - Tell everyone the song you're listening to\\n  /join <world> - Try to join specified world\\n"
@@ -569,7 +571,10 @@ void callback_gameHudSubButton(Button* b)
 			break;
 		case 'p': //party
 			if (!gui->Get("party"))
-				new LunemParty();
+			{
+				LunemParty* p = new LunemParty();
+				p->mInfoBar[0]->SetLinked(game->mPlayer);
+			}
 			break;
 		default: break;
 	}
@@ -742,7 +747,7 @@ void GameManager::Event(SDL_Event* event)
 				else
 					w->Die();
 			}
-			else if (event->key.keysym.sym == SDLK_TAB)
+			else if (event->key.keysym.sym == SDLK_TAB && mGameMode != MODE_DUEL)
 			{
 				ToggleGameMode( (mGameMode == MODE_ACTION) ? MODE_CHAT : MODE_ACTION );
 			}
@@ -1042,6 +1047,11 @@ void GameManager::ToggleGameMode(gameMode mode)
 		mChat->mInput->mReadOnly = false;
 		mChat->mInput->Clear();
 	}
+	
+	// Send an event
+	MessageData md("GAME_MODE");
+	md.WriteInt("mode", mode);
+	messenger.Dispatch(md);
 }
 
 

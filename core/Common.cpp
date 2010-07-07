@@ -591,7 +591,7 @@ string htmlSafe(string s)
 	return result;
 }
 
-string stripCodes(string msg)
+string stripCodes(const string& msg)
 {
 	string stripped;
 	for (size_t i = 0; i < msg.length(); i++)
@@ -602,11 +602,8 @@ string stripCodes(string msg)
 			{
 				if (msg.at(i + 1) == 'c')
 				{
-					if (i == 0 || msg.at(i - 1) != '\\') //make sure we don't have a double slash
-					{
-						i += 4; //skip \cRGB
-						continue; //don't add
-					}
+					i += 4; //skip \cRGB
+					continue; //don't add
 				}
 			}
 		}

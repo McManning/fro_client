@@ -358,7 +358,7 @@ void Inventory::ItemSelected()
 	
 	//Set the info box to the description of the item
 	mInfo->Clear();
-	mInfo->AddFormattedMessage(mInventory.at(mList->mSelected)->description);
+	mInfo->AddMessage(mInventory.at(mList->mSelected)->description);
 	mInfo->SetTopLine(0); //set it to display the top of the message
 }
 

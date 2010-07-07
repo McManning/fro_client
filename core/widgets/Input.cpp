@@ -9,6 +9,8 @@
 #include "../ResourceManager.h"
 #include "../io/FileIO.h"
 
+const int MAX_PASSWORD_SYMBOLS = 10;
+
 string getInputText(Widget* parent, string id)
 {
 	Input* i = (Input*)parent->Get(id, false, WIDGET_INPUT);
@@ -164,7 +166,7 @@ Input::Input(Widget* wParent, string sId, rect rPosition, string sMask,
 	mId = sId;
 	mCharacterMask = sMask;
 
-	mImage = resman->LoadImg("assets/gui/input_bg.png");
+	mImage = resman->LoadImg("assets/gui/input.png");
 	
 	SetPosition(rPosition);
 	
@@ -181,15 +183,18 @@ Input::~Input()
 
 void Input::Render() 
 {
+	Image* scr = Screen::Instance();
+	rect oldclip;
+	rect r = GetScreenPosition();
+
 	if (mNeedUpdate) { //rerender text if necessary
 		_updateText();
 		mNeedUpdate = false;
 	}
-	
-	Image* scr = Screen::Instance();
-	
+
 	//Do a little bit of calculating
-	if (gui->GetTick() > mLastBlink && !mReadOnly) {
+	if (gui->GetTick() > mLastBlink && !mReadOnly) 
+	{
 		mLastBlink = gui->GetTick() + 600;
 		mDrawCaret = !mDrawCaret;
 	}
@@ -199,12 +204,6 @@ void Input::Render()
 		if (!Get("inputmenu") || !Get("inputmenu")->HasKeyFocus())
 			SetSelection(0, 0);
 	}
-	
-	//grab what section to render
-	int c = CaretPosToPixel();
-
-	//render caption surf from mPixelX to mPixelX + m_pos.getWidth()
-	rect r = GetScreenPosition();
 
 	if (mImage)
 		mImage->RenderBox(scr, rect(0, CalculateImageOffset(15), 5, 5), r);
@@ -215,54 +214,80 @@ void Input::Render()
 	//r.h -= 2;
 	r.y += (r.h / 2 - mFont->GetHeight() / 2);
 
-	if (!mText.empty() && mTextImage) //we have text to draw, so start doing it
+	if (mIsPassword)
 	{
-		//make sure we don't go out of our clipping bounds. 
-		//OPTIMIZETODO: Calculations that wouldn't have the chance to go out of bounds in the first place..
-		scr->SetClip(r); 
+		_renderPassword(scr, r);	
+	}
+	else
+	{
+		// TODO: Good calculations that don't need clipping!
+		oldclip = scr->GetClip();
+		scr->SetClip(r);
 		
-		//r.y += ((r.h / 2) - (mTextImage->Height() / 2));
+		_renderText(scr, r);
 		
-		int x;
-		
-		//render the highlight if we got it
-		if (mSelectionEnd != mSelectionStart && mFont) 
-		{
-			int selStart = mSelectionStart;
-			int selEnd = mSelectionEnd;
-			if (selStart > selEnd)
-				std::swap(selStart, selEnd);
-				
-			x = mFont->GetWidth(mText.substr(0, selStart));
-			x -= mPixelX;
+		scr->SetClip(oldclip);	
+	}
 
-			//x is now the distance from the start to render text to the selection end.
-			if (x < 0) x = 0; //don't need to highlight shit not visible
-			int w = mFont->GetWidth(mText.substr(selStart, selEnd - selStart));
-			if (x + w > r.w) w = r.w - x;
-			
-			//now have a clipped width~ Now draw the rect.
-			scr->DrawRect( rect(r.x + x, r.y, w, mTextImage->Height()), mHighlightBackground );
-		}
+	Widget::Render();
+}
+
+void Input::_renderPassword(Image* scr, rect& r)
+{
+	if (mText.empty())
+		return;
 		
-		//render the visible text
-		mTextImage->Render(scr, r.x, r.y, 	
-						rect(mPixelX, 0, r.w, r.h)
+	//render the visible text
+	mTextImage->Render(scr, r.x, r.y-1, 	
+						rect(mPixelX-2, 0, r.w, r.h)
 					);
+}
 
-		x = r.x + (c - mPixelX);// - 1;
+void Input::_renderText(Image* scr, rect& r)
+{
+	int x, w, selStart, selEnd;
+	
+	if (mText.empty() || !mTextImage)
+		return;
 
-		if (x < r.x + r.w && mDrawCaret == true
-			&& !mReadOnly && HasKeyFocus() && x > r.x) 
-		{
-			//render the caret (Same color as text)
-			scr->DrawRect(rect(x-1, r.y /*+ 1*/, 2, mTextImage->Height()/* - 2*/), mFontColor);
-		}
-		scr->SetClip();
+	//r.y += ((r.h / 2) - (mTextImage->Height() / 2));
+		
+	//render the highlight if we got it
+	if (mSelectionEnd != mSelectionStart && mFont) 
+	{
+		selStart = mSelectionStart;
+		selEnd = mSelectionEnd;
+		if (selStart > selEnd)
+			std::swap(selStart, selEnd);
+			
+		x = mFont->GetWidth(mText.substr(0, selStart));
+		x -= mPixelX;
 
+		//x is now the distance from the start to render text to the selection end.
+		if (x < 0) 
+			x = 0; //don't need to highlight shit not visible
+			
+		w = mFont->GetWidth(mText.substr(selStart, selEnd - selStart));
+		if (x + w > r.w) 
+			w = r.w - x;
+		
+		//now have a clipped width~ Now draw the rect.
+		scr->DrawRect( rect(r.x + x, r.y, w, mTextImage->Height()), mHighlightBackground );
 	}
 	
-	Widget::Render();
+	//render the visible text
+	mTextImage->Render(scr, r.x, r.y, 	
+					rect(mPixelX, 0, r.w, r.h)
+				);
+
+	x = r.x + (CaretPosToPixel() - mPixelX);// - 1;
+
+	if (x < r.x + r.w && mDrawCaret == true
+		&& !mReadOnly && HasKeyFocus() && x > r.x) 
+	{
+		//render the caret (Same color as text)
+		scr->DrawRect(rect(x-1, r.y /*+ 1*/, 2, mTextImage->Height()/* - 2*/), mFontColor);
+	}
 }
 
 void Input::RecalculatePixelX() 
@@ -279,9 +304,16 @@ void Input::RecalculatePixelX()
 		//uShort i = (mCaretPos - INPUT_JUMPBACK_NUM < 0) ? 0 : mCaretPos - INPUT_JUMPBACK_NUM;
 		//mPixelX = c - mFont->GetWidth(mText.substr(i, INPUT_JUMPBACK_NUM));
 		if (mCaretPos-1 < 0) 
+		{
 			mPixelX = 0;
+		}
 		else
-			mPixelX -= mFont->GetWidth(mText.substr(mCaretPos-1, 1));
+		{
+			if (mIsPassword)
+				mPixelX -= mText.substr(mCaretPos-1, 1).length() * 16;
+			else
+				mPixelX -= mFont->GetWidth(mText.substr(mCaretPos-1, 1));
+		}
 	} 
 	else if (mPixelX + mPosition.w < c) //caret is too far right
 	{ 
@@ -319,6 +351,8 @@ int Input::CaretPosToPixel()
 {
 	if (!mFont) 
 		return 0;
+	else if (mIsPassword)
+		return mText.substr(0, mCaretPos).length() * 16;
 	else
 		return mFont->GetWidth(mText.substr(0, mCaretPos));
 }
@@ -387,9 +421,12 @@ void Input::Event(SDL_Event* event)
 					if (im)
 						im->Die();	
 				}
-				SetCaretPos(event->button.x, event->button.y);
-				mSelecting = true;
-				SetSelection(mCaretPos, mCaretPos);
+				if (!mIsPassword)
+				{
+					SetCaretPos(event->button.x, event->button.y);
+					mSelecting = true;
+					SetSelection(mCaretPos, mCaretPos);
+				}
 			}
 			else if (event->button.button == SDL_BUTTON_RIGHT && HasMouseFocus() && !mReadOnly)
 			{
@@ -567,6 +604,9 @@ void Input::AddToHistory(string msg)
 
 void Input::_updateText() 
 {
+	int i, s;
+	color c;
+	
 	//TODO: we should probably render the selected text outline & color change here instead of during rendering
 	RecalculatePixelX();
 
@@ -578,10 +618,27 @@ void Input::_updateText()
 	else msg = mText;
 */
 	
-	color c = mFontColor; 
-	if (!IsActive() || mReadOnly)
-		c.r = c.g = c.b = 128;
-	mTextImage = resman->ImageFromSurface( mFont->RenderToSDL(mText.c_str(), c) );
+	if (!mIsPassword)
+	{
+		c = mFontColor; 
+		if (!IsActive() || mReadOnly)
+			c.r = c.g = c.b = 128;
+		mTextImage = resman->ImageFromSurface( mFont->RenderToSDL(mText.c_str(), c) );
+	}
+	else
+	{
+		mTextImage = resman->NewImage(mText.length() * 16, 16, color(255,0,255), false);
+		for (i = 0; i < mText.length(); ++i)
+		{
+			// draw a symbol for each character, chosen based off that character (loosely)
+			s = mText.at(i) - 20;
+			while (s >= MAX_PASSWORD_SYMBOLS)
+				s -= MAX_PASSWORD_SYMBOLS;
+			
+			if (mImage)
+				mImage->Render(mTextImage, i * 16, rnd(0, 3), rect((s>9)?29:15, 0+s*14, 14, 14));
+		}	
+	}	
 }
 
 //internal call, adds no matter what. Text must pass the checks

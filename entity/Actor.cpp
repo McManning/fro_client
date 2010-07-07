@@ -901,7 +901,7 @@ void Actor::Jump(byte type)
 	SetAction(IDLE);
 	mJumpType = type;
 	mJumpHeight = 0;
-	mJumpVelocity = 0; // Use generic velocity
+	mCustomVelocity = 0;
 	mFalling = false;
 	
 	mPreviousPosition = mPosition;
@@ -912,10 +912,21 @@ void Actor::Fall(int height, int velocity)
 	SetAction(IDLE);
 	mJumpType = CUSTOM_JUMP;
 	mJumpHeight = height;
-	mJumpVelocity = velocity;
+	mCustomVelocity = velocity;
 	mFalling = true;
 	
 	mPreviousPosition = mPosition;	
+}
+
+/**	Will rise the actor to a height of 1000. Used for a flying-off-map kind of thing,
+	and requires a custom Fall() to be done afterwards. No event will be triggered at max rise
+*/
+void Actor::Rise(int velocity)
+{
+	SetAction(IDLE);
+	mJumpType = CUSTOM_JUMP;
+	mJumpHeight = 0;
+	mCustomVelocity = velocity;
 }
 
 bool Actor::IsJumping() const 
@@ -974,16 +985,13 @@ void Actor::_processJump()
 			yVelocity = RUNNING_JUMP_VELOCITY;
 			maxHeight = RUNNING_JUMP_HEIGHT * mMap->GetGravity();
 			break;
-	//	case FALL_AND_BOUNCE:
-	//		yVelocity = 10;
-	//		maxHeight = ?
+		case CUSTOM_JUMP:
+			maxHeight = 1000;
+			yVelocity = mCustomVelocity;
+			break;
 		default: break;
 	}
-	
-	// Change velocity if we have a custom
-	if (mJumpVelocity != 0)
-		yVelocity = mJumpVelocity;
-	
+
 	if (!mFalling)
 	{
 		mJumpHeight += yVelocity;
@@ -1089,14 +1097,23 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 	// Combatant properties
 	else if (prop == "level") SetLevel((int)lua_tonumber(ls, index));
 	else if (prop == "gene") SetGene((int)lua_tonumber(ls, index));
+	else if (prop == "type1") m_iType1 = (int)lua_tonumber(ls, index);
+	else if (prop == "type2") m_iType2 = (int)lua_tonumber(ls, index);
+	else if (prop == "type3") m_iType3 = (int)lua_tonumber(ls, index);
+	
 	else if (prop == "attack") m_iAttack = (int)lua_tonumber(ls, index);
 	else if (prop == "defense") m_iDefense = (int)lua_tonumber(ls, index);
 	else if (prop == "speed") m_iSpeed = (int)lua_tonumber(ls, index);
 	else if (prop == "maxhealth") m_iMaxHealth = (int)lua_tonumber(ls, index);
 	else if (prop == "health") m_iCurrentHealth = (int)lua_tonumber(ls, index);
-	//else if (prop == "exp") m_iExp = (int)lua_tonumber(ls, index);
+	else if (prop == "exp") m_iExp = (int)lua_tonumber(ls, index);
 	else if (prop == "maxexp") m_iMaxExp = (int)lua_tonumber(ls, index);
 	
+	else if (prop == "baseattack") m_iBaseAttack = (int)lua_tonumber(ls, index);
+	else if (prop == "basedefense") m_iBaseDefense = (int)lua_tonumber(ls, index);
+	else if (prop == "basespeed") m_iBaseSpeed = (int)lua_tonumber(ls, index);
+	else if (prop == "basehealth") m_iBaseHealth = (int)lua_tonumber(ls, index);
+
 	else return Entity::LuaSetProp(ls, prop, index);
 
 	return 1;
@@ -1113,6 +1130,10 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 	// Combatant properties
 	else if (prop == "level") lua_pushnumber(ls, m_iLevel);
 	else if (prop == "gene") lua_pushnumber(ls, m_iGene);
+	else if (prop == "type1") lua_pushnumber(ls, m_iType1);
+	else if (prop == "type2") lua_pushnumber(ls, m_iType2);
+	else if (prop == "type3") lua_pushnumber(ls, m_iType3);
+	
 	else if (prop == "attack") lua_pushnumber( ls, m_iAttack );
 	else if (prop == "defense") lua_pushnumber( ls, m_iDefense );
 	else if (prop == "speed") lua_pushnumber( ls, m_iSpeed );
@@ -1120,6 +1141,13 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "health") lua_pushnumber(ls, m_iCurrentHealth);
 	else if (prop == "exp") lua_pushnumber(ls, m_iExp);
 	else if (prop == "maxexp") lua_pushnumber(ls, m_iMaxExp);
+	
+	// Base stats
+	else if (prop == "baseattack") lua_pushnumber(ls, m_iBaseAttack);
+	else if (prop == "basedefense") lua_pushnumber(ls, m_iBaseDefense);
+	else if (prop == "basespeed") lua_pushnumber(ls, m_iBaseSpeed);
+	else if (prop == "basehealth") lua_pushnumber(ls, m_iBaseHealth);
+
 	
 	else return Entity::LuaGetProp(ls, prop);
 

@@ -246,7 +246,9 @@ void OptionsDialog::Save()
 				game->mPlayer->mName = s;
 			}
 				
-			game->mPlayerData.SetParamString("user", "nick", s);
+			TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
+			game->mPlayerData.SetParamString(e, "nick", s);
+			game->SavePlayerData();
 		}
 	}
 

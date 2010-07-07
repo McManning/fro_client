@@ -163,7 +163,7 @@ void callback_LoginDialogRegister(Button* b)
 				" you can still access the worlds by hitting the \\c300Skip Login\\c000 button.\\n\\n"
 				"To register, or read about the benefits of registration, right click the following link: \\n\\n" 		
 				"\\c008http://sybolt.com/drm/register.php";
-		
+
 	new MessagePopup("register", "Register", msg, true);	
 }
 
@@ -192,6 +192,7 @@ LoginDialog::LoginDialog() :
 	new Label(this, "", rect(10,y), "Pass");
 	i = new Input(this, "pass", rect(60, y, 150, 20), "", 32, true, NULL);
 		i->SetText( game->mPlayerData.GetParamString(e, "pass") );
+		i->mIsPassword = true;
 	y += 25;
 
 	//checkboxes to the left

@@ -24,7 +24,7 @@ int system_Print(lua_State* ls)
 	PRINT("system_Print");
 	luaCountArgs(ls, 1);
 
-	console->AddFormattedMessage( lua_tostring(ls, 1) );
+	console->AddMessage( lua_tostring(ls, 1) );
 	
 	return 0;
 }
@@ -57,7 +57,7 @@ void _doYesNoCallback(luaCallback* data, int result)
 	lua_pushboolean(data->state, result);
 
 	if (lua_pcall(data->state, 1, 0, 0) != 0)
-		console->AddFormattedMessage("\\c900 * LUAYESNO [" + data->func + "] " + string(lua_tostring(data->state, -1)));
+		console->AddMessage("\\c900 * LUAYESNO [" + data->func + "] " + string(lua_tostring(data->state, -1)));
 }
 
 void callback_luaYesNo_Yes(YesNoPopup* yn)
@@ -123,7 +123,7 @@ void _doMessagePopupCallback(luaCallback* data)
 	}
 
 	if (lua_pcall(data->state, 0, 0, 0) != 0)
-		console->AddFormattedMessage("\\c900 * LUAMSGPOPUP [" + data->func + "] " + string(lua_tostring(data->state, -1)));
+		console->AddMessage("\\c900 * LUAMSGPOPUP [" + data->func + "] " + string(lua_tostring(data->state, -1)));
 }
 
 void callback_luaMessagePopup(MessagePopup* mp)

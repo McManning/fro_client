@@ -17,29 +17,108 @@ Font::~Font()
 		TTF_CloseFont(data);
 }
 
+/*	LOGIC
 
-void Font::CharacterWrapMessage(vString& v, string msg, uShort width)
+	for all words
+		if word width > width
+			for each character
+				if width of characters all > max width
+					split word @ char - 1
+					go to next word (could be the split from this word)
+	
+	For each word, determine width of s + space + word
+		If width > max width 
+			add s to v, clear s, then put word into s
+*/
+void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 {
-	uShort i = 0, w = 0;
+	string s, sw;
+	int i, c;
+	bool quit;
+	vString words;
 
-	while (true)
+	// split into words
+	explode(&words, &msg, " ");
+
+	// Bunch of spaces.  We don't care.
+	if (words.empty())
 	{
-		if (i >= msg.length() || msg.empty()) break;
-		
-		w = GetWidth( msg.substr(0, i).c_str() );
-		if ( w + 5 >= width ) //if it overflows, add then go to next line
+		v.push_back(" ");
+		return;
+	}
+	
+	/*	Find words wider than the max width, and split them up into multiple words */
+	i = 0;
+	while (i < words.size())
+	{	
+		if (words.at(i) != "\\n")
 		{
-			v.push_back( msg.substr(0, i) );
-			msg.erase(0, i);
-			i = 0;
+			// split at \n
+			c = words.at(i).find("\\n", 0);
+			if (c != string::npos)
+			{
+				// We found enough characters to fill one line, split and quit
+				words.insert(words.begin() + i + 1, words.at(i).substr(c+2));
+				words.insert(words.begin() + i + 1, "\\n");
+				words.at(i) = words.at(i).substr(0, c);
+			}
+			
+			if (GetWidth(words.at(i), true) > maxWidth)
+			{
+				// Word is too long, try to find a place to split it
+				quit = false;
+				for (c = 0; c < words.at(i).length() && !quit; ++c)
+				{
+					if (GetWidth(words.at(i).substr(0, c), true) > maxWidth)
+					{
+						// We found enough characters to fill one line, split and quit
+						words.insert(words.begin() + i + 1, words.at(i).substr(c-1));
+						words.at(i) = words.at(i).substr(0, c-1);
+						quit = true;
+					}
+				}
+			}
 		}
-		else  //same line keep going
+		++i;
+	}
+
+	/*	Go through all words and try to fit them together on lines no longer than maxWidth */
+	for (i = 0; i < words.size(); ++i)
+	{
+		if (words.at(i) == "\\n")
 		{
-			i++;
+			// If there's a newline marker, dump what we got and start a new line
+			if (!s.empty())
+			{
+				v.push_back(s);
+				s.clear();
+			}
+			
+			v.push_back("");
+		}
+		else
+		{
+			if (s.empty())
+				sw = words.at(i);
+			else
+				sw = ' ' + words.at(i);
+	
+			if (GetWidth(s + sw, true) > maxWidth)
+			{
+				// Too long, next word won't fit, split
+				v.push_back(s);
+				s = words.at(i);
+			}
+			else // add next word
+			{
+				s += sw;
+			}
 		}
 	}
-	//add rest (should be less than a max line length)
-	v.push_back( msg.substr(0, i) );
+	
+	// Add the remains of the string
+	if (!s.empty())
+		v.push_back(s);
 }
 
 SDL_Surface* Font::RenderToSDL(const char* text, color rgb)
@@ -55,7 +134,7 @@ SDL_Surface* Font::RenderToSDL(const char* text, color rgb)
 	return s;
 }
 
-void Font::_renderLine(Image* dst, sShort x, sShort y, string& text, color c)
+void Font::_renderLine(Image* dst, int x, int y, string& text, color c)
 {
 	vString v;
 	int i;
@@ -65,8 +144,7 @@ void Font::_renderLine(Image* dst, sShort x, sShort y, string& text, color c)
 
 	if (!dstsurf) //nowhere to render to, so no reason to do these calculations
 		return;
-	
-	replace(&text, "\\\\c", "\x01"); //use some unwriteable character as a marker
+
 	explode(&v, &text, "\\c"); //break up \c's
 
 	/*	render each section. Using first 3 characters for a color code.
@@ -76,8 +154,6 @@ void Font::_renderLine(Image* dst, sShort x, sShort y, string& text, color c)
 	rDst.y = y;
 	for (i = 0; i < v.size(); i++)
 	{
-		replace(&v.at(i), "\x01", "\\c"); //replace marker with a renderable \c
-	
 		//if we don't have a \c prefix for the message, just render default color without skip.
 		if (i == 0 && text.find("\\c", 0) != 0)
 			surf = RenderToSDL(v.at(i).c_str(), c);
@@ -105,26 +181,22 @@ void Font::_renderLine(Image* dst, sShort x, sShort y, string& text, color c)
 
 }
 
-void Font::Render(Image* dst, sShort x, sShort y, string text, color c, uShort width)
+void Font::Render(Image* dst, int x, int y, string text, color c, int width)
 {
 	if (width > 0) //wrap it 
 	{
 		vString v;
-		CharacterWrapMessage(v, stripCodes(text), width);
+		CharacterWrapMessage(v, text, width);
 		int index;
 		
-		for (int i = 0; i < v.size(); i++)
+		for (int i = 0; i < v.size(); ++i)
 		{
 			_renderLine(dst, x, y, v.at(i), c);
-			index = v.at(i).find_last_of("\\c");
-			
-			//if there was a color change, and the change wasn't prefixed with \\c to escape, change resulting color
-		/*	if (index != string::npos && (index < 1 || v.at(i).at(index-1) != '\\')
-				&& index + 5 < v.at(i).length() ) 
-			{
+
+			index = v.at(i).rfind("\\c");
+			if (index != string::npos && v.at(i).length() > index + 5)
 				c = slashCtoColor(v.at(i).substr(index, 5));
-			}*/
-			
+
 			y += GetHeight();
 		}
 	} 
@@ -135,7 +207,7 @@ void Font::Render(Image* dst, sShort x, sShort y, string text, color c, uShort w
 	
 }
 
-void Font::GetTextSize(string text, uShort* w, uShort* h) 
+void Font::GetTextSize(string text, int* w, int* h) 
 {
 	int _w, _h;
 	//if(getUTF8()) TTF_SizeUTF8(data, text, &_w, &_h);
@@ -144,16 +216,20 @@ void Font::GetTextSize(string text, uShort* w, uShort* h)
 	*h = _h;
 }
 
-uShort Font::GetWidth(string text)
+int Font::GetWidth(string text, bool ignoreCodes)
 {
-	uShort w, h;
-	GetTextSize(text, &w, &h);
+	int w, h;
+	if (ignoreCodes)
+		GetTextSize(stripCodes(text), &w, &h);
+	else
+		GetTextSize(text, &w, &h);
+		
 	return w;
 }
 
-uShort Font::GetHeight(string text, uShort width)
+int Font::GetHeight(string text, int width)
 {
-	uShort h = TTF_FontHeight(data);
+	int h = TTF_FontHeight(data);
 	
 	if (width > 0)
 	{
@@ -165,7 +241,7 @@ uShort Font::GetHeight(string text, uShort width)
 	return h;
 }
 
-uShort Font::GetLineSkip()
+int Font::GetLineSkip()
 {
 	return TTF_FontLineSkip(data);
 }
@@ -179,7 +255,7 @@ FontManager::~FontManager()
 {
 	//Unload all loaded fonts
 	Font* f;
-	for (uShort i = 0; i < loadedFonts.size(); i++)
+	for (int i = 0; i < loadedFonts.size(); i++)
 	{
 		f = loadedFonts.at(i);
 		PRINT("Erasing Font: " + f->filename + " " + pts(f));
@@ -201,7 +277,7 @@ bool FontManager::Initialize()
 	return true;
 }
 
-Font* FontManager::Get(string filename, uShort size, uShort style) 
+Font* FontManager::Get(string filename, int size, int style) 
 {
 	if (filename.empty())
 		filename = config.GetParamString("font", "face");	
@@ -237,9 +313,9 @@ Font* FontManager::Get(string filename, uShort size, uShort style)
 }
 
 //Returns true on success
-bool FontManager::Unload(string filename, uShort size, uShort style) 
+bool FontManager::Unload(string filename, int size, int style) 
 {
-	uShort index;
+	int index;
 	Font* f = Find(filename, size, style, &index);
 	
 	if (f)
@@ -252,10 +328,10 @@ bool FontManager::Unload(string filename, uShort size, uShort style)
 }
 
 //Returns both the font and optionally the index position (Used internally)
-Font* FontManager::Find(string filename, uShort size, uShort style, uShort* index) {
+Font* FontManager::Find(string filename, int size, int style, int* index) {
 	Font* f;
 	
-	for (uShort i = 0; i < loadedFonts.size(); i++)
+	for (int i = 0; i < loadedFonts.size(); i++)
 	{
 		f = loadedFonts.at(i);
 		if (f->filename == filename && f->size == size && f->style == style)

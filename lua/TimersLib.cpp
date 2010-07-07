@@ -81,7 +81,7 @@ int LuaTimer::DoFunction(timer* t, uLong ms)
 	int result = 0;
 	if (lua_pcall(luaState, 3, 1, 0) != 0)
 	{
-		console->AddFormattedMessage("\\c900 * LUATIMER [" + luaFunction + "] " + string(lua_tostring(luaState, -1)));
+		console->AddMessage("\\c900 * LUATIMER [" + luaFunction + "] " + string(lua_tostring(luaState, -1)));
         result = 0; //luaError( luaState, luaFunction, lua_tostring(luaState, -1) );
 	}
 	else

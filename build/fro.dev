@@ -473,7 +473,7 @@ BuildCmd=
 Major=1
 Minor=2
 Release=3
-Build=1244
+Build=1436
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1517,47 +1517,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit168]
-FileName=..\interface\LunemInfoBar.cpp
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit169]
-FileName=..\interface\LunemInfoBar.h
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
 [Unit170]
-FileName=..\interface\LunemParty.cpp
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit171]
-FileName=..\interface\LunemParty.h
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit172]
 FileName=..\entity\Combatant.cpp
 CompileCpp=1
 Folder=../entity
@@ -1567,7 +1527,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit173]
+[Unit171]
 FileName=..\entity\Combatant.h
 CompileCpp=1
 Folder=../entity
@@ -1577,7 +1537,17 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit175]
+[Unit172]
+FileName=..\interface\WorldsViewer.h
+CompileCpp=1
+Folder=../interface
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit173]
 FileName=..\interface\WorldsViewer.cpp
 CompileCpp=1
 Folder=../interface
@@ -1587,17 +1557,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit176]
-FileName=..\interface\PlayerActionMenu.cpp
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit177]
+[Unit175]
 FileName=..\interface\PlayerActionMenu.h
 CompileCpp=1
 Folder=../interface
@@ -1607,7 +1567,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit178]
+[Unit176]
 FileName=..\interface\ScreenText.h
 CompileCpp=1
 Folder=../interface
@@ -1617,7 +1577,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit179]
+[Unit177]
 FileName=..\interface\ScreenText.cpp
 CompileCpp=1
 Folder=../interface
@@ -1627,7 +1587,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit180]
+[Unit178]
 FileName=..\entity\DamageIcon.cpp
 CompileCpp=1
 Folder=../entity
@@ -1637,7 +1597,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit181]
+[Unit179]
 FileName=..\entity\DamageIcon.h
 CompileCpp=1
 Folder=../entity
@@ -1647,8 +1607,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit182]
-FileName=..\interface\MiniMenu.h
+[Unit180]
+FileName=..\interface\ActorStats.cpp
+CompileCpp=1
+Folder=../interface
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit181]
+FileName=..\interface\ActorStats.h
 CompileCpp=1
 Folder=../interface
 Compile=1
@@ -1658,9 +1628,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit183]
-FileName=..\interface\MiniMenu.cpp
+FileName=..\entity\ActorStats.h
 CompileCpp=1
-Folder=../interface
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000
@@ -1888,7 +1858,27 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit174]
-FileName=..\interface\WorldsViewer.h
+FileName=..\interface\PlayerActionMenu.cpp
+CompileCpp=1
+Folder=../interface
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit168]
+FileName=..\interface\LunemParty.cpp
+CompileCpp=1
+Folder=../interface
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit169]
+FileName=..\interface\LunemParty.h
 CompileCpp=1
 Folder=../interface
 Compile=1

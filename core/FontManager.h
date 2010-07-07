@@ -20,24 +20,22 @@ class Font
 
 	SDL_Surface* RenderToSDL(const char* text, color rgb);
 	
-	void Render(Image* dst, sShort x, sShort y, string text, color c, uShort width = 0);
+	void Render(Image* dst, int x, int y, string text, color c, int width = 0);
 	
-	//Wrap message based on individual characters and not spaces
-	void CharacterWrapMessage(vString& v, string msg, uShort width);
-		
-	void GetTextSize(string text, uShort* w, uShort* h);
+	void CharacterWrapMessage(vString& v, string& msg, int maxWidth);	
+	void GetTextSize(string text, int* w, int* h);
 	
-	uShort GetWidth(string text);
-	uShort GetHeight(string text = "", uShort width = 0);
-	uShort GetLineSkip();
+	int GetWidth(string text, bool ignoreCodes = false);
+	int GetHeight(string text = "", int width = 0);
+	int GetLineSkip();
 	
 	TTF_Font* data;
-	uShort size;
-	uShort style;
+	int size;
+	int style;
 	string filename;
 	byte mType;
   private:
-	void _renderLine(Image* dst, sShort x, sShort y, string& text, color c); 
+	void _renderLine(Image* dst, int x, int y, string& text, color c); 
 };
 
 //Single font manager that loads and maintains all font instances
@@ -52,13 +50,13 @@ class FontManager
 	/* 	Get a loaded font. If it isn't loaded, it'll load it from the directory. If the
 		file doesn't exist, it'll return NULL.
 	*/
-	Font* Get(string filename = "", uShort size = 0, uShort style = 0);
+	Font* Get(string filename = "", int size = 0, int style = 0);
 	
 	//Returns true on success
-	bool Unload(string filename, uShort size, uShort style);
+	bool Unload(string filename, int size, int style);
 	
 	//Returns both the font and optionally the index position (Used internally)
-	Font* Find(string filename, uShort size, uShort style = 0, uShort* index = NULL);
+	Font* Find(string filename, int size, int style = 0, int* index = NULL);
 	
   private:
 	std::vector<Font*> loadedFonts;

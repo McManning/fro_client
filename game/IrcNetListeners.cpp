@@ -1093,11 +1093,13 @@ void listener_NetMode(MessageListener* ml, MessageData& md, void* sender)
 //old nick, new nick
 void listener_NetNick(MessageListener* ml, MessageData& md, void* sender)
 {
+	IrcNet* net = (IrcNet*)sender;
+	
 	string oldn = md.ReadString("oldnick");
 	string newn = md.ReadString("newnick");
 
 	Entity* e;
-	if (oldn == game->mPlayer->mName)
+	if (newn == net->GetNick()) //we've changed our nick
 		e = game->mPlayer;
 	else
 		e = game->mMap->FindEntityByName(oldn, ENTITY_REMOTEACTOR);
@@ -1189,15 +1191,25 @@ void listener_NetNickInUse(MessageListener* ml, MessageData& md, void* sender)
 		userlist->ChangeNick(game->mPlayer->mName, newnick);
 
 	game->mPlayer->mName = newnick;
-	game->mPlayerData.SetParamString("user", "nick", newnick);
+	
+	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
+	game->mPlayerData.SetParamString(e, "nick", s);
+	game->SavePlayerData();
+	
 	net->ChangeNick(newnick);
 }
 
 // Nothing in message
 void listener_NetVerified(MessageListener* ml, MessageData& md, void* sender)
 {
+	IrcNet* net = (IrcNet*)sender;
+	
 	if (loginDialog)
 		loginDialog->Die();
+	
+	// Bug fix, the server could have changed our nick on join (if it was too long, etc)
+	// Without giving an Erronous Nickname message.
+	game->mPlayer->mName = net->GetNick();
 	
 	game->LoadOnlineWorld(game->mStartingWorldId);
 }

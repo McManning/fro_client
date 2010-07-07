@@ -112,7 +112,7 @@ PRINT("LuaMessageListener::DoFunction lua_pcall");
 
 	if (lua_pcall(luaState, 4, 1, 0) != 0)
 	{
-		console->AddFormattedMessage("\\c900 * LUAEVENT [" + luaFunction + "] " + string(lua_tostring(luaState, -1)));
+		console->AddMessage("\\c900 * LUAEVENT [" + luaFunction + "] " + string(lua_tostring(luaState, -1)));
 		//result = luaError( luaState, luaFunction, lua_tostring(luaState, -1) )
         result = 0;
 	}

@@ -81,6 +81,9 @@ class Actor : public Entity, public Combatant
 	/*	Fall down using a custom velocity */
 	void Fall(int height, int velocity);
 	
+	/*	Rise with a custom velocity. Will stop at height 1000. No events triggered */
+	void Rise(int velocity);
+	
 	/*	Code to be ran after a jump */
 	virtual void Land();
 
@@ -175,7 +178,7 @@ class Actor : public Entity, public Combatant
 	
 	//Jumping related
 	byte mJumpType;
-	int mJumpVelocity;
+	int mCustomVelocity;
 	bool mFalling;
 	
 	bool mLimitedAvatarSize; //does this actor follow size limit guidelines for avatars

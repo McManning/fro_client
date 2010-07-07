@@ -17,7 +17,7 @@ class Input: public Widget {
 	~Input();
 
 	void Render();
-
+	
 	void Event(SDL_Event* event);
 	
 	//BEGIN INPUT-WIDGET-ONLY STUFF
@@ -54,7 +54,7 @@ class Input: public Widget {
 	
 	void RecalculatePixelX();
 	
-	bool IsMenuEnabled() const { return mMenuEnabled; };
+	bool IsMenuEnabled() const { return mMenuEnabled && !mIsPassword; };
 	void SetMenuEnabled(bool b) { mMenuEnabled = b; };
 	
 	/*	Use this instead of accessing mImage directly */
@@ -81,6 +81,9 @@ class Input: public Widget {
   protected:
 	void _insertText(string msg);
 	void _updateText(); //redraws subsurf w/ text
+	
+	void _renderPassword(Image* scr, rect& r);
+	void _renderText(Image* scr, rect& r);
 	
 	bool mNeedUpdate;
 	bool mClickedOnce; //double clicking

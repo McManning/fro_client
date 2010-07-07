@@ -91,7 +91,7 @@ void Map::Event(SDL_Event* event)
 
 void Map::HandleLeftClick()
 {
-	if (!HasMouseFocus())
+	if (!HasMouseFocus() || game->mGameMode == GameManager::MODE_DUEL)
 		return;
 		
 	Entity* e = GetEntityUnderMouse(true, false);
@@ -107,7 +107,7 @@ void Map::HandleLeftClick()
 
 void Map::HandleRightClick()
 {
-	if (!HasMouseFocus())
+	if (!HasMouseFocus() || game->mGameMode == GameManager::MODE_DUEL)
 		return;
 		
 	Entity* e = GetEntityUnderMouse(false, true);

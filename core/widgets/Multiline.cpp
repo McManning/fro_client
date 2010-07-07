@@ -12,7 +12,7 @@ const char* g_sSupportedUrls[] =
 	"http://",
 	"ftp://",
 	"https://",
-	"steam://",
+	//"steam://",
 	NULL
 };
 
@@ -147,6 +147,7 @@ void Multiline::Render()
 void Multiline::Event(SDL_Event* event)
 {
 	sShort s;
+	string url;
 	switch (event->type)
 	{
         case SDL_MOUSEBUTTONDOWN: {
@@ -159,7 +160,9 @@ void Multiline::Event(SDL_Event* event)
 				s = GetLineUnderXY(event->button.x, event->button.y);
 				if (s != -1)
 				{
-					ClickUrl(s);
+					url = GetUrl(s);
+					if (!url.empty())
+						new OpenUrl(url);
 				}
 			}
 		} break;
@@ -195,7 +198,7 @@ void Multiline::Event(SDL_Event* event)
 			mClickedOnce = false;
 			if (mSelectOnHover)
 			{
-				sShort s = GetLineUnderXY(event->motion.x, event->motion.y);
+				s = GetLineUnderXY(event->motion.x, event->motion.y);
 				if (s != -1)
 				{
 					mSelected = s;
@@ -203,33 +206,18 @@ void Multiline::Event(SDL_Event* event)
 						mSelected = mLines.size() - 1;
 				}
 			}
+			else // Check for urls, and give a hint box
+			{
+				s = GetLineUnderXY(event->motion.x, event->motion.y);
+				if (s != -1 && !GetUrl(s).empty())
+					mHoverText = "Right click to open url";
+				else
+					mHoverText.clear();
+			}
 		} break;
 		default: break;
 	}
 	Widget::Event(event);
-}
-
-//splits via \\n into AddMessage (for serverside messages and whatnot that come from config data that strips control characters)
-void Multiline::AddFormattedMessage(string msg)
-{
-    uShort nx = 0;
-	string::size_type pos, lastPos = 0;
-	do //loop through and break it up based on \n~
-	{
-		pos = msg.find("\\n", lastPos);
-		if (pos != string::npos)
-			nx = pos - lastPos;
-		else
-			nx = msg.size() - lastPos;
-		//TODO: Color each one with the color the previous message ended with.
-		AddMessage(msg.substr(lastPos, nx));
-		lastPos = pos + 2;
-	}
-	while (pos != string::npos);
-
-#ifdef OPTIMIZED
-	Screen::Instance()->Update();
-#endif
 }
 
 void Multiline::AddMessage(string msg)
@@ -354,46 +342,27 @@ void Multiline::ReflowLines(uShort w)
 //Cuts up this line adds to lines list as multiple lines - Note: This does calculate in different character widths
 void Multiline::SplitLines(string line, uShort maxWidth)
 {
+	vString v;
+	string lastColor;
+	int i, index;
+	
 	if (!mWrap || maxWidth == 0) //just clone (TODO: SHOULD just use the original list, but we need to add that check everywhere
 	{
 		_addLine(line);
 		return;
 	}
 
-	if (!mFont) return;
+	ASSERT(mFont);
 
-	string color, lastColor;
-	string temp;
-	uShort w, linecount = 0;
-	while (true) //TODO: This code is fucking horrible. Rewrite the whole thing.
+	mFont->CharacterWrapMessage(v, line, maxWidth);
+	for (i = 0; i < v.size(); ++i)
 	{
-		if (line.empty()) break;
-
-		if (line.find("\\c", 0) == 0)
-		{
-			color = line.substr(0, 5); //current color to add text as
-			temp += color;
-			line.erase(0, 5);
-		}
-		else
-		{
-			w = mFont->GetWidth( stripCodes(temp) );
-			if (w >= maxWidth) //Add a new line and eat away at the old
-			{
-				_addLine( lastColor + temp );
-				lastColor = color; //color of the end of last line inserted
-				temp.clear();
-				linecount++;
-			}
-			else //add a character to temp and eat it from the message
-			{
-				temp += line.at(0);
-				line.erase(0, 1);
-			}
-		}
+		_addLine( lastColor + v.at(i) );
+			
+		index = v.at(i).rfind("\\c");
+		if (index != string::npos && v.at(i).length() > index + 5)
+			lastColor = v.at(i).substr(index, 5);
 	}
-	//add rest (should be less than a max line length)
-	_addLine( lastColor + temp );
 }
 
 //return number of lines visible
@@ -483,7 +452,7 @@ sShort Multiline::GetLineUnderXY(sShort x, sShort y) //TODO: FUCKING CLEAN THIS 
 	if (topLine < 0)
 		topLine = 0;
 
-	uShort height = GetNumberOfLinesVisible();
+	int height = GetNumberOfLinesVisible();
 	height *= (mFont->GetHeight());
 	height += mFont->GetHeight();
 
@@ -514,60 +483,104 @@ sShort Multiline::GetLineUnderXY(sShort x, sShort y) //TODO: FUCKING CLEAN THIS 
     return -1;
 }
 
-void Multiline::ClickUrl(uShort line) //TODO: Better version of this.
-{
-	if (line >= mLines.size() || mUrls.empty()) return;
-	uShort start;
-	sShort t;
-	string s;
-
-	int i = 0;
-	while (g_sSupportedUrls[i])
-	{
-		if (mLines.at(line).find(g_sSupportedUrls[i], 0) != string::npos)
-		{
-			s = g_sSupportedUrls[i];
-			break;
-		}
-		++i;
-	}
+/**	From the provided line index, it will attempt to search both up and down for the beginning and end of a url,
+	compare that collected url with the list of collected ones when messages were added, find a match, and return.
 	
-	if (s.empty()) //not a valid url type
-		return;
-
-	start = mLines.at(line).find(s, 0);
+	@todo Something less complicated :(
+*/
+string Multiline::GetUrl(int line)
+{
+	int t, i, index;
+	bool found, forwardSearch;
 	string url;
-
+	
+	if (line >= mLines.size() || mUrls.empty()) 
+		return "";
+	
+	// search up until we find a supported URL prefix
 	t = line;
-	//keep going until there's no more lines or a space
-	while (true)
+	found = false;
+	forwardSearch = false;
+	while (!found && t > -1)
 	{
-		if (t >= mLines.size()) //no more lines
-			break;
-		if (mLines.at(t).find(' ', start) == string::npos) //keep going
+		i = 0;
+		while (g_sSupportedUrls[i] && !found) // search for valid prefix
 		{
-			url += mLines.at(t).substr(start);
+			index = mLines.at(t).rfind(g_sSupportedUrls[i]);
+			if (index != string::npos) //found prefix!
+			{
+				//make sure there's no space between the prefix and the body we clicked on
+				if (mLines.at(t).find(" ", index) == string::npos)
+				{
+					url = mLines.at(t).substr(index);
+					found = true;
+					forwardSearch = true;
+				}
+				else //there CAN be a space if this url is on the line we're trying to use
+				{
+					if (line == t)
+					{
+						url = mLines.at(t).substr(index, mLines.at(t).find(" ", index) - index);
+						found = true;
+						forwardSearch = false;
+					}
+				}
+			}
+			++i;
 		}
-		else //we have a space
+		
+		// To speed up searching, if this line has any whitespace, then it's safe to assume the url matching the line
+		// we are trying to access does not exist.
+		if (!found)
 		{
-			url += mLines.at(t).substr(start, mLines.at(t).find(' ', start) - start);
-			break; //grabbed it
+			if (mLines.at(t).find(" ", index) != string::npos)
+				break;
+			
+			--t;
 		}
-		start = 0;
-		t++;
 	}
-	url = stripCodes(url); //erase any \c that may have been inserted
 
-	//now we have a url, however it may have some shit tagged on (from the next line)
-	//soooo, compare it to the collected url list
-	for (t = mUrls.size() - 1; t > -1; t--) //reverse cuz most recent are @ the bottom
+	if (found)
 	{
-		if (mUrls.at(t) == url.substr(0, mUrls.at(t).length())) //compares length along with contents
+		++t; // skip ahead a line as the above search ends too far back
+		
+		// search down until we find whitespace
+		if (forwardSearch)
 		{
-			new OpenUrl(mUrls.at(t));
-			return;
+			found = false;
+			while (t < mLines.size() && !found)
+			{
+				index = mLines.at(t).find(' ');
+				if (index == string::npos) //keep going
+				{
+					url += mLines.at(t);
+				}
+				else //we have a space
+				{
+					url += mLines.at(t).substr(0, index);
+					found = true; //grabbed it
+				}
+				++t;
+			}
+		}
+		
+		printf("Final Url: %s\n", url.c_str());
+		url = stripCodes(url); //erase any \c that may have been inserted
+		
+		//now we have a url, however it may have some shit tagged on (from the next line)
+		//soooo, compare it to the collected url list. TODO: A better method?
+		found = false;
+		for (t = mUrls.size() - 1; t > -1 && !found; --t) //reverse cuz most recent are @ the bottom
+		{
+			if (mUrls.at(t) == url.substr(0, mUrls.at(t).length())) //compares length along with contents
+			{
+				url = mUrls.at(t);
+				found = true;
+			}
 		}
 	}
+
+	return url;
 }
 
 //TODO: eraseable while wrapping?

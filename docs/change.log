@@ -959,6 +959,47 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Added DamageIcon entity with Entity.NewDamageIcon() for Lua
 	NOTE: Might want to attach it to Entity.Create() instead...
 
+100629
+- Removed species information from combatants and replaced with base stats, accessible
+	via the same method of current stats. (GetProp/SetProp)
+- Added Duel mode to Game Modes, and lua functions Game.GetMode()/.SetMode() to change the mode
+- Added GAME_MODE{int:mode} event triggered during GameManager::ToggleGameMode()
+- Added checks to make sure players don't click map entities while in a duel
+- Added Actor.Rise() to lua, to rise the z height of the actor by a defined velocity until zheight is 1000
+	(Will be used for rising-off-map sorts of things)
+
+100701
+- Changed ActorStats to a Widget (was an Entity) so that it can be used for the party dialog
+	Game.NewStatsBar(actor, x, y) will return a widget pointer
+	Game.RemoveStatsBar(ptr) To remove the widget created by NewStatsBar
+
+100702
+- Rewrote wrapping method for fonts. Will now properly word wrap messages (hooray!)
+- Fixed handling of \cRGB for wrapped font rendering
+- Removed \\c escape behavior, as it's never used and slows down the word wrapping routine
+	that gets called more often than it should.
+- Removed unique routine for message wrapping in Multilines and set it to use the fonts own wrap routine
+- Added native support for \n line breaking in font multiline rendering 
+- Removed AddFormattedMessage() from Console and Multiline. \n is supported in AddMessage() due to the above
+- Rewrote URL detection in Multilines. Will now realize the url is being accessed no matter what line is clicked
+- Added hintbox informing the user that urls are right-clickable whenever a url is hovered.
+	A lot of people seemed to have a problem with understanding that concept.
+- Added password mask mode for the Input widget. In password mask mode, the letters will be replaced by symbols, 
+	and right click, highlight, or cursor repositioning will not work. 
+- Fixed a bug where joining an irc server with a nickname too long would create issues where the internal knowledge
+	of what our nick is, is different than the servers version. tl;dr: Would fail to join channels. 
+- Fixed the same above bug, but also for the /nick command and the nick change method in the options window.
+
+100703
+- Fixed case sensitive issue on channel names
+- 
+
+
+
+
+
+
+
 
 
 

@@ -4,14 +4,14 @@
 
 #include "../core/Core.h"
 #include "../core/widgets/Frame.h"
+#include "ActorStats.h"
 
-class LunemInfoBar;
 class LunemParty : public Frame
 {
   public:
 	LunemParty();
 	
-	LunemInfoBar* mInfoBar[5];
+	ActorStats* mInfoBar[5];
 };
 
 #endif //_LUNEMPARTY_H_

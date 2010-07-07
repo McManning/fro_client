@@ -349,9 +349,10 @@ void GuiManager::_renderCursorTipText(Image* scr, string& text)
 	
 	//TODO: WRAP!
 	
-	mFont->GetTextSize(text, &pos.w, &pos.h);
-	pos.h += 2;
-	pos.w += 8;
+	int w, h;
+	mFont->GetTextSize(text, &w, &h);
+	pos.h = h + 2;
+	pos.w += w + 8;
 	pos.x = GetMouseX();
 	pos.y = GetMouseY() - pos.h;
 

@@ -28,12 +28,9 @@ class Multiline: public Widget
 
 	void AddMessage(string msg);
 
-	//breaks message into multiple lines via \\n.
-	void AddFormattedMessage(string msg);
-
 	void SplitLines(string line, uShort w);
 
-	void ClickUrl(uShort line);
+	string GetUrl(int line);
 	sShort GetLineUnderXY(sShort x, sShort y);
 
 	void RecalculateScrollbarMax();

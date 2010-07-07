@@ -9,6 +9,7 @@
 #include "../core/net/DataPacket.h"
 #include "../entity/RemoteActor.h"
 #include "../interface/ScreenText.h"
+#include "../interface/ActorStats.h"
 
 // .Print("Message")
 int game_Print(lua_State* ls)
@@ -16,7 +17,7 @@ int game_Print(lua_State* ls)
 	PRINT("game_Print");
 	luaCountArgs(ls, 1);
 
-	game->mChat->AddFormattedMessage( lua_tostring(ls, 1) );
+	game->mChat->AddMessage( lua_tostring(ls, 1) );
 	
 	return 0;
 }
@@ -74,7 +75,7 @@ int game_ToggleChat(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
 	game->mChat->SetVisible(lua_toboolean(ls, 1));
-	return 1;
+	return 0;
 }
 
 //	.SetScreenText("text", r, g, b, animationType, y<300>)
@@ -102,6 +103,50 @@ int game_SetScreenText(lua_State* ls)
 	return 0;
 }
 
+// .SetMode(mode) - Calls game->ToggleGameMode with the specified value. For swapping
+//		between action, chat, duel, etc
+int game_SetMode(lua_State* ls)
+{
+	game->ToggleGameMode((GameManager::gameMode)lua_tonumber(ls, 1));
+	return 0;
+}
+
+//	mode = .GetMode()
+int game_GetMode(lua_State* ls)
+{
+	lua_pushnumber(ls, (int)game->mGameMode);
+	return 1;
+}
+
+// ptr  = .NewStatsBar(actor, x, y)
+int game_NewStatsBar(lua_State* ls)
+{
+	luaCountArgs(ls, 3);
+	Actor* a = (Actor*)lua_touserdata(ls, 1);
+
+	ActorStats* s = new ActorStats(game->mMap);
+	s->SetLinked(a);
+	
+	rect r = s->GetPosition();
+	r.x = (int)lua_tonumber(ls, 2);
+	r.y = (int)lua_tonumber(ls, 3);
+	s->SetPosition(r);
+	
+	lua_pushlightuserdata(ls, s);
+	return 1;
+}
+
+//	.RemoveStatsBar(ptr)
+int game_RemoveStatsBar(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	
+	ActorStats* s = (ActorStats*)lua_touserdata(ls, 1);
+	s->Die();
+	
+	return 0;
+}
+
 static const luaL_Reg functions[] = {
 	{"Print", game_Print},
 	{"NetSendToChannel", game_NetSendToChannel},
@@ -109,6 +154,10 @@ static const luaL_Reg functions[] = {
 	{"Version", game_Version},
 	{"ToggleChat", game_ToggleChat},
 	{"SetScreenText", game_SetScreenText},
+	{"SetMode", game_SetMode},
+	{"GetMode", game_GetMode},
+	{"NewStatsBar", game_NewStatsBar},
+	{"RemoveStatsBar", game_RemoveStatsBar},
 	{NULL, NULL}
 };
 

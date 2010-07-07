@@ -801,24 +801,6 @@ int entity_Explode(lua_State* ls)
 	return 0;
 }
 
-/*
-// ent  = .NewDamageIcon(dmg, bgR, bgG, bgB, fontR, fontG, fontB)
-int entity_NewDamageIcon(lua_State* ls)
-{
-	luaCountArgs(ls, 7);
-
-	color bg((byte)lua_tonumber(ls, 2), (byte)lua_tonumber(ls, 3), (byte)lua_tonumber(ls, 4));
-	color fg((byte)lua_tonumber(ls, 5), (byte)lua_tonumber(ls, 6), (byte)lua_tonumber(ls, 7));
-	
-	DamageIcon* d = new DamageIcon((int)lua_tonumber(ls, 1), 3000, bg, fg);
-	game->mMap->AddEntity(d);
-	d->mMap = game->mMap;
-	
-	lua_pushlightuserdata(ls, d);
-	return 1;
-}
-*/
-
 static const luaL_Reg functions[] = {
 	{"Exists", entity_Exists},
 	{"FindById", entity_FindById},
@@ -843,7 +825,6 @@ static const luaL_Reg functions[] = {
 	{"SetImage", entity_SetImage},
 	{"SetAvatar", entity_SetAvatar},
 	{"Explode", entity_Explode},
-	//{"NewDamageIcon", entity_NewDamageIcon},
 	{NULL, NULL}
 };
 
