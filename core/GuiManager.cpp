@@ -258,7 +258,17 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 					//if we have a focused and they try to access something outside our dialog, stop it
 					if (GetDemandsFocus() && !GetDemandsFocus()->HasKeyFocusInTree())
 					{
-						hasKeyFocus = NULL;
+						if (GetDemandsFocus()->mTemporary)
+						{
+							GetDemandsFocus()->Die();
+							hasKeyFocus->MoveToTop();
+							hasKeyFocus->Event(event);
+							_sendToGlobalEventHandlers(event, hasKeyFocus);
+						}
+						else
+						{
+							hasKeyFocus = NULL;
+						}
 //						PRINT("Gui Demands Focus: " + pts(GetDemandsFocus()));
 					}
 					else
@@ -483,7 +493,7 @@ void GuiManager::RemoveGlobalEventHandler(Widget* w)
 //	PRINT("Gui::RemoveGlobalEventHandler: " + w->mId);
 	
 	//Null them instead of deleting, in case we're iterating the list elsewhere
-	for (uShort i = 0; i < mGlobalEventHandlers.size(); i++)
+	for (int i = 0; i < mGlobalEventHandlers.size(); ++i)
 	{
 		if (mGlobalEventHandlers.at(i) == w)
 			mGlobalEventHandlers.at(i) = NULL;
@@ -493,7 +503,8 @@ void GuiManager::RemoveGlobalEventHandler(Widget* w)
 void GuiManager::_sendToGlobalEventHandlers(SDL_Event* event, Widget* excluding)
 {
 //	PRINT("Gui::_sendToGlobalEventHandlers");
-	for (uShort i = 0; i < mGlobalEventHandlers.size(); i++)
+
+	for (int i = 0; i < mGlobalEventHandlers.size(); ++i)
 	{
 		if (!mGlobalEventHandlers.at(i))
 		{
@@ -514,7 +525,7 @@ void GuiManager::RemoveWidget(Widget* w)
 {
 	if (w)
 	{
-		for (uShort i = 0; i < mDeletionStack.size(); i++)
+		for (int i = 0; i < mDeletionStack.size(); ++i)
 		{
 			if (mDeletionStack.at(i) == w)
 				return;
@@ -525,7 +536,7 @@ void GuiManager::RemoveWidget(Widget* w)
 
 void GuiManager::_cleanDeletionStack()
 {
-	for (uShort i = 0; i < mDeletionStack.size(); i++)
+	for (int i = 0; i < mDeletionStack.size(); ++i)
 	{
 		SAFEDELETE(mDeletionStack.at(i));
 	}
@@ -555,7 +566,7 @@ Widget* GuiManager::GetDemandsFocus() const
 
 void GuiManager::RemoveFromDemandFocusStack(Widget* w)
 {
-	for (int i = 0; i < mDemandFocusStack.size(); i++)
+	for (int i = 0; i < mDemandFocusStack.size(); ++i)
 	{
 		if (mDemandFocusStack.at(i) == w)
 		{
@@ -567,7 +578,7 @@ void GuiManager::RemoveFromDemandFocusStack(Widget* w)
 
 void GuiManager::GetUserAttention()
 {
-	uShort i = config.GetParamInt("system", "alerts");
+	int i = config.GetParamInt("system", "alerts");
 	if ( i == 1 || (i == 2 && !(SDL_GetAppState() & SDL_APPINPUTFOCUS)) )
 	{
 		if (sound)

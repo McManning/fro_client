@@ -95,7 +95,7 @@ uShort timer_checkForTimeout(timer* t, uLong ms)
 
 
 PlayerActionMenu::PlayerActionMenu(int timeout, Actor* controlled)
-	: Frame(gui, "PlayerActionMenu", rect(50,180,200,100), "Select Action (" + its(timeout) + " sec)", true, false, false, true)
+	: Frame(gui, "PlayerActionMenu", rect(50,220,200,100), "Select Action (" + its(timeout) + " sec)", true, false, false, true)
 {
 	m_pControlled = controlled;
 	m_iCountdown = timeout;

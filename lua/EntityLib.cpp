@@ -325,8 +325,8 @@ int entity_Say(lua_State* ls)
 
 	string msg = lua_tostring(ls, 2);
 
-	bool showbubble = (numArgs > 2) ? lua_tonumber(ls, 3) : 1;
-	bool showinchat = (numArgs > 3) ? lua_tonumber(ls, 4) : 1;
+	bool showbubble = (numArgs > 2) ? lua_toboolean(ls, 3) : 1;
+	bool showinchat = (numArgs > 3) ? lua_toboolean(ls, 4) : 1;
 
 	if (showbubble)
 		game->mMap->mBubbles.CreateBubble(e, msg);
@@ -429,7 +429,7 @@ int _parseEntityCollisionFile(lua_State* ls, Entity* e)
 	
 	return 0;
 }
-/*		Read in	t.Image = { File = "Something", Width = #, Delay = # }	
+/*		Read in	t.Image = { File = "Something", Width = #, Delay = #, Clip = {x, y, w, h} }	
 			OR 	t.Image = "Filename"
 */
 int _parseEntityImage(lua_State* ls, StaticObject* so, int virtualIndex = -1)

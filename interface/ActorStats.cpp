@@ -8,12 +8,12 @@ const int HEALTH_SLIDE_MS = 10;
 ActorStats::ActorStats(Widget* parent)
 {
 	mImage = resman->LoadImg("assets/stats_bar.png");
-	mFont = fonts->Get("", 14);
+	mFont = fonts->Get();
 	mSmallFont = fonts->Get("", 10);
 
 	SetLinked(NULL);
 	
-	SetSize(250, 60);
+	SetSize(200, 50);
 	
 	if (parent)
 		parent->Add(this);
@@ -53,7 +53,7 @@ void ActorStats::Render()
 		RenderHealth(scr, r);
 		
 		// draw name
-		mFont->Render(scr, r.x + 5, r.y + 5, mLinkedActor->mName, color());
+		mFont->Render(scr, r.x + 5, r.y + 4, mLinkedActor->mName, color());
 		
 		//draw icons for type
 	}
@@ -68,8 +68,8 @@ void ActorStats::Render()
 
 void ActorStats::RenderHealth(Image* scr, rect& r)
 {
-	rect healthBarPos(r.x + 6, r.y + 26, r.w - 12, 10);
-	rect sr(250, 0, 2, 10);
+	rect healthBarPos(r.x + 6, r.y + 22, r.w - 12, 10);
+	rect sr(200, 0, 2, 10);
 
 	// draw health bar fg: width = healthBarPos.w * (cur hp / max hp)
 	double d = (double)mCurrentHealth / (double)mLinkedActor->m_iMaxHealth;
@@ -90,13 +90,16 @@ void ActorStats::RenderHealth(Image* scr, rect& r)
 	
 	// draw health text (cur hp / max hp) left aligned
 	mSmallFont->Render(scr, r.x + r.w - mSmallFont->GetWidth(msg) - 5, 
-						healthBarPos.y + healthBarPos.h + 5, 
+						healthBarPos.y + healthBarPos.h + 3, 
 						msg, 
 						color());
 	
+	msg = "Lv." + its(mLinkedActor->m_iLevel);
+	
 	// Draw level (same position, right aligned)
-	mSmallFont->Render(scr, r.x + 5, healthBarPos.y + healthBarPos.h + 5, 
-						"Lv." + its(mLinkedActor->m_iLevel), 
+	mSmallFont->Render(scr, r.x + 5, 
+						healthBarPos.y + healthBarPos.h + 3, 
+						msg, 
 						color());
 	
 	//if our health is going down, slide down

@@ -42,6 +42,7 @@ class AvatarEdit : public Frame
 */
 class Button;
 class Multiline;
+class AvatarCreator;
 class AvatarFavorites : public Frame 
 {
   public:
@@ -75,6 +76,7 @@ class AvatarFavorites : public Frame
 	std::vector<avatarProperties*> mAvatars;
 
 	AvatarEdit* mAvatarEdit;
+	AvatarCreator* mAvatarCreator;
 };
 
 extern AvatarFavorites* avatarFavorites; //<-- todo: GetInstance()

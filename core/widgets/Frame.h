@@ -27,6 +27,7 @@ class Frame : public Widget
 
 	bool mMoveable;
 	bool mSizeable; 
+	bool mBoxRender; //will mImage be rendered as a box, or a full image
 	
 	Image* mSizer;
 	Button* mClose;

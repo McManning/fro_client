@@ -109,7 +109,10 @@ AvatarCreator::~AvatarCreator()
 	resman->Unload(mFullComposite);
 	
 	if (avatarFavorites)
+	{
 		avatarFavorites->SetActive(true);
+		avatarFavorites->mAvatarCreator = NULL;
+	}
 }
 
 void AvatarCreator::CreateControls()

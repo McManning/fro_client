@@ -103,6 +103,15 @@ int game_SetScreenText(lua_State* ls)
 	return 0;
 }
 
+//	.ShowInfoBar("id", "text", duration)
+int game_ShowInfoBar(lua_State* ls)
+{
+	luaCountArgs(ls, 3);
+
+	game->ShowInfoBar(lua_tostring(ls, 1), lua_tostring(ls, 2), (int)lua_tonumber(ls, 3));
+	return 0;
+}
+
 // .SetMode(mode) - Calls game->ToggleGameMode with the specified value. For swapping
 //		between action, chat, duel, etc
 int game_SetMode(lua_State* ls)
@@ -147,6 +156,21 @@ int game_RemoveStatsBar(lua_State* ls)
 	return 0;
 }
 
+// bool = .IsStatsBarDecreasing(ptr)
+int game_IsStatsBarDecreasing(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	
+	ActorStats* s = (ActorStats*)lua_touserdata(ls, 1);
+	
+	if (s)
+		lua_pushboolean(ls, s->mCurrentHealth != s->mLinkedActor->m_iCurrentHealth);
+	else
+		lua_pushboolean(ls, false);
+		
+	return 1;	
+}
+
 static const luaL_Reg functions[] = {
 	{"Print", game_Print},
 	{"NetSendToChannel", game_NetSendToChannel},
@@ -154,10 +178,12 @@ static const luaL_Reg functions[] = {
 	{"Version", game_Version},
 	{"ToggleChat", game_ToggleChat},
 	{"SetScreenText", game_SetScreenText},
+	{"ShowInfoBar", game_ShowInfoBar},
 	{"SetMode", game_SetMode},
 	{"GetMode", game_GetMode},
 	{"NewStatsBar", game_NewStatsBar},
 	{"RemoveStatsBar", game_RemoveStatsBar},
+	{"IsStatsBarDecreasing", game_IsStatsBarDecreasing},
 	{NULL, NULL}
 };
 

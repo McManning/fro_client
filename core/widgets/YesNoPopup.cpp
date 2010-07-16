@@ -92,8 +92,8 @@ YesNoPopup::~YesNoPopup()
 
 void YesNoPopup::Render()
 {
-	if (gui->GetDemandsFocus() == this)
-		gui->RenderDarkOverlay();
+	//if (gui->GetDemandsFocus() == this)
+	//	gui->RenderDarkOverlay();
 	
 	Frame::Render();
 }

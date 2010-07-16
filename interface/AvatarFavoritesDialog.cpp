@@ -199,6 +199,7 @@ AvatarFavorites::AvatarFavorites() :
 	
 	avatarFavorites = this;
 	mAvatarEdit = NULL;
+	mAvatarCreator = NULL;
 
 	Load();
 
@@ -213,7 +214,13 @@ AvatarFavorites::~AvatarFavorites()
 	for (int i = 0; i < mAvatars.size(); i++)
 		delete mAvatars.at(i);
 
-	avatarFavorites = NULL;
+	avatarFavorites = NULL;	
+	
+	if (mAvatarEdit)
+		mAvatarEdit->Die();
+		
+	if (mAvatarCreator)
+		mAvatarCreator->Die();
 }
 
 void AvatarFavorites::EditSelected()
@@ -224,8 +231,8 @@ void AvatarFavorites::EditSelected()
 	// If it's an avy://, edit with AvatarCreator
 	if (mAvatars.at(mList->mSelected)->url.find("avy://", 0) == 0)
 	{
-		AvatarCreator* ac = new AvatarCreator();
-		ac->ImportUrl(mAvatars.at(mList->mSelected)->url);
+		mAvatarCreator = new AvatarCreator();
+		mAvatarCreator->ImportUrl(mAvatars.at(mList->mSelected)->url);
 	}
 	else //edit with AvatarEdit
 	{

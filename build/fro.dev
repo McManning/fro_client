@@ -1,7 +1,7 @@
 [Project]
 FileName=fro.dev
 Name=fro
-UnitCount=181
+UnitCount=183
 Type=0
 Ver=1
 ObjFiles=
@@ -473,7 +473,7 @@ BuildCmd=
 Major=1
 Minor=2
 Release=3
-Build=1436
+Build=1540
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1628,9 +1628,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit183]
-FileName=..\entity\ActorStats.h
+FileName=..\core\widgets\RightClickMenu.h
 CompileCpp=1
-Folder=../entity
+Folder=../core/widgets
 Compile=1
 Link=1
 Priority=1000
@@ -1881,6 +1881,16 @@ BuildCmd=
 FileName=..\interface\LunemParty.h
 CompileCpp=1
 Folder=../interface
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit182]
+FileName=..\core\widgets\RightClickMenu.cpp
+CompileCpp=1
+Folder=../core/widgets
 Compile=1
 Link=1
 Priority=1000

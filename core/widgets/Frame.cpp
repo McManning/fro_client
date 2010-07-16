@@ -20,7 +20,8 @@ Frame::Frame(Widget* wParent, string sId, rect rPosition, string sCaption,
 	mFont = fonts->Get();
 	mId = sId;
 	mType = WIDGET_FRAME;
-
+	mBoxRender = true;
+	
 	//Mouse may move outside our frame while dragging. TODO: Find a way to fix that issue!
 	gui->AddGlobalEventHandler(this);
 	mMoveable = bMoveable;
@@ -88,7 +89,12 @@ void Frame::Render()
 		scr->SetClip(r);
 		
 		if (mImage)
-			mImage->RenderBox(scr, rect(0, 0, 24, 24), r);
+		{
+			if (mBoxRender)
+				mImage->RenderBox(scr, rect(0, 0, 24, 24), r);
+			else
+				mImage->Render(scr, r.x, r.y, rect(0, 0, r.w, r.h));
+		}
 		
 		if (mSizer)
 			mSizer->Render(scr, r.x + r.w - 24, r.y + r.h - 24);

@@ -22,10 +22,10 @@ class Button: public Widget
 	void SetCaption(string text);
 
 	void (*onClickCallback)(Button*);
-	
-  protected:
+
 	string mCaption; 
 	Image* mCaptionImage;
+	bool mCenterAlign;
 };
 
 void callback_closeFrame(Button* b);

@@ -93,7 +93,7 @@ void DamageIcon::Render()
 			x = 0;
 		else
 			x = mBorders.at(index - 1) + 1;
-			
+
 		width += (mBorders.at(index) - x) - LETTER_CROWDING;
 	}
 
@@ -113,11 +113,12 @@ void DamageIcon::Render()
 	for (i = 0; i < mId.length(); ++i)
 	{
 		index = mId.at(i) - '0';
+
 		if (index - 1 < 0)
 			x = 0;
 		else
 			x = mBorders.at(index - 1) + 1;
-			
+
 		width = mBorders.at(index) - x;
 
 		mFontImage->Render(scr, dx, r.y + (mImage->Height() - mFontImage->Height()) / 2, 

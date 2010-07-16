@@ -86,6 +86,7 @@ class GameManager : public Frame
 	gameMode mGameMode;
 	
 	void ToggleGameMode(gameMode mode);
+	void ShowInfoBar(string id, string msg, int duration);
 
   private:
 	void _buildHud();

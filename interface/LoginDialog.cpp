@@ -362,8 +362,8 @@ void LoginDialog::SetControlState(bool enabled)
 	Get("skip")->SetVisible(enabled);
 	Get("register")->SetVisible(enabled);
 	Get("remember")->SetVisible(enabled);
-	Get("id")->SetActive(enabled);
-	Get("pass")->SetActive(enabled);
+	//Get("id")->SetActive(enabled);
+	//Get("pass")->SetActive(enabled);
 	
 	Button* b = (Button*)Get("frameclose");
 	if (b)

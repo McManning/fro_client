@@ -17,6 +17,7 @@
 #include "../core/widgets/Scrollbar.h"
 #include "../core/widgets/Input.h"
 #include "../core/widgets/OpenUrl.h"
+#include "../core/widgets/Label.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/net/IrcNet2.h"
 #include "../core/io/BoltFile.h"
@@ -354,7 +355,7 @@ void callback_chatCommandListCommands(Console* c, string s)
 
 // GameManager callbacks
 
-uShort callback_gameManagerProcess(timer* t, uLong ms)
+uShort timer_gameManagerProcess(timer* t, uLong ms)
 {
 	GameManager* g = (GameManager*)t->userData;
 	ASSERT(g);
@@ -364,9 +365,12 @@ uShort callback_gameManagerProcess(timer* t, uLong ms)
 
 void callback_showChatbox(Button* b)
 {
-	b->Die();
-	game->mChat->SetVisible(true);
-	game->ToggleGameMode(GameManager::MODE_CHAT);
+	//if (!game->IsInDuel())
+	//{
+		b->Die();
+		game->mChat->SetVisible(true);
+		game->ToggleGameMode(GameManager::MODE_CHAT);
+	//}
 }
 
 void callback_hideChatbox(Button* b)
@@ -378,6 +382,22 @@ void callback_hideChatbox(Button* b)
 		b2->SetImage("assets/buttons/show_chat.png");
 	
 	game->ToggleGameMode(GameManager::MODE_ACTION);
+}
+
+uShort timer_DestroyInfoBar(timer* t, uLong ms)
+{
+	if (t->userData)
+	{
+		Frame* f = (Frame*)t->userData;
+		
+		MessageData md("INFOBAR");
+		md.WriteString("text", f->mId);
+		messenger.Dispatch(md);
+		
+		f->Die();
+	}
+	
+	return TIMER_DESTROY;
 }
 
 
@@ -469,7 +489,7 @@ GameManager::GameManager()
 	_hookCommands();
 
 	timers->AddProcess("gameproc", 
-						callback_gameManagerProcess, 
+						timer_gameManagerProcess, 
 						NULL, 
 						this);
 
@@ -1052,6 +1072,21 @@ void GameManager::ToggleGameMode(gameMode mode)
 	MessageData md("GAME_MODE");
 	md.WriteInt("mode", mode);
 	messenger.Dispatch(md);
+}
+
+void GameManager::ShowInfoBar(string id, string msg, int duration)
+{
+	rect r;
+	
+	Frame* f = new Frame(this, id, rect(175, 0, 450, 30), "", false, false, false, true);
+		f->mBoxRender = false;
+		f->SetImage("assets/infobar.png");
+	Label* l = new Label(f, "", rect(0, 8), msg);
+		r = l->GetPosition();
+		l->SetPosition( rect(f->Width()/2 - r.w/2, f->Height()/2 - r.h/2 + 2, r.w, r.h) );
+		l->mFontColor = color(255, 255, 255);
+
+	timers->Add("", duration, false, timer_DestroyInfoBar, NULL, f);
 }
 
 

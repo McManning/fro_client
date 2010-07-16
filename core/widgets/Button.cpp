@@ -4,6 +4,7 @@
 #include "../Screen.h"
 #include "../FontManager.h"
 #include "../ResourceManager.h"
+#include "RightClickMenu.h"
 
 void callback_closeFrame(Button* b)
 {
@@ -17,6 +18,7 @@ Button::Button(Widget* wParent, string sId, rect rPosition, string sCaption,
 	mType = WIDGET_BUTTON;
 	mCaptionImage = NULL;
 	mImage = NULL;
+	mCenterAlign = true;
 	
 	mFont = fonts->Get();
 	mId = sId;
@@ -47,7 +49,7 @@ void Button::Render()
 	{
 		if (mCaptionImage) //gotta do a hedge render
 		{
-			mImage->RenderHorizontalEdge(scr, rect(0, CalculateImageOffset(20), 7, 20), r);
+			mImage->RenderHorizontalEdge(scr, rect(0, CalculateImageOffset(20), 5, 20), r);
 		}
 		else //regular button
 		{
@@ -56,10 +58,18 @@ void Button::Render()
 	}
 
 	if (mCaptionImage)
-		mCaptionImage->Render(Screen::Instance(), 
-							r.x + (r.w / 2) - (mCaptionImage->Width() / 2),
-							r.y + (r.h / 2) - (mCaptionImage->Height() / 2)
-						);
+	{
+		if (mCenterAlign)
+			mCaptionImage->Render(Screen::Instance(), 
+								r.x + (r.w / 2) - (mCaptionImage->Width() / 2),
+								r.y + (r.h / 2) - (mCaptionImage->Height() / 2)
+							);
+		else
+			mCaptionImage->Render(Screen::Instance(), 
+								r.x + 5,
+								r.y + (r.h / 2) - (mCaptionImage->Height() / 2)
+							);
+	}
 	Widget::Render();
 }
 
@@ -90,7 +100,18 @@ void Button::SetCaption(string text)
 void Button::Event(SDL_Event* event)
 {
 	if (event->type == SDL_MOUSEBUTTONDOWN && onClickCallback)
-		onClickCallback(this);
+	{
+		if (event->button.button == SDL_BUTTON_LEFT)
+			onClickCallback(this);
+		else
+		{
+			RightClickMenu* m = new RightClickMenu();
+			m->AddOption("Click!", NULL);
+			m->AddOption("Do Nothing", NULL);	
+			m->AddOption("Select All", NULL);
+			m->AddOption("Incinerate", NULL);
+		}
+	}
 		
 	Widget::Event(event);	
 }

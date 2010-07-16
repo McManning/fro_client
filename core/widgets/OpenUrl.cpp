@@ -78,8 +78,8 @@ OpenUrl::~OpenUrl()
 
 void OpenUrl::Render()
 {
-	if (gui->GetDemandsFocus() == this)
-		gui->RenderDarkOverlay();
+	//if (gui->GetDemandsFocus() == this)
+	//	gui->RenderDarkOverlay();
 	
 	Frame::Render();
 }

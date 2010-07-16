@@ -77,8 +77,8 @@ MessagePopup::~MessagePopup()
 
 void MessagePopup::Render()
 {
-	if (gui->GetDemandsFocus() == this)
-		gui->RenderDarkOverlay();
+	//if (gui->GetDemandsFocus() == this)
+	//	gui->RenderDarkOverlay();
 	
 	Frame::Render();
 }

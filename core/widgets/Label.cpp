@@ -19,8 +19,8 @@ Label::Label(Widget* wParent, string sId, rect rPosition, string sCaption)
 	mFont = fonts->Get();
 	mId = sId;
 	
-	SetCaption(sCaption);
 	SetPosition(rPosition);
+	SetCaption(sCaption);
 
 	if (wParent)
 		wParent->Add(this);
@@ -49,6 +49,7 @@ void Label::SetCaption(string text)
 
 	if (!text.empty())
 	{
+		text = stripCodes(text); //clean it for calculating size
 		mPosition.w = mFont->GetWidth(text);
 		if (mMaxWidth != 0 && mPosition.w > mMaxWidth)
 			mPosition.w = mMaxWidth;

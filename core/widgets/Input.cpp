@@ -2,6 +2,7 @@
 #include "Input.h"
 #include "Button.h"
 #include "ColorPicker.h"
+#include "RightClickMenu.h"
 #include "../GuiManager.h"
 #include "../Image.h"
 #include "../Screen.h"
@@ -20,56 +21,45 @@ string getInputText(Widget* parent, string id)
 		return "";
 }
 
-
-void callback_inputMenuCut(Button* b)
+void callback_inputMenuCut(RightClickMenu* m, void* userdata)
 {
-	Input* i = (Input*)b->GetParent()->GetParent();
+	Input* i = (Input*)userdata;
 	i->SetKeyFocus();
 	i->Cut();
-	b->GetParent()->Die();
 }
 
-void callback_inputMenuCopy(Button* b)
+void callback_inputMenuCopy(RightClickMenu* m, void* userdata)
 {
-	Input* i = (Input*)b->GetParent()->GetParent();
+	Input* i = (Input*)userdata;
 	i->SetKeyFocus();
 	i->Copy();
-	b->GetParent()->Die();
 }
 
-void callback_inputMenuPaste(Button* b)
+void callback_inputMenuPaste(RightClickMenu* m, void* userdata)
 {
-	Input* i = (Input*)b->GetParent()->GetParent();
+	Input* i = (Input*)userdata;
 	i->SetKeyFocus();
 	i->Paste();
-	b->GetParent()->Die();
 }
 
-void callback_inputMenuSelectAll(Button* b)
+void callback_inputMenuSelectAll(RightClickMenu* m, void* userdata)
 {
-	Input* i = (Input*)b->GetParent()->GetParent();
+	Input* i = (Input*)userdata;
 	i->SetKeyFocus();
 	i->SelectAll();
-	b->GetParent()->Die();
 }
 
-void callback_inputMenuPasteColor(Button* b)
+void callback_inputMenuPasteColor(RightClickMenu* m, void* userdata)
 {
-	Input* i = (Input*)b->GetParent()->GetParent();
+	Input* i = (Input*)userdata;
 	i->SetKeyFocus();
 	i->PasteColor();
-	b->GetParent()->Die();
 }
 
+/*
 InputMenu::InputMenu(Input* parent)
 	: Frame(parent, "inputmenu", rect())
 {
-	/*
-		Width = number of buttons * button height
-		Height = button height
-		x = 0
-		y = 0
-	*/
 
 	Button* b;
 	
@@ -130,6 +120,7 @@ void InputMenu::Event(SDL_Event* event)
 	if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP)
 		Die();
 }
+*/
 
 /////////////////////////////////////////////////////////////
 
@@ -166,7 +157,7 @@ Input::Input(Widget* wParent, string sId, rect rPosition, string sMask,
 	mId = sId;
 	mCharacterMask = sMask;
 
-	mImage = resman->LoadImg("assets/gui/input.png");
+	mImage = resman->LoadImg("assets/gui/input_bg.png");
 	
 	SetPosition(rPosition);
 	
@@ -415,12 +406,12 @@ void Input::Event(SDL_Event* event)
 		case SDL_MOUSEBUTTONDOWN: {
 			if (event->button.button == SDL_BUTTON_LEFT && HasMouseFocus())
 			{
-				if (HasKeyFocus())
+				/*if (HasKeyFocus())
 				{
 					InputMenu* im = (InputMenu*)Get("inputmenu");
 					if (im)
 						im->Die();	
-				}
+				}*/
 				if (!mIsPassword)
 				{
 					SetCaretPos(event->button.x, event->button.y);
@@ -430,8 +421,16 @@ void Input::Event(SDL_Event* event)
 			}
 			else if (event->button.button == SDL_BUTTON_RIGHT && HasMouseFocus() && !mReadOnly)
 			{
-				if (IsMenuEnabled() && Get("inputmenu") == NULL)
-					new InputMenu(this);	
+				if (IsMenuEnabled())
+				{
+					//new InputMenu(this);	
+					RightClickMenu* m = new RightClickMenu();
+						m->AddOption("Cut", callback_inputMenuCut, this);
+						m->AddOption("Copy", callback_inputMenuCopy, this);
+						m->AddOption("Paste", callback_inputMenuPaste, this);
+						m->AddOption("Paste Color", callback_inputMenuPasteColor, this);
+						m->AddOption("Select All", callback_inputMenuSelectAll, this);
+				}
 			}
 		} break;
 		case SDL_KEYDOWN: {

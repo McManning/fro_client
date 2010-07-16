@@ -992,11 +992,24 @@ without either compatibility mode enabled, or security warnings, as seen with th
 
 100703
 - Fixed case sensitive issue on channel names
-- 
 
+100706
+- Added generic RightClickMenu widget (that's a little hacky, but works nonetheless) to give us the ability to
+	quickly implement right click menus into various widgets. 
+- Added option to align text buttons either center or to the left
+- Fixed a bug with rendering text buttons
+- Removed InputMenu custom menu from the input widget and replaced with the generic menu
+- Fixed bug that would prevent inputting text in the login screen after a button was pressed
+- Removed dark overlay for focus demanding widgets
 
-
-
+100714
+- Fixed bug that allowed the AvatarFavorites dialog to close without closing the child AvatarEdit
+- Added reference AvatarCreator to AvatarFavorites, so that it can be closed when AF is closed
+- Fixed bug with centering label widgets
+- Added Game::ShowInfoBar to display a top bar with defined text for a certain interval, and will trigger
+	a messenger event when closed (INFOBAR{text})
+- Fixed bug with colored text in label widgets causing a miscalculation in dimensions
+- Added Game.IsStatsBarDecreasing(statbarptr) to Lua
 
 
 

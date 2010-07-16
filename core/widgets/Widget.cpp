@@ -60,7 +60,7 @@ bool Widget::Add(Widget* child)
 
 bool Widget::Remove(Widget* child, bool deleteClass)
 {
-	for (uShort i = 0;  i < mChildren.size(); i++)
+	for (int i = 0; i < mChildren.size(); ++i)
 	{
 		if (mChildren.at(i) == child)
 		{
@@ -83,7 +83,7 @@ Widget* Widget::Get(string id, bool searchDeep, uShort type)
 {
 	Widget* w;
 	Widget* w2 = NULL;
-	for (uShort i = 0;  i < mChildren.size(); i++)
+	for (int i = 0;  i < mChildren.size(); ++i)
 	{
 		w = mChildren.at(i);
 		if (w->mId == id && (w->mType == type || type == WIDGET_UNKNOWN))
@@ -102,7 +102,7 @@ Widget* Widget::Get(string id, bool searchDeep, uShort type)
 
 sShort Widget::Get(Widget* w) 
 {
-	for (uShort i = 0;  i < mChildren.size(); i++)
+	for (int i = 0;  i < mChildren.size(); ++i)
 	{
 		if (mChildren.at(i) == w)
 			return i;
@@ -193,7 +193,7 @@ void Widget::Event(SDL_Event* event)
 		found.
 	*/
 	if (mTemporary && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP
-						|| event->type == SDL_MOUSEBUTTONUP))
+						|| event->type == SDL_MOUSEBUTTONDOWN))
 		Die();
 }
 
@@ -326,8 +326,8 @@ void Widget::SetSize(uShort w, uShort h)
 void Widget::Center()
 {
 	Image* scr = Screen::Instance();
-	uShort w = (mParent) ? mParent->Width() : scr->Width();
-	uShort h = (mParent) ? mParent->Height() : scr->Height();
+	int w = (mParent) ? mParent->Width() : scr->Width();
+	int h = (mParent) ? mParent->Height() : scr->Height();
 	
 	SetPosition( rect(w / 2 - mPosition.w /  2, h / 2 - mPosition.h /  2, mPosition.w, mPosition.h) );
 }

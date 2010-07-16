@@ -168,13 +168,13 @@ class Widget
 	string mHoverText;
 	uShort mHoverDelay;
 	
+	bool mTemporary; //this widget will auto-delete itself on MOUSEBUTTONUP/KEYUP/KEYDOWN
   protected:
 	
 	rect mPosition; 
 	
 	bool mVisible; //if not visible, the widget won't render or receive events
 	bool mActive; //Disabled widgets won't receive events
-	bool mTemporary; //this widget will auto-delete itself on MOUSEBUTTONUP/KEYUP/KEYDOWN
 };
 
 #endif //_WIDGET_H_

@@ -167,8 +167,8 @@ TradeRequest::~TradeRequest()
 
 void TradeRequest::Render()
 {
-	if (gui->GetDemandsFocus() == this)
-		gui->RenderDarkOverlay();
+	//if (gui->GetDemandsFocus() == this)
+	//	gui->RenderDarkOverlay();
 	
 	Frame::Render();
 }
@@ -265,8 +265,8 @@ AmountRequest::AmountRequest(ItemTrade* trade, itemProperties* item)
 
 void AmountRequest::Render()
 {
-	if (gui->GetDemandsFocus() == this)
-		gui->RenderDarkOverlay();
+	//if (gui->GetDemandsFocus() == this)
+	//	gui->RenderDarkOverlay();
 	
 	Frame::Render();
 }

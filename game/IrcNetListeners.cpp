@@ -1193,7 +1193,7 @@ void listener_NetNickInUse(MessageListener* ml, MessageData& md, void* sender)
 	game->mPlayer->mName = newnick;
 	
 	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
-	game->mPlayerData.SetParamString(e, "nick", s);
+	game->mPlayerData.SetParamString(e, "nick", newnick);
 	game->SavePlayerData();
 	
 	net->ChangeNick(newnick);

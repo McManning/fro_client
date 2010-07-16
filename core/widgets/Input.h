@@ -96,7 +96,8 @@ class Input: public Widget {
 	bool mSelecting;
 	int mSelectionStart, mSelectionEnd, mCaretPos, mPixelX;
 };
-	
+
+/*	
 //Right click menu for Input widgets
 class InputMenu : public Frame 
 {
@@ -106,7 +107,8 @@ class InputMenu : public Frame
 	
 	void Event(SDL_Event* event);
 };
-	
+*/
+
 //helper function
 string getInputText(Widget* parent, string id);
 
