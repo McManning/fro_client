@@ -209,6 +209,21 @@ int map_GetWorkingDir(lua_State* ls)
 	return 1;
 }
 
+//	string = .GetID() - Returns world ID (library, wonderland, etc)
+//		Will work even before NewBasic()
+int map_GetID(lua_State* ls)
+{
+	string id;
+
+	if (game->mMap)
+		id = game->mMap->mId;
+	else if (game->mLoader)
+		id = game->mLoader->m_sWorldName;
+		
+	lua_pushstring(ls, id.c_str());
+	return 1;
+}
+
 static const luaL_Reg functions[] = {
 	{"NewBasic", map_NewBasic},
 	{"SetSpawn", map_SetSpawn},
@@ -216,6 +231,7 @@ static const luaL_Reg functions[] = {
 	{"GetFlag", map_GetFlag},
 	{"SetFlag", map_SetFlag},
 	{"GetWorkingDir", map_GetWorkingDir},
+	{"GetID", map_GetID},
 	{NULL, NULL}
 };
 

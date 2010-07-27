@@ -70,6 +70,7 @@ class Multiline: public Widget
 	void (*onLeftDoubleClickCallback)(Multiline*);
 	void (*onLeftSingleClickCallback)(Multiline*);
 
+	void (*onRightSingleClickCallback)(Multiline*);
   protected:
 	void _addLine(string msg);
 

@@ -12,8 +12,7 @@ class Avatar
 	~Avatar();	
 
 	void Serialize(DataPacket& dst);
-	void Deserialize(DataPacket& src, uShort offset = 0);
-	
+
 	/*	Will load an avatar based on our current properties */
 	void Load();
 	

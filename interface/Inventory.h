@@ -13,8 +13,7 @@ struct itemProperties
 	string id;
 	string description;
 	uShort amount;
-	uShort cost; //Resell is an equation based on cost... something like 70% or whatever
-	
+
 	TiXmlElement* element; //for reverse referencing
 };
 
@@ -43,7 +42,7 @@ class Inventory : public Frame
 	void ResizeChildren();
 	void SetPosition(rect r);
 
-	itemProperties* Add(string id, string description, uShort amount, uShort cost);
+	itemProperties* Add(string id, string description, uShort amount);
 	itemProperties* Find(string id);
 	void Erase(sShort index, uShort amount, bool removeOnlyIfHasEnough);
 	void Erase(string id, uShort amount, bool removeOnlyIfHasEnough);
@@ -64,7 +63,10 @@ class Inventory : public Frame
 	
 	void ItemSelected(); //Callback for mList
 	
-	itemProperties* _add(string id, string description, uShort amount, uShort cost);
+	itemProperties* _add(string id, string description, uShort amount);
+	
+	void RightClickSelected();
+	void SwapItems(int a, int b);
 	
 	Button* mUse;
 	Button* mDrop;
@@ -73,6 +75,8 @@ class Inventory : public Frame
 	
 	Multiline* mList;
 	Multiline* mInfo;
+	
+	int mFirstItemIndex;
 
 	std::vector<itemProperties*> mInventory;
 

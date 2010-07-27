@@ -13,6 +13,7 @@
 #include "../entity/LocalActor.h"
 #include "../entity/ExplodingEntity.h"
 #include "../entity/TextObject.h"
+#include "../entity/ChatBubble.h"
 #include "../core/io/FileIO.h"
 #include "../core/widgets/Button.h"
 #include "../core/net/DataPacket.h"
@@ -61,11 +62,11 @@ string decompressActionBuffer(string buffer)
 
 //Move to Map?
 RemoteActor* _addRemoteActor(string& nick, DataPacket& data)
-{
+{	
+	char c;
+	point2d p;
+	
 	ASSERT(game->mMap);
-
-	if (data.Size() < 6)
-		return NULL;
 
 	RemoteActor* ra = new RemoteActor();
 	ra->mMap = game->mMap;
@@ -74,18 +75,22 @@ RemoteActor* _addRemoteActor(string& nick, DataPacket& data)
 	if (userlist)
 		userlist->AddNick(nick);
 	
-	ra->SetPosition( point2d(data.ReadInt(2), data.ReadInt(3)) );
-	ra->SetDirection( data.ReadInt(4) );
-	ra->SetAction( data.ReadInt(5) );
+	p.x = data.ReadInt();
+	p.y = data.ReadInt();
+	ra->SetPosition(p);
+
+	c = data.ReadChar();
+	ra->SetDirection(c);
 	
-	if (data.Size() > 8) //if we have avatar info (at least url/w/h), read it
+	c = data.ReadChar();
+	ra->SetAction(c);
+	
+	if (!data.End()) //if we have avatar info (at least url/w/h), read it
 	{
-		ra->ReadAvatarFromPacket(data, 6);
+		ra->ReadAvatarFromPacket(data);
 	}
 	
-	
 	game->mMap->AddEntity(ra);
-
 	return ra;
 }
 
@@ -117,7 +122,7 @@ uShort timer_destroyMapStamp(timer* t, uLong ms)
 	return TIMER_DESTROY;	
 }
 
-void _stampMapText(sShort x, sShort y, sShort rotation, string text)
+void _stampMapText(int x, int y, int rotation, string& text)
 {
 	if (!game->mMap)
 		return;
@@ -131,17 +136,22 @@ void _stampMapText(sShort x, sShort y, sShort rotation, string text)
 		to->mMap = game->mMap;
 		to->SetLayer(EntityManager::LAYER_GROUND);
 		to->mMap->AddEntity(to);
-		to->SetText(text, 20, rotation);	
+		to->SetFont("", 20);
+		to->SetText(text);
+		to->Rotozoom(rotation, 1.0);	
 		to->SetPosition( point2d(x, y) );
 	
 	// 5 minutes until the stamp cleans itself up
-	timers->Add("stampDie", 5*60*1000, false, timer_destroyMapStamp, NULL, to);
+	timers->Add("stamp", 5*60*1000, false, timer_destroyMapStamp, NULL, to);
 }
 
 /*	Net Senders */
 
 void netSendSay(string text) //say $message
 {
+	// disable the usage of \n in say
+	replace(&text, "\\n", "");
+	
 	if (game->IsMapLoading() || text.empty()) return;
 
 	//do a few modifications
@@ -151,7 +161,10 @@ void netSendSay(string text) //say $message
 	if (text.at(0) != '/') //Ignore slash commands 
 	{
 		game->mChat->AddMessage(game->mPlayer->mName + ": " + text);
-		game->mMap->mBubbles.CreateBubble(game->mPlayer, text);
+
+		ChatBubble* cb = new ChatBubble(game->mPlayer, text);
+		cb->mMap = game->mMap;
+		cb->mMap->AddEntity(cb);
 		
 		achievement_NeedASpamBlocker();
 		
@@ -194,6 +207,8 @@ void netSendAchievement(string title) // ern $title (earn, get it, get it!?)
 void netSendStamp(string text) //stp x y rotation color $text
 {
 	if (!game->mMap) return;
+	
+	replace(&text, "\\n", "");
 
 	//text = stripCodes(text);
 	point2d p = game->mPlayer->GetPosition();
@@ -215,12 +230,13 @@ void netSendStamp(string text) //stp x y rotation color $text
 	}
 }
 
-void netSendMe(string text) //act $text
+void netSendMe(string text) //act #mode $text
 {
 	if (!game->mMap) return;
 
 	text = stripCodes(text);
-
+	replace(&text, "\\n", "");
+	
 	game->mChat->AddMessage("\\c909* " + stripCodes(game->mPlayer->mName) 
 							+ " " + text + " *");
 
@@ -229,6 +245,7 @@ void netSendMe(string text) //act $text
 		DataPacket data("act");
 		data.SetKey( game->mNet->GetEncryptionKey() );
 
+		data.WriteChar(0);
 		data.WriteString(text);
 
 		game->mNet->MessageToChannel( data.ToString() );
@@ -240,7 +257,8 @@ void netSendMusic(string song) //act 1 song
 	if (!game->mMap) return;
 	
 	song = stripCodes(song);
-
+	replace(&song, "\\n", "");
+	
 	game->mChat->AddMessage(
 					"\\c099* " + stripCodes(game->mPlayer->mName)
 					+ " is listening to \\c059" 
@@ -252,7 +270,7 @@ void netSendMusic(string song) //act 1 song
 		DataPacket data("act");
 		data.SetKey( game->mNet->GetEncryptionKey() );
 
-		data.WriteInt(1);
+		data.WriteChar(1);
 		data.WriteString(song);
 
 		game->mNet->MessageToChannel( data.ToString() );
@@ -265,6 +283,7 @@ void netSendBeat(Entity* target, string item) //act 2 target item
 
 	string targetName = stripCodes(target->mName);
 	item = stripCodes(item);
+	replace(&item, "\\n", "");
 	
 	game->mChat->AddMessage(
 					"\\c484 * " + stripCodes(game->mPlayer->mName) + " beats "
@@ -277,7 +296,7 @@ void netSendBeat(Entity* target, string item) //act 2 target item
 		DataPacket data("act");
 		data.SetKey( game->mNet->GetEncryptionKey() );
 
-		data.WriteInt(2);
+		data.WriteChar(2);
 		data.WriteString(targetName);
 		data.WriteString(item);
 		
@@ -312,7 +331,7 @@ void netSendEmote(uShort num) //emo num
 		DataPacket data("emo");
 		data.SetKey( game->mNet->GetEncryptionKey() );
 
-		data.WriteInt(num);
+		data.WriteChar(num);
 
 		game->mNet->MessageToChannel( data.ToString() );
 	}
@@ -348,13 +367,7 @@ void _handleUnknownUser(string& nick)
 
 void _handleNetMessage_TradeDeny(string& nick, DataPacket& data) //trDNY reason 
 {
-	if (data.Size() < 1)
-	{
-		console->AddMessage("Malformed 'trDNY' from " + nick);
-		return;
-	}
-	
-	string msg = "\\c900 * Trade with " + nick + " has closed (Reason: " + data.ReadString(0) + ")";
+	string msg = "\\c900 * Trade with " + nick + " has closed (Reason: " + data.ReadString() + ")";
 	printMessage(msg);
 	
 	//If we were trading with this person and they cancelled it, close everything on our side.
@@ -395,13 +408,17 @@ void _handleNetMessage_TradeReady(string& nick, DataPacket& data) //trRDY
 		trade->RemoteReady();
 }
 
-void _handleNetMessage_TradeItem(string& nick, DataPacket& data) //trITM id description amount cost
+void _handleNetMessage_TradeItem(string& nick, DataPacket& data) //trITM id description amount
 {
 	ItemTrade* trade = (ItemTrade*)gui->Get("ItemTrade");
 
+	string id = data.ReadString();
+	string desc = data.ReadString();
+	int amount = data.ReadInt();
+
 	if (trade && trade->mTrader == nick)
 	{
-		trade->SetRemoteItem(data.ReadString(0), data.ReadString(1), data.ReadInt(2), data.ReadInt(3));
+		trade->SetRemoteItem(id, desc, amount);
 	}
 }
 
@@ -421,9 +438,9 @@ void _handleNetMessage_RequestAvatar(string& nick, DataPacket& data) //reqAvy
 	netSendAvatar(game->mPlayer->GetAvatar(), nick);
 }
 
-void _handleNetMessage_Say(string& nick, DataPacket& data)
+void _handleNetMessage_Say(string& nick, DataPacket& data) // say msg
 {
-	if (!game->mMap || data.Size() < 1) return;
+	if (!game->mMap) return;
 	
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
@@ -433,12 +450,15 @@ void _handleNetMessage_Say(string& nick, DataPacket& data)
 	if ( ra->IsBlocked() || !ra->IsVisibleInCamera() )
 		return;
 		
-	string msg = data.ReadString(0);
+	string msg = data.ReadString();
 	
 	if (msg.at(0) != '/') //Ignore slash commands 
 	{
 		game->mChat->AddMessage(nick + ": " + msg);
-		game->mMap->mBubbles.CreateBubble(ra, msg);
+		
+		ChatBubble* cb = new ChatBubble(ra, msg);
+		cb->mMap = game->mMap;
+		cb->mMap->AddEntity(cb);
 	}
 	else
 	{	
@@ -452,9 +472,9 @@ void _handleNetMessage_Say(string& nick, DataPacket& data)
 	gui->GetUserAttention();
 }
 
-void _handleNetMessage_Stamp(string& nick, DataPacket& data)
+void _handleNetMessage_Stamp(string& nick, DataPacket& data) // stamp x y angle msg
 {
-	if (!game->mMap || data.Size() < 4) return;
+	if (!game->mMap) return;
 	
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
@@ -463,12 +483,17 @@ void _handleNetMessage_Stamp(string& nick, DataPacket& data)
 	if (ra->IsBlocked())
 		return;
 	
-	_stampMapText(data.ReadInt(0), data.ReadInt(1), data.ReadInt(2), data.ReadString(3));
+	int x = data.ReadInt();
+	int y = data.ReadInt();
+	int rot = data.ReadInt();
+	string msg = data.ReadString();
+	
+	_stampMapText(x, y, rot, msg);
 }
 
 void _handleNetMessage_Act(string& nick, DataPacket& data)
 {
-	if (!game->mMap || data.Size() < 1) return;
+	if (!game->mMap) return;
 	
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
@@ -478,29 +503,29 @@ void _handleNetMessage_Act(string& nick, DataPacket& data)
 	if ( ra->IsBlocked() || !ra->IsVisibleInCamera() )
 		return;
 		
-	string msg;
+	string formatted;
 	
-	if (data.Size() < 2) //check for basic /me: act 0 msg OR act msg
+	char mode = data.ReadChar();
+	string msg = data.ReadString();
+	string msg2;
+
+	switch (mode)
 	{
-		msg = "\\c909* " + stripCodes(nick) 
-			+ " " + stripCodes(data.ReadString(0)) + " *";
-	}
-	else //Check for variants
-	{
-		switch (data.ReadInt(0))
-		{
-			case 1: //music command: act 1 song
-				msg = "\\c099* " + stripCodes(nick)
-					+ " is listening to \\c059" 
-					+ stripCodes( data.ReadString(1) ) + " \\c099*";
-				break;
-			case 2: //beat command: act 2 target item
-				msg = "\\c484 * " + stripCodes(nick) + " beats "
-					+ stripCodes( data.ReadString(1) ) + " with a \\c784"
-					+ stripCodes( data.ReadString(2) ) + "\\c484 *";
-				break;
-			default: break;
-		}
+		case 1: //music command: act 1 song
+			formatted = "\\c099* " + stripCodes(nick)
+						+ " is listening to \\c059" 
+						+ stripCodes( msg ) + " \\c099*";
+			break;
+		case 2: //beat command: act 2 target item
+			msg2 = data.ReadString();
+			formatted = "\\c484 * " + stripCodes(nick) + " beats "
+						+ stripCodes( msg ) + " with a \\c784"
+						+ stripCodes( msg2 ) + "\\c484 *";
+			break;
+		default: // act # msg
+			formatted = "\\c909* " + stripCodes(nick) 
+						+ " " + stripCodes( msg ) + " *";
+			break;
 	}
 	
 	printMessage(msg);
@@ -517,7 +542,7 @@ void _handleNetMessage_Avy(string& nick, DataPacket& data)
 	if (ra->IsBlocked())
 		return;
 	
-	ra->ReadAvatarFromPacket(data, 0);
+	ra->ReadAvatarFromPacket(data);
 }
 
 void _handleNetMessage_Sup(string& nick, DataPacket& data)
@@ -533,14 +558,14 @@ void _handleNetMessage_Sup(string& nick, DataPacket& data)
 	}
 	
 	// make sure this sup is coming from our channel only
-	if (data.ReadString(0) != game->mNet->GetChannel()->mId)
+	if (data.ReadString() != game->mNet->GetChannel()->mId)
 	{
 		console->AddMessage("Illegal 'sup' from " + ra->mName + " (chan)");
 		return;
 	}
 	
 	//Make sure someone didn't try to clone someone elses 'sup' message to mimic them
-	if (data.ReadString(1) != nick)
+	if (data.ReadString() != nick)
 	{
 		console->AddMessage("Illegal 'sup' from " + ra->mName + " (nick)");
 		return;	
@@ -573,10 +598,16 @@ void _handleNetMessage_Nm(string& nick, DataPacket& data)
 		return;
 	}
 
-	if (data.ReadString(0) != game->mNet->GetChannel()->mId)
+	if (data.ReadString() != game->mNet->GetChannel()->mId)
 	{
 		console->AddMessage("Illegal 'nm' from " + ra->mName + " (chan)");
 		return;
+	}
+	
+	if (data.ReadString() != nick)
+	{
+		console->AddMessage("Illegal 'nm' from " + ra->mName + " (nick)");
+		return;	
 	}
 
 	/*	Add them to our map w/ their state data.
@@ -594,14 +625,12 @@ void _handleNetMessage_Nm(string& nick, DataPacket& data)
 }
 
 void _handleNetMessage_Ach(string& nick, DataPacket& data) // ach $id $desc #max
-{
-	if (data.Size() != 4)
-	{
-		console->AddMessage("Malformed 'ach' from " + nick);
-		return;
-	}
+{	
+	string title = data.ReadString();
+	string desc = data.ReadString();
+	int max = data.ReadInt();
 	
-	game->EarnAchievement(data.ReadString(0), data.ReadString(1), data.ReadInt(2), data.ReadString(3));
+	game->EarnAchievement(title, desc, max);
 }
 
 void _handleNetMessage_PlayerEarnedAchievement(string& nick, DataPacket& data) // ern $title
@@ -613,14 +642,10 @@ void _handleNetMessage_PlayerEarnedAchievement(string& nick, DataPacket& data) /
 	
 	if (ra->IsBlocked())
 		return;
-	
-	if (data.Size() != 1)
-	{
-		console->AddMessage("Malformed 'ern' from " + nick);
-		return;
-	}
 
-	game->mChat->AddMessage("\\c139 * " + nick + "\\c999 achieved: \\c080 " + data.ReadString(0));
+	string title = data.ReadString();
+	
+	game->mChat->AddMessage("\\c139 * " + nick + "\\c999 achieved: \\c080 " + title);
 	ra->Emote(11);
 }
 
@@ -651,24 +676,23 @@ void _handleNetMessage_Mov(string& nick, DataPacket& data)
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
 
-	if (data.Size() != 3)
-	{
-		console->AddMessage("Malformed 'mov' from " + ra->mName);
-		return;
-	}
-
 	/*	write our target coords into the buffer along with it. FORMAT: cXXXXX.YYYYYY.
 		Reason we queue up the check in the buffer instead of writing it raw is that our computer
 		may take longer to process than it takes another computer to send. And if we jumped coordinates
 		every mov recv, we'd get jerky movement.
 	*/
-	ra->AddToActionBuffer( 'c' + its(data.ReadInt(0)) + "."
-							+ its(data.ReadInt(1)) + "."
-							+ decompressActionBuffer( data.ReadString(2) ) );
+	
+	int dx = data.ReadInt();
+	int dy = data.ReadInt();
+	string buffer = data.ReadString();
+	
+	ra->AddToActionBuffer( 'c' + its(dx) + "."
+							+ its(dy) + "."
+							+ decompressActionBuffer( buffer ) );
 	
 }
 
-void _handleNetMessage_Emo(string& nick, DataPacket& data)
+void _handleNetMessage_Emo(string& nick, DataPacket& data) // emo #emote
 {
 	if (!game->mMap) return;
 	
@@ -677,31 +701,21 @@ void _handleNetMessage_Emo(string& nick, DataPacket& data)
 	
 	if (ra->IsBlocked())
 		return;
-	
-	if (data.Size() != 1)
-	{
-		console->AddMessage("Malformed 'emo' from " + ra->mName);
-		return;
-	}
 
-	ra->Emote( data.ReadInt(0) );
+	char emote = data.ReadChar();
+
+	ra->Emote( emote );
 }
 
-void _handleNetMessage_Lua(string& nick, DataPacket& data)
+void _handleNetMessage_Lua(string& nick, DataPacket& data) // lua $id $msg
 {
 	if (!game->mMap) return;
 	
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
-	
-	if (data.Size() != 2)
-	{
-		console->AddMessage("Malformed 'lua' from " + ra->mName);
-		return;
-	}
-	
-	string id = data.ReadString(0);
-	string msg = data.ReadString(1);
+
+	string id = data.ReadString();
+	string msg = data.ReadString();
 	
 	//Dispatch it and let lua listeners pick it up
 	MessageData md;
@@ -713,7 +727,7 @@ void _handleNetMessage_Lua(string& nick, DataPacket& data)
 	messenger.Dispatch(md, ra);
 }
 
-void _handleNetMessage_Mod(string& nick, DataPacket& data) //avatar mod: mod #
+void _handleNetMessage_Mod(string& nick, DataPacket& data) // mod #type
 {
 	if (!game->mMap) return;
 	
@@ -726,13 +740,10 @@ void _handleNetMessage_Mod(string& nick, DataPacket& data) //avatar mod: mod #
 		return;
 	}
 
-	if (data.Size() != 1)
-	{
-		console->AddMessage("Malformed 'mod' from " + ra->mName);
-		return;
-	}
-
-	ra->GetAvatar()->Modify( data.ReadInt(0) );
+	char type = data.ReadChar();
+	
+	if (ra->GetAvatar())
+		ra->GetAvatar()->Modify( type );
 }
 
 void _handleNetMessage_Private(string& nick, string& msg)
@@ -786,15 +797,7 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 		return;
 	}
 
-	string id = data.mId;
-	
-#ifdef DEBUG
-	//Output our analyzed packet data
-	string out = "[" + nick + "] {" + data.mId + "} ";
-	for (int i = 0; i < data.Size(); i++)
-		out += data.ReadString(i) + " & ";
-	console->AddMessage(out);
-#endif
+	string id = data.GetID();
 
 	//Send our message to functions built for it
 	if (id == "say")
@@ -894,7 +897,7 @@ void listener_NetChannelJoin(MessageListener* ml, MessageData& md, void* sender)
 		if (game->mShowAddresses)
 			msg += " (" + md.ReadString("address") + ")";	
 			
-		msg += " has joined.";
+		msg += " joins";
 		
 		printMessage(msg);
 	}
@@ -960,7 +963,7 @@ void listener_NetChannelPart(MessageListener* ml, MessageData& md, void* sender)
 		if (game->mShowAddresses)
 			msg += " (" + md.ReadString("address") + ")";	
 			
-		msg += " leaves.";
+		msg += " leaves";
 		
 		printMessage(msg);
 	}
@@ -973,7 +976,7 @@ void listener_NetChannelPart(MessageListener* ml, MessageData& md, void* sender)
 void listener_NetChannelQuit(MessageListener* ml, MessageData& md, void* sender)
 {
 	string msg;
-	
+	string reason;
 	string nick = md.ReadString("nick");
 	
 	if (game->mShowJoinParts)
@@ -982,8 +985,12 @@ void listener_NetChannelQuit(MessageListener* ml, MessageData& md, void* sender)
 		
 		if (game->mShowAddresses)
 			msg += " (" + md.ReadString("address") + ")";	
-			
-		msg += " Quit (" + md.ReadString("reason") + ")";
+		
+		msg += " quit";
+		
+		reason = md.ReadString("reason");
+		if (!reason.empty())
+			msg += " (" + reason + ")";
 		
 		printMessage(msg);
 	}
@@ -1214,6 +1221,30 @@ void listener_NetVerified(MessageListener* ml, MessageData& md, void* sender)
 	game->LoadOnlineWorld(game->mStartingWorldId);
 }
 
+void listener_NetWhois(MessageListener* ml, MessageData& md, void* sender)
+{
+	IrcNet* net = (IrcNet*)sender;
+	
+	time_t t = (time_t)md.ReadInt("signon");
+	
+	string msg = "\\c099[WHOIS] " + md.ReadString("nick") + "\\c099 signed on at ";
+		msg += string(asctime(localtime(&t)));
+	printMessage(msg);
+}
+
+void listener_NetWhois2(MessageListener* ml, MessageData& md, void* sender)
+{
+	IrcNet* net = (IrcNet*)sender;
+	
+	string msg = "\\c099[WHOIS] " + md.ReadString("nick") + "\\c099's hostname: ";
+		msg += md.ReadString("address");
+	printMessage(msg);
+	
+	msg = "\\c099[WHOIS] " + md.ReadString("nick") + "\\c099 is logged in as: ";
+		msg += md.ReadString("realname");
+	printMessage(msg);
+}
+
 void hookNetListeners()
 {
 	//Hook event listeners
@@ -1237,7 +1268,8 @@ void hookNetListeners()
 	messenger.AddListener("NET_MOTD", listener_NetMotd);
 	messenger.AddListener("NET_FAILED", listener_NetCouldNotConnect);
 	messenger.AddListener("NET_TIMEOUT", listener_NetTimeout); //NOT IMPLEMENTED
-	
+	messenger.AddListener("NET_WHOIS", listener_NetWhois);
+	messenger.AddListener("NET_WHOIS2", listener_NetWhois2);
 }
 
 void unhookNetListeners()
@@ -1262,4 +1294,6 @@ void unhookNetListeners()
 	messenger.RemoveListener(listener_NetMotd);
 	messenger.RemoveListener(listener_NetCouldNotConnect);
 	messenger.RemoveListener(listener_NetTimeout);
+	messenger.RemoveListener(listener_NetWhois);
+	messenger.RemoveListener(listener_NetWhois2);
 }

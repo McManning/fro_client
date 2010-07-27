@@ -54,7 +54,6 @@ void checkForUpdaterUpdate()
 int main (int argc, char *argv[])
 {
 	buildDirectoryTree("logs/");
-	buildDirectoryTree(DIR_PROFILE);
 
 	freopen("logs/out.log", "w", stdout);
 	removeFile("logs/time_profile.log");
@@ -69,7 +68,6 @@ int main (int argc, char *argv[])
 	{
 		Uint32 screenFlags = SDL_SWSURFACE | SDL_DOUBLEBUF;
 		SetScreenFlags(	screenFlags );
-
 
 #ifndef GUI_ONLY
        	if (argc > 1) //argv[0] is full application path

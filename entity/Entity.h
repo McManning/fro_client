@@ -39,6 +39,7 @@ typedef enum
 
 class Image;
 class Map;
+class ChatBubble;
 struct lua_State;
 class Entity
 {
@@ -49,7 +50,7 @@ class Entity
 	//Return a string representation of this entity type
 	string GetTypeName();
 	
-	virtual void Render() {};
+	virtual void Render() = 0;
 	void RenderShadow();
 	
 	virtual Image* GetImage() { return NULL; };
@@ -80,7 +81,7 @@ class Entity
 	//Return a rectangle that marks this entities bounds. This can be a collision rect, or it can be the bounds of 
 	//the entities renderable image.  just depends on the inherited entity in question.
 	//Relative to map coordinates.
-	virtual rect GetBoundingRect();
+	virtual rect GetBoundingRect() = 0;
 
 	entityType mType;
 
@@ -124,6 +125,8 @@ class Entity
 	string GetFlag(string flag);
 	void ClearFlag(string flag);
 	
+	void ClearActiveChatBubble();
+	
 	bool mLocked; //Map Editor only
 	bool mShadow; //does this entity cast a shadow
 	
@@ -134,6 +137,8 @@ class Entity
 	int mLayer;
 
 	int mClickRange;
+
+	ChatBubble* mActiveChatBubble;
 	
 	std::map<string, string> mFlags;
 };

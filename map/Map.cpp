@@ -19,8 +19,7 @@ Map::Map()
 	mFollowedEntity = NULL;
 	mStopCameraAtMapEdge = true;
 	mLuaState = NULL;
-	mBubbles.mMap = this;
-	
+
 	TiXmlElement* top = game->mPlayerData.mDoc.FirstChildElement();
 	TiXmlElement* e;
 	ASSERT(top);
@@ -51,7 +50,6 @@ Map::~Map()
 
 void Map::Render()
 {
-	mBubbles.Render();
 	Frame::Render();
 }
 
@@ -178,7 +176,6 @@ Entity* Map::GetEntityUnderMouse(bool mustBeClickable, bool playersOnly)
 
 void Map::Process()
 {
-	mBubbles.Process();
 	UpdateCamera();
 	ResortEntities();
 	CheckForClickableEntity();

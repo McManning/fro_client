@@ -15,6 +15,9 @@ class StaticObject : public Entity
 
 	void LoadImage(string file);
 	
+	/* Uses the supplied image as mOriginalImage and clones for mImage */
+	void SetImage(Image* img); 
+	
 	Image* GetImage();
 
 	rect GetBoundingRect();

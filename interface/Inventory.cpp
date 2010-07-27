@@ -3,6 +3,7 @@
 #include "../core/widgets/Button.h"
 #include "../core/widgets/Multiline.h"
 #include "../core/widgets/Input.h"
+#include "../core/widgets/RightClickMenu.h"
 #include "../core/widgets/Scrollbar.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/widgets/Label.h"
@@ -12,29 +13,43 @@
 
 Inventory* inventory;
 
-void callback_inventory(Button* b)
+void callback_inventoryUse(RightClickMenu* r, void* data)
 {
-	Inventory* i = (Inventory*)b->GetParent();
+	Inventory* i = (Inventory*)data;
 	ASSERT(i);
 	
-	if (b->mId == "use")
-	{
-		i->Use(inventory->mList->mSelected);
-	}
-	else if (b->mId == "drop")
-	{
-		//i->Erase(i->mList->mSelected, 1, true);
-		if (i->GetSelected())
-			new IncinerateAmountRequest(i->GetSelected());
-	}
+	i->Use(i->mList->mSelected);
 }
 
-void callback_inventoryListClick(Multiline* m)
+void callback_inventoryDrop(RightClickMenu* r, void* data)
+{
+	Inventory* i = (Inventory*)data;
+	ASSERT(i);
+	
+	if (i->GetSelected())
+		new IncinerateAmountRequest(i->GetSelected());
+}
+
+void callback_inventoryInfo(RightClickMenu* r, void* data)
+{
+	Inventory* i = (Inventory*)data;
+	ASSERT(i);
+}
+
+void callback_inventoryListLeftClick(Multiline* m)
 {
 	Inventory* i = (Inventory*)m->GetParent();
 	ASSERT(i);
 	
 	i->ItemSelected();
+}
+
+void callback_inventoryListRightClick(Multiline* m)
+{
+	Inventory* i = (Inventory*)m->GetParent();
+	ASSERT(i);
+
+	i->RightClickSelected();
 }
 
 int callback_inventoryXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
@@ -47,8 +62,7 @@ int callback_inventoryXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 	{
 		inv->_add(xf->GetParamString(e, "id"), 	
 					xf->GetParamString(e, "desc"), 
-					xf->GetParamInt(e, "amount"),
-					xf->GetParamInt(e, "cost"));
+					xf->GetParamInt(e, "amount"));
 	}
 	
 	return XMLPARSE_SUCCESS;
@@ -139,7 +153,7 @@ void IncinerateAmountRequest::Render()
 }
 
 Inventory::Inventory() :
-	Frame(gui, "inventory", rect(), "My Backpack", true, true, true, true)
+	Frame(gui, "inventory", rect(), "[IN RENOVATION]", true, true, true, true)
 {
 	SetSize(250, 250);
 	Center();
@@ -148,12 +162,14 @@ Inventory::Inventory() :
 	mRandomMultiplier = 1;
 	mRandomAdditive = 0;
 	mTradeDialog = NULL;
+	mFirstItemIndex = -1;
 	
 	mList = makeList(this, "list", rect(0,0,0,0));
-		mList->onLeftSingleClickCallback = callback_inventoryListClick;
+		mList->onLeftSingleClickCallback = callback_inventoryListLeftClick;
+		mList->onRightSingleClickCallback = callback_inventoryListRightClick;
 		//mList->mScrollbar->mTabImage->mDst.h = 10;
 
-	mInfo = new Multiline(this, "info", rect(0,0,0,0));
+//	mInfo = new Multiline(this, "info", rect(0,0,0,0));
 		//mInfo->mScrollbar->mTabImage->mDst.h = 10; //shrink our scrollbar a bit to give more room
 
 	//make bottom buttons
@@ -162,14 +178,14 @@ Inventory::Inventory() :
 		mTrade->SetImage("assets/buttons/inv_trade.png");
 		mTrade->SetVisible(false);
 	
-	mDrop = new Button(this, "drop", rect(0,0,20,20), "", callback_inventory);
+/*	mDrop = new Button(this, "drop", rect(0,0,20,20), "", NULL);
 		mDrop->mHoverText = "Incinerate Selected";
 		mDrop->SetImage("assets/buttons/inv_drop.png");
 	
-	mUse = new Button(this, "use", rect(0,0,20,20), "", callback_inventory);
+	mUse = new Button(this, "use", rect(0,0,20,20), "", NULL);
 		mUse->mHoverText = "Use Selected";
 		mUse->SetImage("assets/buttons/inv_use.png");
-
+*/
 	mCash = new Button(this, "", rect(0,0,20,20), "", NULL);
 		mCash->SetImage("assets/buttons/dorra.png");
 			
@@ -245,7 +261,6 @@ bool Inventory::Save()
 		game->mPlayerData.SetParamString(e, "id", mInventory.at(i)->id);
 		game->mPlayerData.SetParamString(e, "desc", mInventory.at(i)->description);
 		game->mPlayerData.SetParamInt(e, "amount", mInventory.at(i)->amount);
-		game->mPlayerData.SetParamInt(e, "cost", mInventory.at(i)->cost);
 	}
 	
 	game->SavePlayerData();
@@ -274,25 +289,32 @@ bool Inventory::Load()
 	return success;
 }
 
-itemProperties* Inventory::Add(string id, string description, uShort amount, uShort cost)
+itemProperties* Inventory::Add(string id, string description, uShort amount)
 {
-	game->mChat->AddMessage("\\c090 * Gained " + its(amount) + "x " + id + "!");
+	string msg = id;
+	if (amount > 1)
+		msg += " (" + its(amount) + "x)";
+	
+	game->mChat->AddMessage("\\c090 * Gained " + msg);
 	
 	MessageData md("GAIN_ITEM");
 	md.WriteString("id", id);
+	md.WriteString("description", description);
 	md.WriteInt("amount", amount);
 	messenger.Dispatch(md, this);
+	
+	game->ShowInfoBar("item", msg, 7000, "assets/infobar_item.png");
 	
 	if (!Has(id, 1))
 		achievement_TreasureHunter();
 
-	itemProperties* prop = _add(id, description, amount, cost);
+	itemProperties* prop = _add(id, description, amount);
 	Save();
 	
 	return prop;
 }
 
-itemProperties* Inventory::_add(string id, string description, uShort amount, uShort cost) 
+itemProperties* Inventory::_add(string id, string description, uShort amount) 
 {
 	PRINT("Adding Item " + id + " DESC: " + description + " amt: " + its(amount));
 	id = id.substr(0, MAX_ITEM_ID);
@@ -318,7 +340,6 @@ itemProperties* Inventory::_add(string id, string description, uShort amount, uS
 	if (amount < 1) 
 		amount = 1;
 	prop->amount = amount;
-	prop->cost = cost;
 
 	//didn't find, add as a new one to the top
 	mInventory.insert(mInventory.begin(), prop);
@@ -355,11 +376,48 @@ itemProperties* Inventory::GetRandom()
 void Inventory::ItemSelected()
 {
 	if (mList->mSelected < 0 || mList->mSelected >= mList->mLines.size()) return;
+
+	// do a swap
+	if (mFirstItemIndex >= 0)
+	{
+		SwapItems(mFirstItemIndex, mList->mSelected);
+	}
+	else //prep for swap
+	{
+		mFirstItemIndex = mList->mSelected;
+			
+		//Set the info box to the description of the item
+	//	mInfo->Clear();
+		//mInfo->AddMessage(mInventory.at(mList->mSelected)->description);
+	//	mInfo->SetTopLine(0); //set it to display the top of the message
+	}
+}
+
+void Inventory::SwapItems(int a, int b)
+{
+	itemProperties* temp;
 	
-	//Set the info box to the description of the item
-	mInfo->Clear();
-	mInfo->AddMessage(mInventory.at(mList->mSelected)->description);
-	mInfo->SetTopLine(0); //set it to display the top of the message
+	temp = mInventory.at(a);
+	mInventory.at(a) = mInventory.at(b);
+	mInventory.at(b) = temp;
+	
+	// Refresh listing data
+	mList->SetLine(a, its(mInventory.at(a)->amount) + "x " + mInventory.at(a)->id);
+	mList->SetLine(b, its(mInventory.at(b)->amount) + "x " + mInventory.at(b)->id);
+	
+	mFirstItemIndex = -1;
+
+}
+
+void Inventory::RightClickSelected()
+{
+	// stop a swap in progress
+	mFirstItemIndex = -1;
+	
+	RightClickMenu* m = new RightClickMenu();
+		m->AddOption("Info", callback_inventoryInfo, this);
+		m->AddOption("Incinerate", callback_inventoryDrop, this);
+		m->AddOption("Use", callback_inventoryUse, this);
 }
 
 void Inventory::Erase(string id, uShort amount, bool removeOnlyIfHasEnough)
@@ -429,11 +487,11 @@ itemProperties* Inventory::GetSelected()
 void Inventory::ResizeChildren() //overridden so we can move things around properly
 {
 
-	mList->SetPosition( rect(10, 30, Width() - 20, Height() - 125) );
-	mInfo->SetPosition( rect(10, 35 + mList->Height(), Width() - 20, 60) );
+	mList->SetPosition( rect(10, 30, Width() - 20, Height() - 65) );
+	//mInfo->SetPosition( rect(10, 35 + mList->Height(), Width() - 20, 60) );
 	
-	mUse->SetPosition( rect(Width()-43,Height()-25,20,20) );	
-	mDrop->SetPosition( rect(Width()-76,Height()-25,20,20) );
+//	mUse->SetPosition( rect(Width()-43,Height()-25,20,20) );	
+//	mDrop->SetPosition( rect(Width()-76,Height()-25,20,20) );
 	mTrade->SetPosition( rect(Width()-109,Height()-25,20,20) );
 	
 	mCash->SetPosition( rect(5,Height()-25,20,20) );

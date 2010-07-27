@@ -20,7 +20,6 @@ class MyAchievements : public Frame
 	{
 		string title;
 		string description;
-		string file;
 		int total;
 		int max;
 		Image* icon; //if this isn't local, it'll be downloaded on the fly

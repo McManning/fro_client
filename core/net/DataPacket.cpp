@@ -6,6 +6,7 @@
 DataPacket::DataPacket(string id)
 {
 	mId = id;
+	mReadIndex = 0;
 }
 
 string DataPacket::ToString() const
@@ -35,6 +36,11 @@ bool DataPacket::FromString(string& s)
 	return true;
 }
 
+bool DataPacket::End() const
+{
+	return mReadIndex == mData.size();
+}
+
 void DataPacket::WriteString(string data)
 {
 	mData.push_back(data);
@@ -45,23 +51,36 @@ void DataPacket::WriteInt(int data)
 	mData.push_back(its(data));
 }
 
-string DataPacket::ReadString(int index) const
+void DataPacket::WriteChar(char data)
 {
-	if (mData.size() <= index)
-	{
-		FATAL(mId + " Invalid Index: " + its(index));
-	}
-	
-	return mData.at(index);
+	mData.push_back(its(data));
 }
 
-int DataPacket::ReadInt(int index) const
+string DataPacket::ReadString()
 {
-	if (mData.size() <= index)
-	{
-		FATAL(mId + " Invalid Index: " + its(index));
-	}
+	if (End()) return "";
 	
-	return sti(mData.at(index));
+	string s = mData.at(mReadIndex);
+	++mReadIndex;
+	return s;
 }
+
+int DataPacket::ReadInt()
+{
+	if (End()) return 0;
+		
+	string s = mData.at(mReadIndex);
+	++mReadIndex;
+	return sti(s);
+}
+
+char DataPacket::ReadChar()
+{
+	if (End()) return 0;
+		
+	string s = mData.at(mReadIndex);
+	++mReadIndex;
+	return (char)sti(s); //lolol bad temp coding
+}
+
 

@@ -29,11 +29,25 @@ class Font
 	int GetHeight(string text = "", int width = 0);
 	int GetLineSkip();
 	
+	/*	Returns a rect representation of the text size. If maxWidth > 0, wrapping will occur */
+	rect GetTextRect(string text, bool ignoreCodes = false, int maxWidth = 0);
+	
+	
+	/*	Activates the (slower) alpha blend mode, that allows this image to 
+		do real RGBA->RGBA blending (does not use SDL's quicker, lazier method
+		of using destinations alpha). 
+		
+		Do NOT activate alpha blending on a surface that redraws itself every frame!
+	*/
+	bool IsAlphaBlending() const { return mUseBlitOverride; };
+	bool UseAlphaBlending(bool b) { mUseBlitOverride = b; };
+	
 	TTF_Font* data;
 	int size;
 	int style;
 	string filename;
 	byte mType;
+	bool mUseBlitOverride;
   private:
 	void _renderLine(Image* dst, int x, int y, string& text, color c); 
 };

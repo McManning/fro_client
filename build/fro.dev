@@ -1,7 +1,7 @@
 [Project]
 FileName=fro.dev
 Name=fro
-UnitCount=183
+UnitCount=185
 Type=0
 Ver=1
 ObjFiles=
@@ -21,7 +21,7 @@ OverrideOutput=0
 OverrideOutputName=fro.exe
 HostApplication=
 Folders=..,../core,../core/io,../core/io/tinyxml,../core/net,../core/SDL,../core/sound,../core/widgets,../entity,../game,../interface,../lua,../map
-CommandLine=
+CommandLine=-terra
 UseCustomMakefile=0
 CustomMakefile=
 IncludeVersionInfo=1
@@ -473,7 +473,7 @@ BuildCmd=
 Major=1
 Minor=2
 Release=3
-Build=1540
+Build=1654
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -807,107 +807,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit87]
-FileName=..\map\BubbleManager.cpp
-CompileCpp=1
-Folder=../map
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit88]
-FileName=..\map\BubbleManager.h
-CompileCpp=1
-Folder=../map
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
 [Unit89]
-FileName=..\map\BasicMap.cpp
-CompileCpp=1
-Folder=../map
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit94]
-FileName=..\entity\EntityManager.cpp
-CompileCpp=1
-Folder=../entity
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit95]
-FileName=..\entity\EntityManager.h
-CompileCpp=1
-Folder=../entity
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit97]
-FileName=..\entity\LocalActor.h
-CompileCpp=1
-Folder=../entity
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit98]
-FileName=..\entity\Actor.cpp
-CompileCpp=1
-Folder=../entity
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit99]
-FileName=..\entity\Actor.h
-CompileCpp=1
-Folder=../entity
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit101]
-FileName=..\entity\RemoteActor.h
-CompileCpp=1
-Folder=../entity
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit90]
-FileName=..\map\BasicMap.h
-CompileCpp=1
-Folder=../map
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit91]
 FileName=..\map\Map.cpp
 CompileCpp=1
 Folder=../map
@@ -917,8 +817,8 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit102]
-FileName=..\entity\StaticObject.cpp
+[Unit94]
+FileName=..\entity\LocalActor.cpp
 CompileCpp=1
 Folder=../entity
 Compile=1
@@ -927,7 +827,47 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit103]
+[Unit95]
+FileName=..\entity\LocalActor.h
+CompileCpp=1
+Folder=../entity
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit97]
+FileName=..\entity\Actor.h
+CompileCpp=1
+Folder=../entity
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit98]
+FileName=..\entity\RemoteActor.cpp
+CompileCpp=1
+Folder=../entity
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit99]
+FileName=..\entity\RemoteActor.h
+CompileCpp=1
+Folder=../entity
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit101]
 FileName=..\entity\StaticObject.h
 CompileCpp=1
 Folder=../entity
@@ -937,7 +877,27 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit104]
+[Unit90]
+FileName=..\entity\Entity.cpp
+CompileCpp=1
+Folder=../entity
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit91]
+FileName=..\entity\Entity.h
+CompileCpp=1
+Folder=../entity
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit102]
 FileName=..\core\widgets\ColorPicker.cpp
 CompileCpp=1
 Folder=../core/widgets
@@ -947,7 +907,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit105]
+[Unit103]
 FileName=..\core\widgets\ColorPicker.h
 CompileCpp=1
 Folder=../core/widgets
@@ -957,7 +917,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit106]
+[Unit104]
 FileName=..\interface\OptionsDialog.cpp
 CompileCpp=1
 Folder=../interface
@@ -967,7 +927,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit107]
+[Unit105]
 FileName=..\interface\OptionsDialog.h
 CompileCpp=1
 Folder=../interface
@@ -977,7 +937,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit108]
+[Unit106]
 FileName=..\core\widgets\OpenUrl.cpp
 CompileCpp=1
 Folder=../core/widgets
@@ -987,7 +947,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit109]
+[Unit107]
 FileName=..\core\widgets\OpenUrl.h
 CompileCpp=1
 Folder=../core/widgets
@@ -997,7 +957,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit110]
+[Unit108]
 FileName=..\core\TimeProfiler.cpp
 CompileCpp=1
 Folder=../core
@@ -1007,7 +967,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit111]
+[Unit109]
 FileName=..\core\TimeProfiler.h
 CompileCpp=1
 Folder=../core
@@ -1017,27 +977,27 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit110]
+FileName=..\core\net\DataPacket.cpp
+CompileCpp=1
+Folder=../core/net
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit111]
+FileName=..\core\net\DataPacket.h
+CompileCpp=1
+Folder=../core/net
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
 [Unit114]
-FileName=..\entity\Avatar.cpp
-CompileCpp=1
-Folder=../entity
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit115]
-FileName=..\entity\Avatar.h
-CompileCpp=1
-Folder=../entity
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit116]
 FileName=..\interface\UserList.cpp
 CompileCpp=1
 Folder=../interface
@@ -1047,10 +1007,30 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit117]
+[Unit115]
 FileName=..\interface\UserList.h
 CompileCpp=1
 Folder=../interface
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit116]
+FileName=..\core\widgets\MessagePopup.cpp
+CompileCpp=1
+Folder=../core/widgets
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit117]
+FileName=..\core\widgets\MessagePopup.h
+CompileCpp=1
+Folder=../core/widgets
 Compile=1
 Link=1
 Priority=1000
@@ -1098,7 +1078,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit92]
-FileName=..\entity\Entity.cpp
+FileName=..\entity\EntityManager.cpp
 CompileCpp=1
 Folder=../entity
 Compile=1
@@ -1108,7 +1088,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit93]
-FileName=..\entity\Entity.h
+FileName=..\entity\EntityManager.h
 CompileCpp=1
 Folder=../entity
 Compile=1
@@ -1118,7 +1098,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit100]
-FileName=..\entity\RemoteActor.cpp
+FileName=..\entity\StaticObject.cpp
 CompileCpp=1
 Folder=../entity
 Compile=1
@@ -1128,9 +1108,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit120]
-FileName=..\entity\ExplodingEntity.cpp
+FileName=..\interface\AvatarCreator.cpp
 CompileCpp=1
-Folder=../entity
+Folder=../interface
 Compile=1
 Link=1
 Priority=1000
@@ -1138,9 +1118,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit121]
-FileName=..\entity\ExplodingEntity.h
+FileName=..\interface\AvatarCreator.h
 CompileCpp=1
-Folder=../entity
+Folder=../interface
 Compile=1
 Link=1
 Priority=1000
@@ -1148,26 +1128,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit124]
-FileName=..\core\MessageData.cpp
-CompileCpp=1
-Folder=../core
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit125]
-FileName=..\core\MessageData.h
-CompileCpp=1
-Folder=../core
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit126]
 FileName=..\interface\ItemTrade.cpp
 CompileCpp=1
 Folder=../interface
@@ -1177,7 +1137,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit127]
+[Unit125]
 FileName=..\interface\ItemTrade.h
 CompileCpp=1
 Folder=../interface
@@ -1187,27 +1147,27 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit126]
+FileName=..\entity\TextObject.cpp
+CompileCpp=1
+Folder=../entity
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit127]
+FileName=..\entity\TextObject.h
+CompileCpp=1
+Folder=../entity
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
 [Unit130]
-FileName=..\lua\EventsLib.cpp
-CompileCpp=1
-Folder=../lua
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit131]
-FileName=..\lua\EventsLib.h
-CompileCpp=1
-Folder=../lua
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit132]
 FileName=..\lua\LuaCommon.cpp
 CompileCpp=1
 Folder=../lua
@@ -1217,7 +1177,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit133]
+[Unit131]
 FileName=..\lua\LuaCommon.h
 CompileCpp=1
 Folder=../lua
@@ -1227,7 +1187,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit134]
+[Unit132]
 FileName=..\lua\SystemLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1237,7 +1197,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit135]
+[Unit133]
 FileName=..\lua\SystemLib.h
 CompileCpp=1
 Folder=../lua
@@ -1247,7 +1207,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit136]
+[Unit134]
 FileName=..\lua\TimersLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1257,8 +1217,28 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit137]
+[Unit135]
 FileName=..\lua\TimersLib.h
+CompileCpp=1
+Folder=../lua
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit136]
+FileName=..\lua\EntityLib.cpp
+CompileCpp=1
+Folder=../lua
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit137]
+FileName=..\lua\EntityLib.h
 CompileCpp=1
 Folder=../lua
 Compile=1
@@ -1278,26 +1258,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit140]
-FileName=..\lua\PlayerLib.cpp
-CompileCpp=1
-Folder=../lua
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit141]
-FileName=..\lua\PlayerLib.h
-CompileCpp=1
-Folder=../lua
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit142]
 FileName=..\lua\ActorLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1307,7 +1267,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit143]
+[Unit141]
 FileName=..\lua\ActorLib.h
 CompileCpp=1
 Folder=../lua
@@ -1317,7 +1277,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit144]
+[Unit142]
 FileName=..\lua\ConvoLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1327,7 +1287,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit145]
+[Unit143]
 FileName=..\lua\ConvoLib.h
 CompileCpp=1
 Folder=../lua
@@ -1337,7 +1297,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit146]
+[Unit144]
 FileName=..\lua\CameraLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1347,7 +1307,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit147]
+[Unit145]
 FileName=..\lua\CameraLib.h
 CompileCpp=1
 Folder=../lua
@@ -1357,7 +1317,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit148]
+[Unit146]
 FileName=..\game\TerrainTest.cpp
 CompileCpp=1
 Folder=../game
@@ -1367,7 +1327,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit149]
+[Unit147]
 FileName=..\game\TerrainTest.h
 CompileCpp=1
 Folder=../game
@@ -1377,7 +1337,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit150]
+[Unit148]
 FileName=..\game\WorldLoader.cpp
 CompileCpp=1
 Folder=../game
@@ -1387,7 +1347,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit151]
+[Unit149]
 FileName=..\game\WorldLoader.h
 CompileCpp=1
 Folder=../game
@@ -1397,7 +1357,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit152]
+[Unit150]
 FileName=..\interface\MyAchievements.cpp
 CompileCpp=1
 Folder=../interface
@@ -1407,7 +1367,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit153]
+[Unit151]
 FileName=..\interface\MyAchievements.h
 CompileCpp=1
 Folder=../interface
@@ -1417,7 +1377,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit154]
+[Unit152]
 FileName=..\lua\GameLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1427,7 +1387,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit155]
+[Unit153]
 FileName=..\lua\GameLib.h
 CompileCpp=1
 Folder=../lua
@@ -1437,27 +1397,27 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit154]
+FileName=..\game\Achievements.cpp
+CompileCpp=1
+Folder=../game
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit155]
+FileName=..\game\Achievements.h
+CompileCpp=1
+Folder=../game
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
 [Unit158]
-FileName=..\interface\MiniMenu.cpp
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit159]
-FileName=..\interface\MiniMenu.h
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit160]
 FileName=..\lua\MapLib.cpp
 CompileCpp=1
 Folder=../lua
@@ -1467,8 +1427,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit163]
-FileName=..\core\widgets\YesNoPopup.h
+[Unit159]
+FileName=..\lua\MapLib.h
+CompileCpp=1
+Folder=../lua
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit160]
+FileName=..\core\widgets\YesNoPopup.cpp
 CompileCpp=1
 Folder=../core/widgets
 Compile=1
@@ -1477,17 +1447,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit164]
-FileName=..\interface\RemotePlayerMenu.cpp
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit165]
+[Unit163]
 FileName=..\interface\RemotePlayerMenu.h
 CompileCpp=1
 Folder=../interface
@@ -1497,7 +1457,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit166]
+[Unit164]
 FileName=..\game\CollisionBlob.cpp
 CompileCpp=1
 Folder=../game
@@ -1507,7 +1467,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit167]
+[Unit165]
 FileName=..\game\CollisionBlob.h
 CompileCpp=1
 Folder=../game
@@ -1517,27 +1477,27 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit166]
+FileName=..\interface\LunemParty.cpp
+CompileCpp=1
+Folder=../interface
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit167]
+FileName=..\interface\LunemParty.h
+CompileCpp=1
+Folder=../interface
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
 [Unit170]
-FileName=..\entity\Combatant.cpp
-CompileCpp=1
-Folder=../entity
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit171]
-FileName=..\entity\Combatant.h
-CompileCpp=1
-Folder=../entity
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit172]
 FileName=..\interface\WorldsViewer.h
 CompileCpp=1
 Folder=../interface
@@ -1547,7 +1507,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit173]
+[Unit171]
 FileName=..\interface\WorldsViewer.cpp
 CompileCpp=1
 Folder=../interface
@@ -1557,7 +1517,17 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit175]
+[Unit172]
+FileName=..\interface\PlayerActionMenu.cpp
+CompileCpp=1
+Folder=../interface
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit173]
 FileName=..\interface\PlayerActionMenu.h
 CompileCpp=1
 Folder=../interface
@@ -1567,17 +1537,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit176]
-FileName=..\interface\ScreenText.h
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit177]
+[Unit175]
 FileName=..\interface\ScreenText.cpp
 CompileCpp=1
 Folder=../interface
@@ -1587,7 +1547,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit178]
+[Unit176]
 FileName=..\entity\DamageIcon.cpp
 CompileCpp=1
 Folder=../entity
@@ -1597,7 +1557,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit179]
+[Unit177]
 FileName=..\entity\DamageIcon.h
 CompileCpp=1
 Folder=../entity
@@ -1607,7 +1567,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit180]
+[Unit178]
 FileName=..\interface\ActorStats.cpp
 CompileCpp=1
 Folder=../interface
@@ -1617,7 +1577,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit181]
+[Unit179]
 FileName=..\interface\ActorStats.h
 CompileCpp=1
 Folder=../interface
@@ -1627,7 +1587,17 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit183]
+[Unit180]
+FileName=..\core\widgets\RightClickMenu.cpp
+CompileCpp=1
+Folder=../core/widgets
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit181]
 FileName=..\core\widgets\RightClickMenu.h
 CompileCpp=1
 Folder=../core/widgets
@@ -1637,10 +1607,20 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit184]
-FileName=..\entity\ActionEffect.cpp
+[Unit183]
+FileName=..\core\SDL\SDL_gfxBlitFunc.h
 CompileCpp=1
-Folder=../interface
+Folder=../core/SDL
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit184]
+FileName=..\entity\ChatBubble.cpp
+CompileCpp=1
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000
@@ -1648,9 +1628,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit185]
-FileName=..\entity\ActionEffect.h
+FileName=..\entity\ChatBubble.h
 CompileCpp=1
-Folder=../interface
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000
@@ -1678,7 +1658,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit96]
-FileName=..\entity\LocalActor.cpp
+FileName=..\entity\Actor.cpp
 CompileCpp=1
 Folder=../entity
 Compile=1
@@ -1698,9 +1678,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit112]
-FileName=..\core\net\DataPacket.cpp
+FileName=..\entity\Avatar.cpp
 CompileCpp=1
-Folder=../core/net
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000
@@ -1708,9 +1688,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit113]
-FileName=..\core\net\DataPacket.h
+FileName=..\entity\Avatar.h
 CompileCpp=1
-Folder=../core/net
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000
@@ -1718,9 +1698,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit128]
-FileName=..\entity\TextObject.cpp
+FileName=..\lua\EventsLib.cpp
 CompileCpp=1
-Folder=../entity
+Folder=../lua
 Compile=1
 Link=1
 Priority=1000
@@ -1728,9 +1708,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit129]
-FileName=..\entity\TextObject.h
+FileName=..\lua\EventsLib.h
 CompileCpp=1
-Folder=../entity
+Folder=../lua
 Compile=1
 Link=1
 Priority=1000
@@ -1738,9 +1718,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit156]
-FileName=..\game\Achievements.cpp
+FileName=..\interface\MiniMenu.cpp
 CompileCpp=1
-Folder=../game
+Folder=../interface
 Compile=1
 Link=1
 Priority=1000
@@ -1748,9 +1728,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit157]
-FileName=..\game\Achievements.h
+FileName=..\interface\MiniMenu.h
 CompileCpp=1
-Folder=../game
+Folder=../interface
 Compile=1
 Link=1
 Priority=1000
@@ -1758,7 +1738,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit138]
-FileName=..\lua\EntityLib.cpp
+FileName=..\lua\PlayerLib.cpp
 CompileCpp=1
 Folder=../lua
 Compile=1
@@ -1768,7 +1748,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit139]
-FileName=..\lua\EntityLib.h
+FileName=..\lua\PlayerLib.h
 CompileCpp=1
 Folder=../lua
 Compile=1
@@ -1798,9 +1778,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit122]
-FileName=..\interface\AvatarCreator.cpp
+FileName=..\core\MessageData.cpp
 CompileCpp=1
-Folder=../interface
+Folder=../core
 Compile=1
 Link=1
 Priority=1000
@@ -1808,7 +1788,27 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit123]
-FileName=..\interface\AvatarCreator.h
+FileName=..\core\MessageData.h
+CompileCpp=1
+Folder=../core
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit161]
+FileName=..\core\widgets\YesNoPopup.h
+CompileCpp=1
+Folder=../core/widgets
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit162]
+FileName=..\interface\RemotePlayerMenu.cpp
 CompileCpp=1
 Folder=../interface
 Compile=1
@@ -1817,30 +1817,10 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit161]
-FileName=..\lua\MapLib.h
-CompileCpp=1
-Folder=../lua
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit162]
-FileName=..\core\widgets\YesNoPopup.cpp
-CompileCpp=1
-Folder=../core/widgets
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
 [Unit118]
-FileName=..\core\widgets\MessagePopup.cpp
+FileName=..\entity\ExplodingEntity.cpp
 CompileCpp=1
-Folder=../core/widgets
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000
@@ -1848,9 +1828,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit119]
-FileName=..\core\widgets\MessagePopup.h
+FileName=..\entity\ExplodingEntity.h
 CompileCpp=1
-Folder=../core/widgets
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000
@@ -1858,7 +1838,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit174]
-FileName=..\interface\PlayerActionMenu.cpp
+FileName=..\interface\ScreenText.h
 CompileCpp=1
 Folder=../interface
 Compile=1
@@ -1868,9 +1848,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit168]
-FileName=..\interface\LunemParty.cpp
+FileName=..\entity\Combatant.cpp
 CompileCpp=1
-Folder=../interface
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000
@@ -1878,9 +1858,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit169]
-FileName=..\interface\LunemParty.h
+FileName=..\entity\Combatant.h
 CompileCpp=1
-Folder=../interface
+Folder=../entity
 Compile=1
 Link=1
 Priority=1000
@@ -1888,9 +1868,49 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit182]
-FileName=..\core\widgets\RightClickMenu.cpp
+FileName=..\core\SDL\SDL_gfxBlitFunc.c
 CompileCpp=1
-Folder=../core/widgets
+Folder=../core/SDL
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit186]
+FileName=..\entity\ChatBubble.cpp
+CompileCpp=1
+Folder=../entity
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit187]
+FileName=..\entity\ChatBubble.h
+CompileCpp=1
+Folder=../entity
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit87]
+FileName=..\map\BasicMap.cpp
+CompileCpp=1
+Folder=../map
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit88]
+FileName=..\map\BasicMap.h
+CompileCpp=1
+Folder=../map
 Compile=1
 Link=1
 Priority=1000

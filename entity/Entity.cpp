@@ -2,6 +2,7 @@
 #include <lua.hpp>
 #include "Entity.h"
 #include "EntityManager.h"
+#include "ChatBubble.h"
 #include "../map/Map.h"
 #include "../core/io/Crypt.h"
 #include "../core/io/FileIO.h" //getTemporaryCacheFilename
@@ -22,6 +23,7 @@ Entity::Entity()
 	mShadow = false;
 	mJumpHeight = 0;
 	mClickRange = 0;
+	mActiveChatBubble = NULL;
 }
 
 Entity::~Entity()
@@ -29,8 +31,7 @@ Entity::~Entity()
 	//destroy anything that may be trying to link to us
 	timers->RemoveMatchingUserData(this);
 
-	if (mMap)
-		mMap->mBubbles.PopBubble(this);
+	ClearActiveChatBubble();
 }
 
 string Entity::GetTypeName()
@@ -154,11 +155,6 @@ bool Entity::IsCollidingWithEntity(Entity* e)
 	return false;
 }
 
-rect Entity::GetBoundingRect()
-{
-	return rect();	
-}
-
 void Entity::RenderShadow()
 {
 	if (!mShadow || !mMap)
@@ -276,5 +272,14 @@ int Entity::LuaGetProp(lua_State* ls, string& prop)
 	else return 0;
 	
 	return 1;
+}
+
+void Entity::ClearActiveChatBubble()
+{
+	if (mActiveChatBubble && mMap)
+	{
+		mActiveChatBubble->mOwner = NULL;
+		mMap->RemoveEntity(mActiveChatBubble);
+	}
 }
 

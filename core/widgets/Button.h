@@ -22,6 +22,7 @@ class Button: public Widget
 	void SetCaption(string text);
 
 	void (*onClickCallback)(Button*);
+	void (*onRightClickCallback)(Button*);
 
 	string mCaption; 
 	Image* mCaptionImage;

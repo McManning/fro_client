@@ -15,20 +15,25 @@ class DataPacket
 	DataPacket(string id = "");
 	~DataPacket() {};
 	
+	string GetID() const { return mId; };
+	
 	/*	Construct a resulting encrypted and compressed message from the data to be sent out */
 	string ToString() const;
 	
 	/*	Returns true if decrypted properly, false if the input string wasn't a valid message */
 	bool FromString(string& s);
 	
-	int Size() const { return mData.size(); };
+	/*	Returns true if we're at the end of the packet (nothing else to read) */
+	bool End() const;
 	
 	void WriteString(string data);
 	void WriteInt(int data);
+	void WriteChar(char data);
 	
-	/*	Read data from index */
-	string ReadString(int index) const;
-	int ReadInt(int index) const;
+	/*	Read data in and increase the current index */
+	string ReadString();
+	int ReadInt();
+	char ReadChar();
 	
 	/*	Encryption stuff */
 	void SetKey(string s) { mKey = s; };
@@ -37,6 +42,9 @@ class DataPacket
 	string mId;
 	string mKey;
 	vString mData;
+	
+  private:
+	int mReadIndex; // Current index to read from
 };
 
 #endif //_DATAPACKET_H_

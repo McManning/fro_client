@@ -52,7 +52,7 @@ class GameManager : public Frame
 	/*	Returns the total number of points earned so far in the achievement, or 0 if passed in invalid parameters
 		(max < 1 or title is empty)
 	*/
-	int EarnAchievement(string title, string desc, int max, string file);
+	int EarnAchievement(string title, string desc, int max);
 	
 	Map* mMap;
 	LocalActor* mPlayer;
@@ -86,13 +86,17 @@ class GameManager : public Frame
 	gameMode mGameMode;
 	
 	void ToggleGameMode(gameMode mode);
-	void ShowInfoBar(string id, string msg, int duration);
+	void ShowInfoBar(string id, string msg, int duration, string imageFile = "");
+
+	void EnableDuelMode();
+	void DisableDuelMode();
+	bool IsInDuel();
 
   private:
 	void _buildHud();
 	void _buildChatbox();
 	void _hookCommands();
-	void _addNewAchievement(string title, string desc, int max, string file);
+	void _addNewAchievement(string title, string desc, int max);
 };
 
 extern GameManager* game;

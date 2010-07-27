@@ -235,6 +235,7 @@ void OptionsDialog::Save()
 		if (s.find(" ", 0) != string::npos)
 			s.erase(s.find(" ", 0));
 
+		replace(&s, "\\n", ""); //filter out \n 
 		if (!stripCodes(s).empty())
 		{
 			if (game->mNet->IsConnected())
@@ -249,6 +250,10 @@ void OptionsDialog::Save()
 			TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
 			game->mPlayerData.SetParamString(e, "nick", s);
 			game->SavePlayerData();
+		}
+		else
+		{
+			game->mChat->AddMessage("\\c900 * Invalid nickname, ignoring.");
 		}
 	}
 

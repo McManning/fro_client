@@ -13,7 +13,7 @@ class RemoteActor : public Actor
 	
 	void Render();
 
-	void ReadAvatarFromPacket(DataPacket& data, uShort startOffset);
+	void ReadAvatarFromPacket(DataPacket& data);
 	
 	bool LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, 
 							bool loopStand, bool loopSit);

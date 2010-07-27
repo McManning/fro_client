@@ -5,7 +5,7 @@
 #include "../core/Core.h"
 #include "../core/widgets/Frame.h"
 
-const int TILE_SIZE = 8;
+const int TILE_SIZE = 16;
 const int MAX_HEIGHT = 10;
 
 class TerrainTest : public Frame 

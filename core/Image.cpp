@@ -4,6 +4,7 @@
 #include "SDL/SDL_Misc.h"
 #include "SDL/SDL_rotozoom.h"
 #include "SDL/SDL_Image.h"
+#include "SDL/SDL_gfxBlitFunc.h"
 #include "widgets/Console.h"
 #include "TimerManager.h"
 #include "Screen.h"
@@ -211,6 +212,7 @@ Image::Image()
 	mFrameIndex = 0;
 	mNextFrameChange = 0;
 	mPlaying = true;
+	mUseBlitOverride = false;
 }
 
 Image::~Image()
@@ -689,11 +691,25 @@ bool Image::Render(SDL_Surface* dst, sShort x, sShort y, rect clip)
 	SDL_Rect rDst = { x, y, clip.w, clip.h };
 	SDL_Rect rSrc = { clip.x, clip.y, clip.w, clip.h };
 
+
 	//OPTIMIZETODO: Optimized version
-	if ( SDL_BlitSurface(src, &rSrc, dst, &rDst) < 0 )
+
+	//if they want to do RGBA->RGBA (and can!), let them use the slower renderer
+	if (mUseBlitOverride && src->format->BytesPerPixel == 4 && dst->format->BytesPerPixel == 4)
 	{
-        WARNING(SDL_GetError());
-        return false;
+		if ( SDL_gfxBlitRGBA(src, &rSrc, dst, &rDst) < 0 )
+		{
+	        WARNING(SDL_GetError());
+	        return false;
+		}
+	}
+	else
+	{
+		if ( SDL_BlitSurface(src, &rSrc, dst, &rDst) < 0 )
+		{
+	        WARNING(SDL_GetError());
+	        return false;
+		}
 	}
 
 	return true;

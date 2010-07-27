@@ -5,10 +5,7 @@
 
 #include "StaticObject.h"
 
-/* Text rendered directly to the map
-
-<text layer="1" size="12" position="x,y" color="r,g,b" rotation="0.0">Text Here</text>
-
+/* Text rendered directly to the map as an entity
 */
 class TextObject : public StaticObject
 {
@@ -16,10 +13,13 @@ class TextObject : public StaticObject
 	TextObject();
 	~TextObject();
 
-	void SetText(string text, uShort size, double rotation);
+	void SetText(string text, int maxWidth = 0);
+	void SetFont(string file = "", int size = 0, int style = 0);
 
-	uShort mFontSize;
-	uShort mWidth; //TODO: Use this and add wrapping!
+	int mFontSize;
+	int mMaxWidth;
+	Font* mFont;
+	string mText;
 };
 
 #endif //_TEXTOBJECT_H_

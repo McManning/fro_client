@@ -190,6 +190,9 @@ void IrcNet::OnConnect()
 		
 	//ChangeNick(mRealname);
 	
+	//USER <username> <hostname> <servername> <realname>
+	// Hostname and servername are ignored by the server. Username will be overwritten by the 
+	// server, so it's pretty pointless itself. Realname is all that matters.
 	msg = "USER FroUser 0 * :" + mRealname + "\r\n";
 	SendLine(msg); 
 }
@@ -691,8 +694,10 @@ bool IrcNet::Process()
 				
 				messenger.Dispatch(md, this);
 			}
-			else if (cmd == "366" || cmd == "323" || cmd == "321") //ignore!
-			{ 		
+			else if (cmd == "366" || cmd == "323" || cmd == "321"
+					|| cmd == "319" || cmd == "312" || cmd == "318"
+					|| cmd == "338" || cmd == "310") //ignore!
+			{ 
 				/*
 					 :irc.lunarforums.org 366 ircNet_Nick #drm-testing :End of /NAMES list.
 					 :server 321 NICK Channel :Users Name
@@ -713,6 +718,33 @@ bool IrcNet::Process()
 				md.SetId("NET_CHANNEL_COUNT");
 				md.WriteString("channel", getWord(line, 4));
 				md.WriteInt("count", sti(getWord(line, 5))); 	
+				messenger.Dispatch(md, this);
+			}
+			else if (cmd == "317") // :server 317 mynick hisnick 827 4548948974 :seconds idle, signon time
+			{
+				s1 = getWord(line, 4); 
+				s3 = getWord(line, 5);
+				s2 = getWord(line, 6);
+				
+				md.Clear();
+				md.SetId("NET_WHOIS");
+				md.WriteString("nick", s1);
+				md.WriteInt("idle", sti(s3));
+				md.WriteInt("signon", sti(s2));
+				
+				messenger.Dispatch(md, this);
+			}
+			else if (cmd == "311") // :server 311 mynick hisnick ~Frouser ADDRESS * :realname
+			{
+				s1 = getWord(line, 4); 
+				s2 = getWord(line, 6);
+				
+				md.Clear();
+				md.SetId("NET_WHOIS2");
+				md.WriteString("nick", s1);
+				md.WriteString("address", s2);
+				md.WriteString("realname", msg);
+				
 				messenger.Dispatch(md, this);
 			}
 			else if ((atoi(cmd.c_str()) > 400 && atoi(cmd.c_str()) < 503) || cmd == "263") //command ERROR reply from IRC server

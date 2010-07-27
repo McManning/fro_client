@@ -103,12 +103,17 @@ int game_SetScreenText(lua_State* ls)
 	return 0;
 }
 
-//	.ShowInfoBar("id", "text", duration)
+//	.ShowInfoBar("id", "text", duration, "imagefile"<nil>)
 int game_ShowInfoBar(lua_State* ls)
 {
 	luaCountArgs(ls, 3);
 
-	game->ShowInfoBar(lua_tostring(ls, 1), lua_tostring(ls, 2), (int)lua_tonumber(ls, 3));
+	string imgfile;
+	int args = lua_gettop(ls);
+	if (args > 3)
+		imgfile = lua_tostring(ls, 4);
+
+	game->ShowInfoBar(lua_tostring(ls, 1), lua_tostring(ls, 2), (int)lua_tonumber(ls, 3), imgfile);
 	return 0;
 }
 
@@ -171,6 +176,23 @@ int game_IsStatsBarDecreasing(lua_State* ls)
 	return 1;	
 }
 
+//	x, y = .GetCursorPosition()
+int game_GetCursorPosition(lua_State* ls)
+{
+	if (SDL_GetAppState() & SDL_APPMOUSEFOCUS) //if we have the mouse
+	{
+		lua_pushnumber(ls, gui->GetMouseX());
+		lua_pushnumber(ls, gui->GetMouseY());
+	}
+	else
+	{
+		lua_pushnumber(ls, -1);
+		lua_pushnumber(ls, -1);
+	}
+	
+	return 2;
+}
+
 static const luaL_Reg functions[] = {
 	{"Print", game_Print},
 	{"NetSendToChannel", game_NetSendToChannel},
@@ -184,6 +206,7 @@ static const luaL_Reg functions[] = {
 	{"NewStatsBar", game_NewStatsBar},
 	{"RemoveStatsBar", game_RemoveStatsBar},
 	{"IsStatsBarDecreasing", game_IsStatsBarDecreasing},
+	{"GetCursorPosition", game_GetCursorPosition},
 	{NULL, NULL}
 };
 

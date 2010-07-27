@@ -169,6 +169,8 @@ class Widget
 	uShort mHoverDelay;
 	
 	bool mTemporary; //this widget will auto-delete itself on MOUSEBUTTONUP/KEYUP/KEYDOWN
+	bool mUsesImageOffsets; // If false, CalculateImageOffset will always return 0
+	
   protected:
 	
 	rect mPosition; 

@@ -4,7 +4,6 @@
 
 #include <map>
 
-#include "BubbleManager.h"
 #include "../core/Core.h"
 #include "../core/widgets/Frame.h"
 #include "../entity/EntityManager.h"
@@ -102,8 +101,6 @@ class Map : public Frame, public EntityManager
 
 	void SetFlag(string flag, string value);
 	string GetFlag(string flag);
-	
-	BubbleManager mBubbles;
 
 	bool mShowPlayerNames; //TODO: Move to Game or something
 

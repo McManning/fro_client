@@ -21,6 +21,7 @@
 #include "../core/widgets/MessagePopup.h"
 #include "../core/net/IrcNet2.h"
 #include "../core/io/BoltFile.h"
+#include "../core/io/FileIO.h"
 
 #include "../interface/LoginDialog.h"
 #include "../interface/Inventory.h"
@@ -309,6 +310,11 @@ void callback_chatCommandNick(Console* c, string s) // /nick nickname
 		
 	s = s.substr(6);
 	
+	replace(&s, "\\n", ""); //filter out \n 
+	
+	if (stripCodes(s).empty())
+		return;
+	
 	if (game->mNet->IsConnected())
 		game->mNet->ChangeNick(s);
 	else
@@ -365,12 +371,12 @@ uShort timer_gameManagerProcess(timer* t, uLong ms)
 
 void callback_showChatbox(Button* b)
 {
-	//if (!game->IsInDuel())
-	//{
+	if (!game->IsInDuel())
+	{
 		b->Die();
 		game->mChat->SetVisible(true);
 		game->ToggleGameMode(GameManager::MODE_CHAT);
-	//}
+	}
 }
 
 void callback_hideChatbox(Button* b)
@@ -455,6 +461,8 @@ GameManager::GameManager()
 	
 	game = this;
 	
+	buildDirectoryTree(DIR_PROFILE);
+	
 	UpdateAppTitle();
 	
 	//TODO: this is temp, to ensure we don't have multiple GMs running.
@@ -474,7 +482,7 @@ GameManager::GameManager()
 
 	PRINT("[GM] Loading Network");
 	mNet = new IrcNet();
-	mNet->mRealname = "fro";
+	mNet->mRealname = "guest";
 	
 	PRINT("[GM] Hooking Network");
 	hookNetListeners();
@@ -937,8 +945,10 @@ void GameManager::DisplayAchievement(string title)
 {
 	//TODO: Popup and AWESOME STUFFS!
 	
-	game->mChat->AddMessage("\\c139 * " + mPlayer->mName + "\\c999 achieved: \\c080 " + title);
+	game->mChat->AddMessage("\\c139 * " + mPlayer->mName + "\\c999 achieved: \\c080" + title);
 	mPlayer->Emote(11);
+	
+	ShowInfoBar("achievement", title, 5000, "assets/infobar_ach.png");
 	
 	//Tell everyone!
 	netSendAchievement(title);
@@ -946,7 +956,7 @@ void GameManager::DisplayAchievement(string title)
 	achievement_OverAchiever();
 }
 
-void GameManager::_addNewAchievement(string title, string desc, int max, string file)
+void GameManager::_addNewAchievement(string title, string desc, int max)
 {
 	TiXmlElement* top = mPlayerData.mDoc.FirstChildElement();
 	TiXmlElement* e;
@@ -963,7 +973,6 @@ void GameManager::_addNewAchievement(string title, string desc, int max, string 
 	
 	mPlayerData.SetParamString(e, "title", title);
 	mPlayerData.SetParamString(e, "desc", desc);
-	mPlayerData.SetParamString(e, "file", file);
 	mPlayerData.SetParamInt(e, "max", max);
 	mPlayerData.SetParamInt(e, "total", 1);
 
@@ -974,9 +983,9 @@ void GameManager::_addNewAchievement(string title, string desc, int max, string 
 		DisplayAchievement(title);
 }
 	
-int GameManager::EarnAchievement(string title, string desc, int max, string file)
+int GameManager::EarnAchievement(string title, string desc, int max)
 {
-	if (title.empty() || max < 1)
+	if (title.empty() || max < 1 || !mMap)
 		return 0;
 		
 	//if we already have it, update it
@@ -1021,7 +1030,7 @@ int GameManager::EarnAchievement(string title, string desc, int max, string file
 	}
 	
 	//not found, add it.
-	_addNewAchievement(title, desc, max, file);
+	_addNewAchievement(title, desc, max);
 	
 	return 1;
 }
@@ -1055,8 +1064,14 @@ void GameManager::UpdateAppTitle()
 }
 
 void GameManager::ToggleGameMode(gameMode mode)
-{
+{	
+	if (mode == MODE_DUEL)
+		EnableDuelMode();
+	else if (mGameMode == MODE_DUEL) //if we're switching FROM duel
+		DisableDuelMode();
+	
 	mGameMode = mode;
+	
 	if (mode == MODE_ACTION)
 	{
 		mChat->mInput->mReadOnly = true;
@@ -1067,27 +1082,90 @@ void GameManager::ToggleGameMode(gameMode mode)
 		mChat->mInput->mReadOnly = false;
 		mChat->mInput->Clear();
 	}
-	
+
 	// Send an event
 	MessageData md("GAME_MODE");
 	md.WriteInt("mode", mode);
 	messenger.Dispatch(md);
 }
 
-void GameManager::ShowInfoBar(string id, string msg, int duration)
+void GameManager::ShowInfoBar(string id, string msg, int duration, string imageFile)
 {
 	rect r;
-	
+
+	//if (mInfoBar)
+//		mInfoBar->Die();
+
+//	mInfoBar 
 	Frame* f = new Frame(this, id, rect(175, 0, 450, 30), "", false, false, false, true);
 		f->mBoxRender = false;
 		f->SetImage("assets/infobar.png");
 	Label* l = new Label(f, "", rect(0, 8), msg);
-		r = l->GetPosition();
-		l->SetPosition( rect(f->Width()/2 - r.w/2, f->Height()/2 - r.h/2 + 2, r.w, r.h) );
 		l->mFontColor = color(255, 255, 255);
-
+		
+		r = l->GetPosition();
+		r.x = f->Width()/2 - r.w/2;
+		if (!imageFile.empty())
+			r.x += 25;
+		r.y = f->Height()/2 - r.h/2 + 2;
+		l->SetPosition( r );
+	
+	if (!imageFile.empty())
+	{
+		r.x -= 25;
+		r.w = 20;
+		r.h = 20;
+		r.y = f->Height()/2 - 8;
+		
+		// Add a button that just acts as an image
+		Button* b = new Button(f, "", r, "", NULL);
+			b->mUsesImageOffsets = false;
+			b->SetImage(imageFile);
+	}
+	
 	timers->Add("", duration, false, timer_DestroyInfoBar, NULL, f);
 }
 
+void GameManager::EnableDuelMode()
+{
+	//show & clear duel console, hide chat,
 
+	//mDuelConsole->SetVisible(true);
+	//mDuelConsole->Clear();
+	
+	mChat->SetVisible(false);
+	mHud->SetVisible(false);
+	
+	//kill any dialogs that may exist
+	Widget* w;
+	w = gui->Get("avyfavs");
+	if (w) w->Die();
+	
+	w = gui->Get("userlist");
+	if (w) w->Die();
+	
+	w = gui->Get("achievements");
+	if (w) w->Die();
+	
+	w = gui->Get("party");
+	if (w) w->Die();
+
+	if (inventory)
+		inventory->SetVisible(false);
+	
+}
+
+void GameManager::DisableDuelMode()
+{
+	//show chat, hide duel console, 
+	
+	//mDuelConsole->SetVisible(false);
+	mChat->SetVisible(true);
+	mHud->SetVisible(true);
+}
+
+bool GameManager::IsInDuel()
+{
+	return (mGameMode == MODE_DUEL);
+}
 

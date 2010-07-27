@@ -89,7 +89,7 @@ ConvoDialog::~ConvoDialog()
 	if (luaState)
 		luaL_unref(luaState, LUA_REGISTRYINDEX, luaReference);
 	
-	if (game && game->mChat)
+	if (game && game->mChat && !game->IsInDuel())
 		game->mChat->SetVisible(true);
 	
 	convo = NULL;

@@ -16,8 +16,7 @@ void achievement_FashionAddict()
 		if (fashionAddictCounter == ACH_FASHIONADDICT_COUNT)
 		{
 			game->EarnAchievement("Fashion Addict", 
-				"Rapidly cycle through avatars in an attempt to be the prettiest girl at the ball.", 
-				1, "fashion_addict");
+				"Rapidly cycle through avatars in an attempt to be the prettiest girl at the ball.", 1);
 		}
 	}
 	else
@@ -40,8 +39,7 @@ void achievement_StickyKeys()
 		if (stickyKeysCounter == ACH_STICKYKEYS_COUNT)
 		{
 			game->EarnAchievement("Sticky Keys", 
-				"Congratulations! You have activated Sticky Keys yet again!", 
-				1, "sticky_keys");
+				"Congratulations! You have activated Sticky Keys yet again!", 1);
 		}
 	}
 	else
@@ -58,7 +56,7 @@ void achievement_TreasureHunter()
 	
 	game->EarnAchievement("Treasure Hunter", 
 		"Collect " + its(ACH_TREASUREHUNTER_MAX) + " unique items.", 
-		ACH_TREASUREHUNTER_MAX, "treasure_hunter");
+		ACH_TREASUREHUNTER_MAX);
 }
 
 //each time user deletes an item. Input the number of items deleted
@@ -70,7 +68,7 @@ void achievement_WasteNot(int count)
 	{
 		if (game->EarnAchievement("Waste Not", 
 			"Send " + its(ACH_WASTENOT_MAX) + " items to the incinerator.", 
-			ACH_WASTENOT_MAX, "treasure_hunter") == ACH_WASTENOT_MAX)
+			ACH_WASTENOT_MAX) == ACH_WASTENOT_MAX)
 			break;
 	}
 }
@@ -82,7 +80,7 @@ void achievement_OverAchiever()
 	
 	game->EarnAchievement("Over-Achiever", 
 		"Earn " + its(ACH_OVERACHIEVER_MAX) + " achievements. What's the matter, got nothing else to do?", 
-		ACH_OVERACHIEVER_MAX, "over_achiever");
+		ACH_OVERACHIEVER_MAX);
 }
 
 //whenever the user speaks
@@ -99,8 +97,7 @@ void achievement_NeedASpamBlocker()
 		if (spamCounter == ACH_NEEDASPAMBLOCKER_COUNT)
 		{
 			game->EarnAchievement("We Need A Spam Blocker", 
-				"Someone needs to Ess Tee Eff Yoo once in a while.", 
-				1, "spammer");
+				"Someone needs to Ess Tee Eff Yoo once in a while.", 1);
 		}
 	}
 	else

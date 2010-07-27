@@ -45,37 +45,24 @@ void RemoteActor::SetBlocked(bool b)
 	}
 }
 
-void RemoteActor::ReadAvatarFromPacket(DataPacket& data, uShort startOffset)
+void RemoteActor::ReadAvatarFromPacket(DataPacket& data)
 {
-	uShort w, h, delay = 1000;
+	int w, h, delay = 1000;
 	bool loopStand = true, loopSit = false;
 	string url, pass;
 	int modifier;
-	
-	if (data.Size() > startOffset + 5) //if we have avatar info, read it
-	{
-		url = data.ReadString(startOffset);
-		w = data.ReadInt(startOffset+1);
-		h = data.ReadInt(startOffset+2);
 
-		if (data.Size() > startOffset+3)
-			delay = data.ReadInt(startOffset+3);
-
-		if (data.Size() > startOffset+4)
-			loopStand = data.ReadInt(startOffset+4);
-
-		if (data.Size() > startOffset+5)
-			loopSit = data.ReadInt(startOffset+5);
-			
-		if (data.Size() > startOffset+6)
-			modifier = data.ReadInt(startOffset+6);
-			
-		if (data.Size() > startOffset+7)
-			pass = data.ReadString(startOffset+7);
-			
-		if (LoadAvatar(url, pass, w, h, delay, loopStand, loopSit))
-			mLoadingAvatar->mModifier = modifier;
-	}
+	url = data.ReadString();
+	w = data.ReadChar();
+	h = data.ReadChar();
+	delay = data.ReadInt();
+	loopStand = data.ReadChar();
+	loopSit = data.ReadChar();
+	modifier = data.ReadChar();
+	pass = data.ReadString();
+		
+	if (LoadAvatar(url, pass, w, h, delay, loopStand, loopSit))
+		mLoadingAvatar->mModifier = modifier;
 }
 
 bool RemoteActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, 

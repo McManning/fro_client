@@ -48,7 +48,6 @@ void MyAchievements::_load()
 		{
 			a.title = game->mPlayerData.GetParamString(e, "title");
 			a.description = game->mPlayerData.GetParamString(e, "desc");
-			a.file = game->mPlayerData.GetParamString(e, "file");
 			a.max = game->mPlayerData.GetParamInt(e, "max");
 			a.total = game->mPlayerData.GetParamInt(e, "total");
 

@@ -194,6 +194,15 @@ class Image
 	void SavePNG(string file) const;
 	void StateToString(string& s) const;
 
+	/*	Activates the (slower) alpha blend mode, that allows this image to 
+		do real RGBA->RGBA blending (does not use SDL's quicker, lazier method
+		of using destinations alpha). 
+		
+		Do NOT activate alpha blending on a surface that redraws itself every frame!
+	*/
+	bool IsAlphaBlending() const { return mUseBlitOverride; };
+	bool UseAlphaBlending(bool b) { mUseBlitOverride = b; };
+
 //private:
 	
 	/* 	mImage can be shared by multiple Image instances, so be wary of modifications.
@@ -210,6 +219,7 @@ class Image
 	timer* mAnimationTimer;
 	
 	bool mPlaying;
+	bool mUseBlitOverride;
 
   private:
 	void _checkStatus();

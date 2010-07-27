@@ -30,6 +30,7 @@ Button::Button(Widget* wParent, string sId, rect rPosition, string sCaption,
 	}
 	
 	onClickCallback = cbOnClick;
+	onRightClickCallback = NULL;
 	SetPosition(rPosition);
 	if (wParent)
 		wParent->Add(this);
@@ -99,18 +100,12 @@ void Button::SetCaption(string text)
 
 void Button::Event(SDL_Event* event)
 {
-	if (event->type == SDL_MOUSEBUTTONDOWN && onClickCallback)
+	if (event->type == SDL_MOUSEBUTTONDOWN)
 	{
-		if (event->button.button == SDL_BUTTON_LEFT)
+		if (event->button.button == SDL_BUTTON_LEFT && onClickCallback)
 			onClickCallback(this);
-		else
-		{
-			RightClickMenu* m = new RightClickMenu();
-			m->AddOption("Click!", NULL);
-			m->AddOption("Do Nothing", NULL);	
-			m->AddOption("Select All", NULL);
-			m->AddOption("Incinerate", NULL);
-		}
+		else if (event->button.button == SDL_BUTTON_RIGHT && onRightClickCallback)
+			onRightClickCallback(this);
 	}
 		
 	Widget::Event(event);	

@@ -79,6 +79,9 @@ int callback_welcomeXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 		game->mUsername = loginDialog->mUsername;
 		game->mPassword = loginDialog->mPassword;
 
+		if (!game->mUsername.empty())
+			game->mNet->mRealname = game->mUsername;
+			
 		game->mStartingWorldId = xf->GetText(e);
 		game->mNet->TryNextServer();
 		

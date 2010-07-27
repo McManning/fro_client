@@ -886,10 +886,7 @@ void Actor::Emote(uShort num)
 	if (mEmoticon)
 	{
 		ASSERT(mMap);
-		
-		//kill the bubble so it won't get in the way
-		mMap->mBubbles.PopBubble(this);
-		
+
 		timers->Add("emote", EMOTE_DISPLAY_MS, false, timer_destroyEmote, NULL, this);
 		timers->Add("emoMove", EMOTE_MOVE_DELAY, false, timer_moveEmote, NULL, this);
 		mEmoteOffset = mEmoticon->Height();

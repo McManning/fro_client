@@ -3,7 +3,6 @@
 #include "LocalActor.h"
 #include "../map/Map.h"
 #include "../game/GameManager.h"
-#include "../game/Achievements.h"
 #include "../core/io/FileIO.h"
 #include "../core/net/IrcNet2.h"
 #include "../core/net/DataPacket.h"
@@ -237,8 +236,6 @@ bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort
 		game->mPlayerData.SetParamInt("avatar", "loopstand", loopStand);
 		game->mPlayerData.SetParamInt("avatar", "loopsit", loopSit);
 		game->SavePlayerData();
-		
-		//achievement_FashionAddict();
 
 		netSendAvatar(mLoadingAvatar);
 	}
@@ -281,8 +278,8 @@ void LocalActor::NetSendState(string targetNick, string header) //header VERSION
 	data.WriteString(mName);
 	data.WriteInt(mPosition.x);
 	data.WriteInt(mPosition.y);
-	data.WriteInt(mDirection);
-	data.WriteInt(mAction);
+	data.WriteChar(mDirection);
+	data.WriteChar(mAction);
 
 	//if our avatar loaded but has yet to swap, swap it to send properly.
 	_checkLoadingAvatar();
@@ -292,14 +289,6 @@ void LocalActor::NetSendState(string targetNick, string header) //header VERSION
 		mAvatar->Serialize(data);
 	else if (mLoadingAvatar)
 		mLoadingAvatar->Serialize(data);
-		
-#ifdef DEBUG
-	//Output our analyzed packet data
-	string out = "[To: " + targetNick + "] {" + data.mId + "} ";
-	for (int i = 0; i < data.Size(); i++)
-		out += data.ReadString(i) + " & ";
-	console->AddMessage(out);
-#endif
 
 	if (targetNick.empty())
 		game->mNet->MessageToChannel( data.ToString() );
@@ -349,7 +338,7 @@ void LocalActor::NetSendAvatarMod()
 	DataPacket data("mod");
 	data.SetKey( game->mNet->GetEncryptionKey() );
 	
-	data.WriteInt(GetAvatar()->mModifier);
+	data.WriteChar(GetAvatar()->mModifier);
 	
 	game->mNet->MessageToChannel( data.ToString() );
 }

@@ -390,7 +390,7 @@ void ItemTrade::DoTrade()
 	
 	if (!mRemoteItem.id.empty())
 	{
-		inventory->Add(mRemoteItem.id, mRemoteItem.description, mRemoteItem.amount, mRemoteItem.cost);
+		inventory->Add(mRemoteItem.id, mRemoteItem.description, mRemoteItem.amount);
 		//game->mChat->AddMessage("\\c900 * Gained " + its(mRemoteItem.amount) + "x " + mRemoteItem.id + "\\c900!");	
 	}
 	
@@ -466,18 +466,16 @@ void ItemTrade::UpdateMyItem(uShort amt)
 		data.WriteString(mMyItem.id);
 		data.WriteString(mMyItem.description);
 		data.WriteInt(mMyItem.amount);
-		data.WriteInt(mMyItem.cost);
 		game->mNet->Privmsg( mTrader, data.ToString() );
 	}
 }
 
-void ItemTrade::SetRemoteItem(string id, string desc, uShort amt, uShort cost)
+void ItemTrade::SetRemoteItem(string id, string desc, uShort amt)
 {
 	mRemoteItem.id = id;
 	mRemoteItem.description = desc;
 	mRemoteItem.amount = amt;
-	mRemoteItem.cost = cost;
-	
+
 	//update label
 	mRemoteItemLabel->SetCaption("x" + its(amt) + " " + id);
 }

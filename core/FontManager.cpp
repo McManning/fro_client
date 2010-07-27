@@ -2,6 +2,7 @@
 #include "FontManager.h"
 #include "ResourceManager.h"
 #include "io/XmlFile.h"
+#include "SDL/SDL_gfxBlitFunc.h"
 
 FontManager* fonts;
 
@@ -9,6 +10,7 @@ Font::Font()
 {
 	data = NULL;
 	mType = FONTRENDER_BLENDED;
+	mUseBlitOverride = false;
 }
 
 Font::~Font() 
@@ -121,6 +123,47 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 		v.push_back(s);
 }
 
+rect Font::GetTextRect(string text, bool ignoreCodes, int maxWidth)
+{
+	rect r(0,0,maxWidth,0);
+	vString v;
+
+	if (ignoreCodes)
+		text = stripCodes(text);
+			
+	if (maxWidth > 0)
+	{
+		CharacterWrapMessage(v, text, maxWidth);
+
+	 	if (v.size() < 2)
+	 	{
+			r.w = GetWidth(text);
+			r.h = GetHeight();
+		}
+		else
+		{
+			r.w = 0;
+			int w;
+			//find the longest line, and mark that as our width
+			for (int i = 0; i < v.size(); ++i)
+			{
+				w = GetWidth(v.at(i), true);
+				if (w > r.w)
+					r.w = w;
+			}
+			
+			r.h = v.size() * GetHeight();
+		}
+	}
+	else
+	{
+		r.w = GetWidth(text);
+		r.h = GetHeight();
+	}
+	
+	return r;
+}
+
 SDL_Surface* Font::RenderToSDL(const char* text, color rgb)
 {
 	SDL_Color c = { rgb.r, rgb.g, rgb.b, rgb.a };
@@ -166,9 +209,20 @@ void Font::_renderLine(Image* dst, int x, int y, string& text, color c)
 		{
 			rDst.w = surf->w;
 			rDst.h = surf->h;
-			if ( SDL_BlitSurface(surf, &surf->clip_rect, dstsurf, &rDst) < 0 )
+			
+			if (mUseBlitOverride)
 			{
-				WARNING(SDL_GetError());
+				if ( SDL_gfxBlitRGBA(surf, &surf->clip_rect, dstsurf, &rDst) < 0 )
+				{
+			        WARNING(SDL_GetError());
+				}
+			}
+			else
+			{
+				if ( SDL_BlitSurface(surf, &surf->clip_rect, dstsurf, &rDst) < 0 )
+				{
+					WARNING(SDL_GetError());
+				}
 			}
 			SDL_FreeSurface(surf);
 			x += rDst.w; //offset the X for the next section

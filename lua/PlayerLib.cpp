@@ -102,15 +102,15 @@ int player_Warp(lua_State* ls)
 *	INVENTORY RELATED
 ********************************/
 
-//.GiveItem("id", "description", amount, cost) - Adds the detailed item to our inventory. 
-//cost and amount default to 1 if not supplied, description defaults to blank string. Amount must be >= 1. id can't be blank.
+//.GiveItem("id", "description", amount) - Adds the detailed item to our inventory. 
+// amount defaults to 1 if not supplied, description defaults to blank string. Amount must be >= 1. id can't be blank.
 int player_GiveItem(lua_State* ls)
 {
 	PRINT("player_GiveItem");
 	luaCountArgs(ls, 1);
 
 	int numArgs = lua_gettop(ls);
-	int amount = 1, cost = 1;
+	int amount = 1;
 	string description, id;
 	
 	id = lua_tostring(ls, 1);
@@ -122,13 +122,10 @@ int player_GiveItem(lua_State* ls)
 	
 	if (numArgs > 2)
 		amount = (int)lua_tonumber(ls, 3);
-	
-	if (numArgs > 3)
-		cost = (int)lua_tonumber(ls, 4);
-	
+
 	ASSERT(inventory);
 
-	inventory->Add(id, description, amount, cost);
+	inventory->Add(id, description, amount);
 
 	return 0;
 }
@@ -233,7 +230,7 @@ int player_SetProp(lua_State* ls)
 	return 0;
 }
 
-//	.EarnAchievement(title, desc<can only be set once>, max<can only be set once>, file<can only be set once>)
+//	.EarnAchievement(title, desc<can only be set once>, max<can only be set once>)
 //		Will +1 the total for the achievement. If total == max, display to the player
 int player_EarnAchievement(lua_State* ls)
 {
@@ -250,11 +247,8 @@ int player_EarnAchievement(lua_State* ls)
 	
 	if (numArgs > 2)
 		max = (int)lua_tonumber(ls, 3);
-		
-	if (numArgs > 3)
-		file = lua_tostring(ls, 4);
-	
-	game->EarnAchievement(title, desc, max, file);
+
+	game->EarnAchievement(title, desc, max);
 	
 	return 0;
 }

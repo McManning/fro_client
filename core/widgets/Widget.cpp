@@ -14,6 +14,7 @@ Widget::Widget()
 	mSortable = true;
 	mTemporary = false;
 	mConstrainChildrenToRect = true;
+	mUsesImageOffsets = true;
 	mType = WIDGET_UNKNOWN;
 	mFont = NULL;
 	mBorderColor.a = 0; //don't render
@@ -361,16 +362,19 @@ void Widget::SetKeyFocus(bool b)
 */
 int Widget::CalculateImageOffset(int height)
 {
-	if (!IsActive())
+	if (mUsesImageOffsets)
 	{
-		return height * 3; //disabled
-	}
-	else if (HasMouseFocus())
-	{
-		if (gui->IsMouseButtonDown(MOUSE_BUTTON_LEFT) || gui->IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
-			return height * 2;
-		else
-			return height;
+		if (!IsActive())
+		{
+			return height * 3; //disabled
+		}
+		else if (HasMouseFocus())
+		{
+			if (gui->IsMouseButtonDown(MOUSE_BUTTON_LEFT) || gui->IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+				return height * 2;
+			else
+				return height;
+		}
 	}
 	
 	return 0;

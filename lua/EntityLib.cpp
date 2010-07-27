@@ -6,6 +6,7 @@
 #include "../entity/TextObject.h"
 #include "../entity/ExplodingEntity.h"
 #include "../entity/DamageIcon.h"
+#include "../entity/ChatBubble.h"
 #include "../game/GameManager.h"
 #include "../map/BasicMap.h"
 
@@ -329,8 +330,12 @@ int entity_Say(lua_State* ls)
 	bool showinchat = (numArgs > 3) ? lua_toboolean(ls, 4) : 1;
 
 	if (showbubble)
-		game->mMap->mBubbles.CreateBubble(e, msg);
-
+	{
+		ChatBubble* cb = new ChatBubble(e, msg);
+		cb->mMap = game->mMap;
+		cb->mMap->AddEntity(cb);
+	}
+	
 	if (showinchat)
 		game->mChat->AddMessage(e->mName + ": " + msg);
 		
@@ -363,34 +368,6 @@ int entity_RemoveAllById(lua_State* ls)
 	lua_pushnumber(ls, result);
 	return 1;
 }
-
-// entity_ptr Entity.NewTextObject(text, x, y, size<default_font_size>, layer<1>, rotation<0.0>)
-int entity_NewTextObject(lua_State* ls)
-{
-	PRINT("entity_NewTextObject");
-	luaCountArgs(ls, 3);
-
-	int numArgs = lua_gettop(ls);
-
-	//Read in our buttload of properties, and check for defaults
-	string text = lua_tostring(ls, 1);
-	point2d pos( (sShort)lua_tonumber(ls, 2), (sShort)lua_tonumber(ls, 3) );
-	int size = (numArgs > 3) ? (int)lua_tonumber(ls, 4) : 0;
-	int layer = (numArgs > 4) ? (int)lua_tonumber(ls, 5) : 0;
-	double rot = (numArgs > 5) ? lua_tonumber(ls, 6) : 0.0;
-
-	//Actually create it, and add it
-	TextObject* e = new TextObject();
-	e->mMap = game->mMap;
-	e->SetLayer(layer);
-	e->mMap->AddEntity(e);
-	e->SetText(text, size, rot);
-	e->SetPosition(pos);
-	
-	lua_pushlightuserdata(ls, e);
-	return 1;
-}
-
 
 /*	Read in t.Collision = { 1, 2, 3, 4, ... } array of rects into Entity collisions list 
 	Returns 0 if malformed, 1 otherwise.
@@ -651,7 +628,7 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 		_getColorTable(ls, c);
 		((DamageIcon*)e)->mFontImage->ColorizeGreyscale(c);
 	}
-	
+
 	return 1;
 }
 	
@@ -800,6 +777,60 @@ int entity_Explode(lua_State* ls)
 	
 	return 0;
 }
+	
+//	.SetText(ent, "text"<nil>, maxWidth<0>) - Set displayed text of a text object entity
+int entity_SetText(lua_State* ls)
+{
+	luaCountArgs(ls, 2);
+	
+	int args = lua_gettop(ls);
+	int width = 0;
+	string text;
+		
+	TextObject* o = (TextObject*)_getReferencedEntity(ls);
+	if (!o || o->mType != ENTITY_TEXT)
+	{
+		return luaError(ls, "Entity.SetText", "Invalid Entity type");
+	}
+	
+	if (args > 1)
+		text = lua_tostring(ls, 2);
+
+	if (args > 2)
+		width = (int)lua_tonumber(ls, 3);
+
+	o->SetText(text, width);
+	return 0;
+}
+	
+//	.SetFont(ent, "face"<nil>, size<nil>, style<nil>) - Set displayed text of a text object entity
+//		Any non-defined parameter will use user defaults
+int entity_SetFont(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	
+	int args = lua_gettop(ls);
+	int size = 0, style = 0;
+	string face;
+			
+	TextObject* o = (TextObject*)_getReferencedEntity(ls);
+	if (!o || o->mType != ENTITY_TEXT)
+	{
+		return luaError(ls, "Entity.SetFont", "Invalid Entity type");
+	}
+	
+	if (args > 1)
+		face = lua_tostring(ls, 2);
+
+	if (args > 2)
+		size = (int)lua_tonumber(ls, 3);
+		
+	if (args > 3)
+		style = (int)lua_tonumber(ls, 4);
+
+	o->SetFont(face, size, style);
+	return 0;
+}
 
 static const luaL_Reg functions[] = {
 	{"Exists", entity_Exists},
@@ -820,11 +851,12 @@ static const luaL_Reg functions[] = {
 	{"Say", entity_Say},
 	{"Remove", entity_Remove},
 	{"RemoveAllById", entity_RemoveAllById},
-	{"NewTextObject", entity_NewTextObject},
 	{"Create", entity_Create},
 	{"SetImage", entity_SetImage},
 	{"SetAvatar", entity_SetAvatar},
 	{"Explode", entity_Explode},
+	{"SetText", entity_SetText},
+	{"SetFont", entity_SetFont},
 	{NULL, NULL}
 };
 

@@ -108,40 +108,13 @@ bool Avatar::Convert()
 void Avatar::Serialize(DataPacket& dst)
 {
 	dst.WriteString(mUrl);
-	dst.WriteInt(mWidth);
-	dst.WriteInt(mHeight);
+	dst.WriteChar(mWidth);
+	dst.WriteChar(mHeight);
 	dst.WriteInt(mDelay);
-	dst.WriteInt(mLoopStand);
-	dst.WriteInt(mLoopSit);
-	dst.WriteInt(mModifier);
+	dst.WriteChar(mLoopStand);
+	dst.WriteChar(mLoopSit);
+	dst.WriteChar(mModifier);
 	dst.WriteString(mPass);
-}
-
-void Avatar::Deserialize(DataPacket& src, uShort offset)
-{
-	if (src.Size() <= offset + 5)
-		return;
-		
-	mUrl = src.ReadString(offset);
-	mWidth = src.ReadInt(offset+1);
-	mHeight = src.ReadInt(offset+2);
-	mDelay = src.ReadInt(offset+3);
-	mLoopStand = src.ReadInt(offset+4);
-	mLoopSit = src.ReadInt(offset+5);
-			
-	//Following two members don't exist in the older client versions
-
-	if (src.Size() > offset+6)
-		mModifier = src.ReadInt(offset+6);
-	else
-		mModifier = MOD_NONE;
-		
-	if (src.Size() > offset+7)
-		mPass = src.ReadString(offset+7);
-	else
-		mPass.clear();
-
-	Load();
 }
 
 void Avatar::Load()

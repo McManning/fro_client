@@ -28,7 +28,7 @@ class ItemTrade : public Frame
 	void CheckForTradeOkay();
 	
 	/*	Populate mRemoteItem and set label */
-	void SetRemoteItem(string id, string desc, uShort amt, uShort cost);
+	void SetRemoteItem(string id, string desc, uShort amt);
 	
 	/*	Populates mMyItem and requests the user to input an adjusted amount */
 	void SetMyItem(itemProperties* item);

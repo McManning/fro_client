@@ -5,8 +5,6 @@ TextObject::TextObject()
 	: StaticObject()
 {
 	mType = ENTITY_TEXT;
-	mFontSize = 0;
-	mWidth = 0;
 }
 
 TextObject::~TextObject()
@@ -14,54 +12,33 @@ TextObject::~TextObject()
 
 }
 
-void TextObject::SetText(string text, uShort size, double rotation)
+void TextObject::SetFont(string file, int size, int style)
 {
-	mName = text;
-	mFontSize = size;
+	mFont = fonts->Get(file, size, style);
+}
 
-	Font* f = fonts->Get("", mFontSize);
-	if (!f || text.empty()) 
-		return;
-
-	resman->Unload(mImage);
-	resman->Unload(mOriginalImage);
-
-//	mOriginalImage = resman->NewImage(f->GetWidth(text), f->GetHeight(), color(255,0,0), true);
-//	f->Render(mOriginalImage, 0, 0, text, color());
-
-	//TODO: The above code isn't working and I'm too lazy to fix it, so we'll do a ghetto technique. Fix it later
-	color c;
-	if (text.size() > 5 && text.find("\\c", 0) == 0)
-	{
-		c = slashCtoColor(text.substr(0, 5));
-		text = text.substr(5);
-	}
-
-	SDL_Surface* surf = f->RenderToSDL(text.c_str(), c);
-	mOriginalImage = resman->ImageFromSurface(surf);
-
-	if (!mOriginalImage)
-		mImage = NULL;
-	else
-		mImage = mOriginalImage->Clone();
-
-	mRotation = rotation;
-	mScale = 1.0;
+void TextObject::SetText(string text, int maxWidth)
+{
+	mText = text;
 	
-	SetAA(true);
-	if (rotation != 0.0)
-		Rotozoom(mRotation, mScale);
-		
-	//Set our origin point to the dead center
-	if (mImage)
+	if (!mFont || text.empty()) 
 	{
-		mOrigin.y = mImage->Height();
-		mOrigin.x = mImage->Width() / 2;
+		SetImage(NULL);
+		return;
 	}
-	else
-	{
-		mOrigin.x = mOrigin.y = 0;
-	}
+
+	rect r = mFont->GetTextRect(text, true, maxWidth);
+
+	Image* img = resman->NewImage(r.w, r.h, color(255,255,255,0), true);
+	
+	// Since we used NewImage, gotta do a little slower-rendering to get alpha right,
+	// because SDL is a bitch about RGBA->RGBA
+	mFont->UseAlphaBlending(true);
+	mFont->Render(img, 0, 0, text, color(), maxWidth);
+	mFont->UseAlphaBlending(false);
+	
+	// Done creating, let StaticObject do its stuff to the image
+	SetImage(img);
 }
 
 

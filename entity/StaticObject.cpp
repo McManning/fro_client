@@ -112,14 +112,19 @@ void StaticObject::Rotozoom(double degree, double zoom)
 	ASSERT(mOriginalImage);
 
 	Image* img = mOriginalImage->Clone(true); //create a completely unique copy
-	resman->Unload(mImage); //unreference the original
+	
+	if (mImage != mOriginalImage)
+		resman->Unload(mImage); //unreference the original
+		
 	img->Rotate(mRotation, mScale, mUseAA);
 	mImage = img;
 }
 
 void StaticObject::LoadImage(string file)
 {
-	resman->Unload(mImage);
+	if (mImage != mOriginalImage)
+		resman->Unload(mImage);
+		
 	resman->Unload(mOriginalImage);
 	
 	mOriginalImage = resman->LoadImg(file);
@@ -134,6 +139,22 @@ void StaticObject::LoadImage(string file)
 
 	mRotation = 0.0;
 	mScale = 1.0;
+}
+
+void StaticObject::SetImage(Image* img)
+{
+	if (mImage != mOriginalImage)
+		resman->Unload(mImage);
+	
+	resman->Unload(mOriginalImage);
+	
+	mOriginalImage = img;
+	
+	if (mOriginalImage)
+		mImage = mOriginalImage->Clone();
+
+	mRotation = 0.0;
+	mScale = 1.0;	
 }
 
 void StaticObject::SetAA(bool b)

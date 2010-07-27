@@ -191,6 +191,11 @@ void Multiline::Event(SDL_Event* event)
 						if (onLeftSingleClickCallback)
 							onLeftSingleClickCallback(this);
 					}
+					else if (event->button.button == SDL_BUTTON_RIGHT)
+					{
+						if (onRightSingleClickCallback)
+							onRightSingleClickCallback(this);
+					}
 				}
 			}
 		} break;
@@ -360,7 +365,7 @@ void Multiline::SplitLines(string line, uShort maxWidth)
 		_addLine( lastColor + v.at(i) );
 			
 		index = v.at(i).rfind("\\c");
-		if (index != string::npos && v.at(i).length() > index + 5)
+		if (index != string::npos && v.at(i).length() > index + 4)
 			lastColor = v.at(i).substr(index, 5);
 	}
 }

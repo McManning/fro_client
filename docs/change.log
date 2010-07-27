@@ -1011,7 +1011,72 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Fixed bug with colored text in label widgets causing a miscalculation in dimensions
 - Added Game.IsStatsBarDecreasing(statbarptr) to Lua
 
+(Commit to Revision 40)
 
+100715
+- Rewrote DataPacket class to not use specific indexes for ReadString/ReadInt
+	(Can now internally optimize packet length by not using string representations of numbers)
+- Added ReadChar/WriteChar to DataPacket and implemented where possible to further prepare for optimization
+- Fixed extra whitespace bug in chat bubbles (caused after word wrapping was added)
+- Successful login will now change the IrcNet RealName value sent to the irc server on connect to the login username
+- Improved handling of the /whois response. Now sends NET_WHOIS and NET_WHOIS2 (sometimes) messages to be picked up,
+	and prints things cleanly in a readable manner
+- Updated SDL to 1.2.14 (from 1.2.11). Noteable relevant fixes between versions:
+	- Windows Screensaver can now activate while the window is still up
+	- MIGHT have fixed some audio bugs
+	- Faster I/O for image loading
+	- Fixed crash when a video driver reports higher than 32 bpp video modes. 
+	- Improved mouse input responsiveness
+	- Increased accuracy of alpha blending routines. 
+- Added IsAlphaBlending() and UseAlphaBlending() to Image class. Used to access the (much) slower alpha blending
+	routine and bypass SDL's normal (lazy) alpha blending method. NOT to be used for images that render every frame.
+	Mainly used together with NewImage() in order to draw on a blank, alpha channeled canvas. 
+
+100716
+- Fixed a bug in Multiline where it wouldn't detect an end of line \cRGB while splitting lines
+- Cleaned up join/part messages a bit
+- Added optional image icon to GameManager::ShowInfoBar() as a fourth parameter (Same for Lua too)
+- Removed cost parameter from inventory items (WAS going to replace with level, but it'd make things a bit messy
+	when trying to stack common items, so we'll just use the old method of renaming shit)
+- Removed filename parameter from achievements. If we want to use custom icons in the future, the filenames
+	will be based off the achievement names.
+- Made it easier to get the "Need A Spam Blocker" achievement (now 5 messages in 2 seconds, instead of 10)
+- Fixed "Fashion Addict" achievement 
+
+	FOLLOWING IS UNTESTED:
+- Added the same RGBA->RGBA blit override support that's in Image to Font
+- Added Font::GetTextRect() since it seems to be needed quite often
+- Removed Entity.NewTextObject() from lua
+- Rewrote TextObject entity to support font changing, and word wrapping
+- Added Entity.SetText() and Entity.SetFont() routines to manipulate TextObject entities in Lua
+	(SetFont SHOULD be parameters defined in the creation table, but I'm lazy...)
+	Something like: 
+	{
+		Type = ENTITY_TEXT,
+		FontFace = "custom font",
+		FontSize = 12,
+		FontStyle = FONT_STYLE_BOLD,
+	}
+- Added Game.GetCursorPosition() to Lua
+- Fixed bug that allowed people to use \n in their nickname
+- Fixed bug that allowed nicknames containing only \cRGB codes if they use /nick command
+- Fixed bug that let people insert \n commands into outgoing messages (/me, /music, say, etc)
+
+100717
+- Replaced the old chat bubbles with a ChatBubble map entity (that exists one layer above the speaking entity)
+- Fixed bug that would allow multiple InfoBars to show up
+- Fixed placement issue with InfoBar icons
+- Fixed bug that allowed achievements to be earned while not on a map (And thus, crashing the client)
+- Added Map.GetID() to Lua. Will also work before Map.NewBasic()
+
+100720
+- Added the hiding of hud and common windows from the gui when duel mode is activated
+
+100724
+- Added right click callbacks to Multiline and Button widgets
+- Worked on Inventory a bit, implementing the right click menu and the left click swapping, while still using a
+	multiline. Still a work in progress.
+	
 
 
 

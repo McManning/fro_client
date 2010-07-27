@@ -346,7 +346,7 @@ void TerrainTest::Render()
 	gui->mFont->Render(scr, 5, 5, msg, color(255,255,255));
 	
 	msg = "\\c090Green \\c999and \\c900red \\c999lines mark gradients too steep (Algorithm failure).";
-	gui->mFont->Render(scr, 5, scr->Height() - 20, msg, color());
+	gui->mFont->Render(scr, 5, scr->Height() - 40, msg, color());
 }
 
 void TerrainTest::Event(SDL_Event* event)
