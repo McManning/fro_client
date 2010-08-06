@@ -1049,14 +1049,6 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Removed Entity.NewTextObject() from lua
 - Rewrote TextObject entity to support font changing, and word wrapping
 - Added Entity.SetText() and Entity.SetFont() routines to manipulate TextObject entities in Lua
-	(SetFont SHOULD be parameters defined in the creation table, but I'm lazy...)
-	Something like: 
-	{
-		Type = ENTITY_TEXT,
-		FontFace = "custom font",
-		FontSize = 12,
-		FontStyle = FONT_STYLE_BOLD,
-	}
 - Added Game.GetCursorPosition() to Lua
 - Fixed bug that allowed people to use \n in their nickname
 - Fixed bug that allowed nicknames containing only \cRGB codes if they use /nick command
@@ -1077,7 +1069,57 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Worked on Inventory a bit, implementing the right click menu and the left click swapping, while still using a
 	multiline. Still a work in progress.
 	
+100726
+- Added disk save/load to LunemParty	
+- Added Lunem entity class to do a unique method for avatar downloading, and disk IO for party/storage access
 
+100728
+- Added party slot management functions to Player lua lib
+- Added management routines to LunemParty (add, remove, etc)
+- Added Entity.Add(pEnt, iX, iY) to lua to add entities to the map based on their pointer, instead of a table.
+	This is to be used to add Lunem from our party to the map during a duel
+- Changed Entity.Create to where, if no coordinates are specified, the entity will NOT be added to the map.
+	But the scripter must use Entity.Add() or Player.AddLunemToParty() with the returned pointer, else there will 
+	be a memory leak.
+- Added a boolean to Entity base to stop the EntityManager from deleting it (When we want it managed elsewhere,
+	such as the party, or game manager)
+
+100729
+- Added GameManager::ToggleHud and Game.ToggleHud to Lua
+- Hud elements (including open dialogs) now close when the map changes
+- Improved party member disk io
+- Shrunk /troll emote image (assets/emoticons/13.png) to be about the same size as the others
+- Added unique download system for Lunem images
+- Fixed bug where Actor::SwapAvatar() would try to swap even when the loading avatar was still loaded
+
+100731
+- Added /datass emote (assets/emoticons/16.png)
+- Added /rage emote (assets/emoticons/17.png)
+- Fixed a bug that caused a crash while right clicking multilines
+- Disabled right clicking urls from a multiline when Multiline::onRightSingleClickCallback is set
+- Fixed display issue with messages going through the "act" net message (beat, /me, /music)
+- Reduced number of party members (lunem) down to four (from five)
+- Redesigned party dialog
+
+100802
+- Fixed bug that allowed negative health for actors
+- Added Player.UseItemOnPartyMember() to Lua
+- Added DUEL_USE_ITEM and USE_ITEM (with slot) events. DUEL_USE_ITEM not working yet.
+- Added the framework for selecting party members to use a particular item on
+- Changed ActorStats bar animating to use a timer instead of calculated during render
+- Changed the way GiveItem() works in lua. Now uses a table.
+- Replaced HasItem() with GetItem() in lua, that returns the item table of the specified ID if we own it, or nil
+- Added "use type" to item properties, to specify various use flags. (Duel useable, use on party member, field only, etc)
+	Use types have yet to be defined.
+- Removed trading (wrapped in #ifdef TRADE_ENABLED) until the item system is fully rewritten
+- 
+	
+	
+	
+
+
+	
+	
 
 
 

@@ -10,6 +10,7 @@
 #include "../core/io/FileIO.h"
 #include "../interface/Userlist.h"
 #include "../interface/LoginDialog.h"
+#include "../interface/LunemParty.h"
 
 #include "../lua/MapLib.h"
 
@@ -487,9 +488,13 @@ void WorldLoader::_syncPlayerWithWorld()
 	
 	p->mMap->AddEntity(p);
 	p->mMap->SetCameraFollow(p);
+	p->SetVisible(true);
 	
 	p->mIsLocked = false;
 	game->ToggleGameMode(GameManager::MODE_ACTION);
+	
+	// "Sync" our party with the world by recalculating their stats 
+	game->mParty->RecalculateAllStats();
 	
 	//spawn our player in a different position, based on the destination type
 	if (!m_sWarpDestinationEntityName.empty()) //warp us to the center of this object
@@ -591,10 +596,12 @@ void WorldLoader::SetState(loaderState state)
 	if (game && game->mChat)
 	{
 		//Disable the chatbox while loading
-		if (m_state <= FAILED || m_state == WORLD_ACTIVE)
+		if (m_state <= FAILED)
 			game->mChat->SetVisible(true);
+		else if (m_state == WORLD_ACTIVE)
+			game->ToggleHud(true);
 		else
-			game->mChat->SetVisible(false);
+			game->ToggleHud(false);
 	}
 	
 	UpdateStatusText();

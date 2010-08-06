@@ -27,14 +27,14 @@ class Combatant
 		Set to a specific level. Do not use for leveling up calculations,
 		as the current experience points will not roll over to the next level. 
 	*/
-	void SetLevel(int level);
+	void SetLevel(char level);
 	
 	/**
 		Gene is a special value that will factor in when calculating stats
 		to make this particular entity unique, despite having shared species
 		with others
 	*/
-	void SetGene(int gene);
+	void SetGene(char gene);
 
 	/**
 		Add experience points to m_iExp. If m_iExp > m_iMaxExp,
@@ -62,13 +62,13 @@ class Combatant
 		string id;	
 	};
 
-	int m_iLevel;
-	int m_iGene;
+	char m_bLevel;
+	char m_bGene;
 	
 	// Type information slots
-	int m_iType1;
-	int m_iType2;
-	int m_iType3;
+	char m_bType1;
+	char m_bType2;
+	char m_bType3;
 	
 	// current stats
 	int m_iAttack; // read-only
@@ -80,10 +80,10 @@ class Combatant
 	int m_iMaxExp; //read-only. exp needed to reach the next level
 	
 	// base stats
-	int m_iBaseAttack;
-	int m_iBaseDefense;
-	int m_iBaseSpeed;
-	int m_iBaseHealth;
+	char m_bBaseAttack;
+	char m_bBaseDefense;
+	char m_bBaseSpeed;
+	char m_bBaseHealth;
 
 	skill m_sSkills[5];
 

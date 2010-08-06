@@ -5,6 +5,7 @@
 #include "../core/widgets/Frame.h"
 #include "Inventory.h"
 
+#ifdef TRADE_ENABLED
 class ItemTrade : public Frame
 {
   public:
@@ -48,6 +49,9 @@ class ItemTrade : public Frame
 	Label* mRemoteItemLabel;
 	bool mRemoteReady; //Set to true on TRADEOK msg.
 };
+
+#endif // TRADE_ENABLED
+
 
 /*	Someone is trying to trade with us, see if they can */
 class RemoteActor;

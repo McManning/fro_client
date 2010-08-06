@@ -40,11 +40,13 @@ bool _isTileWhiteEnough(Image* img, int x, int y)
 */
 int createCollisionBlob(string file, int printResults)
 {
-	string outfile = "saved/" + file.substr(file.find_last_of("/")+1) + ".col";
+	string colfile = "saved/" + timestamp(true) + ".col";
+	string luafile = "saved/" + timestamp(true) + ".lua";
 	
 	Image* img = resman->LoadImg(file);
 	if (!img)
 	{
+		console->AddMessage("Failed to load image: " + file);
 		return 0;
 	}
 	
@@ -62,9 +64,10 @@ int createCollisionBlob(string file, int printResults)
 				This method can later be easily read into a dummy collision entity, or converted into lua code.
 	*/
 	
-	FILE* fp = fopen(outfile.c_str(), "w");
+	FILE* fp = fopen(colfile.c_str(), "w");
 	if (!fp)
 	{
+		console->AddMessage("Failed to create output: " + colfile);
 		resman->Unload(img);
 		return 0;
 	}
@@ -111,7 +114,7 @@ int createCollisionBlob(string file, int printResults)
 
 	if (printResults)
 	{
-		fp = fopen(outfile.c_str(), "r");
+		fp = fopen(colfile.c_str(), "r");
 		if (fp)
 		{
 			while (true)
@@ -131,24 +134,24 @@ int createCollisionBlob(string file, int printResults)
 			fclose(fp);
 			
 			// save a new image
-			img->SavePNG(outfile + ".png");
-			console->AddMessage("Saved debug image to " + outfile + ".png");
+			img->SavePNG(colfile + ".png");
+			console->AddMessage("Saved debug image to " + colfile + ".png");
 		}
 	}
 
 	// Package our final collision map
 	string tmpFile = getTemporaryCacheFilename();
-	compressFile(outfile, tmpFile);
-	copyFile(tmpFile, outfile);
+	compressFile(colfile, tmpFile);
+	copyFile(tmpFile, colfile);
 	removeFile(tmpFile);
 	
 	if (printResults) //hey, might as well print some lua code too!
 	{
-		convertCollisionBlobToLuaTable(outfile, outfile + ".lua");
-		console->AddMessage("Saved lua table to " + outfile + ".lua");
+		convertCollisionBlobToLuaTable(colfile, luafile);
+		console->AddMessage("Saved lua table to " + luafile);
 	}
 	
-	console->AddMessage("Saved collision blob to " + outfile);
+	console->AddMessage("Saved collision blob to " + colfile);
 		
 	resman->Unload(img);
 	return 1;

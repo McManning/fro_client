@@ -95,6 +95,9 @@ void Avatar::RevertModification()
 
 bool Avatar::Convert()
 {
+	if (!mImage || !mImage->mImage)
+		return false;
+		
 	//TODO: Remove this GIF-block when we fix gif crashers
 	if (mImage->mImage->format == IMG_FORMAT_GIF)
 	{

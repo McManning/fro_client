@@ -78,6 +78,14 @@ int game_ToggleChat(lua_State* ls)
 	return 0;
 }
 
+//	.ToggleHud(bool) - Toggles visibility of game hud and associated dialogs
+int game_ToggleHud(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	game->ToggleHud(lua_toboolean(ls, 1));
+	return 0;
+}
+
 //	.SetScreenText("text", r, g, b, animationType, y<300>)
 int game_SetScreenText(lua_State* ls)
 {
@@ -139,6 +147,7 @@ int game_NewStatsBar(lua_State* ls)
 	Actor* a = (Actor*)lua_touserdata(ls, 1);
 
 	ActorStats* s = new ActorStats(game->mMap);
+	s->SetMenuMode(ActorStats::DUEL_SCREEN_MENU);
 	s->SetLinked(a);
 	
 	rect r = s->GetPosition();
@@ -155,8 +164,11 @@ int game_RemoveStatsBar(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
 	
-	ActorStats* s = (ActorStats*)lua_touserdata(ls, 1);
-	s->Die();
+	if (!lua_isnil(ls, 1))
+	{
+		ActorStats* s = (ActorStats*)lua_touserdata(ls, 1);
+		s->Die();
+	}
 	
 	return 0;
 }
@@ -166,7 +178,10 @@ int game_IsStatsBarDecreasing(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
 	
-	ActorStats* s = (ActorStats*)lua_touserdata(ls, 1);
+	ActorStats* s = NULL;
+	
+	if (!lua_isnil(ls, 1))
+		s = (ActorStats*)lua_touserdata(ls, 1);
 	
 	if (s)
 		lua_pushboolean(ls, s->mCurrentHealth != s->mLinkedActor->m_iCurrentHealth);
@@ -199,6 +214,7 @@ static const luaL_Reg functions[] = {
 	{"NetSendToPlayer", game_NetSendToPlayer},
 	{"Version", game_Version},
 	{"ToggleChat", game_ToggleChat},
+	{"ToggleHud", game_ToggleHud},
 	{"SetScreenText", game_SetScreenText},
 	{"ShowInfoBar", game_ShowInfoBar},
 	{"SetMode", game_SetMode},

@@ -4,9 +4,12 @@
 #include "LuaCommon.h"
 #include "../core/TimerManager.h"
 #include "../entity/LocalActor.h"
+#include "../entity/Lunem.h"
 #include "../game/GameManager.h"
 #include "../interface/Inventory.h"
 #include "../interface/PlayerActionMenu.h"
+#include "../interface/LunemParty.h"
+#include "../map/Map.h"
 
 struct queuedPlayerWarp
 {
@@ -102,59 +105,31 @@ int player_Warp(lua_State* ls)
 *	INVENTORY RELATED
 ********************************/
 
-//.GiveItem("id", "description", amount) - Adds the detailed item to our inventory. 
-// amount defaults to 1 if not supplied, description defaults to blank string. Amount must be >= 1. id can't be blank.
+//.GiveItem(tItem) - Adds the detailed item to our inventory. 
 int player_GiveItem(lua_State* ls)
 {
-	PRINT("player_GiveItem");
 	luaCountArgs(ls, 1);
 
-	int numArgs = lua_gettop(ls);
-	int amount = 1;
-	string description, id;
-	
-	id = lua_tostring(ls, 1);
-	if (id.empty())
-		return 0;
-	
-	if (numArgs > 1)
-		description = lua_tostring(ls, 2);
-	
-	if (numArgs > 2)
-		amount = (int)lua_tonumber(ls, 3);
-
 	ASSERT(inventory);
-
-	inventory->Add(id, description, amount);
+	inventory->LuaReadItemTable(ls, 1);
 
 	return 0;
 }
 
-//.HasItem("id", amount) returns 1 if has at least amount of the item, 0 otherwise. id can't be blank. Amount defaults to 1.
-int player_HasItem(lua_State* ls)
+// tItem = .GetItem("id") - Returns the item table of the item if we have it, nil otherwise
+int player_GetItem(lua_State* ls)
 {
-	PRINT("player_HasItem");
 	luaCountArgs(ls, 1);
 
 	ASSERT(inventory);
+	string id = lua_tostring(ls, 1);
 	
-	int numArgs = lua_gettop(ls);
-	
-	int amount = 1;
-	if (numArgs > 1)
-		amount = (int)lua_tonumber(ls, 2);
-		
-	if (amount < 1)
-		amount = 1;
-	
-	lua_pushnumber( ls, inventory->Has(lua_tostring(ls, 1), amount) );
-	return 1;
+	return inventory->LuaWriteItemTable(ls, id);
 }
 
 //.TakeItem("id", amount) Takes up to amount number of "id" from our inventory. id can't be blank.
 int player_TakeItem(lua_State* ls)
 {
-	PRINT("player_TakeItem");
 	luaCountArgs(ls, 2);
 
 	ASSERT(inventory);
@@ -167,8 +142,6 @@ int player_TakeItem(lua_State* ls)
 // .GetCash() - Returns total dorra 
 int player_GetCash(lua_State* ls)
 {
-	PRINT("player_GetCash");
-	
 	ASSERT(inventory);
 	
 	lua_pushnumber(ls, inventory->GetCash());
@@ -178,7 +151,6 @@ int player_GetCash(lua_State* ls)
 // .AddCash(amount) - Adds (or subtracts if the amount is negative) to our dorra total
 int player_AddCash(lua_State* ls)
 {
-	PRINT("player_AddCash");
 	luaCountArgs(ls, 1);
 	
 	ASSERT(inventory);
@@ -309,15 +281,107 @@ int player_GetAchievement(lua_State* ls)
 	return 1;
 }
 
-//	.RequestDuelAction(entity, timeoutInSeconds)
+//	.RequestDuelAction(pEntity, iTimeoutInSeconds)
 int player_RequestDuelAction(lua_State* ls)
 {
-	Actor* a = (Actor*)lua_touserdata(ls, 1);
-	int timeout = (int)lua_tonumber(ls, 2);
+	luaCountArgs(ls, 2);
 	
-	new PlayerActionMenu(timeout, a);
+	Actor* a = NULL;
+	if (!lua_isnil(ls, 1))
+		a = (Actor*)lua_touserdata(ls, 1);
+
+	int timeout = (int)lua_tonumber(ls, 2);
+
+	PlayerActionMenu* m = new PlayerActionMenu(timeout, a);
+	game->mMap->Add(m);
 	
 	return 0;
+}
+
+//	pLunem = Player.GetPartySlot(iSlot)
+//		Returns lunem in the slot, or nil if none or slot number is invalid
+int player_GetPartySlot(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	int slot = (int)lua_tonumber(ls, 1);
+	
+	Entity* e;
+	if (slot == -1)
+		e = game->mPlayer;
+	else
+		e = game->mParty->GetSlot( slot );
+	
+	if (e)
+		lua_pushlightuserdata(ls, e);
+	else
+		lua_pushnil(ls);
+
+	return 1;
+}
+
+//	.AddLunemToParty(pLunem) - Returns false if the party is full or the lunem is invalid, true otherwise
+int player_AddLunemToParty(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	Entity* e = (Entity*)lua_touserdata(ls, 1);
+	
+	lua_pushboolean( ls, (e && e->mType == ENTITY_LUNEM && game->mParty->AddLunem((Lunem*)e)) );
+	
+	return 1;
+}
+
+//	.ClearPartySlot(iSlot) - returns false if the slot was already empty or invalid, true otherwise.
+//		Will delete the Lunem from that slot. If the lunem exists on the map too, it will remain 
+//		on the map. Otherwise, the class is fully deleted
+int player_ClearPartySlot(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	
+	int slot = (int)lua_tonumber(ls, 1);
+	lua_pushboolean( ls, game->mParty->ClearSlot(slot) );
+	
+	return 1;
+}
+
+//	bool = .IsPartyFull()
+int player_IsPartyFull(lua_State* ls)
+{
+	lua_pushboolean( ls, game->mParty->IsFull() );
+	return 1;
+}
+
+int player_IsPartyEmpty(lua_State* ls)
+{
+	
+}
+
+int player_HasUsablePartyMember(lua_State* ls)
+{
+	lua_pushboolean( ls, game->mParty->HasLivingMember() );
+	return 1;
+}	
+
+/*	.UseItemOnPartyMember("id")
+		Will open the party dialog for the player to select a target party member. 
+		Once a member is selected, will send out ITEM_USE with an additional table item: slot
+*/				
+int player_UseItemOnPartyMember(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	
+	string id = lua_tostring(ls, 1);
+	
+	game->mParty->SetVisible(true);
+	game->mParty->SetUseItemMode(id);
+	game->mParty->MoveToTop();
+	
+	return 0;
+}
+
+int player_EndDuelTurn(lua_State* ls)
+{	
+	game->EndPlayersDuelTurn();
+	return 0;	
 }
 
 static const luaL_Reg functions[] = {
@@ -325,7 +389,7 @@ static const luaL_Reg functions[] = {
 	{"IsInChatMode", player_IsInChatMode},
 	{"Warp", player_Warp},
 	{"GiveItem", player_GiveItem},
-	{"HasItem", player_HasItem},
+	{"GetItem", player_GetItem},
 	{"TakeItem", player_TakeItem},
 	{"GetCash", player_GetCash},
 	{"AddCash", player_AddCash},
@@ -334,6 +398,13 @@ static const luaL_Reg functions[] = {
 	{"EarnAchievement", player_EarnAchievement},
 	{"GetAchievement", player_GetAchievement},
 	{"RequestDuelAction", player_RequestDuelAction},
+	{"GetPartySlot", player_GetPartySlot},
+	{"AddLunemToParty", player_AddLunemToParty},
+	{"ClearPartySlot", player_ClearPartySlot},
+	{"IsPartyFull", player_IsPartyFull},
+	{"UseItemOnPartyMember", player_UseItemOnPartyMember},
+	{"EndDuelTurn", player_EndDuelTurn},
+	{"HasUsablePartyMember", player_HasUsablePartyMember},
 	{NULL, NULL}
 };
 

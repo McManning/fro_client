@@ -21,6 +21,7 @@ Entity::Entity()
 	mLayer = 0;
 	mLocked = false;
 	mShadow = false;
+	mManagerCanDeleteMe = true;
 	mJumpHeight = 0;
 	mClickRange = 0;
 	mActiveChatBubble = NULL;
@@ -30,7 +31,8 @@ Entity::~Entity()
 {
 	//destroy anything that may be trying to link to us
 	timers->RemoveMatchingUserData(this);
-
+	downloader->NullMatchingUserData(this);
+	
 	ClearActiveChatBubble();
 }
 
@@ -43,6 +45,8 @@ string Entity::GetTypeName()
 		case ENTITY_ACTOR: return "actor";
 		case ENTITY_STATICOBJECT: return "object";
 		case ENTITY_TEXT: return "text";
+		case ENTITY_LUNEM: return "lunem";
+		case ENTITY_DAMAGEICON: return "damageicon";
 		default: return "unknown";
 	}
 }

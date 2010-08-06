@@ -1,4 +1,5 @@
 
+#include <lua.hpp>
 #include "Inventory.h"
 #include "../core/widgets/Button.h"
 #include "../core/widgets/Multiline.h"
@@ -7,6 +8,7 @@
 #include "../core/widgets/Scrollbar.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/widgets/Label.h"
+#include "../lua/LuaCommon.h"
 #include "../game/GameManager.h"
 #include "../game/Achievements.h"
 #include "../map/Map.h"
@@ -62,6 +64,7 @@ int callback_inventoryXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 	{
 		inv->_add(xf->GetParamString(e, "id"), 	
 					xf->GetParamString(e, "desc"), 
+					xf->GetParamInt(e, "usetype"),
 					xf->GetParamInt(e, "amount"));
 	}
 	
@@ -260,6 +263,7 @@ bool Inventory::Save()
 		e = game->mPlayerData.AddChildElement(top, "item"); 
 		game->mPlayerData.SetParamString(e, "id", mInventory.at(i)->id);
 		game->mPlayerData.SetParamString(e, "desc", mInventory.at(i)->description);
+		game->mPlayerData.SetParamInt(e, "usetype", mInventory.at(i)->useType);
 		game->mPlayerData.SetParamInt(e, "amount", mInventory.at(i)->amount);
 	}
 	
@@ -289,7 +293,7 @@ bool Inventory::Load()
 	return success;
 }
 
-itemProperties* Inventory::Add(string id, string description, uShort amount)
+itemProperties* Inventory::Add(string id, string description, int useType, int amount)
 {
 	string msg = id;
 	if (amount > 1)
@@ -308,13 +312,13 @@ itemProperties* Inventory::Add(string id, string description, uShort amount)
 	if (!Has(id, 1))
 		achievement_TreasureHunter();
 
-	itemProperties* prop = _add(id, description, amount);
+	itemProperties* prop = _add(id, description, useType, amount);
 	Save();
 	
 	return prop;
 }
 
-itemProperties* Inventory::_add(string id, string description, uShort amount) 
+itemProperties* Inventory::_add(string id, string description, int useType, int amount) 
 {
 	PRINT("Adding Item " + id + " DESC: " + description + " amt: " + its(amount));
 	id = id.substr(0, MAX_ITEM_ID);
@@ -337,6 +341,7 @@ itemProperties* Inventory::_add(string id, string description, uShort amount)
 	itemProperties* prop = new itemProperties;
 	prop->id = id;
 	prop->description = description;
+	prop->useType = useType;
 	if (amount < 1) 
 		amount = 1;
 	prop->amount = amount;
@@ -472,7 +477,17 @@ void Inventory::Use(sShort index)
 {
 	if (index < 0 || index >= mList->mLines.size()) return;
 
-	MessageData md("USE_ITEM");
+	MessageData md;
+	
+	if (game->IsInDuel())
+	{
+		md.SetId("DUEL_USE_ITEM");
+	}
+	else
+	{
+		md.SetId("USE_ITEM");
+	}
+		
 	md.WriteString("id", mInventory.at(index)->id);
 	messenger.Dispatch(md, this);
 }
@@ -503,5 +518,65 @@ void Inventory::SetPosition(rect r)
 {
 	if (r.w > 135 && r.h > 224)
 		Frame::SetPosition(r);
+}
+
+int Inventory::LuaReadItemTable(lua_State* ls, int virtualIndex)
+{
+	//Virtual index can NOT be an offset from the top, must be an absolute position.
+	// This is because the lua_next() will screw up unless we specify an absolute.
+	if (virtualIndex < 0)
+		virtualIndex = lua_gettop(ls) + virtualIndex + 1;
+	
+	if (!lua_istable(ls, virtualIndex))
+		return 0;
+	
+	string key, id, description;
+	int amount = 1, useType = 0;
+	
+	lua_pushnil(ls);
+	while (lua_next(ls, virtualIndex) != 0)
+	{
+		if (lua_isstring(ls, -2))
+		{
+			key = lua_tostring(ls, -2);
+			if (key == "ID")
+				id = lua_tostring(ls, -1);
+			else if (key == "Description")
+				description = lua_tostring(ls, -1);
+			else if (key == "UseType")
+				useType = (int)lua_tonumber(ls, -1);
+			else if (key == "Amount")
+				amount = (int)lua_tonumber(ls, -1);
+		}
+		lua_pop(ls, 1); //pop value	
+	}
+	
+	// add item
+	Add(id, description, useType, amount);
+
+	return 1;
+}
+
+int Inventory::LuaWriteItemTable(lua_State* ls, string id)
+{
+	itemProperties* ip = Find(id);
+	
+	if (!ip)
+	{
+		lua_pushnil(ls);
+	}
+	else
+	{
+		//Construct a table to store all data
+		lua_newtable(ls);
+		int top = lua_gettop(ls);
+
+		LUAT_ADD_STRING("ID", ip->id);
+		LUAT_ADD_STRING("Description", ip->description);
+		LUAT_ADD_INT("UseType", ip->useType);
+		LUAT_ADD_INT("Amount", ip->amount);
+	}
+
+	return 1;
 }
 

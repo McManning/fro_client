@@ -18,6 +18,7 @@ const char* const PLAYERDATA_FILE = "profile.save";
 class Map;
 class LocalActor;
 class IrcNet;
+class LunemParty;
 class GameManager : public Frame
 {
   public:
@@ -43,6 +44,10 @@ class GameManager : public Frame
 	void LoadPlayerData();
 	void SavePlayerData();
 
+	void ToggleHud(bool visible);
+	
+	void EndPlayersDuelTurn();
+
 	bool IsMapLoading() const { return mLoader &&  mLoader->m_state != WorldLoader::WORLD_ACTIVE && mLoader->m_state != WorldLoader::IDLE; };
 	
 	void UnloadMap();
@@ -59,7 +64,8 @@ class GameManager : public Frame
 	Console* mChat;
 	IrcNet* mNet;
 	WorldLoader* mLoader;
-
+	LunemParty* mParty;
+	
 	Frame* mHud;
 
 	bool mShowJoinParts;

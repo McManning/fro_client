@@ -43,6 +43,7 @@ Multiline::Multiline(Widget* wParent, string sId, rect rPosition)
 	mSelectOnHover = false;
 	mSelected = -1;
 	onLeftDoubleClickCallback = onLeftSingleClickCallback = NULL;
+	onRightSingleClickCallback = NULL;
 	mScrollbar = NULL;
 	mFont = fonts->Get();
 
@@ -158,7 +159,7 @@ void Multiline::Event(SDL_Event* event)
 			else if (event->button.button == SDL_BUTTON_RIGHT)
 			{
 				s = GetLineUnderXY(event->button.x, event->button.y);
-				if (s != -1)
+				if (s != -1 && !onRightSingleClickCallback)
 				{
 					url = GetUrl(s);
 					if (!url.empty())

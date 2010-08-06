@@ -2,6 +2,9 @@
 #include "PlayerActionMenu.h"
 #include "../core/widgets/Button.h"
 #include "../entity/Actor.h"
+#include "../game/GameManager.h"
+#include "../interface/LunemParty.h"
+#include "../interface/Inventory.h"
 
 void callback_Skill(Button* b)
 {
@@ -29,7 +32,7 @@ void callback_UseSkill(Button* b)
 	md.WriteInt("slot", slot);
 	messenger.Dispatch(md);
 	
-	menu->Die();
+	game->EndPlayersDuelTurn();
 }
 
 void callback_Defend(Button* b)
@@ -40,7 +43,7 @@ void callback_Defend(Button* b)
 	MessageData md("DUEL_USE_DEFEND");
 	messenger.Dispatch(md);
 	
-	menu->Die();
+	game->EndPlayersDuelTurn();
 }
 
 void callback_RunAway(Button* b)
@@ -51,25 +54,24 @@ void callback_RunAway(Button* b)
 	MessageData md("DUEL_USE_RUN");
 	messenger.Dispatch(md);
 	
-	menu->Die();
+	game->EndPlayersDuelTurn();
+}
+
+void callback_TagOut(Button* b)
+{
+	PlayerActionMenu* menu = (PlayerActionMenu*)b->GetParent()->GetParent();
+	
+	game->mParty->SetVisible(true);
+	game->mParty->SetMenuMode(ActorStats::DUEL_SWAP_MENU);
+	game->mParty->MoveToTop();
 }
 
 void callback_Item(Button* b)
 {
 	PlayerActionMenu* menu = (PlayerActionMenu*)b->GetParent()->GetParent();
 	
-	//inventory->SetVisible(true);
-	//inventory->
-	
-	/*
-		TODO: Rewrite the callback for the inventory close & use buttons.
-		Close button should hide inventory & redisplay the main menu of this, and replace itself with the 
-			old inventory close button callback.
-		Use button should call a thing here so it can pass a new event, and kill player action menu
-			then replace itself with the old inventory close button callback.
-	*/
-	
-	//menu->Die();
+	inventory->SetVisible(true);
+	inventory->MoveToTop();
 }
 
 uShort timer_checkForTimeout(timer* t, uLong ms)
@@ -85,7 +87,8 @@ uShort timer_checkForTimeout(timer* t, uLong ms)
 		MessageData md("DUEL_TURN_TIMEOUT");
 		messenger.Dispatch(md);
 		
-		menu->Die();
+		game->EndPlayersDuelTurn();
+		
 		return TIMER_DESTROY;
 	}
 
@@ -95,7 +98,7 @@ uShort timer_checkForTimeout(timer* t, uLong ms)
 
 
 PlayerActionMenu::PlayerActionMenu(int timeout, Actor* controlled)
-	: Frame(gui, "PlayerActionMenu", rect(50,220,200,100), "Select Action (" + its(timeout) + " sec)", true, false, false, true)
+	: Frame(NULL, "PlayerActionMenu", rect(50,220,200,100), "Select Action (" + its(timeout) + " sec)", true, false, false, true)
 {
 	m_pControlled = controlled;
 	m_iCountdown = timeout;
@@ -116,21 +119,23 @@ PlayerActionMenu::PlayerActionMenu(int timeout, Actor* controlled)
 		
 		r.x = 0;
 		r.y = 0;
+			
+		if (controlled)
+		{
+			b = new Button(m_pChoicesFrame, "", r, "Use Skill", callback_Skill);
+			r.y += 25;
+	
+			b = new Button(m_pChoicesFrame, "", r, "Use Item", callback_Item);
+				b->SetActive(false);
+			r.y += 25;
+	
+			b = new Button(m_pChoicesFrame, "", r, "Defend", callback_Defend);
+			r.y += 25;
+		}
 		
-		b = new Button(m_pChoicesFrame, "", r, "Use Skill", callback_Skill);
+		b = new Button(m_pChoicesFrame, "", r, "Tag Out", callback_TagOut);
 		r.y += 25;
 
-		b = new Button(m_pChoicesFrame, "", r, "Use Item", callback_Item);
-			b->SetActive(false);
-		r.y += 25;
-
-		b = new Button(m_pChoicesFrame, "", r, "Tag Out", NULL);
-			b->SetActive(false);
-		r.y += 25;
-
-		b = new Button(m_pChoicesFrame, "", r, "Defend", callback_Defend);
-		r.y += 25;
-		
 		b = new Button(m_pChoicesFrame, "", r, "Run Away", callback_RunAway);
 		r.y += 25;
 
@@ -141,22 +146,23 @@ PlayerActionMenu::PlayerActionMenu(int timeout, Actor* controlled)
 	SetSize(Width(), r.y+30);
 
 		r.y = 0;
-		
-		for (int i = 0; i < 5; ++i)
+			
+		if (controlled)
 		{
-			if (!controlled->m_sSkills[i].id.empty())
+			for (int i = 0; i < 5; ++i)
 			{
-				b = new Button(m_pSkillsFrame, its(i), r, controlled->m_sSkills[i].id, callback_UseSkill);
-				r.y += 25;	
+				if (!controlled->m_sSkills[i].id.empty())
+				{
+					b = new Button(m_pSkillsFrame, its(i), r, controlled->m_sSkills[i].id, callback_UseSkill);
+					r.y += 25;	
+				}
 			}
 		}
-		
+			
 		m_pSkillsFrame->SetSize(Width()-20, r.y);
 		m_pSkillsFrame->SetVisible(false);
 		
 	ResizeChildren();
-
-	DemandFocus();
 
 	timers->Add("actiontimeout", 1000, false, timer_checkForTimeout, NULL, this);
 }

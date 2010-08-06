@@ -78,8 +78,8 @@ ConvoDialog::ConvoDialog(string title)
 	ResizeChildren();
 	Center();
 	
-	if (game && game->mChat)
-		game->mChat->SetVisible(false);
+	if (game)
+		game->ToggleHud(false);
 	
 	convo = this;
 }
@@ -89,8 +89,8 @@ ConvoDialog::~ConvoDialog()
 	if (luaState)
 		luaL_unref(luaState, LUA_REGISTRYINDEX, luaReference);
 	
-	if (game && game->mChat && !game->IsInDuel())
-		game->mChat->SetVisible(true);
+	if (game && !game->IsInDuel())
+		game->ToggleHud(true);
 	
 	convo = NULL;
 }

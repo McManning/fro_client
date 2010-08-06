@@ -1,7 +1,7 @@
 [Project]
-FileName=fro.dev
+Folder=../entity
 Name=fro
-UnitCount=185
+UnitCount=187
 Type=0
 Ver=1
 ObjFiles=
@@ -21,13 +21,14 @@ OverrideOutput=0
 OverrideOutputName=fro.exe
 HostApplication=
 Folders=..,../core,../core/io,../core/io/tinyxml,../core/net,../core/SDL,../core/sound,../core/widgets,../entity,../game,../interface,../lua,../map
-CommandLine=-terra
+CommandLine=
 UseCustomMakefile=0
 CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=1000000001000001000000
+FileName=fro.dev
 
 [Unit1]
 FileName=..\core\Common.cpp
@@ -473,7 +474,7 @@ BuildCmd=
 Major=1
 Minor=2
 Release=3
-Build=1654
+Build=1782
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1878,7 +1879,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit186]
-FileName=..\entity\ChatBubble.cpp
+FileName=..\entity\Lunem.cpp
 CompileCpp=1
 Folder=../entity
 Compile=1
@@ -1888,7 +1889,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit187]
-FileName=..\entity\ChatBubble.h
+FileName=..\entity\Lunem.h
 CompileCpp=1
 Folder=../entity
 Compile=1

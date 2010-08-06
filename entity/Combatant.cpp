@@ -3,17 +3,17 @@
 
 Combatant::Combatant()
 {
-	m_iLevel = 0;
-	m_iGene = 0;
+	m_bLevel = 0;
+	m_bGene = 0;
 
-	m_iType1 = 0;
-	m_iType2 = 0;
-	m_iType3 = 0;
+	m_bType1 = 0;
+	m_bType2 = 0;
+	m_bType3 = 0;
 	
-	m_iBaseAttack = 0;
-	m_iBaseDefense = 0;
-	m_iBaseSpeed = 0;
-	m_iBaseHealth = 0;
+	m_bBaseAttack = 0;
+	m_bBaseDefense = 0;
+	m_bBaseSpeed = 0;
+	m_bBaseHealth = 0;
 
 	m_iAttack = 0;
 	m_iDefense = 0;
@@ -26,16 +26,16 @@ Combatant::Combatant()
 	m_bDisplayStats = false;
 }
 
-void Combatant::SetLevel(int level)
+void Combatant::SetLevel(char level)
 {
-	m_iLevel = level;
+	m_bLevel = level;
 	m_iExp = 0;
 	RecalculateStats();
 }
 
-void Combatant::SetGene(int gene)
+void Combatant::SetGene(char gene)
 {
-	m_iGene = gene;
+	m_bGene = gene;
 	//RecalculateStats();
 }
 

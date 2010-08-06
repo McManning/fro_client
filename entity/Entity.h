@@ -17,20 +17,19 @@ const int MAX_AVATAR_HEIGHT = 96;
 typedef enum
 {
 	ENTITY_ANY = 0,
+	
 	ENTITY_ACTOR = 1000,
 	ENTITY_REMOTEACTOR,
 	ENTITY_LOCALACTOR,
-	//Useless ENTITY_SCENEACTOR,
+	ENTITY_LUNEM,
 	//Place other actor-inherited entities here.
 	ENTITY_END_ACTORS, //Do not use, just as a marker
+	
 	ENTITY_STATICOBJECT = 2000,
 	ENTITY_TEXT,
 	ENTITY_DAMAGEICON,
-	
-	// Unused
 	ENTITY_EFFECT,
-	ENTITY_WARP,
-	ENTITY_SKILL
+	
 } entityType;
 
 /*	Base class for objects on the map (players, npcs, monsters, objects, etc)
@@ -135,7 +134,7 @@ class Entity
 	bool mSolid; //can other entities pass through our collision rects?
 	bool mVisible;
 	int mLayer;
-
+	bool mManagerCanDeleteMe; //Can the EntityManager delete this entity?
 	int mClickRange;
 
 	ChatBubble* mActiveChatBubble;

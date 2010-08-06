@@ -7,6 +7,7 @@
 #include "../entity/ExplodingEntity.h"
 #include "../entity/DamageIcon.h"
 #include "../entity/ChatBubble.h"
+#include "../entity/Lunem.h"
 #include "../game/GameManager.h"
 #include "../map/BasicMap.h"
 
@@ -342,15 +343,21 @@ int entity_Say(lua_State* ls)
 	return 0;	
 }
 
-//	.Remove(entity) - Remove the specified entity from the map. Returns 1 on success, 0 otherwise. 
+//	.Remove(entity) - Remove the specified entity from the map. Returns true on success, false otherwise. 
 int entity_Remove(lua_State* ls)
 {
-	PRINT("entity_Remove");
 	luaCountArgs(ls, 1);
 	
-	Entity* e = (Entity*)lua_touserdata(ls, 1);
-	
-	bool result = game->mMap->RemoveEntity(e);
+	bool result;
+	if (lua_isnil(ls, 1))
+	{
+		result = false;
+	}
+	else
+	{
+		Entity* e = (Entity*)lua_touserdata(ls, 1);
+		result = game->mMap->RemoveEntity(e);
+	}
 	
 	lua_pushnumber(ls, result);
 	return 1;
@@ -578,6 +585,10 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 	{
 		e->mName = lua_tostring(ls, -1);
 	}
+	else if (key == "Species" && e->mType == ENTITY_LUNEM)
+	{	
+		((Lunem*)e)->SetSpecies( lua_tostring(ls, -1) );
+	}
 	else if (key == "Visible")
 	{
 		e->SetVisible( lua_toboolean(ls, -1) );
@@ -675,14 +686,21 @@ Entity* _createEntity(int type)
 		case ENTITY_DAMAGEICON:
 			e = new DamageIcon;
 			break;
+		case ENTITY_LUNEM:
+			e = new Lunem;
+			break;
 		default:
 			break;
 	}
 	return e;
 }
 	
-/* entity = Entity.Create(entityInfoTable, x, y);
+/* entity = Entity.Create(entityInfoTable, x<nil>, y<nil>);
 	Create a new entity instance and place it on the map at (x, y)
+	If (x, y) are nil, it will create a new entity and return it, but NOT 
+	add it to the map. It's our responsibility to do Entity.Add(ent, x, y)
+	later, or to do something else special with it (Such as adding to the
+	players party)
 */
 int entity_Create(lua_State* ls)
 {
@@ -715,16 +733,52 @@ int entity_Create(lua_State* ls)
 		return luaError(ls, "Entity.Create", "Error parsing properties");
 	}
 
-	//Finally, add it to the map and return a reference to it
-	e->mMap = game->mMap;
-	game->mMap->AddEntity(e);
+	int count = lua_gettop(ls);
 	
-	p.x = (int)lua_tonumber(ls, 2);
-	p.y = (int)lua_tonumber(ls, 3);
-	
-	e->SetPosition(p);
+	if (count > 1)
+	{
+		//Finally, add it to the map and return a reference to it
+		e->mMap = game->mMap;
+		game->mMap->AddEntity(e);
+		
+		p.x = (int)lua_tonumber(ls, 2);
+		p.y = (int)lua_tonumber(ls, 3);
+		
+		e->SetPosition(p);
+	}
 	
 	lua_pushlightuserdata(ls, e);
+	return 1;
+}
+
+/*	.Add(ent, x, y) - Will add the specified entity pointer to the map at (x,y) Only really useful for when
+		Entities are created through Entity.Create(ent) where no map coordinates are specified
+		Returns true if the entity was added, false otherwise
+*/
+int entity_Add(lua_State* ls)
+{
+	luaCountArgs(ls, 3);
+	
+	point2d p;
+	Entity* e = (Entity*)(lua_touserdata(ls, 1));
+	
+	if (e)
+	{
+		e->mMap = game->mMap;
+		game->mMap->AddEntity(e);
+		
+		p.x = (int)lua_tonumber(ls, 2);
+		p.y = (int)lua_tonumber(ls, 3);
+		
+		e->SetPosition(p);
+		
+		lua_pushboolean(ls, true);
+	}
+	else
+	{
+		lua_pushboolean(ls, false);
+	}
+	
 	return 1;
 }
 
@@ -852,6 +906,7 @@ static const luaL_Reg functions[] = {
 	{"Remove", entity_Remove},
 	{"RemoveAllById", entity_RemoveAllById},
 	{"Create", entity_Create},
+	{"Add", entity_Add},
 	{"SetImage", entity_SetImage},
 	{"SetAvatar", entity_SetAvatar},
 	{"Explode", entity_Explode},

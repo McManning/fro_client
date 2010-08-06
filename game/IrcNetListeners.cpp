@@ -367,6 +367,7 @@ void _handleUnknownUser(string& nick)
 
 void _handleNetMessage_TradeDeny(string& nick, DataPacket& data) //trDNY reason 
 {
+#ifdef TRADE_ENABLED
 	string msg = "\\c900 * Trade with " + nick + " has closed (Reason: " + data.ReadString() + ")";
 	printMessage(msg);
 	
@@ -377,10 +378,12 @@ void _handleNetMessage_TradeDeny(string& nick, DataPacket& data) //trDNY reason
 		i->Die();
 		inventory->mTrade->SetVisible(false);
 	}
+#endif
 }
 
 void _handleNetMessage_TradeOkay(string& nick, DataPacket& data) //trOK
 {
+#ifdef TRADE_ENABLED
 	//make sure we haven't gotten in a trade with someone else before the acceptance
 	if (gui->Get("ItemTrade"))
 	{
@@ -399,17 +402,21 @@ void _handleNetMessage_TradeOkay(string& nick, DataPacket& data) //trOK
 	printMessage(msg);
 	
 	new ItemTrade(nick);
+#endif
 }
 
 void _handleNetMessage_TradeReady(string& nick, DataPacket& data) //trRDY
 {
+#ifdef TRADE_ENABLED
 	ItemTrade* trade = (ItemTrade*)gui->Get("ItemTrade");
 	if (trade && trade->mTrader == nick)
 		trade->RemoteReady();
+#endif
 }
 
 void _handleNetMessage_TradeItem(string& nick, DataPacket& data) //trITM id description amount
 {
+#ifdef TRADE_ENABLED
 	ItemTrade* trade = (ItemTrade*)gui->Get("ItemTrade");
 
 	string id = data.ReadString();
@@ -420,6 +427,7 @@ void _handleNetMessage_TradeItem(string& nick, DataPacket& data) //trITM id desc
 	{
 		trade->SetRemoteItem(id, desc, amount);
 	}
+#endif
 }
 
 void _handleNetMessage_TradeRequest(string& nick, DataPacket& data) //trREQ
@@ -528,7 +536,7 @@ void _handleNetMessage_Act(string& nick, DataPacket& data)
 			break;
 	}
 	
-	printMessage(msg);
+	printMessage(formatted);
 }
 
 void _handleNetMessage_Avy(string& nick, DataPacket& data)

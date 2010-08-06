@@ -194,13 +194,17 @@ void EntityManager::ResortEntities()
 
 void EntityManager::_delete(Entity* e)
 {
-	if (e->mType != ENTITY_LOCALACTOR) //Can't delete the local player manager
+	if (e->mManagerCanDeleteMe)
 	{	
 		MessageData md("ENTITY_DESTROY");
 		md.WriteUserdata("entity", e);
 		messenger.Dispatch(md, e);
 		
 		SAFEDELETE(e);
+	}
+	else
+	{
+		e->mMap = NULL;	
 	}
 }
 

@@ -12,8 +12,9 @@ struct itemProperties
 {
 	string id;
 	string description;
-	uShort amount;
-
+	int amount;
+	int useType;
+	
 	TiXmlElement* element; //for reverse referencing
 };
 
@@ -33,6 +34,7 @@ class IncinerateAmountRequest : public Frame
 
 class Button;
 class Multiline;
+struct lua_State;
 class Inventory : public Frame 
 {
   public:
@@ -42,7 +44,7 @@ class Inventory : public Frame
 	void ResizeChildren();
 	void SetPosition(rect r);
 
-	itemProperties* Add(string id, string description, uShort amount);
+	itemProperties* Add(string id, string description, int useType, int amount);
 	itemProperties* Find(string id);
 	void Erase(sShort index, uShort amount, bool removeOnlyIfHasEnough);
 	void Erase(string id, uShort amount, bool removeOnlyIfHasEnough);
@@ -63,10 +65,13 @@ class Inventory : public Frame
 	
 	void ItemSelected(); //Callback for mList
 	
-	itemProperties* _add(string id, string description, uShort amount);
+	itemProperties* _add(string id, string description, int useType, int amount);
 	
 	void RightClickSelected();
 	void SwapItems(int a, int b);
+	
+	int LuaReadItemTable(lua_State* ls, int virtualIndex);
+	int LuaWriteItemTable(lua_State* ls, string id);
 	
 	Button* mUse;
 	Button* mDrop;

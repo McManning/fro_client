@@ -1,15 +1,56 @@
 
 #include "ActorStats.h"
+#include "../core/widgets/RightClickMenu.h"
 #include "../entity/Actor.h"
 #include "../map/Map.h"
+#include "../game/GameManager.h"
+#include "../interface/LunemParty.h"
 
 const int HEALTH_SLIDE_MS = 10;
+
+void callback_ActorStatsRCM_Info(RightClickMenu* m, void* data)
+{
+	ActorStats* as = (ActorStats*)data;
+}
+
+void callback_ActorStatsRCM_DuelSwap(RightClickMenu* m, void* data)
+{
+	ActorStats* as = (ActorStats*)data;
+
+	ASSERT(game && game->mParty && as);
+	game->mParty->SendDuelSwapEvent(as);
+}
+
+void callback_ActorStatsRCM_UseItem(RightClickMenu* m, void* data)
+{
+	ActorStats* as = (ActorStats*)data;
+
+	ASSERT(game && game->mParty && as);
+	game->mParty->SendUseItemEvent(as);
+}
+
+uShort timer_ActorStatsThink(timer* t, uLong ms)
+{
+	ActorStats* s = (ActorStats*)t->userData;
+	
+	if (!s)
+		return TIMER_DESTROY;
+		
+	// if our health is going down, slide down
+	if (s->mCurrentHealth > s->mLinkedActor->m_iCurrentHealth)
+	{
+		s->mCurrentHealth--;
+	}
+	
+	return TIMER_CONTINUE;
+}
 
 ActorStats::ActorStats(Widget* parent)
 {
 	mImage = resman->LoadImg("assets/stats_bar.png");
 	mFont = fonts->Get();
 	mSmallFont = fonts->Get("", 10);
+	mMenuMode = NO_MENU;
 
 	SetLinked(NULL);
 	
@@ -21,13 +62,13 @@ ActorStats::ActorStats(Widget* parent)
 
 ActorStats::~ActorStats()
 {
-
+	timers->RemoveMatchingUserData(this);
 }
 
 void ActorStats::SetLinked(Actor* a)
 {
 	mLinkedActor = a;
-	mHealthSlideMs = 0;
+
 	if (a)
 		mCurrentHealth = a->m_iCurrentHealth;
 	else
@@ -71,6 +112,12 @@ void ActorStats::RenderHealth(Image* scr, rect& r)
 	rect healthBarPos(r.x + 6, r.y + 22, r.w - 12, 10);
 	rect sr(200, 0, 2, 10);
 
+	// Adjust immediately if we're not slowly sliding
+	if (mMenuMode != DUEL_SCREEN_MENU)
+	{
+		mCurrentHealth = mLinkedActor->m_iCurrentHealth;
+	}
+
 	// draw health bar fg: width = healthBarPos.w * (cur hp / max hp)
 	double d = (double)mCurrentHealth / (double)mLinkedActor->m_iMaxHealth;
 	healthBarPos.w = (int)((double)healthBarPos.w * d);
@@ -94,23 +141,70 @@ void ActorStats::RenderHealth(Image* scr, rect& r)
 						msg, 
 						color());
 	
-	msg = "Lv." + its(mLinkedActor->m_iLevel);
+	msg = "Lv." + its(mLinkedActor->m_bLevel);
 	
 	// Draw level (same position, right aligned)
 	mSmallFont->Render(scr, r.x + 5, 
 						healthBarPos.y + healthBarPos.h + 3, 
 						msg, 
 						color());
+
+}
+
+void ActorStats::SetMenuMode(int mode)
+{
+	mMenuMode = mode;
 	
-	//if our health is going down, slide down
-	if (mCurrentHealth > mLinkedActor->m_iCurrentHealth)
+	if (mode == DUEL_SCREEN_MENU)
 	{
-		if (mHealthSlideMs < SDL_GetTicks())
-		{
-			--mCurrentHealth;
-			mHealthSlideMs = SDL_GetTicks() + HEALTH_SLIDE_MS;
-		}
+		// add a timer for animating the health bar
+		timers->Add("", 50, true, timer_ActorStatsThink, NULL, this);	
 	}
 }
+
+void ActorStats::Event(SDL_Event* event)
+{
+	if (event->type == SDL_MOUSEBUTTONDOWN)
+	{
+		if (event->button.button == SDL_BUTTON_RIGHT)
+			CreateMenu();
+	}
+		
+	Widget::Event(event);	
+}
+
+void ActorStats::CreateMenu()
+{
+	if (mMenuMode == NO_MENU || !mLinkedActor)
+		return;
+		
+	RightClickMenu* m = new RightClickMenu();
+	
+		// We can always look up info
+		m->AddOption("Info", callback_ActorStatsRCM_Info, this);
+	
+	switch (mMenuMode)
+	{
+		case DUEL_SCREEN_MENU:
+			// What to add besides Info?
+			break;
+		case PARTY_VIEW_MENU:
+			// What to add besides Info?
+			break;
+		case DUEL_SWAP_MENU:
+			if (mLinkedActor->m_iCurrentHealth > 0)
+			{
+				m->AddOption("Summon", callback_ActorStatsRCM_DuelSwap, this);
+			}
+			break;
+		case USE_ITEM_MENU:
+			m->AddOption("Use Item", callback_ActorStatsRCM_UseItem, this);
+			break;
+		default: break; 
+	}
+}
+
+
+
 
 

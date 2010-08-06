@@ -15,12 +15,30 @@ class ActorStats : public Widget
 	
 	void Render();
 	void RenderHealth(Image* scr, rect& r);
+	
+	void Event(SDL_Event* event);
+	
+	enum // menu modes
+	{
+		NO_MENU = 0,
+		DUEL_SCREEN_MENU, 
+		PARTY_VIEW_MENU,
+		DUEL_SWAP_MENU,
+		USE_ITEM_MENU,
+	};
+	
+	void SetMenuMode(int mode);
+	
+	/* Called by Event() when right clicked */
+	void CreateMenu(); 
+	
+	int mMenuMode;
 
 	Actor* mLinkedActor;
 	int mCurrentHealth;
 	
 	Font* mSmallFont;
-	uLong mHealthSlideMs;
+
 };
 
 #endif //_ACTORSTATS_H_

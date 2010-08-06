@@ -31,6 +31,7 @@ LocalActor::LocalActor()
 	mLimitedAvatarSize = true;
 	mNeedsToSendBuffer = false;
 	mShiftDown = false;
+	mManagerCanDeleteMe = false; // GameManager will delete it
 	mIsLocked = false;
 	mActionBufferSendDelayMs = DEFAULT_ACTION_BUFFER_SEND_DELAY;
 	

@@ -103,19 +103,18 @@ void callback_consoleTestMap(Console* c, string s) //test <file>
 	game->LoadTestWorld(id);
 }
 
-void callback_consoleMakeCol(Console* c, string s) // /makecol file -m (-m tag is optional)
+void callback_consoleMakeCol(Console* c, string s) // makecol filename
 {
 	vString v;
 	explode(&v, &s, " ");
 
-	if (v.size() > 1)
+	if (s.size() > 8)
 	{
-		createCollisionBlob(v.at(1), (v.size() > 2 && v.at(2) == "-m"));
+		createCollisionBlob(s.substr(8), true);
 	}
 	else
 	{
-		console->AddMessage("Syntax: makecol FILENAME -m");
-		console->AddMessage("  The -m flag is optional, used to output a debugging image and a lua table version");
+		console->AddMessage("Syntax: makecol <filename>");
 	}
 }
 
@@ -263,6 +262,8 @@ void callback_chatCommandWtf(Console* c, string s) { netSendEmote(12); }
 void callback_chatCommandTroll(Console* c, string s) { netSendEmote(13); }
 void callback_chatCommandFacepalm(Console* c, string s) { netSendEmote(14); }
 void callback_chatCommandPedo(Console* c, string s) { netSendEmote(15); }
+void callback_chatCommandDatAss(Console* c, string s) { netSendEmote(16); }
+void callback_chatCommandRage(Console* c, string s) { netSendEmote(17); }
 
 void callback_chatCommandJoin(Console* c, string s)
 {
@@ -347,7 +348,7 @@ void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 
 void callback_chatCommandListEmotes(Console* c, string s)
 {
-	c->AddMessage("\\c990Emotes:\\n  /facepalm, /troll, /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf, /pedo");
+	c->AddMessage("\\c990Emotes:\\n  /facepalm, /datass, /rage, /troll, /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf, /pedo");
 }
 
 void callback_chatCommandListCommands(Console* c, string s)
@@ -442,6 +443,8 @@ void GameManager::_hookCommands()
 	mChat->HookCommand("/awesome", callback_chatCommandAwesome);
 	mChat->HookCommand("/facepalm", callback_chatCommandFacepalm);
 	mChat->HookCommand("/pedo", callback_chatCommandPedo);
+	mChat->HookCommand("/datass", callback_chatCommandDatAss);
+	mChat->HookCommand("/rage", callback_chatCommandRage);
 	
 	mChat->HookCommand("/emotes", callback_chatCommandListEmotes);
 	mChat->HookCommand("/commands", callback_chatCommandListCommands);
@@ -456,7 +459,8 @@ GameManager::GameManager()
 	mChat = NULL;
 	mNet = NULL;
 	mLoader = NULL;
-
+	mParty = NULL;
+	
 	PRINT("[GM] Starting");
 	
 	game = this;
@@ -505,6 +509,9 @@ GameManager::GameManager()
 
 	inventory = new Inventory();
 	inventory->SetVisible(false);
+
+	mParty = new LunemParty;
+	mParty->SetVisible(false);
 
 	PRINT("[GM] Loading HUD");
 	_buildHud();
@@ -598,11 +605,9 @@ void callback_gameHudSubButton(Button* b)
 				new UserList();
 			break;
 		case 'p': //party
-			if (!gui->Get("party"))
-			{
-				LunemParty* p = new LunemParty();
-				p->mInfoBar[0]->SetLinked(game->mPlayer);
-			}
+			game->mParty->SetVisible(true);
+			game->mParty->SetMenuMode(ActorStats::PARTY_VIEW_MENU);
+			game->mParty->MoveToTop();
 			break;
 		default: break;
 	}
@@ -1126,15 +1131,10 @@ void GameManager::ShowInfoBar(string id, string msg, int duration, string imageF
 	timers->Add("", duration, false, timer_DestroyInfoBar, NULL, f);
 }
 
-void GameManager::EnableDuelMode()
+void GameManager::ToggleHud(bool visible)
 {
-	//show & clear duel console, hide chat,
-
-	//mDuelConsole->SetVisible(true);
-	//mDuelConsole->Clear();
-	
-	mChat->SetVisible(false);
-	mHud->SetVisible(false);
+	mChat->SetVisible(visible);
+	mHud->SetVisible(visible);
 	
 	//kill any dialogs that may exist
 	Widget* w;
@@ -1146,13 +1146,34 @@ void GameManager::EnableDuelMode()
 	
 	w = gui->Get("achievements");
 	if (w) w->Die();
-	
-	w = gui->Get("party");
-	if (w) w->Die();
 
 	if (inventory)
 		inventory->SetVisible(false);
+		
+	if (mParty)
+		mParty->SetVisible(false);
+}
+
+void GameManager::EndPlayersDuelTurn()
+{
+	if (mMap)
+	{
+		Widget* w = mMap->Get("PlayerActionMenu");
+		if (w)
+			w->Die();
+	}
 	
+	ToggleHud(false);
+}
+
+void GameManager::EnableDuelMode()
+{
+	//show & clear duel console, hide chat,
+
+	//mDuelConsole->SetVisible(true);
+	//mDuelConsole->Clear();
+	
+	ToggleHud(false);
 }
 
 void GameManager::DisableDuelMode()
@@ -1160,8 +1181,7 @@ void GameManager::DisableDuelMode()
 	//show chat, hide duel console, 
 	
 	//mDuelConsole->SetVisible(false);
-	mChat->SetVisible(true);
-	mHud->SetVisible(true);
+	ToggleHud(true);
 }
 
 bool GameManager::IsInDuel()

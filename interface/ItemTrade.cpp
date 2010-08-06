@@ -10,6 +10,7 @@
 #include "../core/net/IrcNet2.h"
 #include "../core/net/DataPacket.h"
 
+#ifdef TRADE_ENABLED
 /*	Dialog that forces the user to accept or deny a trade.
 	If they accept, it'll tell the remote nick and activate ItemTrade. Else, it'll tell the remote nick that we denied.
  */
@@ -29,11 +30,14 @@ class TradeRequest : public Frame
 	Label* mTimeout;
 };
 
+#endif
+
 /*	Someone is trying to trade with us, see if they can */
 void handleInboundTradeRequest(RemoteActor* ra)
 {
 	string reason;
 	
+#ifdef TRADE_ENABLED	
 	//if we're already in a trade, or auto-deny trade requests, tell them.
 	if ( gui->Get("TradeRequest") || gui->Get("ItemTrade") )
 	{
@@ -47,6 +51,9 @@ void handleInboundTradeRequest(RemoteActor* ra)
 	{
 		reason = "You are blocked";	
 	}
+#else
+	reason = "Trade Disabled";
+#endif
 	
 	//denied
 	if (!reason.empty())
@@ -61,12 +68,15 @@ void handleInboundTradeRequest(RemoteActor* ra)
 	}
 	else
 	{
+#ifdef TRADE_ENABLED
 		new TradeRequest(ra->mName);
+#endif
 	}
 }
 
 void handleOutboundTradeRequest(string nick)
 {	
+#ifdef TRADE_ENABLED
 	if ( gui->Get("TradeRequest") || gui->Get("ItemTrade") )
 	{
 		game->mChat->AddMessage("\\c900 * You're already in a trade");
@@ -79,8 +89,12 @@ void handleOutboundTradeRequest(string nick)
 		data.SetKey( game->mNet->GetEncryptionKey() );
 		game->mNet->Privmsg( nick, data.ToString() );
 	}
+#else
+	game->mChat->AddMessage("Trading Disabled");
+#endif
 }
 
+#ifdef TRADE_ENABLED
 void callback_TradeRequestAccept(Button* b)
 {
 	TradeRequest* t = (TradeRequest*)b->GetParent();
@@ -481,3 +495,4 @@ void ItemTrade::SetRemoteItem(string id, string desc, uShort amt)
 }
 
 
+#endif //TRADE_ENABLED
