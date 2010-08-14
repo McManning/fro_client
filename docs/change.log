@@ -1112,15 +1112,32 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Added "use type" to item properties, to specify various use flags. (Duel useable, use on party member, field only, etc)
 	Use types have yet to be defined.
 - Removed trading (wrapped in #ifdef TRADE_ENABLED) until the item system is fully rewritten
-- 
+
+(Commit to Revision 42)
+
+100805
+- Added LoadFlags/SaveFlags to Entity class for saving/loading flags from a binary FILE stream
+- Added the loading/saving of flags to the lunem party file
+
+100806
+- Added two slots to combatant types (now a total of five)
+	Lua accessible by GetProp/SetProp "type0", "type1", ... "type4"
 	
-	
-	
+100807
+- Patched a bug in updater.exe dealing with running the client under Windows 7 (ShellExecute doesn't like ./ prefix).
+	Same bug has been patched in the main client for when running the updater.
+- Added "border" to Entity.GetProp/SetProp (boolean). If true, will render a red box around the entity
+- Added editor mode bool to Map class to change some behavior (such as no ENTITY_CLICK event if enabled)
+- Added Map.IsEditorMode() and Map.SetEditorMode(bool) to Lua
+- Added Game.GetCursorMapPosition() to Lua
+
+100808
+- Fixed bug in FontManager where \n would double space lines
+- Fixed bug that would create a beep/window flash when the client received a slash command from another user
+- Resized avagen avatars from 32x64 to 40x80 (allows better hairstyles and accessories)
 
 
-	
-	
 
-
+	
 
 

@@ -18,6 +18,8 @@ Screen::Screen()
 	SDL_Surface* image;
 	SDL_Surface* image2;
 	
+	mNoDraw = false;
+	
 	//Since we don't have a screen since now, it's safe to assume SDL hasn't been initialized yet.
 	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) < 0) 
 		FATAL(SDL_GetError());

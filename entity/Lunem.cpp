@@ -115,6 +115,7 @@ void Lunem::ReadFromFile(FILE* f)
 {
 	char buffer[128];
 	unsigned char c;
+	int i;
 	
 	// read species string
 	fread(&c, sizeof(c), 1, f); //length
@@ -136,10 +137,11 @@ void Lunem::ReadFromFile(FILE* f)
 
 	fread(&m_bLevel, sizeof(m_bLevel), 1, f);
 	fread(&m_bGene, sizeof(m_bGene), 1, f);
-	
-	fread(&m_bType1, sizeof(m_bType1), 1, f);
-	fread(&m_bType2, sizeof(m_bType2), 1, f);
-	fread(&m_bType3, sizeof(m_bType3), 1, f);
+
+	for (i = 0; i < MAX_COMBATANT_TYPES; ++i)
+	{
+		fread(&m_bType[i], sizeof(m_bType[i]), 1, f);
+	}	
 	
 	fread(&m_bBaseAttack, sizeof(m_bBaseAttack), 1, f);
 	fread(&m_bBaseDefense, sizeof(m_bBaseDefense), 1, f);
@@ -149,7 +151,7 @@ void Lunem::ReadFromFile(FILE* f)
 	fread(&m_iCurrentHealth, sizeof(m_iCurrentHealth), 1, f);
 
 	//read skills
-	for (int i = 0; i < 5; ++i)
+	for (i = 0; i < MAX_COMBATANT_SKILLS; ++i)
 	{
 		fread(&c, sizeof(c), 1, f); //length
 		if (c > 0)
@@ -159,14 +161,16 @@ void Lunem::ReadFromFile(FILE* f)
 			m_sSkills[i].id.append(buffer, c);
 		}
 	}
+
+	LoadFlags(f);
 	
 	SetSpecies(m_sSpecies);
-
 }
 
-void Lunem::WriteToFile(FILE* f) const
+void Lunem::WriteToFile(FILE* f)
 {
 	unsigned char c;
+	int i;
 	
 	c = (m_sSpecies.length() > 127) ? 127 : m_sSpecies.length();
 	fwrite(&c, 1, 1, f);
@@ -178,10 +182,11 @@ void Lunem::WriteToFile(FILE* f) const
 
 	fwrite(&m_bLevel, sizeof(m_bLevel), 1, f);
 	fwrite(&m_bGene, sizeof(m_bGene), 1, f);
-	
-	fwrite(&m_bType1, sizeof(m_bType1), 1, f);
-	fwrite(&m_bType2, sizeof(m_bType2), 1, f);
-	fwrite(&m_bType3, sizeof(m_bType3), 1, f);
+
+	for (i = 0; i < MAX_COMBATANT_TYPES; ++i)
+	{
+		fwrite(&m_bType[i], sizeof(m_bType[i]), 1, f);
+	}	
 	
 	fwrite(&m_bBaseAttack, sizeof(m_bBaseAttack), 1, f);
 	fwrite(&m_bBaseDefense, sizeof(m_bBaseDefense), 1, f);
@@ -191,11 +196,12 @@ void Lunem::WriteToFile(FILE* f) const
 	fwrite(&m_iCurrentHealth, sizeof(m_iCurrentHealth), 1, f);
 	
 	//write skills
-	for (int i = 0; i < 5; ++i)
+	for (i = 0; i < MAX_COMBATANT_SKILLS; ++i)
 	{
 		c = (m_sSkills[i].id.length() > 127) ? 127 : m_sSkills[i].id.length();
 		fwrite(&c, 1, 1, f);
 		fwrite(m_sSkills[i].id.c_str(), c, 1, f);
 	}
+	
+	SaveFlags(f);
 }
-

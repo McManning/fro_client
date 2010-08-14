@@ -467,6 +467,8 @@ void _handleNetMessage_Say(string& nick, DataPacket& data) // say msg
 		ChatBubble* cb = new ChatBubble(ra, msg);
 		cb->mMap = game->mMap;
 		cb->mMap->AddEntity(cb);
+		
+		gui->GetUserAttention();
 	}
 	else
 	{	
@@ -476,8 +478,6 @@ void _handleNetMessage_Say(string& nick, DataPacket& data) // say msg
 		md.WriteString("message", msg);
 		messenger.Dispatch(md, ra);
 	}
-
-	gui->GetUserAttention();
 }
 
 void _handleNetMessage_Stamp(string& nick, DataPacket& data) // stamp x y angle msg

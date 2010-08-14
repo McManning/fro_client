@@ -19,6 +19,7 @@ Map::Map()
 	mFollowedEntity = NULL;
 	mStopCameraAtMapEdge = true;
 	mLuaState = NULL;
+	mEditorMode = false;
 
 	TiXmlElement* top = game->mPlayerData.mDoc.FirstChildElement();
 	TiXmlElement* e;
@@ -37,6 +38,8 @@ Map::Map()
 		mWorkingDir = DIR_DEV;
 	else
 		mWorkingDir = DIR_CACHE;
+		
+	gui->RemoveGlobalEventHandler(this);
 }
 
 Map::~Map()
@@ -58,16 +61,32 @@ void Map::Event(SDL_Event* event)
 	Entity* e;
 	switch (event->type)
 	{
-		case SDL_MOUSEBUTTONUP:
-			if (event->button.button == SDL_BUTTON_RIGHT)
+		case SDL_MOUSEBUTTONUP: {
+			if (HasMouseFocus())
 			{
-				HandleRightClick();
+				if (event->button.button == SDL_BUTTON_LEFT)
+				{
+					MessageData md("MAP_LEFTBUTTONUP");
+					messenger.Dispatch(md);
+				}
 			}
-			else if (event->button.button == SDL_BUTTON_LEFT)
+		} break;
+		case SDL_MOUSEBUTTONDOWN: {
+			if (HasMouseFocus())
 			{
-				HandleLeftClick();	
+				if (event->button.button == SDL_BUTTON_RIGHT)
+				{
+					HandleRightClick();
+				}
+				else if (event->button.button == SDL_BUTTON_LEFT)
+				{
+					HandleLeftClick();	
+					
+					MessageData md("MAP_LEFTBUTTONDOWN");
+					messenger.Dispatch(md);
+				}
 			}
-			break;
+		} break;
 		case SDL_KEYDOWN: {
 			MessageData md("KEY_DOWN");
 			md.WriteInt("key", event->key.keysym.sym);
@@ -89,13 +108,13 @@ void Map::Event(SDL_Event* event)
 
 void Map::HandleLeftClick()
 {
-	if (!HasMouseFocus() || game->mGameMode == GameManager::MODE_DUEL)
+	if (game->mGameMode == GameManager::MODE_DUEL)
 		return;
 		
-	Entity* e = GetEntityUnderMouse(true, false);
+	Entity* e = GetEntityUnderMouse(!mEditorMode, false);
 	
 	if (e && (getDistance(game->mPlayer->GetPosition(), e->GetPosition()) <= e->mClickRange
-			|| e->IsPositionRelativeToScreen()))
+			|| e->IsPositionRelativeToScreen()) && !mEditorMode)
 	{
 		MessageData md("ENTITY_CLICK");
 		md.WriteUserdata("entity", e);
@@ -109,7 +128,7 @@ void Map::HandleRightClick()
 		return;
 		
 	Entity* e = GetEntityUnderMouse(false, true);
-	
+
 	if (e == (Entity*)game->mPlayer)
 	{
 		if (!gui->Get("avyfavs"))
@@ -167,6 +186,55 @@ Entity* Map::GetEntityUnderMouse(bool mustBeClickable, bool playersOnly)
 				//if non transparent pixel, we found our entity. 
 				if (!img->IsPixelTransparent(x, y))
 					return e;
+			}
+		}
+	}
+	
+	return NULL;
+}
+
+// Will return an entity intersecting the screen point, that is lower in the list than the specified entity
+// Or NULL, if there are none.
+Entity* Map::GetNextEntityUnderMouse(Entity* start)
+{
+	int x, y;
+	rect r;
+	Entity* e;
+	Image* img;
+	
+	bool foundStart = false;
+	
+	//for all entities, highest to lowest
+	for (int i = mEntities.size()-1; i > -1; --i)
+	//for (int i = 0; i < mEntities.size(); ++i)
+	{
+		e = mEntities.at(i);
+			
+		if (e == start || !start)
+		{
+			foundStart = true;
+		}
+		
+		if (foundStart && e && e != start && e->IsVisibleInCamera() )
+		{
+			r = e->GetBoundingRect();
+			
+			if (!e->IsPositionRelativeToScreen())
+				r = ToScreenPosition(r);
+			
+			if ( areRectsIntersecting(gui->GetMouseRect(), r) )
+			{
+				//Otherwise, if the mouse is touching a non transparent pixel
+				x = gui->GetMouseX() - r.x;
+				y = gui->GetMouseY() - r.y;
+				
+				img = e->GetImage();
+				if (img)
+				{
+					//if non transparent pixel, we found our entity. 
+					if (!img->IsPixelTransparent(x, y))
+						return e;
+				}
 			}
 		}
 	}

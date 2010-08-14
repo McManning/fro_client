@@ -421,7 +421,7 @@ void AvatarCreator::_redraw()
 	w = mBody->Width() / 2;
 	h = mBody->Height() / 5;
 
-	mCompositePreview = resman->NewImage(mBody->Width(), mBody->Height(), color(255,0,255), true);
+	mCompositePreview = resman->NewImage(mBody->Width(), mBody->Height(), color(255,0,255), false);
 
 	/*
 		Simple method. Assuming each image is the same size and we don't crop parts (as we SHOULD),

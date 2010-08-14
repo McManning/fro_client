@@ -40,6 +40,60 @@ GameManager* game;
 TimeProfiler gameProcessProfiler("Game::Process");
 TimeProfiler gameRenderProfiler("Game::Render");
 
+/*
+// Load the file, assuming it's a 32x64 framed avatar with 5 rows and 2 columns, will 
+// replace the file with a new version that is 40x80
+void ResizeAvagenFile(const string& file)
+{
+	int x, y, dx, dy;
+	Image* img;
+	Image* result;
+	
+	img = resman->LoadImg(file);
+	if (!img) return;
+	
+	// assuming they're all pink backgrounded
+	
+	result = resman->NewImage(40*2, 80*5, color(0,0,0), true);
+	if (!result) { resman->Unload(img); return; }
+
+	result->DrawRect(rect(0, 0, result->Width(), result->Height()), color(255,0,255), true);
+
+	dy = 16;
+	for (y = 0; y < img->Height(); y+=64)
+	{
+		dx = 4;
+		for (x = 0; x < img->Width(); x+=32)
+		{
+			img->Render(result, dx, dy, rect(x, y, 32, 64));
+			dx += 40;
+		}
+		dy += 80;
+	}
+
+	result->SavePNG(file);
+	
+	resman->Unload(img);
+	resman->Unload(result);
+}
+
+// Resize everything from 32x64 frames to 40x80
+void ResizeAllAvagenParts()
+{
+	// Grab a list of all the files we're about to fuck with
+	vString files;
+	string pattern = "assets/ava/*.png";
+	
+	getFilesMatchingPattern(files, pattern);
+
+	for (int i = 0; i < files.size(); ++i)
+	{
+		files.at(i) = "assets/ava/" + files.at(i);
+		ResizeAvagenFile(files.at(i));
+	}
+}
+*/
+
 // Console Command Callbacks
 
 void callback_privmsgNoCommand(Console* c, string s)
@@ -101,6 +155,11 @@ void callback_consoleTestMap(Console* c, string s) //test <file>
 	
 	ASSERT(game);
 	game->LoadTestWorld(id);
+}
+
+void callback_consoleScreenDraw(Console* c, string s) //screendraw
+{
+	Screen::Instance()->mNoDraw = !Screen::Instance()->mNoDraw;
 }
 
 void callback_consoleMakeCol(Console* c, string s) // makecol filename
@@ -414,6 +473,7 @@ void GameManager::_hookCommands()
 	console->HookCommand("avatar_info", callback_consoleAvatarInfo);
 	console->HookCommand("avatarout", callback_consoleOutputAvatar);
 	console->HookCommand("test", callback_consoleTestMap);
+	console->HookCommand("screendraw", callback_consoleScreenDraw);
 	console->HookCommand("makecol", callback_consoleMakeCol);
 	console->HookCommand("player_flags", callback_consolePlayerFlags);
 	
@@ -525,6 +585,7 @@ GameManager::GameManager()
 	PRINT("[GM] Finished");
 	
 	ToggleGameMode(MODE_ACTION);
+
 }
 
 GameManager::~GameManager()
@@ -919,7 +980,7 @@ void GameManager::SavePlayerData()
 	mPlayerData.mXmlPos = mPlayerData.mDoc.FirstChildElement("data");
 
 	if (mPlayer)
-		mPlayer->SaveFlags();
+		mPlayer->SaveFlagsToXml();
 
 	string file = DIR_PROFILE;
 	file += PLAYERDATA_FILE;

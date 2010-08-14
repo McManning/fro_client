@@ -208,6 +208,26 @@ int game_GetCursorPosition(lua_State* ls)
 	return 2;
 }
 
+//	x, y = .GetCursorMapPosition()
+int game_GetCursorMapPosition(lua_State* ls)
+{
+	if (SDL_GetAppState() & SDL_APPMOUSEFOCUS) //if we have the mouse
+	{
+		ASSERT(game->mMap);
+		
+		rect r = game->mMap->GetCameraPosition();
+		lua_pushnumber(ls, gui->GetMouseX() + r.x);
+		lua_pushnumber(ls, gui->GetMouseY() + r.y);
+	}
+	else
+	{
+		lua_pushnumber(ls, -1);
+		lua_pushnumber(ls, -1);
+	}
+	
+	return 2;
+}
+
 static const luaL_Reg functions[] = {
 	{"Print", game_Print},
 	{"NetSendToChannel", game_NetSendToChannel},
@@ -223,6 +243,7 @@ static const luaL_Reg functions[] = {
 	{"RemoveStatsBar", game_RemoveStatsBar},
 	{"IsStatsBarDecreasing", game_IsStatsBarDecreasing},
 	{"GetCursorPosition", game_GetCursorPosition},
+	{"GetCursorMapPosition", game_GetCursorMapPosition},
 	{NULL, NULL}
 };
 

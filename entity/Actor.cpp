@@ -802,6 +802,8 @@ void Actor::Render()
 	}
 
 	RenderEmote();
+	
+	Entity::Render();
 }
 
 void Actor::_doDepthRender()
@@ -1091,9 +1093,12 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 	// Combatant properties
 	else if (prop == "level") SetLevel((char)lua_tonumber(ls, index));
 	else if (prop == "gene") SetGene((char)lua_tonumber(ls, index));
-	else if (prop == "type1") m_bType1 = (char)lua_tonumber(ls, index);
-	else if (prop == "type2") m_bType2 = (char)lua_tonumber(ls, index);
-	else if (prop == "type3") m_bType3 = (char)lua_tonumber(ls, index);
+	else if (prop.find("type", 0) == 0) 
+	{
+		int slot = sti(prop.substr(4));
+		if (slot >= 0 && slot < MAX_COMBATANT_TYPES)
+			m_bType[slot] = (char)lua_tonumber(ls, index);
+	}
 	
 	else if (prop == "attack") m_iAttack = (int)lua_tonumber(ls, index);
 	else if (prop == "defense") m_iDefense = (int)lua_tonumber(ls, index);
@@ -1129,9 +1134,12 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 	// Combatant properties
 	else if (prop == "level") lua_pushnumber(ls, m_bLevel);
 	else if (prop == "gene") lua_pushnumber(ls, m_bGene);
-	else if (prop == "type1") lua_pushnumber(ls, m_bType1);
-	else if (prop == "type2") lua_pushnumber(ls, m_bType2);
-	else if (prop == "type3") lua_pushnumber(ls, m_bType3);
+	else if (prop.find("type", 0) == 0) 
+	{
+		int slot = sti(prop.substr(4));
+		if (slot >= 0 && slot < MAX_COMBATANT_TYPES)
+			lua_pushnumber(ls, m_bType[slot]);
+	}
 	
 	else if (prop == "attack") lua_pushnumber( ls, m_iAttack );
 	else if (prop == "defense") lua_pushnumber( ls, m_iDefense );

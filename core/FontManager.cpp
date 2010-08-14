@@ -60,9 +60,9 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 			if (c != string::npos)
 			{
 				// We found enough characters to fill one line, split and quit
-				words.insert(words.begin() + i + 1, words.at(i).substr(c+2));
-				words.insert(words.begin() + i + 1, "\\n");
-				words.at(i) = words.at(i).substr(0, c);
+				words.insert(words.begin() + i + 1, words.at(i).substr(c+2)); //everything after \n
+				words.insert(words.begin() + i + 1, "\\n"); // the \n itself
+				words.at(i) = words.at(i).substr(0, c); // everything before \n
 			}
 			
 			if (GetWidth(words.at(i), true) > maxWidth)
@@ -95,8 +95,6 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 				v.push_back(s);
 				s.clear();
 			}
-			
-			v.push_back("");
 		}
 		else
 		{

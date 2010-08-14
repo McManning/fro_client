@@ -21,6 +21,7 @@ Entity::Entity()
 	mLayer = 0;
 	mLocked = false;
 	mShadow = false;
+	mShowBorder = false;
 	mManagerCanDeleteMe = true;
 	mJumpHeight = 0;
 	mClickRange = 0;
@@ -159,6 +160,24 @@ bool Entity::IsCollidingWithEntity(Entity* e)
 	return false;
 }
 
+void Entity::Render()
+{
+	if (mShowBorder)
+	{
+		rect r = GetBoundingRect();
+		
+		// if we're based on map position, convert
+		if (!IsPositionRelativeToScreen())
+			r = mMap->ToScreenPosition( r );
+			
+		Image* scr = Screen::Instance();
+		scr->DrawRect(r, color(255,0,0), false);
+		
+		scr->DrawLine(r.x, r.y, r.x + r.w, r.y + r.h, color(255,0,0), 1);
+		scr->DrawLine(r.x+r.w, r.y, r.x, r.y + r.h, color(255,0,0), 1);
+	}
+}	
+
 void Entity::RenderShadow()
 {
 	if (!mShadow || !mMap)
@@ -248,6 +267,52 @@ void Entity::ClearFlag(string flag)
 	mFlags.erase(flag);
 }
 
+void Entity::LoadFlags(FILE* f)
+{
+	char buffer[255];
+	unsigned char c;
+	string key;
+	uShort total;
+	
+	// Read in a 2 byte uint counting how many flags we have.
+	fread(&total, sizeof(total), 1, f);
+	
+	for (int i = 0; i < total; ++i)
+	{
+		fread(&c, sizeof(c), 1, f); // string len
+		fread(&buffer, c, 1, f); //string
+		key = buffer;
+		
+		fread(&c, sizeof(c), 1, f); // string len
+		fread(&buffer, c, 1, f); //string
+		
+		mFlags[key].append(buffer, c);
+	}
+}
+
+// Save our entity flags to our main save file
+void Entity::SaveFlags(FILE* f)
+{
+	uShort size = mFlags.size();
+	unsigned char c;
+	
+	fwrite(&size, sizeof(size), 1, f);
+
+	if (size > 0)
+	{
+		for (std::map<string, string>::iterator it = mFlags.begin(); it != mFlags.end(); ++it) 
+		{
+			c = it->first.size();
+			fwrite(&c, sizeof(c), 1, f);
+			fwrite(it->first.c_str(), c, 1, f);
+			
+			c = it->second.size();
+			fwrite(&c, sizeof(c), 1, f);
+			fwrite(it->second.c_str(), c, 1, f);
+		}
+	}
+}
+
 /*	index - Index of the stack where our new value for the property should be */
 int Entity::LuaSetProp(lua_State* ls, string& prop, int index)
 {
@@ -258,6 +323,7 @@ int Entity::LuaSetProp(lua_State* ls, string& prop, int index)
 	else if (prop == "shadow") mShadow = lua_toboolean(ls, index);
 	else if (prop == "layer") SetLayer( (int)lua_tonumber(ls, index) );
 	else if (prop == "clickable") mClickRange = (int)lua_tonumber(ls, index);
+	else if (prop == "border") mShowBorder = lua_toboolean(ls, index);
 	else return 0;
 	
 	return 1;
@@ -273,6 +339,7 @@ int Entity::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "layer") lua_pushnumber( ls, GetLayer() );
 	else if (prop == "type") lua_pushstring( ls, GetTypeName().c_str() );
 	else if (prop == "clickable") lua_pushnumber( ls, mClickRange );
+	else if (prop == "border") lua_pushboolean( ls, mShowBorder );
 	else return 0;
 	
 	return 1;

@@ -338,7 +338,7 @@ void WorldLoader::_resourceDownloadSuccess(string url, string file)
 	++m_iCompletedResources;
 	UpdateStatusText(); // will update the output of how many resources are done
 	
-	console->AddMessage("\\c990Completed: " + its(m_iCompletedResources) + " Total: " + its(m_iTotalResources));
+	console->AddMessage("\\c990Completed: " + its(m_iCompletedResources) + " Total: " + its(m_iTotalResources) + " (" + file + ")");
 	
 	//if we downloaded all our resources, proceed onto the next phase of load
 	if (m_iCompletedResources == m_iTotalResources)

@@ -29,6 +29,8 @@ class Screen : public Image
 	static Screen* Instance();
 	static void Destroy();
 
+	bool mNoDraw;
+
   private:
   	Screen();
 	~Screen();

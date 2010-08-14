@@ -4,6 +4,9 @@
 
 #include "../core/Core.h"
 
+#define MAX_COMBATANT_SKILLS 5
+#define MAX_COMBATANT_TYPES 5
+
 /**	
 	A base class that Actors will inherit from to give them RPG-like statistics used for combat. 
 	Will manage things like stats, health, getting hurt, gaining exp, etc. Will mostly use messenger
@@ -65,10 +68,8 @@ class Combatant
 	char m_bLevel;
 	char m_bGene;
 	
-	// Type information slots
-	char m_bType1;
-	char m_bType2;
-	char m_bType3;
+	// Type information slots.
+	char m_bType[MAX_COMBATANT_TYPES];
 	
 	// current stats
 	int m_iAttack; // read-only
@@ -85,7 +86,7 @@ class Combatant
 	char m_bBaseSpeed;
 	char m_bBaseHealth;
 
-	skill m_sSkills[5];
+	skill m_sSkills[MAX_COMBATANT_SKILLS];
 
 	bool m_bDisplayStats; // if true, an overhead display of stats will be shown
 };

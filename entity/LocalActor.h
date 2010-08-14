@@ -37,8 +37,8 @@ class LocalActor : public Actor
 	/*	 Tell the network what our current avatar mod is so that they can apply it locally */
 	void NetSendAvatarMod();
 
-	void LoadFlags();
-	void SaveFlags();
+	void LoadFlagsFromXml();
+	void SaveFlagsToXml();
 	void PrintFlags();
 	
 	void Warp(string id, point2d position, string targetObjectName);

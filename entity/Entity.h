@@ -49,7 +49,7 @@ class Entity
 	//Return a string representation of this entity type
 	string GetTypeName();
 	
-	virtual void Render() = 0;
+	virtual void Render();
 	void RenderShadow();
 	
 	virtual Image* GetImage() { return NULL; };
@@ -124,10 +124,15 @@ class Entity
 	string GetFlag(string flag);
 	void ClearFlag(string flag);
 	
+	// Load/save flags from a binary file stream already opened
+	void LoadFlags(FILE* f);
+	void SaveFlags(FILE* f);
+	
 	void ClearActiveChatBubble();
 	
 	bool mLocked; //Map Editor only
 	bool mShadow; //does this entity cast a shadow
+	bool mShowBorder; // Do we render a border
 	
 	int mJumpHeight; // Here because BubbleManager is stupid
  // protected:

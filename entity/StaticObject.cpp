@@ -85,6 +85,8 @@ void StaticObject::Render()
 	}
 	
 	soRenderProfiler.Stop();
+	
+	Entity::Render();
 }
 
 rect StaticObject::GetBoundingRect()

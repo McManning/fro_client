@@ -188,6 +188,26 @@ int map_SetFlag(lua_State* ls)
 	return 0;
 }
 
+//	bool = .IsEditorMode()
+int map_IsEditorMode(lua_State* ls)
+{
+	ASSERT(game && game->mMap);
+
+	lua_pushboolean(ls, game->mMap->mEditorMode);
+	return 1;	
+}
+
+//	.SetEditorMode(bool")
+int map_SetEditorMode(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+
+	ASSERT(game && game->mMap);
+
+	game->mMap->mEditorMode = lua_toboolean(ls, 1);
+	return 0;
+}
+
 //	string = .GetWorkingDir() - Returns working directory of the map (either dev/ or cache/)
 int map_GetWorkingDir(lua_State* ls)
 {
@@ -224,6 +244,28 @@ int map_GetID(lua_State* ls)
 	return 1;
 }
 
+// pEnt2 = .GetNextEntityUnderMouse(pEnt)
+int map_GetNextEntityUnderMouse(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	
+	Entity* ent;
+	
+	if (lua_isnil(ls, 1))
+		ent = NULL;
+	else
+		ent = (Entity*)lua_touserdata(ls, 1);
+	
+	ent = game->mMap->GetNextEntityUnderMouse(ent);
+	
+	if (ent)
+		lua_pushlightuserdata(ls, ent);
+	else
+		lua_pushnil(ls);
+		
+	return 1;
+}
+
 static const luaL_Reg functions[] = {
 	{"NewBasic", map_NewBasic},
 	{"SetSpawn", map_SetSpawn},
@@ -232,6 +274,9 @@ static const luaL_Reg functions[] = {
 	{"SetFlag", map_SetFlag},
 	{"GetWorkingDir", map_GetWorkingDir},
 	{"GetID", map_GetID},
+	{"IsEditorMode", map_IsEditorMode},
+	{"SetEditorMode", map_SetEditorMode},
+	{"GetNextEntityUnderMouse", map_GetNextEntityUnderMouse},
 	{NULL, NULL}
 };
 

@@ -181,14 +181,14 @@ void Avatar::LoadComposite()
 	//if we are lacking a resource, bad avy.
 	if (!iHead || !iBody || !iHair)
 		return;
-		
+
 	//calculate our dimensions based on the body. (All parts should have the same dimensions with this system)
 	//Each should contain 2 frames, 5 rows (4 dirs and 1 sit)
 	mWidth = iBody->Width() / 2;
 	mHeight = iBody->Height() / 5;
 
 	//build the avatar, render each part, and colorize as we go along.
-	mImage = resman->NewImage(iBody->Width(), iBody->Height(), color(255,0,255), true);
+	mImage = resman->NewImage(iBody->Width(), iBody->Height(), color(255,0,255), false);
 
 	iHead->Render(mImage, 0, 0);
 	mImage->ColorizeGreyscale(cHead);

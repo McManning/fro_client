@@ -6,9 +6,8 @@ Combatant::Combatant()
 	m_bLevel = 0;
 	m_bGene = 0;
 
-	m_bType1 = 0;
-	m_bType2 = 0;
-	m_bType3 = 0;
+	for (int i = 0; i < MAX_COMBATANT_TYPES; ++i)
+		m_bType[i] = 0;
 	
 	m_bBaseAttack = 0;
 	m_bBaseDefense = 0;

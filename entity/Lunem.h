@@ -20,7 +20,7 @@ class Lunem : public Actor
 	int LuaGetProp(lua_State* ls, string& prop);
 
 	void ReadFromFile(FILE* f);
-	void WriteToFile(FILE* f) const;
+	void WriteToFile(FILE* f);
 
 	string m_sSpecies;
 };

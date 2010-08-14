@@ -18,7 +18,7 @@ LoginDialog* loginDialog;
 void callback_doUpdate(MessagePopup* m)
 {
 #ifdef WIN32	
-	int result = (int)ShellExecute(NULL, "open", "./updater.exe", NULL, NULL, SW_SHOWNORMAL);
+	int result = (int)ShellExecute(NULL, "open", "updater.exe", "", NULL, SW_SHOWNORMAL);
 	if (result <= 32)
 	{
 		systemErrorMessage("Error!", "Encountered error code " + its(result) + " while trying to run updater.exe!\n\nPlease complain at http://sybolt.com/community/");

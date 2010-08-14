@@ -694,21 +694,25 @@ bool Image::Render(SDL_Surface* dst, sShort x, sShort y, rect clip)
 
 	//OPTIMIZETODO: Optimized version
 
-	//if they want to do RGBA->RGBA (and can!), let them use the slower renderer
-	if (mUseBlitOverride && src->format->BytesPerPixel == 4 && dst->format->BytesPerPixel == 4)
+	if (!Screen::Instance()->mNoDraw)
 	{
-		if ( SDL_gfxBlitRGBA(src, &rSrc, dst, &rDst) < 0 )
+	
+		//if they want to do RGBA->RGBA (and can!), let them use the slower renderer
+		if (mUseBlitOverride && src->format->BytesPerPixel == 4 && dst->format->BytesPerPixel == 4)
 		{
-	        WARNING(SDL_GetError());
-	        return false;
+			if ( SDL_gfxBlitRGBA(src, &rSrc, dst, &rDst) < 0 )
+			{
+		        WARNING(SDL_GetError());
+		        return false;
+			}
 		}
-	}
-	else
-	{
-		if ( SDL_BlitSurface(src, &rSrc, dst, &rDst) < 0 )
+		else
 		{
-	        WARNING(SDL_GetError());
-	        return false;
+			if ( SDL_BlitSurface(src, &rSrc, dst, &rDst) < 0 )
+			{
+		        WARNING(SDL_GetError());
+		        return false;
+			}
 		}
 	}
 

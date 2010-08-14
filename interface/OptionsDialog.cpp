@@ -119,7 +119,7 @@ void OptionsDialog::_buildFrameUser()
 	new Label(mFrameUser, "", rect(0,y), "Nickname");
 	i = new Input(mFrameUser, "nick", rect(95, y, 150, 20), "", 32, true, NULL);
 		i->SetText( game->mPlayer->mName );
-		i->mHoverText = "No spaces. \\\\cRGB okay.";
+		//i->mHoverText = "No spaces.";
 	y += 25;
 	
 	new Label(mFrameUser, "", rect(0,y), "Alerts");

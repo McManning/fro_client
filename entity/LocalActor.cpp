@@ -25,7 +25,6 @@ uShort timer_playerActionBufferSend(timer* t, uLong ms)
 LocalActor::LocalActor()
 	: Actor()
 {
-	PRINT("[LA] init");
 	mType = ENTITY_LOCALACTOR;
 	mShadow = true;
 	mLimitedAvatarSize = true;
@@ -39,14 +38,12 @@ LocalActor::LocalActor()
 									timer_playerActionBufferSend,
 									NULL,
 									this);
-	
-	PRINT("[LA] Load Default Avatar");
+
 	string url = game->mPlayerData.GetParamString("avatar", "url");
 
 	LoadAvatar("assets/default.png", "", 32, 64, 1000, false, false);
 	SwapAvatars();
 
-	PRINT("[LA] Load Custom Avatar");
 	if (!url.empty())
 		LoadAvatar( url, game->mPlayerData.GetParamString("avatar", "pass"),
 						game->mPlayerData.GetParamInt("avatar", "w"),
@@ -55,10 +52,8 @@ LocalActor::LocalActor()
 						game->mPlayerData.GetParamInt("avatar", "loopstand"),
 						game->mPlayerData.GetParamInt("avatar", "loopsit") );
 
-	PRINT("[LA] Load Flags");	
-	LoadFlags();
-	
-	PRINT("[LA] done");
+	LoadFlagsFromXml();
+
 }
 
 LocalActor::~LocalActor()
@@ -66,7 +61,7 @@ LocalActor::~LocalActor()
 	if (timers)
 		timers->Remove(mActionBufferTimer);
 		
-	SaveFlags();
+	SaveFlagsToXml();
 }
 
 bool LocalActor::ProcessMovement()
@@ -345,7 +340,7 @@ void LocalActor::NetSendAvatarMod()
 }
 
 // Load our entity flags from our main save file
-void LocalActor::LoadFlags()
+void LocalActor::LoadFlagsFromXml()
 {
 	string flags;
 	TiXmlElement* top = game->mPlayerData.mDoc.FirstChildElement();
@@ -368,7 +363,7 @@ void LocalActor::LoadFlags()
 }
 
 // Save our entity flags to our main save file
-void LocalActor::SaveFlags()
+void LocalActor::SaveFlagsToXml()
 {
 	string flags;
 	//Convert our map to a string

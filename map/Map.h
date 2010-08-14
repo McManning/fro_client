@@ -41,7 +41,9 @@ class Map : public Frame, public EntityManager
 	
 	/*	Will attempt to return the entity directly under the mouse, if it is clickable. */
 	Entity* GetEntityUnderMouse(bool mustBeClickable, bool playersOnly);
-		
+	
+	Entity* GetNextEntityUnderMouse(Entity* start);
+	
 	void CheckForClickableEntity();
 		
 	point2d mSpawnPoint;
@@ -103,7 +105,8 @@ class Map : public Frame, public EntityManager
 	string GetFlag(string flag);
 
 	bool mShowPlayerNames; //TODO: Move to Game or something
-
+	bool mEditorMode;
+	
 	std::vector<point2d> mCameraDestinationStack;
 	uShort mCameraSpeed;
 	
