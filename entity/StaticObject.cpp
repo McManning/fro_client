@@ -35,12 +35,23 @@ void listener_staticObjectWarperEventMove(MessageListener* listener, MessageData
 	}
 }
 
+uShort timer_StaticObjectAnimate(timer* t, uLong ms)
+{
+	StaticObject* o = (StaticObject*)t->userData;
+
+	if ( o && o->_animate() )
+		return TIMER_CONTINUE;
+
+	return TIMER_DESTROY;
+}
+
 StaticObject::StaticObject()
 	: Entity()
 {
 	mType = ENTITY_STATICOBJECT;
 	mImage = NULL;
 	mOriginalImage = NULL;
+	mAnimationTimer = NULL;
 	mRotation = 0.0;
 	mScale = 1.0;
 	mDepth = 0;
@@ -139,6 +150,8 @@ void StaticObject::LoadImage(string file)
 	else
 		mImage = mOriginalImage->Clone();
 
+	
+	PlayAnimation();
 	mRotation = 0.0;
 	mScale = 1.0;
 }
@@ -155,6 +168,7 @@ void StaticObject::SetImage(Image* img)
 	if (mOriginalImage)
 		mImage = mOriginalImage->Clone();
 
+	PlayAnimation();
 	mRotation = 0.0;
 	mScale = 1.0;	
 }
@@ -179,5 +193,58 @@ void StaticObject::SetWarp(string id, string objectName)
 	if (!mWarpDestinationId.empty())
 		mWarpEntityMoveListener = messenger.AddListener("ENTITY_MOVE", listener_staticObjectWarperEventMove, 
 														NULL, this);
+}
+
+// Called by the timer
+bool StaticObject::_animate()
+{
+	Image* img = GetImage();
+	
+	if (mAnimationTimer && img) // if the animation is playing
+	{
+		mAnimationTimer->interval = img->ForwardCurrentFrameset();
+		
+		// OPTIMIZETODO: Add our rect to the renderer
+		
+		// if we hit the end of the animation, destroy the timer. 
+		if (mAnimationTimer->interval == ULONG_MAX)
+		{
+			mAnimationTimer = NULL;
+			return false;
+		}
+	}
+
+	return (img != NULL);
+}
+
+void StaticObject::PlayAnimation()
+{
+	Image* img = GetImage();
+	ASSERT(img);
+	
+	img->Reset();
+	
+	SDL_Frame* f = img->Frame();
+	ASSERT(f);
+	
+	if (!mAnimationTimer)
+	{
+		// only add if there's a reason to animate
+		if (img->mImage->CountFrames() > 1)
+			mAnimationTimer = timers->Add("", f->delay, false, timer_StaticObjectAnimate, NULL, this);
+	}
+	else
+	{
+		mAnimationTimer->interval = f->delay;
+	}
+}
+
+void StaticObject::StopAnimation()
+{
+	if (mAnimationTimer)
+	{	
+		timers->Remove(mAnimationTimer);
+		mAnimationTimer = NULL;
+	}
 }
 

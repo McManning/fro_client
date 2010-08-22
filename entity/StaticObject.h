@@ -49,6 +49,12 @@ class StaticObject : public Entity
 	string GetWarpId() const { return mWarpDestinationId; };
 	string GetWarpObject() const { return mWarpDestinationObject; };
 
+	bool _animate(); // Called by the mAnimationTimer
+	void PlayAnimation();
+	void StopAnimation();
+	
+	timer* mAnimationTimer;
+
 	//listener for when the player moves in/our of our collision, and we have warp properties
 	MessageListener* mWarpEntityMoveListener;
 	

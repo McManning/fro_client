@@ -46,10 +46,10 @@ class GuiManager : public Widget
 
 	uShort GetMouseX() const { return mMousePosition.x; };
 	uShort GetMouseY() const { return mMousePosition.y; };
+
+	rect GetMouseRect();
 	
-	rect GetMouseRect() const { return rect(GetMouseX(), GetMouseY(), 1, 1); };
-	
-	void SetMouseXY(uShort x, uShort y);
+	void SetMousePosition(int x, int y);
 
 	//Widgets in this list will get Event() even if it's not for them directly.
 	std::vector<Widget*> mGlobalEventHandlers;
@@ -128,8 +128,8 @@ class GuiManager : public Widget
 	int mCustomCursorSourceY;
 	
   private:
-	point2d mMousePosition;
-	point2d mLastMousePosition;
+	rect mMousePosition;
+	rect mLastMousePosition;
 	
 	/*	Sends the event to various widgets, depending on the type of event fired. (Keyboard, mouse button, mouse movement, etc)
 		Will also send the event to all global handlers.

@@ -44,7 +44,8 @@ class Avatar
 	{
 		LOADING = 0,
 		LOADED,
-		FAILED
+		FAILED,
+		BADIMAGE
 	};
 
 	avatarState mState;

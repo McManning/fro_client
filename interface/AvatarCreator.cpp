@@ -454,8 +454,6 @@ void AvatarCreator::_redraw()
 	
 	//Finally convert the resulting avatar to something we can control in terms of frames/animation
 	mCompositePreview->ConvertToAvatarFormat(w, h, 1000, true, false);
-	mCompositePreview->Stop();
-
 }
 
 void AvatarCreator::Render()

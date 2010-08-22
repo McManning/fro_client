@@ -3,7 +3,7 @@
 #include "Screen.h"
 #include "ResourceManager.h"
 
-Screen* gScreen;
+Screen* screen;
 Uint32 uScreenFlags;
 
 void SetScreenFlags(Uint32 flags)
@@ -44,6 +44,8 @@ Screen::Screen()
 	Resize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	
 	Update();
+	
+	screen = this;
 }
 
 Screen::~Screen()
@@ -51,6 +53,8 @@ Screen::~Screen()
 	//Image will handle deletion. 
 	//TODO: Kill SDL here?
 	mImage->refCount--;
+	
+	screen = NULL;
 }
 
 void Screen::Flip()
@@ -83,13 +87,21 @@ void Screen::Resize(uShort w, uShort h)
 
 Screen* Screen::Instance()
 {
-	if (!gScreen)
-		gScreen = new Screen();
+	if (!screen)
+		screen = new Screen();
 
-	return gScreen;
+	return screen;
 }
 
 void Screen::Destroy()
 {
-	SAFEDELETE(gScreen);
+	SAFEDELETE(screen);	
 }
+
+void Screen::AddRect(rect r)
+{
+	
+}
+
+
+

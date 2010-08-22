@@ -296,9 +296,7 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		case SDL_MOUSEMOTION:
 		{
 //			PRINT("Gui::EventMM");
-			mLastMousePosition = mMousePosition;
-			mMousePosition.x = event->motion.x;
-			mMousePosition.y = event->motion.y;
+			SetMousePosition(event->motion.x, event->motion.y);
 		
 			previousMouseFocus = hasMouseFocus;
 			hasMouseFocus = GrabWidgetUnderXY(this, GetMouseX(), GetMouseY());
@@ -342,23 +340,45 @@ void GuiManager::_renderStats(Image* scr)
 
 void GuiManager::_renderCursor(Image* scr)
 {
+	rect r = GetMouseRect();
+	
 	//If the cursor is over an input widget, render a caret version
 	if (hasMouseFocus && hasMouseFocus->mType == WIDGET_INPUT)
 	{
-		mCursorImage->Render(scr, GetMouseX()-4, GetMouseY() - 10, rect(17, 0, 7, 22));
+		mCursorImage->Render(scr, r.x, r.y, rect(17, 0, r.w, r.h));
 	}
 	else //render normal cursor
 	{
-		mCursorImage->Render(scr, GetMouseX(), GetMouseY(), rect(1, mCustomCursorSourceY, 16, 22));
+		mCursorImage->Render(scr, r.x, r.y, rect(1, mCustomCursorSourceY, r.w, r.h));
 	}
 }
 
+rect GuiManager::GetMouseRect()
+{
+	rect r;
+	//If the cursor is over an input widget, create a caret version
+	if (hasMouseFocus && hasMouseFocus->mType == WIDGET_INPUT)
+	{
+		r.x = GetMouseX() - 4;
+		r.y = GetMouseY() - 10;
+		r.w = 7;
+		r.h = 22;
+	}
+	else //render normal cursor
+	{
+		r.x = GetMouseX();
+		r.y = GetMouseY();
+		r.w = 16;
+		r.h = 22;
+	}
+	return r;
+}
+
+// TODO: Widget-ify this
 void GuiManager::_renderCursorTipText(Image* scr, string& text)
 {
 	rect pos;
-	
-	//TODO: WRAP!
-	
+
 	int w, h;
 	mFont->GetTextSize(text, &w, &h);
 	pos.h = h + 2;
@@ -471,16 +491,18 @@ bool GuiManager::IsMouseButtonDown(byte button, int* x, int* y) const
 	return SDL_GetMouseState(x, y) & SDL_BUTTON(button);
 }
 
-void GuiManager::SetMouseXY(uShort x, uShort y)
+void GuiManager::SetMousePosition(int x, int y)
 {
+	screen->AddRect(GetMouseRect()); // Store old rect
+	
 	mLastMousePosition = mMousePosition;
 	
-	SDL_WarpMouse(x, y);
+//	SDL_WarpMouse(x, y);
 
 	mMousePosition.x = x;
 	mMousePosition.y = y;
 
-	//OPTIMIZETODO: flag rendering crap here
+	screen->AddRect(GetMouseRect()); // Store new rect
 }
 
 void GuiManager::AddGlobalEventHandler(Widget* w) 

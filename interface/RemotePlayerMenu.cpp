@@ -24,7 +24,7 @@ void callback_playerMenuBeat(Button* b)
 	if (t)
 	{
 		int seconds = (t->lastMs + t->interval - gui->GetTick()) / 1000;
-		game->mChat->AddMessage("\\c900 * You must wait " + its(seconds) + " seconds.");
+		game->mChat->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
 		return;
 	}
 

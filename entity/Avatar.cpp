@@ -10,7 +10,7 @@ void callback_avatarDownloadSuccess(downloadData* data)
 	if (a)
 	{
 		a->mImage = resman->LoadImg(data->filename, a->mPass);
-		a->mState = (a->mImage) ? Avatar::LOADED : Avatar::FAILED;
+		a->mState = (a->mImage) ? Avatar::LOADED : Avatar::BADIMAGE;
 	}
 	
 	//clean up our cache file, regardless of results
@@ -129,7 +129,7 @@ void Avatar::Load()
 	if (mUrl.find("avy://", 0) == 0)
 	{
 		DEBUGOUT("Loading as composite");
-		mState = FAILED; //if LoadComposite is successful, will set to LOADED
+		mState = BADIMAGE; //if LoadComposite is successful, will set to LOADED
 		LoadComposite();	
 	}
 	else if (mUrl.find("http://", 0) == 0)
@@ -146,7 +146,7 @@ void Avatar::Load()
 	else //local file
 	{
 		mImage = resman->LoadImg(mUrl, mPass);
-		mState = (mImage) ? LOADED : FAILED;
+		mState = (mImage) ? LOADED : BADIMAGE;
 	}
 }
 

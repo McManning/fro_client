@@ -462,6 +462,8 @@ int _parseEntityImage(lua_State* ls, StaticObject* so, int virtualIndex = -1)
 			so->mImage->ConvertToHorizontalAnimation(rect(0, 0, width, so->mImage->Height()), delay);
 		if (so->mOriginalImage)
 			so->mOriginalImage->ConvertToHorizontalAnimation(rect(0, 0, width, so->mOriginalImage->Height()), delay);
+		
+		so->PlayAnimation();
 	}
 
 	return 1;

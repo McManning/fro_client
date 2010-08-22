@@ -29,7 +29,6 @@ ChatBubble::ChatBubble(Entity* owner, string& msg)
 		SetLayer(mOwner->GetLayer() + 1);	
 		
 		rect r = mOwner->GetBoundingRect();
-		r.y -= mOwner->mJumpHeight;
 
 		r.y -= mImage->Height() - 2;
 		r.w = mImage->Width();
@@ -59,7 +58,6 @@ void ChatBubble::Render()
 	if (mOwner)
 	{
 		r = mOwner->GetBoundingRect();
-		r.y -= mOwner->mJumpHeight;
 
 		r.y -= mImage->Height() + 2;
 		r.w = mImage->Width();

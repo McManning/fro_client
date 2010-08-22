@@ -135,14 +135,6 @@ void callback_consoleOutputAvatar(Console* c, string s)
 	game->mPlayer->GetAvatar()->ToFiles();
 }
 
-void callback_consoleAvatarInfo(Console* c, string s)
-{
-	string ss;
-	if (game->mPlayer->GetAvatar())
-		game->mPlayer->GetAvatar()->mImage->StateToString(ss);
-	c->AddMessage(ss);
-}
-
 void callback_consoleTestMap(Console* c, string s) //test <file>
 {
 	if (s.length() < 10)
@@ -347,7 +339,7 @@ void callback_chatCommandJoin(Console* c, string s)
 	if (t)
 	{
 		int seconds = (t->lastMs + t->interval - gui->GetTick()) / 1000;
-		c->AddMessage("\\c900 * You must wait " + its(seconds) + " seconds.");
+		c->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
 		return;
 	}
 #endif
@@ -470,7 +462,6 @@ uShort timer_DestroyInfoBar(timer* t, uLong ms)
 void GameManager::_hookCommands()
 {
 	console->HookCommand("net_info", callback_consoleNetInfo);
-	console->HookCommand("avatar_info", callback_consoleAvatarInfo);
 	console->HookCommand("avatarout", callback_consoleOutputAvatar);
 	console->HookCommand("test", callback_consoleTestMap);
 	console->HookCommand("screendraw", callback_consoleScreenDraw);
@@ -1148,6 +1139,10 @@ void GameManager::ToggleGameMode(gameMode mode)
 		mChat->mInput->mReadOnly = false;
 		mChat->mInput->Clear();
 	}
+	
+	// Reset our speed
+	if (mPlayer->GetSpeed() == SPEED_RUN)
+		mPlayer->SetSpeed(SPEED_WALK);
 
 	// Send an event
 	MessageData md("GAME_MODE");

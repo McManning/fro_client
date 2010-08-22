@@ -27,6 +27,8 @@ class LocalActor : public Actor
 	bool LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, 
 					bool loopStand, bool loopSit);
 
+	void AvatarError(int err);
+
 	/*	index - Index of the stack where our new value for the property should be */
 	int LuaSetProp(lua_State* ls, string& prop, int index);
 	int LuaGetProp(lua_State* ls, string& prop);

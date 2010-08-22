@@ -20,6 +20,16 @@ uShort timer_processMovement(timer* t, uLong ms)
 	return TIMER_DESTROY;
 }
 
+uShort timer_ActorAnimate(timer* t, uLong ms)
+{
+	Actor* a = (Actor*)t->userData;
+
+	if ( a && a->_animate() )
+		return TIMER_CONTINUE;
+
+	return TIMER_DESTROY;
+}
+
 uShort timer_destroyEmote(timer* t, uLong ms)
 {
 	Actor* a = (Actor*)t->userData;
@@ -56,6 +66,7 @@ Actor::Actor()
 	mAvatar = NULL;
 	mLoadingAvatar = NULL;
 	mEmoticon = NULL;
+	mAnimationTimer = NULL;
 	mStep = 0;
 	mAction = IDLE;
 	mDirection = SOUTH;
@@ -97,7 +108,8 @@ rect Actor::GetBoundingRect()
 	}
 	
 	r.x = mPosition.x - (r.w / 2);
-	r.y = mPosition.y - r.h;
+	r.y = mPosition.y - r.h - mJumpHeight;
+	r.h += mJumpHeight;
 
 	return r;
 }
@@ -138,7 +150,7 @@ void Actor::Move(direction dir, sShort distance, byte speed)
 	if (mAvatar && mAvatar->GetImage()) 
 	{
 		_syncAvatarFrameset();
-		mAvatar->GetImage()->Stop(); //from here on, animation will be manually changed for each step
+		StopAnimation();
 	}
 	mStep = 0;
 }
@@ -158,7 +170,7 @@ void Actor::MoveTo(point2d destination, byte speed)
 	if (mAvatar && mAvatar->GetImage()) 
 	{
 		_syncAvatarFrameset();
-		mAvatar->GetImage()->Stop(); //from here on, animation will be manually changed for each step
+		StopAnimation();
 	}
 	mStep = 0;
 }
@@ -276,9 +288,61 @@ void Actor::PostMovement()
 		if (mAvatar && mAvatar->GetImage())// && (GetAction() != IDLE || mAvatar->mLoopStand)) 
 		{
 			_syncAvatarFrameset();
-			mAvatar->GetImage()->Reset();
-			mAvatar->GetImage()->Play();
+			PlayAnimation();
 		}
+	}
+}
+
+// Called by the timer
+bool Actor::_animate()
+{
+	Image* img = mAvatar->GetImage();
+	
+	if (mAnimationTimer && img) // if the animation is playing
+	{
+		mAnimationTimer->interval = img->ForwardCurrentFrameset();
+		
+		// OPTIMIZETODO: Add our rect to the renderer
+		
+		// if we hit the end of the animation, destroy the timer. 
+		if (mAnimationTimer->interval == ULONG_MAX)
+		{
+			mAnimationTimer = NULL;
+			return false;
+		}
+	}
+
+	return (img != NULL);
+}
+
+void Actor::PlayAnimation()
+{
+	Image* img = mAvatar->GetImage();
+	ASSERT(img);
+	
+	img->Reset();
+	
+	SDL_Frame* f = img->Frame();
+	ASSERT(f);
+	
+	if (!mAnimationTimer)
+	{
+		// only add if there's a reason to animate
+		if (img->mImage->CountFrames() > 1)
+			mAnimationTimer = timers->Add("", f->delay, false, timer_ActorAnimate, NULL, this);
+	}
+	else
+	{
+		mAnimationTimer->interval = f->delay;
+	}
+}
+
+void Actor::StopAnimation()
+{
+	if (mAnimationTimer)
+	{	
+		timers->Remove(mAnimationTimer);
+		mAnimationTimer = NULL;
 	}
 }
 
@@ -559,12 +623,12 @@ void Actor::_recalculateStep()
 	if (mStep == 4)
 	{
 		if (mAvatar && mAvatar->GetImage())
-			mAvatar->GetImage()->Forward(true);
+			mAvatar->GetImage()->ForwardCurrentFrameset(true);
 	}
 	else if (mStep == 8)
 	{
 		if (mAvatar && mAvatar->GetImage())
-			mAvatar->GetImage()->Forward(true);
+			mAvatar->GetImage()->ForwardCurrentFrameset(true);
 		mStep = 0; //reset step
 	}
 }
@@ -633,15 +697,16 @@ bool Actor::SwapAvatars()
 	if (!mLoadingAvatar)
 		return false;
 
-	if (!mLoadingAvatar->Convert() 
-		|| (mLoadingAvatar->GetImage()->Width() > MAX_AVATAR_WIDTH && mLimitedAvatarSize)
+	if (!mLoadingAvatar->Convert())
+	{
+		AvatarError(AVYERR_CONVERT);
+	}
+	else if ((mLoadingAvatar->GetImage()->Width() > MAX_AVATAR_WIDTH && mLimitedAvatarSize)
 		|| (mLoadingAvatar->GetImage()->Height() > MAX_AVATAR_HEIGHT && mLimitedAvatarSize))
 	{
-		DEBUGOUT(mName + " BAD SIZE OR BAD CONVERT");
-		SAFEDELETE(mLoadingAvatar);
-		return false;
+		AvatarError(AVYERR_SIZE);
 	}
-	else
+	else // All post-load checks are fine, load it.
 	{
 		byte mod = Avatar::MOD_NONE;
 
@@ -660,10 +725,14 @@ bool Actor::SwapAvatars()
 
 		_syncAvatarFrameset();
 		UpdateCollisionAndOrigin();
+		
+		mLoadingAvatar = NULL;
+		return true;
 	}
 
-	mLoadingAvatar = NULL;
-	return true;
+	// Failed somewhere
+	SAFEDELETE(mLoadingAvatar);
+	return false;
 }
 
 void Actor::UpdateCollisionAndOrigin()
@@ -701,7 +770,12 @@ void Actor::_checkLoadingAvatar()
 			case Avatar::LOADING: {
 				//Don't do anything
 			} break;
-			default: { //FAILED or "other"
+			case Avatar::BADIMAGE: {
+				AvatarError(AVYERR_BADIMAGE);
+				SAFEDELETE(mLoadingAvatar);
+			} break;
+			default: { //FAILED or other
+				AvatarError(AVYERR_LOADFAIL);
 				SAFEDELETE(mLoadingAvatar);
 			} break;
 		}
@@ -743,6 +817,11 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 	return result;
 }
 
+void Actor::AvatarError(int err)
+{
+	console->AddMessage(mName + " Avatar Error: " + its(err));
+}
+
 void Actor::Render()
 {
 	ASSERT(mMap);
@@ -780,8 +859,6 @@ void Actor::Render()
 		r = GetBoundingRect();
 		if (!IsPositionRelativeToScreen())
 			r = mMap->ToScreenPosition( r );
-			
-		r.y -= mJumpHeight; //calculate in jump
 
 		mAvatar->GetImage()->Render(scr, r.x, r.y);
 	}
@@ -797,7 +874,7 @@ void Actor::Render()
 	{
 		f->Render(scr, 
 					r.x + r.w / 2 - (f->GetWidth(stripCodes(mName)) / 2), 
-					r.y - (f->GetHeight() + 2) - mJumpHeight, 
+					r.y - (f->GetHeight() + 2), 
 					mName, color(255,255,255));
 	}
 
@@ -853,9 +930,7 @@ void Actor::RenderEmote()
 	r = GetBoundingRect();
 	if (!IsPositionRelativeToScreen())
 		r = mMap->ToScreenPosition( r );
-		
-	r.y -= mJumpHeight; //calculate in jump
-	
+
 	r.x = r.x + r.w / 2 - (mEmoticon->Width() / 2);
 	r.y -= mEmoticon->Height() - mEmoteOffset;
 

@@ -174,25 +174,18 @@ class Image
 	bool ConvertToAvatarFormat(uShort w, uShort h, uShort delay, bool loopStand, bool loopSit);
 	
 //Routines for animation
-	
-	/*	Make sure there's a linked timer if this image is animated. If there isn't, creates one. */
-	void UpdateTimer();
-	
+
 	/*	Return delay to next change. ULONG_MAX if the current frame is null */
 	uLong ForwardCurrentFrameset(bool forceLoop = false);
 	
 	/*	Return true if we're on the last frame of the current animation */
 	bool IsOnLastFrame();
-	
-	void Stop();
-	void Play();
-	void Forward(bool forceLoop = false);
+
 	void Reset();
 		
 //Misc Routines
 	
 	void SavePNG(string file) const;
-	void StateToString(string& s) const;
 
 	/*	Activates the (slower) alpha blend mode, that allows this image to 
 		do real RGBA->RGBA blending (does not use SDL's quicker, lazier method
@@ -215,10 +208,7 @@ class Image
 	
 	uShort mFramesetIndex;
 	uShort mFrameIndex;
-	uLong mNextFrameChange;
-	timer* mAnimationTimer;
-	
-	bool mPlaying;
+
 	bool mUseBlitOverride;
 
   private:

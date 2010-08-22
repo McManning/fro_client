@@ -133,8 +133,7 @@ class Entity
 	bool mLocked; //Map Editor only
 	bool mShadow; //does this entity cast a shadow
 	bool mShowBorder; // Do we render a border
-	
-	int mJumpHeight; // Here because BubbleManager is stupid
+
  // protected:
 	bool mSolid; //can other entities pass through our collision rects?
 	bool mVisible;

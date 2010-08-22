@@ -105,8 +105,7 @@ Image* ResourceManager::LoadImg(string file, string password)
 		
 	Image* img = new Image;
 	img->mImage = sdlimg;
-	img->UpdateTimer();
-	
+
 	return img;
 }
 
@@ -200,8 +199,7 @@ Image* ResourceManager::ImageFromSurface(SDL_Surface* src)  //to resman
 		delete image;
 		return NULL;
 	}
-	image->UpdateTimer();
-	
+
 	return image;
 }
 

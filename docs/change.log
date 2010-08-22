@@ -1136,8 +1136,19 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Fixed bug that would create a beep/window flash when the client received a slash command from another user
 - Resized avagen avatars from 32x64 to 40x80 (allows better hairstyles and accessories)
 
+(Commit to Revision 43)
 
+100819
+- Removed automated animation behavior from Image class. Will now be handled on an individual basis in Actor,
+	StaticObject, or whatever else may require animation properties. (For the upcoming renderer optimizer to work)
+- Added Actor::StopAnimation(), Actor::PlayAnimation(), and associated animation timers.
+- Fixed "You must wait 0 seconds" bug for avy change, /join cooldown, etc.
+- Moved mJumpHeight back to Actor class
+- Changed Actor::GetBoundingRect(). Will now resize itself when the actor jumps
+- Added display of what exactly happened when the avatar failed to load (Actor & LocalActor ::AvatarError)
 
-	
+100820
+- GameManager::ToggleGameMode() will now set the players speed back to walk if they were running
+- 
 
 

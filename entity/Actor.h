@@ -35,6 +35,14 @@ class Actor : public Entity, public Combatant
 		RUNNING_JUMP,
 		CUSTOM_JUMP
 	};
+	
+	// Avatar load error definitions
+	enum {
+		AVYERR_LOADFAIL = 0,
+		AVYERR_BADIMAGE,
+		AVYERR_SIZE,
+		AVYERR_CONVERT,
+	};
 
 	Actor();
 	virtual ~Actor();
@@ -55,6 +63,9 @@ class Actor : public Entity, public Combatant
 
 	/*	Attempts to convert mLoadingAvatar to avatar format and swaps with mAvatar. Returns true on success */
 	bool SwapAvatars();
+	
+	/*	Called when an error occurs while loading an avatar. Lets inherited classes handle it their way */
+	virtual void AvatarError(int err);
 	
 	/*	index - Index of the stack where our new value for the property should be */
 	virtual int LuaSetProp(lua_State* ls, string& prop, int index);
@@ -135,7 +146,13 @@ class Actor : public Entity, public Combatant
 	virtual void LevelUp();
 	virtual void RecalculateStats();
 	virtual void TakeDamage(Combatant* attacker, int damage);
+
+	bool _animate(); // Called by the mAnimationTimer
+	void PlayAnimation();
+	void StopAnimation();
 	
+	timer* mAnimationTimer;
+
 	uShort mEmoteOffset;
 	Image* mEmoticon;
 
@@ -177,6 +194,7 @@ class Actor : public Entity, public Combatant
 	bool mIgnoreSolids; //does this entity ignore collisions while moving?
 	
 	//Jumping related
+	int mJumpHeight;
 	byte mJumpType;
 	int mCustomVelocity;
 	bool mFalling;

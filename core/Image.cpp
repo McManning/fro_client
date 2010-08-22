@@ -9,27 +9,6 @@
 #include "TimerManager.h"
 #include "Screen.h"
 
-/*	TODO: Something much more efficient, where it would only add a timer
-	if the image is animated and has multiple frames. 
-	
-*/
-uShort timer_imageThink(timer* t, uLong ms)
-{
-	Image* i = (Image*)t->userData;
-
-	if (i->mPlaying)
-	{
-		t->interval = i->ForwardCurrentFrameset();
-#ifdef OPTIMIZED
-		Screen::Instance()->Update();
-#endif
-	}
-		
-	//if (ms > i->mNextFrameChange && i->mPlaying)	
-		//i->mNextFrameChange = ms + i->ForwardCurrentFrameset();
-	return TIMER_CONTINUE;
-}
-
 SDL_Image::SDL_Image()
 {
 	refCount = 1;
@@ -123,12 +102,12 @@ bool SDL_Image::Load(string file, string pass)
 void SDL_Image::PrintInfo() const
 {
 	printf("Image 0x%p Filename:%s RefCount:%i \n", this, filename.c_str(), refCount);
-	for (uShort i = 0; i < framesets.size(); i++)
+	for (int i = 0; i < framesets.size(); i++)
 	{
 		printf("\tFrameset[%i]: Key:%s Loop:%i\n", i, 
 				framesets.at(i).key.c_str(), framesets.at(i).loop);
 				
-		for (uShort u = 0; u < framesets.at(i).frames.size(); u++)
+		for (int u = 0; u < framesets.at(i).frames.size(); u++)
 		{
 			printf("\t\tFrame: Surf:0x%p W:%i H:%i Delay:%i\n", 
 					framesets.at(i).frames.at(u).surf,
@@ -176,7 +155,7 @@ SDL_Image* SDL_Image::Clone(rect clip) const
 	dst = new SDL_Image;
 
 	dst->framesets = framesets;
-	dst->filename = ""; //no longer the original
+	dst->filename = filename + '@'; //no longer the original
 	dst->format = format;
 	
 	_copyFramesets(dst, clip);
@@ -207,11 +186,8 @@ SDL_Frameset* SDL_Image::GetFrameset(string key)
 Image::Image()
 {
 	mImage = NULL;
-	mAnimationTimer = NULL;
 	mFramesetIndex = 0;
 	mFrameIndex = 0;
-	mNextFrameChange = 0;
-	mPlaying = true;
 	mUseBlitOverride = false;
 }
 
@@ -221,9 +197,6 @@ Image::~Image()
 		resman->Unload(mImage); //if it no longer has any links to other Image's, will remove from memory.
 	else
 		delete mImage;
-		
-	if (mAnimationTimer)
-		timers->Remove(mAnimationTimer);
 }
 
 SDL_Frameset* Image::Frameset() const
@@ -269,7 +242,7 @@ bool Image::SetFrameset(string key)
 	if (fs && fs->key == key) //don't set if we're already on it
 		return true; 
 	
-	uShort i;
+	int i;
 	if (mImage)
 	{
 		for (i = 0; i < mImage->framesets.size(); i++)
@@ -325,54 +298,9 @@ uLong Image::ForwardCurrentFrameset(bool forceLoop)
 	return ULONG_MAX;
 }
 
-void Image::Play()
-{
-	if (!mPlaying)
-	{
-		mPlaying = true;
-		//TODO: Enable timer
-	}
-}
-
-void Image::Stop()
-{
-	if (mPlaying)
-	{
-		mPlaying = false;
-		//TODO: Disable timer
-	}
-}
-
-void Image::Forward(bool forceLoop)
-{
-	Stop();
-	ForwardCurrentFrameset(forceLoop);
-}
-
 void Image::Reset()
 {
 	mFrameIndex = 0;
-	
-	SDL_Frame* f = Frame();
-	/*if (f)
-		mNextFrameChange = SDL_GetTicks() + f->delay;
-	else
-		mNextFrameChange = SDL_GetTicks();*/
-		
-	if (mAnimationTimer)
-	{
-		mAnimationTimer->lastMs = SDL_GetTicks();
-		mAnimationTimer->interval = (f) ? f->delay : 0;
-	}
-}
-
-void Image::UpdateTimer()
-{
-	//we have more than one frame, assume this image is animated, add linked timer.
-	if (mImage && mImage->CountFrames() > 1 && !mAnimationTimer)
-	{
-		mAnimationTimer = timers->Add("", 100, true, timer_imageThink, NULL, this);
-	}	
 }
 
 void Image::ConvertToAlphaFormat()
@@ -399,19 +327,17 @@ bool Image::ConvertToHorizontalAnimation(rect clip, uShort delay)
 		|| mImage->framesets.at(0).frames.empty()
 		|| !mImage->framesets.at(0).frames.at(0).surf)
 	{
-		PRINT("[Image::CTHA] Bad Source");
+		WARNING("Bad Image Source");
 		return false;
 	}
 	
 	//if it's already animated, don't deal with this.
 	if (mImage->CountFrames() > 1)
 	{
-		PRINT("[Image::CTHA] Not single frame image!");
+		WARNING("Already Animated");
 		return false;
 	}
-	
-	PRINT("[Image::CTHA] Converting");
-	
+
 	SDL_Surface* src = mImage->framesets.at(0).frames.at(0).surf;
 	mImage->framesets.clear();
 	
@@ -438,11 +364,7 @@ bool Image::ConvertToHorizontalAnimation(rect clip, uShort delay)
 	mImage->framesets.push_back(fs);
 
 	SDL_FreeSurface(src); //done with the original
-	
-	Play();
 
-	UpdateTimer();
-	
 	PRINT("[Image::CTHA] Done");
 	return true;
 }
@@ -533,8 +455,6 @@ bool Image::ConvertToAvatarFormat(uShort w, uShort h, uShort delay, bool loopSta
 			rowCounter++;
 		}
 		SDL_FreeSurface(src); //done with the original
-		
-		UpdateTimer();
 	}
 	else //more than one frame
 	{
@@ -607,11 +527,7 @@ Image* Image::Clone(bool fullClone, rect clip) const
 	
 	dst->mFramesetIndex = mFramesetIndex;
 	dst->mFrameIndex = mFrameIndex;
-	dst->mNextFrameChange = mNextFrameChange;
-	dst->mPlaying = mPlaying;
-	
-	dst->UpdateTimer();
-	
+
 	return dst;
 }
 
@@ -747,25 +663,6 @@ rect Image::GetClip() const
 	SDL_GetClipRect(surf, &r);
 	
 	return rect( r.x, r.y, r.w, r.h );
-}
-
-void Image::StateToString(string& s) const
-{
-	s += "This: " + pts((void*)this) + " SDL_Image: " + pts(mImage);
-
-	SDL_Frameset* fs = Frameset();
-	if (fs)
-	{
-		s += "\\nFrameset key: " + fs->key + " loop: " + its(fs->loop);
-	}
-	else
-	{
-		s += "\\nNo current frameset";
-	}
-
-	s += "\\nFrame index: " + its(mFrameIndex);
-	s += "\\nNext frame change in " + its(mNextFrameChange - SDL_GetTicks()) + "ms";
-	s += "\\nPlaying: " + its(mPlaying);
 }
 
 string Image::Filename() const

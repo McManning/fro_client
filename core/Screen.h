@@ -8,13 +8,8 @@
 #define SCREEN_WIDTH 800 //640
 #define SCREEN_HEIGHT 600 //480
 
-/*	Main application screen, where most of the rendering is done. 
-	There is only one of these that should exist, and Screen::Instance() should be done before any SDL calls.
-	Trivial Usage:
-		Screen* scr = Screen::Instance();
-		Image* img = resman->LoadImg("somefile.png");
-		img->Render(scr, scr->Width() / 2 - img->Height() / 2, scr->Height() / 2 - img->Height() / 2);
-		Screen::Destroy();
+/**	
+	Main application screen, where most of the rendering is done. 
 */
 class Screen : public Image
 {
@@ -22,6 +17,11 @@ class Screen : public Image
 	void Resize(uShort w, uShort h);
 	
 	void Flip();
+	
+	/**	Adds a rect clip to the list of rects that can be drawn to during 
+		the next render phase
+	*/
+	void AddRect(rect r);
 	
 	void Update() { mNeedUpdate = true; };
 	bool NeedsUpdate() const { return mNeedUpdate; };
@@ -37,6 +37,8 @@ class Screen : public Image
 
 	bool mNeedUpdate;
 };
+
+extern Screen* screen;
 	
 //Define SDL Flags for our screen. Will require Resize() in order take effect.	
 void SetScreenFlags(Uint32 flags);

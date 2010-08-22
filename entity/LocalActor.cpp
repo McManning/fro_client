@@ -241,6 +241,39 @@ bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort
 	return result;
 }
 
+// Give a more verbose error message
+void LocalActor::AvatarError(int err)
+{
+	if (!game || !game->mChat)
+		return;
+		
+	string msg;
+	string file;
+	
+	if (mLoadingAvatar)
+		file = GetFilenameFromUrl(mLoadingAvatar->mUrl);
+	
+	switch (err)
+	{
+		case Actor::AVYERR_LOADFAIL:
+			msg = "\\c900 [Avatar Error] Failed to download " + file;
+			break;
+		case Actor::AVYERR_BADIMAGE:
+			msg = "\\c900 [Avatar Error] Could not read format of " + file;
+			break;
+		case Actor::AVYERR_SIZE:
+			msg = "\\c900 [Avatar Error] Invalid frame sizes of " + file;
+			break;
+		case Actor::AVYERR_CONVERT:
+			msg = "\\c900 [Avatar Error] Could not convert " + file;
+			break;
+	}
+	
+	game->mChat->AddMessage(msg);
+	console->AddMessage(msg);
+}
+
+
 void LocalActor::Render()
 {
 	Actor::Render();

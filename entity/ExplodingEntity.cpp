@@ -117,8 +117,7 @@ void ExplodingEntity::_build(Image* img, point2d position, rect clip)
 	mImage = img->Clone();
 	
 	ASSERT(mImage);
-	mImage->Stop(); //If it's exploding, it wouldn't need to be animated.
-	
+
 	SetPosition(position);
 	
 	uShort particleSize = 2;

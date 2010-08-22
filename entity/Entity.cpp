@@ -23,7 +23,6 @@ Entity::Entity()
 	mShadow = false;
 	mShowBorder = false;
 	mManagerCanDeleteMe = true;
-	mJumpHeight = 0;
 	mClickRange = 0;
 	mActiveChatBubble = NULL;
 }
@@ -203,6 +202,12 @@ void Entity::RenderShadow()
 				 	r.w, r.h, 0, 0, 0, 150);
 
 }
+
+// Get the position of our shadow in rect form
+/*rect Entity::GetShadowRect()
+{
+	
+}*/
 
 void Entity::SetLayer(int l)
 {
