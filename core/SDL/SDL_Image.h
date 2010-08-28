@@ -79,12 +79,14 @@ typedef struct
 }
 IMG_File;
 
-//#define SDL_IMAGE_DEBUG
+#ifdef __DEBUG__
+#	define SDL_IMAGE_DEBUG
+#endif
 
 #ifdef SDL_IMAGE_DEBUG
-	#define dbgout printf
+#	define dbgout printf
 #else
-	#define dbgout 
+#	define dbgout 
 #endif
 
 /* This macro can be used to fill a version structure with the compile-time

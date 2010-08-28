@@ -9,6 +9,7 @@ const int MAX_DOWNLOAD_FILESIZE = (3 * 1024 * 1024); //3 MB
 typedef enum
 {
 	DEC_LOADING = 0,
+	DEC_WAITING, // This downloadData is waiting for another downloadData to finish with the same file
 	DEC_SUCCESS,
 	DEC_BADHOST,
 	DEC_CONNECTFAIL,
@@ -63,10 +64,10 @@ class DownloadManager
 		Returns when the threads are done with their current downloads. */
 	void Flush();
 
-	void FlushQueue();
-
 	//Calls the proper callbacks for completed downloads in the main thread.
 	void Process();
+	
+	void ProcessMatchingWaitingDownloads(downloadData* completed);
 
 	/*Add a new download
 		If overwrite, the file matching the same name will be erased before downloading.
@@ -100,6 +101,7 @@ class DownloadManager
 	int CountActiveDownloads();
 
 	bool IsIdle();
+	bool IsUrlQueued(const string& url);
 
 	void LockQueue()
 	{
@@ -115,8 +117,9 @@ class DownloadManager
 	void SetByteCap(int cap) { mByteCap = cap; };
 
 	std::vector<downloadThread*> mThreads;
-	std::vector<downloadData*> mQueued;
-	std::vector<downloadData*> mCompleted;
+	std::vector<downloadData*> mQueued; // Downloads before being picked up by the threads
+	std::vector<downloadData*> mCompleted; // Downloads after being used by the threads
+	std::vector<downloadData*> mWaiting; // for duplicate downloads of matching files
 
 	SDL_mutex* mQueuedMutex;
 	SDL_mutex* mCompletedMutex;

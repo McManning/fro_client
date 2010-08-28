@@ -39,9 +39,12 @@ uShort timer_StaticObjectAnimate(timer* t, uLong ms)
 {
 	StaticObject* o = (StaticObject*)t->userData;
 
-	if ( o && o->_animate() )
-		return TIMER_CONTINUE;
-
+	if (o)
+	{
+		if (o->_animate())
+			return TIMER_CONTINUE;
+	}
+	
 	return TIMER_DESTROY;
 }
 

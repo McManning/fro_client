@@ -198,7 +198,7 @@ void DownloadManager::Flush()
 		{
 			if (mQueued.at(i)->onFailure)
 				mQueued.at(i)->onFailure(mQueued.at(i));
-			SAFEDELETE(mQueued.at(i));
+			delete mQueued.at(i);
 		}
 	}
 	mQueued.clear();
@@ -209,10 +209,21 @@ void DownloadManager::Flush()
 		{
 			if (mCompleted.at(i)->onFailure)
 				mCompleted.at(i)->onFailure(mCompleted.at(i));
-			SAFEDELETE(mCompleted.at(i));
+			delete mCompleted.at(i);
 		}
 	}
 	mCompleted.clear();
+
+	for (i = 0; i < mWaiting.size(); i++)
+	{
+		if (mWaiting.at(i))
+		{
+			if (mWaiting.at(i)->onFailure)
+				mWaiting.at(i)->onFailure(mWaiting.at(i));
+			delete mWaiting.at(i);
+		}
+	}
+	mWaiting.clear();
 
 	SDL_DestroyMutex(mQueuedMutex);
 	SDL_DestroyMutex(mCompletedMutex);
@@ -220,18 +231,12 @@ void DownloadManager::Flush()
 	//mFlushing = false; //done
 }
 
-void DownloadManager::FlushQueue()
-{
-	SDL_LockMutex(mQueuedMutex);
-	mQueued.clear();
-	SDL_UnlockMutex(mQueuedMutex);
-}
-
 void DownloadManager::Process()
-{
+{	
 	SDL_LockMutex(mCompletedMutex);
 
-	for (uShort i = 0; i < mCompleted.size(); i++)
+	int w;
+	for (int i = 0; i < mCompleted.size(); ++i)
 	{
 		if (mCompleted.at(i))
 		{
@@ -256,11 +261,49 @@ void DownloadManager::Process()
 				if (mCompleted.at(i)->onFailure)
 					mCompleted.at(i)->onFailure(mCompleted.at(i));
 			}
+
+			ProcessMatchingWaitingDownloads(mCompleted.at(i));
+	
 			delete mCompleted.at(i);
 		}
 	}
 	mCompleted.clear(); //Clear all completed downloads
 	SDL_UnlockMutex(mCompletedMutex);
+
+}
+
+void DownloadManager::ProcessMatchingWaitingDownloads(downloadData* completed)
+{
+	// Go through the mWaiting list and find matches, then call them too
+	for (int w = 0; w < mWaiting.size(); ++w)
+	{
+		if (mWaiting.at(w)->url == completed->url)
+		{
+			mWaiting.at(w)->errorCode = completed->errorCode;
+
+			// They could have different files with the same URL
+			if (mWaiting.at(w)->filename != completed->filename)
+			{
+				copyFile(completed->filename, mWaiting.at(w)->filename);	
+			}
+
+			// do our callbacks based on our error code
+			if ( mWaiting.at(w)->errorCode == DEC_SUCCESS )
+			{
+				if (mWaiting.at(w)->onSuccess)
+					mWaiting.at(w)->onSuccess(mWaiting.at(w));
+			}
+			else
+			{
+				if (mWaiting.at(w)->onFailure)
+					mWaiting.at(w)->onFailure(mWaiting.at(w));
+			}
+			
+			delete mWaiting.at(w);
+			mWaiting.erase(mWaiting.begin() + w);
+			--w;
+		}
+	}
 }
 
 bool DownloadManager::QueueDownload(string url, string file, void* userData,
@@ -289,27 +332,71 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 		if (fileExists(file) &&  md5file(file) != md5hash)
 			removeFile(file);
 	}
+
+	//build directory structure if it's not there already
+	buildDirectoryTree(file);
 	
-//	PRINT("[ " + url + " ] -> " + file);
-	
-	//if we don't decide to overwrite and it's there, toss in completed stack
-/*	if (fileExists(file))
+	// if we're already downloading this file, store elsewhere
+	if (IsUrlQueued(url))
 	{
-		SDL_LockMutex(mCompletedMutex);
-		data->errorCode = DEC_SUCCESS;
-		mCompleted.push_back(data);
-		SDL_UnlockMutex(mCompletedMutex);
+		mWaiting.push_back(data);
 	}
 	else
-	{*/
-		//build directory structure if it's not there already
-		buildDirectoryTree(file);
+	{
 		SDL_LockMutex(mQueuedMutex);
 		mQueued.push_back(data);
 		SDL_UnlockMutex(mQueuedMutex);
-//	}
+	}
 
 	return true;
+}
+
+bool DownloadManager::IsUrlQueued(const string& url)
+{	
+	int i;
+	bool result = false;
+	
+	SDL_LockMutex(mCompletedMutex);
+	SDL_LockMutex(mQueuedMutex);
+	
+	for (i = 0; i < mCompleted.size(); i++)
+	{
+		if (mCompleted.at(i)->url == url)
+		{
+			result = true;
+			break;
+		}
+	}
+
+	if (!result)
+	{
+		for (i = 0; i < mQueued.size(); i++)
+		{
+			if (mQueued.at(i)->url == url)
+			{
+				result = true;
+				break;
+			}
+		}
+	}
+	
+	if (!result)
+	{
+		for (i = 0; i < mThreads.size(); ++i)
+		{
+			if (mThreads.at(i)->currentData 
+				&& mThreads.at(i)->currentData->url == url)
+			{
+				result = true;
+				break;
+			}
+		}
+	}
+
+	SDL_UnlockMutex(mCompletedMutex);
+	SDL_UnlockMutex(mQueuedMutex);
+	
+	return result;
 }
 
 int DownloadManager::CountActiveDownloads()
@@ -341,6 +428,12 @@ int DownloadManager::CountMatchingUserData(void* userData)
 	for (i = 0; i < mQueued.size(); i++)
 	{
 		if (mQueued.at(i)->userData == userData)
+			++count;
+	}
+	
+	for (i = 0; i < mWaiting.size(); i++)
+	{
+		if (mWaiting.at(i)->userData == userData)
 			++count;
 	}
 
@@ -382,6 +475,12 @@ bool DownloadManager::NullMatchingUserData(void* userData)
 		if (mQueued.at(i)->userData == userData)
 			mQueued.at(i)->userData = NULL;
 	}
+	
+	for (i = 0; i < mWaiting.size(); i++)
+	{
+		if (mWaiting.at(i)->userData == userData)
+			mWaiting.at(i)->userData = NULL;
+	}
 
 	for (i = 0; i < mThreads.size(); i++)
 	{
@@ -402,7 +501,7 @@ bool DownloadManager::IsIdle()
 {
 	bool result = false;
 
-	if (mQueued.empty() && mCompleted.empty())
+	if (mQueued.empty() && mCompleted.empty() && mWaiting.empty())
 		result = true;
 
 	//if any of our threads are currently working on a download, we still have stuff left.

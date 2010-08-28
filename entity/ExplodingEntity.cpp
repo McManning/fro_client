@@ -20,18 +20,6 @@ uShort timer_explodeImage(timer* t, uLong ms)
 
 }
 
-void timer_eraseExplodingEntity(timer* t)
-{
-	ExplodingEntity* m = (ExplodingEntity*)t->userData;
-
-	if (m)
-	{
-		//if it's not found on the map (map changed before this entity died) delete it here instead to avoid a leak.
-		if (!m->mMap->RemoveEntity(m))
-			delete m;
-	}
-}
-
 ExplodingEntity::ExplodingEntity(Map* map, Image* img, point2d position)
 {
 	ASSERT(img);
@@ -47,7 +35,7 @@ ExplodingEntity::ExplodingEntity(Map* map, Image* img, point2d position)
 	
 	mTimer = timers->Add("boom", 10, false,
 						timer_explodeImage,
-						timer_eraseExplodingEntity,
+						NULL,
 						this);
 						
 	mMap->AddEntity(this);

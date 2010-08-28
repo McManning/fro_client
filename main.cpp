@@ -55,7 +55,11 @@ int main (int argc, char *argv[])
 {
 	buildDirectoryTree("logs/");
 
+#ifdef DEBUG
+	freopen("logs/dbgout.log", "w", stdout);
+#else
 	freopen("logs/out.log", "w", stdout);
+#endif
 	removeFile("logs/time_profile.log");
 
 	checkLastRun();

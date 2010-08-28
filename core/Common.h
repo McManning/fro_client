@@ -6,7 +6,7 @@
 #include <vector>
 #include <math.h>
 
-#define APP_VERSION "1.3.0"
+#define APP_VERSION "1.3.1"
 
 /*	In case the compiler doesn't define it for us */
 #ifndef WIN32

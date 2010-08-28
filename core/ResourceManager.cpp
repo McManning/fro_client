@@ -69,7 +69,7 @@ bool ResourceManager::Unload(SDL_Image* src)
 		
 	for (int i = 0; i < mImages.size(); i++)
 	{
-		if (mImages.at(i) == src)
+		if (mImages.at(i) && mImages.at(i) == src)
 		{
 		//	PRINT("[ResourceManager::Unload SDL_Image*] Located Source: " + src->filename 
 		//			+ " refcount: " + its(src->refCount));
@@ -77,7 +77,7 @@ bool ResourceManager::Unload(SDL_Image* src)
 			if (src->refCount < 1) //no more links, delete
 			{
 		//		PRINT("[ResourceManager::Unload SDL_Image*] Refcount < 1, deleting");
-				SAFEDELETE(src);
+				delete src;
 				mImages.erase(mImages.begin() + i);
 				return true;
 			}
@@ -137,7 +137,7 @@ bool ResourceManager::FramesToImage(SDL_Image* img, SDL_Frame* frames, uShort co
 		return false;
 
 	img->filename = filename;
-	PRINT("[FramesToImage] File: " + filename);
+	PRINT("[FramesToImage] File: " + filename + " count: " + its(count));
 	for (i = 0; i < count; i++) //go through all frames and organize
 	{
 		if ( !frames[i].key) //no key, dump into most recent frameset
@@ -157,6 +157,8 @@ bool ResourceManager::FramesToImage(SDL_Image* img, SDL_Frame* frames, uShort co
 			{
 				if (img->framesets.at(s).key == frames[i].key)
 				{
+					free(frames[i].key);
+					frames[i].key = NULL;
 					img->framesets.at(s).frames.push_back( frames[i] );
 					found = true;
 					break;
@@ -171,8 +173,10 @@ bool ResourceManager::FramesToImage(SDL_Image* img, SDL_Frame* frames, uShort co
 				fs.frames.at(fs.frames.size()-1).key = NULL; //to prevent bad pointers later
 				img->framesets.push_back(fs);
 			}
-			
-			free(frames[i].key); //no longer need this frames key
+		
+			//no longer need this frames key
+			free(frames[i].key); 
+			frames[i].key = NULL;
 		}
 	}
 
