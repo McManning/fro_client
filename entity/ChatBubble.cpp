@@ -15,6 +15,19 @@ uShort timer_destroyChatBubble(timer* t, uLong ms)
 	return TIMER_DESTROY;
 }
 
+uShort timer_updateChatBubble(timer* t, uLong ms)
+{
+	ChatBubble* cb = (ChatBubble*)t->userData;
+	
+	if (cb)
+	{
+		cb->UpdatePosition();
+		return TIMER_CONTINUE;
+	}
+	
+	return TIMER_DESTROY;
+}
+
 ChatBubble::ChatBubble(Entity* owner, string& msg)
 {
 	mOwner = owner;
@@ -42,7 +55,7 @@ ChatBubble::ChatBubble(Entity* owner, string& msg)
 ChatBubble::~ChatBubble()
 {
 	resman->Unload(mImage);
-	
+
 	if (mOwner)
 		mOwner->mActiveChatBubble = NULL;
 }
@@ -52,9 +65,19 @@ void ChatBubble::Render()
 	ASSERT(mMap);
 	ASSERT(mImage);
 	rect r;
-		
-	// reposition self relative to owner for next render (if we have one)
-	// Next render because I don't like changing position during a render. This is bad too but.. meh.
+
+	Image* scr = Screen::Instance();
+	r = GetBoundingRect();
+
+	if (!IsPositionRelativeToScreen())
+		r = mMap->ToScreenPosition( r );
+
+	mImage->Render(scr, r.x, r.y);
+}
+
+void ChatBubble::UpdatePosition()
+{
+	// reposition self relative to owner
 	if (mOwner)
 	{
 		r = mOwner->GetBoundingRect();
@@ -66,15 +89,6 @@ void ChatBubble::Render()
 
 		SetPosition(point2d(r.x, r.y));
 	}
-	
-	Image* scr = Screen::Instance();
-	r = GetBoundingRect();
-
-	if (!IsPositionRelativeToScreen())
-		r = mMap->ToScreenPosition( r );
-
-	mImage->Render(scr, r.x, r.y);
-
 }
 
 void ChatBubble::Create(string& msg)
@@ -112,6 +126,8 @@ void ChatBubble::Create(string& msg)
 	mImage->Rotate(rnd(-5,5), 1, 1);
 	
 	timers->Add("", (strippedMsg.length() * 30) + 4000, false, timer_destroyChatBubble, NULL, this);
+	timers->Add("", CHAT_BUBBLE_UPDATE_MS, true, timer_updateChatBubble, NULL, this);
+	
 	
 	//Dispatch a say message
 	MessageData md("ENTITY_SAY");

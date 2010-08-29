@@ -3,12 +3,6 @@
 #include "../game/GameManager.h"
 #include "../core/widgets/Console.h"
 
-TimeProfiler mapRenderProfiler("BasicMap::Render");
-TimeProfiler mapProcessProfiler("BasicMap::Process");
-
-TimeProfiler mapEntityRenderProfiler("BasicMap::_renderEntities");
-TimeProfiler mapBaseRenderProfiler("Map::Render");
-
 BasicMap::BasicMap()
 	: Map()
 {
@@ -22,12 +16,8 @@ BasicMap::~BasicMap()
 
 void BasicMap::Render()
 {
-	mapProcessProfiler.Start();
 	Process(); //Here until we have a timer for it
-	mapProcessProfiler.Stop();
-	
-	mapRenderProfiler.Start();
-	
+
 	Image* scr = Screen::Instance();
 	rect r = GetScreenPosition();
 	
@@ -35,21 +25,13 @@ void BasicMap::Render()
 	
 	//fill with background color
 	scr->DrawRect(r, mBackground);
-	
-	mapEntityRenderProfiler.Start();
-	_renderEntities();
-	mapEntityRenderProfiler.Stop();
 
-	mapBaseRenderProfiler.Start();
+	_renderEntities();
+
 	Map::Render();
-	mapBaseRenderProfiler.Stop();
 		
 	scr->SetClip();
-	
-	mapRenderProfiler.Stop();
 }
-
-TimeProfiler mapEntitesProfiler1("::_renderEntities::Render");
 
 void BasicMap::_renderEntities()
 {
@@ -66,10 +48,7 @@ void BasicMap::_renderEntities()
 		
 		if (e && e->IsVisibleInCamera())
 		{
-			mapEntitesProfiler1.Start();
-			e->Render(); //draw entity
-			mapEntitesProfiler1.Stop();
-			
+			e->Render();
 		} //if visible & in camera
 	} //for all entities
 }

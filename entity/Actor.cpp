@@ -16,6 +16,10 @@ uShort timer_processMovement(timer* t, uLong ms)
 		m->ProcessMovement();
 		return TIMER_CONTINUE;
 	}
+	else
+	{
+		WARNING("No actor assigned to timer " + pts(t));
+	}
 
 	return TIMER_DESTROY;
 }
@@ -24,10 +28,13 @@ uShort timer_ActorAnimate(timer* t, uLong ms)
 {
 	Actor* a = (Actor*)t->userData;
 
-	if ( a && a->_animate() )
-		return TIMER_CONTINUE;
-
-	return TIMER_DESTROY;
+	if (!a)
+	{
+		WARNING("No actor assigned to timer " + pts(t));
+		return TIMER_DESTROY;
+	}
+	
+	return (a->_animate()) ? TIMER_CONTINUE : TIMER_DESTROY;
 }
 
 uShort timer_destroyEmote(timer* t, uLong ms)
@@ -38,6 +45,11 @@ uShort timer_destroyEmote(timer* t, uLong ms)
 	{
 		resman->Unload(a->mEmoticon);
 		a->mEmoticon = NULL;
+		a->AddPositionRectForUpdate();
+	}
+	else
+	{
+		WARNING("No actor assigned to timer " + pts(t));
 	}
 
 	return TIMER_DESTROY;
@@ -46,17 +58,22 @@ uShort timer_destroyEmote(timer* t, uLong ms)
 uShort timer_moveEmote(timer* t, uLong ms)
 {
 	Actor* a = (Actor*)t->userData;
-
+	
 	if (!a)
+	{
+		WARNING("No actor assigned to timer " + pts(t));
 		return TIMER_DESTROY;
-
+	}
+	
 	if (a->mEmoteOffset - 10 < 0)
 	{
 		a->mEmoteOffset = 0;
+		a->AddPositionRectForUpdate();
 		return TIMER_DESTROY;
 	}
 	
 	a->mEmoteOffset -= 10;
+	a->AddPositionRectForUpdate();
 	return TIMER_CONTINUE;
 }
 
@@ -302,7 +319,7 @@ bool Actor::_animate()
 	{
 		mAnimationTimer->interval = img->ForwardCurrentFrameset();
 		
-		// OPTIMIZETODO: Add our rect to the renderer
+		AddPositionRectForUpdate();
 		
 		// if we hit the end of the animation, destroy the timer. 
 		if (mAnimationTimer->interval == ULONG_MAX)
@@ -335,6 +352,8 @@ void Actor::PlayAnimation()
 	{
 		mAnimationTimer->interval = f->delay;
 	}
+	
+	AddPositionRectForUpdate();
 }
 
 void Actor::StopAnimation()
@@ -344,6 +363,8 @@ void Actor::StopAnimation()
 		timers->Remove(mAnimationTimer);
 		mAnimationTimer = NULL;
 	}
+	
+	AddPositionRectForUpdate();
 }
 
 /* 	Based on the current action of our character, change the frameset we are currently playing. 
@@ -409,23 +430,8 @@ void Actor::_syncAvatarFrameset()
 	}
 
 	//TODO: Detect run, check for _RUN_dir, Detect jump, check for _JUMP_dir
-
-/*	switch (GetAction())
-	{
-		case IDLE:
-			if (mAvatar->mLoopStand)
-				mAvatar->GetImage()->Play();
-			else
-				mAvatar->GetImage()->Stop();
-			break;
-		case SIT:
-			if (mAvatar->mLoopSit)
-				mAvatar->GetImage()->Play();
-			else
-				mAvatar->GetImage()->Stop();
-			break;
-		default: break;	
-	}*/
+	
+	AddPositionRectForUpdate();
 }
 
 void Actor::AddToActionBuffer(string data)
@@ -756,6 +762,10 @@ void Actor::UpdateCollisionAndOrigin()
 	
 	mCollisionRects.clear();
 	mCollisionRects.push_back(r);	
+	
+	AddPositionRectForUpdate();
+	
+	// OPTIMIZETODO: Reload shadow image if we got one
 }
 
 void Actor::_checkLoadingAvatar()
@@ -800,7 +810,7 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 	
 	int oldcap = downloader->GetByteCap();
 
-	//rig it so that there's a tighter limit on avatar filesizes
+	//	rig it so that there's a tighter limit on avatar filesizes for this particular actor
 	if (mLimitedAvatarSize)
 		downloader->SetByteCap(MAX_AVATAR_FILESIZE);
 
@@ -831,10 +841,6 @@ void Actor::Render()
 	rect r;
 	
 	_checkLoadingAvatar();
-
-	//if we're not visible, don't render the below stuff
-	if (!mMap->IsRectInCamera( GetBoundingRect() ))
-		return;
 
 	//if we're not in a ghost mode, render a shadow
 	if (!mAvatar || mAvatar->mModifier != Avatar::MOD_GHOST)

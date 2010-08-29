@@ -82,14 +82,14 @@ bool Entity::IsPositionRelativeToScreen()
 }
 
 void Entity::SetPosition(point2d position)
-{
+{		
 	if (mSnapToGrid)
 	{
 		//recalculate and properly snap coordinates to our grid
-		position.x /= 16;
-		position.x = position.x * 16 + 8;
-		position.y /= 16;
-		position.y = position.y * 16;
+		position.x /= 8;
+		position.x = position.x * 8 + 8;
+		position.y /= 8;
+		position.y = position.y * 8;
 	}
 	
 	//If this is the first time we call SetPosition, line up previous with current.
@@ -97,11 +97,36 @@ void Entity::SetPosition(point2d position)
 		mPreviousPosition = position;
 	else
 		mPreviousPosition = mPosition;
-		
-	mPosition = position;	
 
+	AddPositionRectForUpdate(); // Update old position
+	mPosition = position;	
+	AddPositionRectForUpdate(); // Update new position
+	
 	if (mMap)
 		mMap->QueueEntityResort();
+}
+
+//	Will add the bounding rect of this entity to the screen's update manager
+//	Called when the entity moves, is created, deleted, changes state in any (visible) way.
+void Entity::AddPositionRectForUpdate()
+{
+	rect r;
+	
+	if ( mMap && IsVisibleInCamera() )
+	{
+		r = GetBoundingRect();	
+		if (!IsPositionRelativeToScreen())
+			r = mMap->ToScreenPosition( r );
+		screen->AddRect(r);
+	}
+}
+
+void Entity::AddToMap()
+{
+	mMap = game->mMap;
+	game->mMap->AddEntity(this);
+	
+	AddPositionRectForUpdate();
 }
 
 bool Entity::CollidesWith(rect r)
@@ -161,7 +186,7 @@ bool Entity::IsCollidingWithEntity(Entity* e)
 
 void Entity::Render()
 {
-	if (mShowBorder)
+	if (mShowBorder) // Show debugging information 
 	{
 		rect r = GetBoundingRect();
 		
@@ -186,28 +211,32 @@ void Entity::RenderShadow()
 		But, I'm lazy. So enjoy an oval.
 	*/
 
-	rect r = GetBoundingRect();
-	r.x = mPosition.x;
-	r.y = mPosition.y;
+	rect r = GetShadowRect();
 	
 	// if we're based on map position, convert
 	if (!IsPositionRelativeToScreen())
 		r = mMap->ToScreenPosition( r );
 
-	r.w = (r.w / 4) - 1;
-	r.h = r.w / 2;
-	r.y -= r.h / 2 + 1;
-
-	filledEllipseRGBA(Screen::Instance()->Surface(), r.x, r.y,
+	// PROBLEM: Can't figure out a way to do this.. where it remains within the screen rects.
+	filledEllipseRGBA(screen->Surface(), r.x, r.y,
 				 	r.w, r.h, 0, 0, 0, 150);
 
 }
 
 // Get the position of our shadow in rect form
-/*rect Entity::GetShadowRect()
+// Rect is map position, not screen
+rect Entity::GetShadowRect() const
 {
+	rect r = GetBoundingRect();
+	r.x = mPosition.x;
+	r.y = mPosition.y;
 	
-}*/
+	r.w = (r.w / 4) - 1;
+	r.h = r.w / 2;
+	r.y -= r.h / 2 + 1;
+	
+	return r;
+}
 
 void Entity::SetLayer(int l)
 {

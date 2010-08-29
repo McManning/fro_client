@@ -39,12 +39,9 @@ uShort timer_StaticObjectAnimate(timer* t, uLong ms)
 {
 	StaticObject* o = (StaticObject*)t->userData;
 
-	if (o)
-	{
-		if (o->_animate())
-			return TIMER_CONTINUE;
-	}
-	
+	if ( o && o->_animate() )
+		return TIMER_CONTINUE;
+
 	return TIMER_DESTROY;
 }
 
@@ -85,16 +82,11 @@ void StaticObject::Render()
 	{
 		RenderShadow();
 		
-		r = rect( mPosition.x - mOrigin.x, mPosition.y - mOrigin.y, 
-					mImage->Width(), mImage->Height() );
+		r = GetBoundingRect();
 
 		if (!IsPositionRelativeToScreen())
 			r = mMap->ToScreenPosition( r );
 
-/*
-		rect mapScreenRect = mMap->GetScreenPosition();
-		r = rectIntersection(r, mapScreenRect);
-		*/
 		mImage->Render(scr, r.x, r.y);
 	}
 	
@@ -134,6 +126,8 @@ void StaticObject::Rotozoom(double degree, double zoom)
 		
 	img->Rotate(mRotation, mScale, mUseAA);
 	mImage = img;
+	
+	AddPositionRectForUpdate();
 }
 
 void StaticObject::LoadImage(string file)
@@ -207,7 +201,7 @@ bool StaticObject::_animate()
 	{
 		mAnimationTimer->interval = img->ForwardCurrentFrameset();
 		
-		// OPTIMIZETODO: Add our rect to the renderer
+		AddPositionRectForUpdate();
 		
 		// if we hit the end of the animation, destroy the timer. 
 		if (mAnimationTimer->interval == ULONG_MAX)
@@ -240,6 +234,8 @@ void StaticObject::PlayAnimation()
 	{
 		mAnimationTimer->interval = f->delay;
 	}
+	
+	AddPositionRectForUpdate();
 }
 
 void StaticObject::StopAnimation()
@@ -249,5 +245,7 @@ void StaticObject::StopAnimation()
 		timers->Remove(mAnimationTimer);
 		mAnimationTimer = NULL;
 	}
+	
+	AddPositionRectForUpdate();
 }
 

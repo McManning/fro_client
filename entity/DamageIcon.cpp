@@ -22,6 +22,7 @@ uShort timer_DamageIconThink(timer* t, uLong ms)
 		return TIMER_DESTROY;	
 		
 	d->mOrigin.y++;
+	d->AddPositionRectForUpdate();
 	
 	return TIMER_CONTINUE;
 }

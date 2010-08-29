@@ -13,6 +13,7 @@ class ChatBubble : public Entity
 	
 	void Render();
 	rect GetBoundingRect();
+	void UpdatePosition();
 	
 	void Create(string& msg);
 	

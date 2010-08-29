@@ -76,12 +76,18 @@ class Entity
 	bool IsVisible() { return mVisible; };
 	
 	bool IsPositionRelativeToScreen();
+	
+	void AddPositionRectForUpdate();
 
+	void AddToMap();
+	
 	//Return a rectangle that marks this entities bounds. This can be a collision rect, or it can be the bounds of 
 	//the entities renderable image.  just depends on the inherited entity in question.
 	//Relative to map coordinates.
 	virtual rect GetBoundingRect() = 0;
 
+	rect GetShadowRect() const;
+	
 	entityType mType;
 
 	string mId; //classname of this entity
