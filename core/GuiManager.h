@@ -127,6 +127,8 @@ class GuiManager : public Widget
 	// Replace default cursor with another image
 	int mCustomCursorSourceY;
 	
+	bool mAppInputFocus;
+	
   private:
 	rect mMousePosition;
 	rect mLastMousePosition;

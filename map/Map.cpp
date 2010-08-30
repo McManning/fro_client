@@ -324,7 +324,7 @@ void Map::SetCameraPosition(rect r, bool centered)
 	SetCameraPosition(p, centered);
 }
 
-rect Map::GetCameraPosition() const
+rect Map::GetCameraPosition()
 {
 	return rect(mCameraPosition.x, mCameraPosition.y, Width(), Height());
 }
@@ -335,6 +335,11 @@ void Map::OffsetCamera(sShort offsetX, sShort offsetY)
 	mCameraPosition.y += offsetY;
 	
 	AddCameraRectForUpdate();
+}
+
+void Map::AddCameraRectForUpdate()
+{
+	screen->AddRect(GetScreenPosition());
 }
 
 void Map::OffsetCamera(point2d p)

@@ -121,14 +121,6 @@ void Entity::AddPositionRectForUpdate()
 	}
 }
 
-void Entity::AddToMap()
-{
-	mMap = game->mMap;
-	game->mMap->AddEntity(this);
-	
-	AddPositionRectForUpdate();
-}
-
 bool Entity::CollidesWith(rect r)
 {
 	// Screen relative entities can't have collision info
@@ -225,7 +217,7 @@ void Entity::RenderShadow()
 
 // Get the position of our shadow in rect form
 // Rect is map position, not screen
-rect Entity::GetShadowRect() const
+rect Entity::GetShadowRect()
 {
 	rect r = GetBoundingRect();
 	r.x = mPosition.x;
@@ -371,7 +363,7 @@ int Entity::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "solid") lua_pushboolean( ls, IsSolid() );
 	else if (prop == "shadow") lua_pushboolean( ls, mShadow );
 	else if (prop == "layer") lua_pushnumber( ls, GetLayer() );
-	else if (prop == "type") lua_pushstring( ls, GetTypeName().c_str() );
+	else if (prop == "ctype") lua_pushstring( ls, GetTypeName().c_str() );
 	else if (prop == "clickable") lua_pushnumber( ls, mClickRange );
 	else if (prop == "border") lua_pushboolean( ls, mShowBorder );
 	else return 0;

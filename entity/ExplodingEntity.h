@@ -28,7 +28,6 @@ class ExplodingEntity : public Entity
 	
 	Image* mImage;
 	std::vector<explodingEntityParticle> mParticles;
-	timer* mTimer;
 };
 
 #endif //_EXPLODINGENTITY_H_

@@ -4,6 +4,7 @@
 #include "../map/Map.h"
 
 const int MAX_CHAT_BUBBLE_WIDTH = 300;
+const int CHAT_BUBBLE_UPDATE_MS = 10;
 
 uShort timer_destroyChatBubble(timer* t, uLong ms)
 {
@@ -77,6 +78,8 @@ void ChatBubble::Render()
 
 void ChatBubble::UpdatePosition()
 {
+	rect r;
+	
 	// reposition self relative to owner
 	if (mOwner)
 	{

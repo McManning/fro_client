@@ -29,8 +29,8 @@ void TextObject::SetText(string text, int maxWidth)
 
 	rect r = mFont->GetTextRect(text, true, maxWidth);
 
-	Image* img = resman->NewImage(r.w, r.h, color(255,255,255,0), true);
-	
+	Image* img = resman->NewImage(r.w, r.h, color(255,0,255,0), true);
+
 	// Since we used NewImage, gotta do a little slower-rendering to get alpha right,
 	// because SDL is a bitch about RGBA->RGBA
 	mFont->UseAlphaBlending(true);

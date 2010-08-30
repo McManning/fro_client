@@ -22,6 +22,8 @@
 #include "../entity/Avatar.h"
 #include "../core/sound/SoundManager.h"
 
+const int MAX_STAMP_TEXT_LENGTH = 30;
+
 /*	Utility */
 
 void printMessage(string& msg)
@@ -126,9 +128,7 @@ void _stampMapText(int x, int y, int rotation, string& text)
 {
 	if (!game->mMap)
 		return;
-		
-	text = text.substr(0, 40);
-	
+
 	color c;
 	
 	TextObject* to = new TextObject();
@@ -136,10 +136,11 @@ void _stampMapText(int x, int y, int rotation, string& text)
 		to->mMap = game->mMap;
 		to->SetLayer(EntityManager::LAYER_GROUND);
 		to->mMap->AddEntity(to);
-		to->SetFont("", 20);
+		to->SetAA(true);
+		to->SetFont("", 10);
 		to->SetText(text);
 		to->Rotozoom(rotation, 1.0);	
-		to->SetPosition( point2d(x, y) );
+		to->SetPosition( point2d(x - to->GetImage()->Width() / 2, y - to->GetImage()->Height() / 2) );
 	
 	// 5 minutes until the stamp cleans itself up
 	timers->Add("stamp", 5*60*1000, false, timer_destroyMapStamp, NULL, to);
@@ -213,6 +214,9 @@ void netSendStamp(string text) //stp x y rotation color $text
 	//text = stripCodes(text);
 	point2d p = game->mPlayer->GetPosition();
 	sShort rotation = rnd2(-15, 15);
+	
+	if (text.length() > MAX_STAMP_TEXT_LENGTH)
+		text.erase(MAX_STAMP_TEXT_LENGTH);
 	
 	_stampMapText(p.x, p.y, rotation, text);
 

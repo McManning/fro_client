@@ -104,7 +104,7 @@ int entity_FindAllById(lua_State* ls)
 	return 1;
 }
 
-// .FindByName("name") returns cptr to entity, 0 if it doesn't exist.
+// .FindByName("name") returns cptr to entity, nil if it doesn't exist.
 int entity_FindByName(lua_State* ls) 
 {
 	PRINT("entity_FindByName");

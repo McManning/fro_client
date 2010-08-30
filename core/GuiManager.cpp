@@ -644,8 +644,26 @@ void GuiManager::Process()
 //	PRINT("Pump");
 	//If we're focused, don't worry about getting their attention
 	if (SDL_GetAppState() & SDL_APPINPUTFOCUS)
+	{
 		mGetUserAttention = false;
-
+		
+		if (!mAppInputFocus)
+		{
+			mAppInputFocus = true;
+			
+			/* HACK: 
+				http://bugzilla.libsdl.org/show_bug.cgi?id=659
+				SDL does not like alt+tab on Windows, it sticks the alt modifier.
+			*/ 
+			SDL_SetModState(KMOD_NONE);
+		}
+	}
+	else
+	{
+		if (mAppInputFocus)
+			mAppInputFocus = false;
+	}
+	
 	//Poll and distribute events from SDL
 	SDL_Event event;
 	rect r;

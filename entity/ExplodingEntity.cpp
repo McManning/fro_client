@@ -33,7 +33,7 @@ ExplodingEntity::ExplodingEntity(Map* map, Image* img, point2d position)
 	mMap = map;
 	mLayer = EntityManager::LAYER_SKY;
 	
-	mTimer = timers->Add("boom", 10, false,
+	timers->Add("boom", 10, false,
 						timer_explodeImage,
 						NULL,
 						this);
@@ -45,13 +45,9 @@ ExplodingEntity::ExplodingEntity(Map* map, Image* img, point2d position)
 
 ExplodingEntity::~ExplodingEntity()
 {
-	mTimer->userData = NULL; //so the erase callback won't try to delete us
-	timers->Remove(mTimer);
-
 	mParticles.clear();
 		
 	resman->Unload(mImage);
-
 }
 
 rect ExplodingEntity::GetBoundingRect()

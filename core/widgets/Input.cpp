@@ -9,6 +9,7 @@
 #include "../FontManager.h"
 #include "../ResourceManager.h"
 #include "../io/FileIO.h"
+#include "Console.h"
 
 const int MAX_PASSWORD_SYMBOLS = 10;
 
@@ -441,7 +442,6 @@ void Input::Event(SDL_Event* event)
 
 			if (!mReadOnly && HasKeyFocus())
 			{
-				
 				if (event->key.keysym.mod & KMOD_CTRL) //handle ctrl+? shortcuts
 				{
 					switch (event->key.keysym.sym) 

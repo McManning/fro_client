@@ -65,7 +65,9 @@ class Map : public Frame, public EntityManager
 	void SetCameraPosition(rect r, bool centered);
 	
 	/*	Return the rect that contains all renderable area in a map */
-	rect GetCameraPosition() const;
+	rect GetCameraPosition();
+	
+	void AddCameraRectForUpdate();
 		
 	void OffsetCamera(sShort offsetX, sShort offsetY);
 	void OffsetCamera(point2d p);

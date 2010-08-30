@@ -14,6 +14,8 @@
 
 Console* console;
 
+const int MAX_CONSOLE_INPUT_LENGTH = 256;
+
 void callback_consoleInput(Input* i)
 {
 	Console* c = (Console*)(i->GetParent());
@@ -75,7 +77,7 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 
 	if (hasInput)
 	{			
-		mInput = new Input(this, "input", rect(26,0,0,20), "", 120, true, callback_consoleInput);
+		mInput = new Input(this, "input", rect(26,0,0,20), "", MAX_CONSOLE_INPUT_LENGTH, true, callback_consoleInput);
 		mInput->SetImage(imageFile + "input.png");
 		mInput->mHighlightBackground = HIGHLIGHT_COLOR;
 		mInput->mFontColor = color(255,255,255);

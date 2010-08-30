@@ -22,24 +22,12 @@ SDL_Image::~SDL_Image()
 	{
 		WARNING("Deleting SDL_Image [" + filename + "] With " + its(refCount) + " References!");
 	}
-	
-	PRINT("Erasing SDL_Image " + filename);
 
 	int a, b;
 	for (a = 0; a < framesets.size(); a++)
 	{
 		for (b = 0; b < framesets.at(a).frames.size(); b++)
 		{
-			PRINT("Erasing Frame: framesets.at(" + its(a) + ").frames.at(" + its(b) + ")");
-			
-			PRINT("Surface: " + pts(framesets.at(a).frames.at(b).surf));
-			PRINT("Key: " + pts(framesets.at(a).frames.at(b).key));
-			
-			if (framesets.at(a).frames.at(b).key)
-			{
-				PRINT("KValue: " + string(framesets.at(a).frames.at(b).key));
-			}
-			
 			if ( framesets.at(a).frames.at(b).surf )
 				SDL_FreeSurface( framesets.at(a).frames.at(b).surf );
 

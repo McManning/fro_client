@@ -767,10 +767,7 @@ void GameManager::Process(uLong ms)
 			
 		mMap->MoveToBottom();
 	}
-	
-	if (gui->hasKeyFocus == gui || gui->hasKeyFocus == NULL)
-		gui->hasKeyFocus = mChat->mInput;
-	
+
 	MoveToBottom(); //keep game at the bottom of the screen.
 
 	gameProcessProfiler.Stop();
@@ -836,6 +833,9 @@ void GameManager::Event(SDL_Event* event)
 			{
 				ToggleGameMode( (mGameMode == MODE_ACTION) ? MODE_CHAT : MODE_ACTION );
 			}
+		
+			//if (mGameMode == MODE_CHAT && mChat)
+			//	mChat->mInput->SetKeyFocus(true);
 			break;
 		default: break;	
 	}
@@ -1122,9 +1122,9 @@ void GameManager::UpdateAppTitle()
 
 void GameManager::ToggleGameMode(gameMode mode)
 {	
-	if (mode == MODE_DUEL)
+	if (mode == MODE_DUEL && mGameMode != MODE_DUEL)
 		EnableDuelMode();
-	else if (mGameMode == MODE_DUEL) //if we're switching FROM duel
+	else if (mGameMode == MODE_DUEL && mode != MODE_DUEL) //if we're switching FROM duel
 		DisableDuelMode();
 	
 	mGameMode = mode;
@@ -1235,6 +1235,8 @@ void GameManager::EnableDuelMode()
 void GameManager::DisableDuelMode()
 {
 	//show chat, hide duel console, 
+	
+	EndPlayersDuelTurn(); // in case it was disabled during their turn
 	
 	//mDuelConsole->SetVisible(false);
 	ToggleHud(true);

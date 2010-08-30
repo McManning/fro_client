@@ -111,11 +111,11 @@ void Frame::Event(SDL_Event* event)
 	switch (event->type)
 	{
 		case SDL_MOUSEBUTTONDOWN: {
-			if (event->button.button == SDL_BUTTON_LEFT && mSizeable && HasKeyFocus())
+			if (event->button.button == SDL_BUTTON_LEFT && HasKeyFocus())
 			{
 				mDrag.x = event->button.x - mPosition.x;
 				mDrag.y = event->button.y - mPosition.y;
-				if (mDrag.x > mPosition.w - 26
+				if (mSizeable && mDrag.x > mPosition.w - 26
 					&& mDrag.y > mPosition.h - 26) //bottom right corner
 				{
 					mResizing = true;
