@@ -21,10 +21,11 @@ class WorldsViewer : public Frame
 	
 	struct worldInfo
 	{
-		string name;
-		string channel;
+		string title;
+		string id;
 		string description;
 		int usercount;
+		int rating;
 		Image* icon;
 	};
 
@@ -35,12 +36,11 @@ class WorldsViewer : public Frame
 	Button* mRefresh;
 	
 	Image* mDefaultIcon;
-	
-	void RefreshUserCounts();
+
 	void RefreshWorlds();
   private:
 	void _load();
-	uShort _renderSingle(rect r, uShort index);
+	int _renderSingle(rect r, int index);
 };
 
 #endif //_WORLDSVIEWER_H_

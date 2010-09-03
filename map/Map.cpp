@@ -9,7 +9,69 @@
 #include "../game/WorldLoader.h"
 #include "../lua/MapLib.h"
 #include "../interface/AvatarFavoritesDialog.h"
-#include "../interface/RemotePlayerMenu.h"
+
+/*	TODO: Relocate these callbacks for the remote player menu */
+
+void callback_playerMenuBeat(RightClickMenu* m, void* userdata)
+{
+	RemoteActor* ra = (RemoteActor*)userdata;
+	
+	//get random inventory item, beat r->mLinked->mName with it if item != NULL
+	if (!ra || !inventory) return;
+	
+	//Make sure we're not waiting for a beat timer to finish up
+	timer* t = timers->Find("rpbeat");
+	if (t)
+	{
+		int seconds = (t->lastMs + t->interval - gui->GetTick()) / 1000;
+		game->mChat->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
+		return;
+	}
+
+	//if too far, tell them!
+	if (getDistance(game->mPlayer->GetPosition(), ra->GetPosition()) > 100)
+	{
+		game->mChat->AddMessage("\\c900 * You're too far to hit your target!");	
+		return;
+	}
+
+	itemProperties* i = inventory->GetRandom();
+	if (i)
+	{
+		netSendBeat(ra, i->id);
+	}
+	else
+	{
+		game->mChat->AddMessage("\\c900 * You don't have any items to use!");
+	}
+	
+	//limit the number of times they can use the beat command
+	timers->Add("rpbeat", BEAT_INTERVAL_MS, false, NULL, NULL, NULL);
+}
+
+void callback_playerMenuPrivmsg(RightClickMenu* m, void* userdata)
+{
+	RemoteActor* ra = (RemoteActor*)userdata;
+	
+	if (ra)
+		game->GetPrivateChat(ra);
+}
+
+void callback_playerMenuTrade(RightClickMenu* m, void* userdata)
+{
+	RemoteActor* ra = (RemoteActor*)userdata;
+	
+	if (ra)
+		handleOutboundTradeRequest(ra);
+}
+
+void callback_playerMenuToggleBlock(RightClickMenu* m, void* userdata)
+{
+	RemoteActor* ra = (RemoteActor*)userdata;
+	
+	if (ra)
+		ra->SetBlocked(!ra->IsBlocked());
+}
 
 Map::Map() 
 	: Frame(NULL, "", rect())
@@ -142,8 +204,12 @@ void Map::HandleRightClick()
 
 void Map::ClickRemoteActor(RemoteActor* ra)
 {
-	//Console* c = game->GetPrivateChat(ra->mName);
-	new RemotePlayerMenu(this, ra);
+	// Remote Player RCM 
+	RightClickMenu* m = new RightClickMenu();
+		m->AddOption("Beat", callback_playerMenuBeat, ra);
+		m->AddOption("Send PM", callback_playerMenuSendPM, ra);
+		m->AddOption("Send Trade", callback_playerMenuSendTrade, ra);
+		m->AddOption((ra->IsBlocked() ? "Unblock" : "Block", callback_playerMenuToggleBlock, ra);
 }
 
 /*	Will attempt to return the entity directly under the mouse, if it is clickable. */

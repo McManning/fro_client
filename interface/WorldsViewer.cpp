@@ -9,10 +9,25 @@
 
 /* 
 <worlds>
-	<world id="wonderland" channel="#drm.wonderland">Description</world>
-	<world id="library" channel="#drm.wonderland">Description</world>
+	<!-- 
+		title: User-created ID for the world
+		id: Channel ID when we request a connection to the world
+		rate: Rating of the map as voted by its users (can vote while on a map)
+		users: Current online users, with accuracy of around 10min or so, depending on how often users phone home
+		description: Whatever the user wrote to describe his world. It should also force embed a Created by Username\n in it
+					with some different color
+	-->
+	<world title="The Library" id="library" rate="5" users="2">Description</world>
 	...
 </worlds>
+
+	TODO: A way to click & join.
+		Can either grab mouse position on a click within this widget and calculate the infobar we're current residing..
+		or make each bar its own widget
+			Good: Position info done for us when updating the screen
+			Bad: have to manually toggle visibility for the widgets, change positions on scroller update, 
+				
+
 */
 int callback_worldsXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 {
@@ -25,10 +40,11 @@ int callback_worldsXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 	if (id == "world")
 	{
 		WorldsViewer::worldInfo i;
-		i.channel = xf->GetParamString(e, "channel");
-		i.name = xf->GetParamString(e, "id");
+		i.title = xf->GetParamString(e, "title");
+		i.id = xf->GetParamString(e, "id");
+		i.usercount = xf->GetParamInt(e, "users");
+		i.rating = xf->GetParamInt(e, "rate");
 		i.description = xf->GetText(e);
-		i.usercount = 0;
 		i.icon = NULL;
 		viewer->mWorlds.push_back(i);
 	}
@@ -55,14 +71,9 @@ void dlCallback_worldsXmlSuccess(downloadData* data)
 		if (xf.Parse(data->userData) != XMLPARSE_SUCCESS)
 			error = "Error while parsing worlds Xml.";
 	}
-	
-	// Now ask the irc server to update us
 	if (viewer)
-	{
-		viewer->RefreshUserCounts();
 		viewer->mRefresh->SetActive(true);
-	}
-	
+
 	removeFile(data->filename);
 	
 	if (!error.empty())
@@ -102,17 +113,6 @@ void dlCallback_worldsXmlFailure(downloadData* data)
 	new MessagePopup("worldserror", "Worlds List Error", error);
 }
 
-void listener_NetChannelCount(MessageListener* ml, MessageData& md, void* sender)
-{
-	WorldsViewer* viewer = (WorldsViewer*)ml->userdata;
-	if (viewer)
-	{
-		console->AddMessage("Channel: " + md.ReadString("channel") 
-							+ " Count " + its(md.ReadInt("count")));
-		viewer->UpdateChannelCount(md.ReadString("channel"), md.ReadInt("count"));
-	}
-}
-
 void callback_RefreshWorlds(Button* b)
 {
 	WorldsViewer* viewer = (WorldsViewer*)b->GetParent();
@@ -128,12 +128,10 @@ WorldsViewer::WorldsViewer() :
 	mDefaultIcon = NULL; //resman->LoadImg("assets/world_unknown.png");
 	
 	mListFrame = new Frame(this, "", rect(5, 30, Width()-30, Height()-60));
-
 	mRefresh = new Button(this, "", rect(0,0,20,20), "", NULL);
 		mRefresh->mHoverText = "Refresh List";
 		mRefresh->SetImage("assets/buttons/refresh.png");
 		mRefresh->onClickCallback = callback_RefreshWorlds;
-		
 	int max = mWorlds.size()-1;
 	if (max < 0)
 		max = 0;
@@ -141,9 +139,7 @@ WorldsViewer::WorldsViewer() :
 								VERTICAL, max, 1, 0, NULL);
 	
 	ResizeChildren(); //get them into position
-	
-	messenger.AddListener("NET_CHANNEL_COUNT", listener_NetChannelCount, NULL, this);
-	
+
 	RefreshWorlds();
 }
 
@@ -153,8 +149,7 @@ WorldsViewer::~WorldsViewer()
 		resman->Unload(mWorlds.at(i).icon);	
 
 	resman->Unload(mDefaultIcon);
-	
-	messenger.RemoveListener("NET_CHANNEL_COUNT", this);
+
 	downloader->NullMatchingUserData(this);
 }
 
@@ -206,39 +201,14 @@ void WorldsViewer::RefreshWorlds()
 								true, true);
 }
 
-void WorldsViewer::UpdateChannelCount(string channel, int count)
-{
-	for (int i = 0; i < mWorlds.size(); ++i)
-	{
-		if (mWorlds.at(i).channel == channel)
-		{
-			mWorlds.at(i).usercount = count;
-			return;
-		}
-	}
-}
-
-void WorldsViewer::RefreshUserCounts()
-{
-	// Construct a LIST command for all channels
-	if (game->mNet && game->mNet->IsConnected())
-	{
-		string channels;
-		for (int i = 0; i < mWorlds.size(); ++i)
-			channels += mWorlds.at(i).channel + ",";
-			
-		console->AddMessage("LIST " + channels);
-		game->mNet->Rawmsg("LIST " + channels);	
-	}
-}
-
 const int ICON_SIZE = 30;
 
 // Returns the y position of where to render the next achievement under this
-uShort WorldsViewer::_renderSingle(rect r, uShort index)
+int WorldsViewer::_renderSingle(rect r, int index)
 {
 	Image* scr = Screen::Instance();
-
+	string msg;
+	
 	//Render background color
 	if (index % 2)
 		scr->DrawRect( r, color(200,200,200) );
@@ -257,8 +227,9 @@ uShort WorldsViewer::_renderSingle(rect r, uShort index)
 	color c;
 	if (titleFont)
 	{
-		string msg = mWorlds.at(index).name + " \\c333(Users: ";
-		msg += its(mWorlds.at(index).usercount);
+		// TODO: Render stars or something, instead of text for the rating
+		msg = mWorlds.at(index).title + " \\c333(Rating: ";
+		msg += its(mWorlds.at(index).rating);
 		msg += ")";
 			
 		titleFont->Render( scr, r.x + ICON_SIZE + 10, y, msg, color() );
@@ -275,12 +246,15 @@ uShort WorldsViewer::_renderSingle(rect r, uShort index)
 	}
 	
 	// Render number of users, if we know it
-	/*if (descFont)
+	if (descFont)
 	{
+		msg = mWorlds.at(index).name + " \\c333(Users: ";
+		msg += its(mWorlds.at(index).usercount);
+		msg += ")";
 		
 		descFont->Render( scr, r.x + ICON_SIZE + 10, y, msg, color(100, 100, 100) );
 		y += descFont->GetHeight();
-	}*/
+	}
 	
 	return y + 5;
 }

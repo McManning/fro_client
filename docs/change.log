@@ -1181,5 +1181,12 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Changed max content length of a single chat message (and general console input) (Now about 256chars)
 - Fixed bug where players duel choices still showed up while the duel ended with it still up
 
+(Commit to revision 48)
 
-
+100831
+- Replaced RemotePlayerMenu with a RightClickMenu widget
+	(./interface/RemotePlayerMenu.h/cpp obsolete)
+- Changed XML format of WorldsViewer.
+- Removed IRC server usercount query from WorldsViewer. Most servers refuse to respond.
+	usercount will now be sent from the master server, based on user information 
+	provided by constant user check-ins from the client. 
