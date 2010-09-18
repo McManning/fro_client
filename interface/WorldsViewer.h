@@ -14,9 +14,7 @@ class WorldsViewer : public Frame
 	~WorldsViewer();
 	
 	void Render();
-	void SetPosition(rect r);
-	void ResizeChildren();
-	
+
 	void UpdateChannelCount(string channel, int count);
 	
 	struct worldInfo
@@ -34,10 +32,21 @@ class WorldsViewer : public Frame
 	Frame* mListFrame;
 	Scrollbar* mScroller;
 	Button* mRefresh;
+	Button* mOfficialList;
+	Button* mPersonalsList;
 	
 	Image* mDefaultIcon;
 
-	void RefreshWorlds();
+	void RefreshWorlds(int type);
+	int mCurrentView; 
+	
+	enum 
+	{
+		VIEW_OFFICIAL = 1,
+		VIEW_PERSONAL,
+		VIEW_FAVORITES
+	};
+	
   private:
 	void _load();
 	int _renderSingle(rect r, int index);

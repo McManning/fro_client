@@ -4,11 +4,16 @@
 #include "../entity/LocalActor.h"
 #include "../core/widgets/Input.h"
 #include "../core/widgets/OpenUrl.h"
+#include "../core/widgets/RightClickMenu.h"
 #include "../core/io/Crypt.h"
 #include "../game/GameManager.h"
 #include "../game/WorldLoader.h"
+#include "../game/IrcNetListeners.h"
 #include "../lua/MapLib.h"
 #include "../interface/AvatarFavoritesDialog.h"
+#include "../interface/Inventory.h"
+#include "../interface/ItemTrade.h"
+
 
 /*	TODO: Relocate these callbacks for the remote player menu */
 
@@ -46,7 +51,7 @@ void callback_playerMenuBeat(RightClickMenu* m, void* userdata)
 	}
 	
 	//limit the number of times they can use the beat command
-	timers->Add("rpbeat", BEAT_INTERVAL_MS, false, NULL, NULL, NULL);
+	timers->Add("rpbeat", 10 * 1000, false, NULL, NULL, NULL);
 }
 
 void callback_playerMenuPrivmsg(RightClickMenu* m, void* userdata)
@@ -54,7 +59,7 @@ void callback_playerMenuPrivmsg(RightClickMenu* m, void* userdata)
 	RemoteActor* ra = (RemoteActor*)userdata;
 	
 	if (ra)
-		game->GetPrivateChat(ra);
+		game->GetPrivateChat(ra->mName);
 }
 
 void callback_playerMenuTrade(RightClickMenu* m, void* userdata)
@@ -62,7 +67,7 @@ void callback_playerMenuTrade(RightClickMenu* m, void* userdata)
 	RemoteActor* ra = (RemoteActor*)userdata;
 	
 	if (ra)
-		handleOutboundTradeRequest(ra);
+		handleOutboundTradeRequest(ra->mName);
 }
 
 void callback_playerMenuToggleBlock(RightClickMenu* m, void* userdata)
@@ -207,9 +212,9 @@ void Map::ClickRemoteActor(RemoteActor* ra)
 	// Remote Player RCM 
 	RightClickMenu* m = new RightClickMenu();
 		m->AddOption("Beat", callback_playerMenuBeat, ra);
-		m->AddOption("Send PM", callback_playerMenuSendPM, ra);
-		m->AddOption("Send Trade", callback_playerMenuSendTrade, ra);
-		m->AddOption((ra->IsBlocked() ? "Unblock" : "Block", callback_playerMenuToggleBlock, ra);
+		m->AddOption("Send PM", callback_playerMenuPrivmsg, ra);
+		m->AddOption("Send Trade", callback_playerMenuTrade, ra);
+		m->AddOption((ra->IsBlocked()) ? "Unblock" : "Block", callback_playerMenuToggleBlock, ra);
 }
 
 /*	Will attempt to return the entity directly under the mouse, if it is clickable. */

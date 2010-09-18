@@ -97,6 +97,9 @@ class GameManager : public Frame
 	void EnableDuelMode();
 	void DisableDuelMode();
 	bool IsInDuel();
+	
+	void HideChat();
+	void ShowChat();
 
   private:
 	void _buildHud();

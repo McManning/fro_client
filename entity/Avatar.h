@@ -55,6 +55,7 @@ class Avatar
 	Image* mDisplayedImage; //the version we show, if different from mImage
 	Image* mImage; //the original, loaded-from-file version
 	string mId;
+	string mError;
 	
 	//Properties that will be (de)serialized
 	string mUrl;

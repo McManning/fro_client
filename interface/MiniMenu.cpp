@@ -48,8 +48,8 @@ MiniMenu::MiniMenu()
 	b = new Button(this, "", r, "Options", callback_MiniMenuOptions);
 	r.y += 25;
 
-	b = new Button(this, "", r, "Back To Login", callback_MiniMenuToLogin);
-	r.y += 25;
+	//b = new Button(this, "", r, "Back To Login", callback_MiniMenuToLogin);
+	//r.y += 25;
 
 	//b = new Button(this, "", r, "Toggle Console", callback_MiniMenuToggleConsole);
 	//r.y += 25;

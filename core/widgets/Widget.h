@@ -121,9 +121,8 @@ class Widget
 	
 	void SetKeyFocus(bool b = true);
 	
-	bool Add(Widget* child);
-	
-	bool Remove(Widget* child, bool deleteClass);
+	virtual bool Add(Widget* child);
+	virtual bool Remove(Widget* child, bool deleteClass);
 	
 	/*	Deep searching method. Allows us to grab Objects from the 
 		children of our childrens children
@@ -164,6 +163,7 @@ class Widget
 	uShort mType; //what kind of widget
 	
 	bool mSortable;
+	bool mCanSortChildren;
 	
 	string mHoverText;
 	uShort mHoverDelay;

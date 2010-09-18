@@ -12,6 +12,7 @@ Widget::Widget()
 	mVisible = true;
 	mActive = true;
 	mSortable = true;
+	mCanSortChildren = true;
 	mTemporary = false;
 	mConstrainChildrenToRect = true;
 	mUsesImageOffsets = true;
@@ -122,7 +123,7 @@ Widget* Widget::At(uShort i)
 
 void Widget::MoveToTop()
 {
-	if (!mParent || mParent->mChildren.empty() || !mSortable) 
+	if (!mParent || mParent->mChildren.empty() || !mSortable || !mParent->mCanSortChildren) 
 		return;
 		
 	//if we're already at top, don't do the equations below
@@ -143,7 +144,7 @@ void Widget::MoveToTop()
 
 void Widget::MoveToBottom()
 {
-	if (!mParent || !mSortable) 
+	if (!mParent || !mSortable || !mParent->mCanSortChildren) 
 		return;
 		
 	ASSERT( !mParent->mChildren.empty() );

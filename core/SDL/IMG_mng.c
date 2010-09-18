@@ -397,6 +397,8 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 				if (IHDR_position == 0)
 				{
 					dbgout("IMG_mng Zero IHDR_position\n");	fflush(stdout);
+					count = 0;
+					goto done;
 				}
 				else
 				{

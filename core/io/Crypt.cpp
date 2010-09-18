@@ -1,29 +1,17 @@
 
 #include "Crypt.h"
 
-/*static const string base64_chars = 
-             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-             "abcdefghijklmnopqrstuvwxyz"
-             "0123456789+/"; */
-			 
-static const string base64_chars =
-			 "qirxhpblmcodjngwtfzukveysa"
-			 "ASYEVKUZFTWGNJDOCMLBPHXRIQ"
- 			 "+-5478129630";
-
-#define CYPHER_END '.'
-			 
              //WHXYEVKRIGNJDQMLBPASOCUZFT
 			 //ASYEVKUZFTWGNJDOCMLBPHXRIQ
 			 //qirxhpblmcodjngwtfzukveysa
 			 //jnBPR52!)4gKASO$%qil7N+MLzxd39mIGUwc&^~ukvJD{:|oQ?}]-ysa*fe#Chp(@*rtb
 
-static inline bool is_base64(unsigned char c) 
+static inline bool is_base64(unsigned char c, const string& charset) 
 {
-  return (base64_chars.find(c) != string::npos);
+  return (charset.find(c) != string::npos);
 }
 
-string base64_encode(const char* bytes_to_encode, int in_len) 
+string base64_encode(const char* bytes_to_encode, int in_len, const string& charset, char endbyte) 
 {
   string ret;
   int i = 0;
@@ -40,7 +28,7 @@ string base64_encode(const char* bytes_to_encode, int in_len)
       char_array_4[3] = char_array_3[2] & 0x3f;
 
       for(i = 0; (i <4) ; i++)
-        ret += base64_chars[char_array_4[i]];
+        ret += charset[char_array_4[i]];
       i = 0;
     }
   }
@@ -56,10 +44,10 @@ string base64_encode(const char* bytes_to_encode, int in_len)
     char_array_4[3] = char_array_3[2] & 0x3f;
 
     for (j = 0; (j < i + 1); j++)
-      ret += base64_chars[char_array_4[j]];
+      ret += charset[char_array_4[j]];
 
     while((i++ < 3))
-      ret += CYPHER_END;
+      ret += endbyte;
 
   }
 
@@ -67,7 +55,7 @@ string base64_encode(const char* bytes_to_encode, int in_len)
 
 }
 
-string base64_decode(const char* encoded_string, int in_len) 
+string base64_decode(const char* encoded_string, int in_len, const string& charset, char endbyte) 
 {
   int i = 0;
   int j = 0;
@@ -75,11 +63,11 @@ string base64_decode(const char* encoded_string, int in_len)
   unsigned char char_array_4[4], char_array_3[3];
   string ret;
 
-  while (in_len-- && ( encoded_string[in_] != CYPHER_END) && is_base64(encoded_string[in_])) {
+  while (in_len-- && ( encoded_string[in_] != endbyte) && is_base64(encoded_string[in_], charset)) {
     char_array_4[i++] = encoded_string[in_]; in_++;
     if (i ==4) {
       for (i = 0; i <4; i++)
-        char_array_4[i] = base64_chars.find(char_array_4[i]);
+        char_array_4[i] = charset.find(char_array_4[i]);
 
       char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
       char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
@@ -96,7 +84,7 @@ string base64_decode(const char* encoded_string, int in_len)
       char_array_4[j] = 0;
 
     for (j = 0; j <4; j++)
-      char_array_4[j] = base64_chars.find(char_array_4[j]);
+      char_array_4[j] = charset.find(char_array_4[j]);
 
     char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
     char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
@@ -152,3 +140,44 @@ string makePassword(string a, string b)
 	return base64_encode(a.c_str(), a.length());
 }
 
+/* 
+	Encrypt/Decrypt algorithms to work with a similar PHP function set
+*/
+
+void CPHP_Encrypt(string& s, const string& key) 
+{
+	string result;
+	int len = s.length();
+	char c, keyc;
+	
+	for (int i = 0; i < len; ++i) 
+	{
+		c = s.at(i);
+		keyc = key.at( (i % key.length()) - 1 );
+		c = c + keyc;
+		result += c;
+	}
+
+	s = base64_encode(result.c_str(), result.length(), 
+						base64_generic, '=');
+}
+
+void CPHP_Decrypt(string& s, const string& key) 
+{
+	string result;
+	int len = s.length();
+	char c, keyc;
+
+	s = base64_decode(s.c_str(), s.length(), 
+						base64_generic, '=');
+
+	for (int i = 0; i < len; ++i) 
+	{
+		c = s.at(i);
+		keyc = key.at( (i % key.length()) - 1 );
+		c = c - keyc;
+		result += c;
+	}
+
+	s = result;
+}

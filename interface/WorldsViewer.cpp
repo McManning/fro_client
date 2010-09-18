@@ -117,30 +117,48 @@ void callback_RefreshWorlds(Button* b)
 {
 	WorldsViewer* viewer = (WorldsViewer*)b->GetParent();
 	if (viewer)
-		viewer->RefreshWorlds();
+		viewer->RefreshWorlds(viewer->mCurrentView);
+}
+
+void callback_LoadOffical(Button* b)
+{
+	WorldsViewer* viewer = (WorldsViewer*)b->GetParent();
+	if (viewer)
+		viewer->RefreshWorlds(WorldsViewer::VIEW_OFFICIAL);
+}
+
+void callback_LoadPersonals(Button* b)
+{
+	WorldsViewer* viewer = (WorldsViewer*)b->GetParent();
+	if (viewer)
+		viewer->RefreshWorlds(WorldsViewer::VIEW_PERSONAL);
 }
 
 WorldsViewer::WorldsViewer() :
-	Frame(gui, "worldsviewer", rect(0, 0, 500, 400), "Worlds Viewer", true, true, true, true)
+	Frame(gui, "worldsviewer", rect(0, 0, 500, 400), "[INDEV] Worlds Viewer", true, false, true, true)
 {
 	Center();
 
 	mDefaultIcon = NULL; //resman->LoadImg("assets/world_unknown.png");
 	
-	mListFrame = new Frame(this, "", rect(5, 30, Width()-30, Height()-60));
-	mRefresh = new Button(this, "", rect(0,0,20,20), "", NULL);
+	mOfficialList = new Button(this, "", rect(5, 30, 70, 20), "Official", NULL);
+		mOfficialList->onClickCallback = callback_LoadOffical;
+	mPersonalsList = new Button(this, "", rect(80, 30, 70, 20), "Personals", NULL);
+		mPersonalsList->onClickCallback = callback_LoadPersonals;
+	//mFavoritesList = new Button(this, "Favorites", rect(0,0,20,20), "", NULL);
+	
+	mListFrame = new Frame(this, "", rect(5, 55, Width()-30, Height()-85));
+	mRefresh = new Button(this, "", rect(5, Height() - 25, 20, 20), "", NULL);
 		mRefresh->mHoverText = "Refresh List";
 		mRefresh->SetImage("assets/buttons/refresh.png");
 		mRefresh->onClickCallback = callback_RefreshWorlds;
-	int max = mWorlds.size()-1;
-	if (max < 0)
-		max = 0;
+
 	mScroller = new Scrollbar(this, "", rect(5+mListFrame->Width(), 30, 20, mListFrame->Height()), 
-								VERTICAL, max, 1, 0, NULL);
+								VERTICAL, 0, 1, 0, NULL);
 	
 	ResizeChildren(); //get them into position
 
-	RefreshWorlds();
+	RefreshWorlds(VIEW_OFFICIAL);
 }
 
 WorldsViewer::~WorldsViewer()
@@ -153,12 +171,18 @@ WorldsViewer::~WorldsViewer()
 	downloader->NullMatchingUserData(this);
 }
 
-void WorldsViewer::RefreshWorlds()
+void WorldsViewer::RefreshWorlds(int type)
 {
 	// Don't let them repeat the download over and over
 //	if (downloader->CountMatchingUserData(this) > 0)
 //		return;
+
+	// Don't let them refresh if it's already refreshing
+	if (!mRefresh->IsActive())
+		return;
+
 	mWorlds.clear();
+	mCurrentView = type;
 	
 	mRefresh->SetActive(false);
 	
@@ -184,15 +208,15 @@ void WorldsViewer::RefreshWorlds()
 		FATAL("Invalid master address");
 	}
 
-	//generate the request url  MASTER_URL?list=1&loc=worldname&nick=something&user=something&pass=something
-	url += "?list=1";
+	//generate the request url  MASTER_URL?list=TYPE&loc=worldname&nick=something&user=something&pass=something
+	url += "?list=" + its(type);
 	if (game->mMap)
 		url += "&loc=" + htmlSafe(game->mMap->mId);
 	url += "&nick=" + htmlSafe(game->mPlayer->mName);
 	
 	if (!game->mUsername.empty())
 		url += "&user=" + htmlSafe(game->mUsername) + "&pass=" + htmlSafe(game->mPassword);
-		
+
 	file = DIR_CACHE + string("worlds.xml");
 	downloader->QueueDownload(url, file, 
 								this, 
@@ -248,7 +272,7 @@ int WorldsViewer::_renderSingle(rect r, int index)
 	// Render number of users, if we know it
 	if (descFont)
 	{
-		msg = mWorlds.at(index).name + " \\c333(Users: ";
+		msg = "(Users: ";
 		msg += its(mWorlds.at(index).usercount);
 		msg += ")";
 		
@@ -295,19 +319,3 @@ void WorldsViewer::Render()
 
 	scr->SetClip(oldclip);
 }
-
-void WorldsViewer::ResizeChildren()
-{
-	mListFrame->SetPosition( rect(5, 30, Width()-30, Height()-60) );
-	mScroller->SetPosition( rect(5+mListFrame->Width(), 30, 20, mListFrame->Height()) );
-	mRefresh->SetPosition( rect(5, Height() - 25, 20, 20) );
-	
-	Frame::ResizeChildren();
-}
-
-void WorldsViewer::SetPosition(rect r)
-{
-	if (r.h >= 200 && r.w >= 300)
-		Frame::SetPosition(r);	
-}
-

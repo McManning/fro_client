@@ -94,26 +94,32 @@ void Scrollbar::Render()
 		if (mImage)
 			mImage->RenderVerticalEdge(scr, rect(0, 0, r.w, r.w), r);
 		
-		ss = r.y + ScrollerTop();
-		if (ss < r.y) ss = r.y;
-		if (ss > r.y + r.h - ScrollerSize())
-			ss = r.y + r.h - ScrollerSize();
-
-		if (mTabImage)
-			mTabImage->Render(scr, r.x, ss);
+		if (GetMax() > 0)
+		{
+			ss = r.y + ScrollerTop();
+			if (ss < r.y) ss = r.y;
+			if (ss > r.y + r.h - ScrollerSize())
+				ss = r.y + r.h - ScrollerSize();
+	
+			if (mTabImage)
+				mTabImage->Render(scr, r.x, ss);
+		}
 	}
 	else
 	{
 		if (mImage)
 			mImage->RenderHorizontalEdge(scr, rect(0, 0, r.h, r.h), r);
 			
-		ss = r.x + ScrollerTop();
-		if (ss < r.x) ss = r.x;
-		if (ss > r.x + r.w - ScrollerSize())
-			ss = r.x + r.w - ScrollerSize();
-
-		if (mTabImage)
-			mTabImage->Render(scr, ss, r.y);
+		if (GetMax() > 0)
+		{
+			ss = r.x + ScrollerTop();
+			if (ss < r.x) ss = r.x;
+			if (ss > r.x + r.w - ScrollerSize())
+				ss = r.x + r.w - ScrollerSize();
+	
+			if (mTabImage)
+				mTabImage->Render(scr, ss, r.y);
+		}
 	}
 
 	Widget::Render(); //draws buttons
@@ -124,7 +130,7 @@ void Scrollbar::Event(SDL_Event* event)
 	switch (event->type)
 	{
 		case SDL_MOUSEMOTION: {
-			if (mScrollPress >= 0)
+			if (mScrollPress >= 0 && GetMax() > 0)
 			{
 				int p;
 				if (mOrientation == VERTICAL)
@@ -140,53 +146,56 @@ void Scrollbar::Event(SDL_Event* event)
 		case SDL_MOUSEBUTTONDOWN: {
 			rect r = GetScreenPosition();
 			rect r2;
-			switch (event->button.button)
+			if (GetMax() > 0)
 			{
-				case MOUSE_BUTTON_LEFT:
-					if (mOrientation == VERTICAL)
-					{
-						r2.x = r.x;
-						r2.y = r.y + ScrollerTop();
-						r2.w = r.w;
-						r2.h = ScrollerSize();
-
-						if (event->button.y < r2.y)
-							ScrollUp();
-						else if (event->button.y > r2.y + r2.h)
-							ScrollDown();
+				switch (event->button.button)
+				{
+					case MOUSE_BUTTON_LEFT:
+						if (mOrientation == VERTICAL)
+						{
+							r2.x = r.x;
+							r2.y = r.y + ScrollerTop();
+							r2.w = r.w;
+							r2.h = ScrollerSize();
+	
+							if (event->button.y < r2.y)
+								ScrollUp();
+							else if (event->button.y > r2.y + r2.h)
+								ScrollDown();
+							else
+							{
+								mScrollPress = event->button.y - ScrollerTop() - r.w;
+								if (mValueUp && mValueDown)
+									mScrollPress += mValueDown->Height();
+							}
+						}
 						else
 						{
-							mScrollPress = event->button.y - ScrollerTop() - r.w;
-							if (mValueUp && mValueDown)
-								mScrollPress += mValueDown->Height();
+							r2.x = r.x + ScrollerTop();
+							r2.y = r.y;
+							r2.w = ScrollerSize();
+							r2.h = r.h;
+							if(event->button.x < r2.x)
+								ScrollUp();
+							else if(event->button.x > r2.x + r2.w)
+								ScrollDown();
+							else
+							{
+								mScrollPress = event->button.x - ScrollerTop() - r.h;
+								if (mValueUp && mValueDown)
+									mScrollPress += mValueDown->Width();
+							}
 						}
-					}
-					else
-					{
-						r2.x = r.x + ScrollerTop();
-						r2.y = r.y;
-						r2.w = ScrollerSize();
-						r2.h = r.h;
-						if(event->button.x < r2.x)
-							ScrollUp();
-						else if(event->button.x > r2.x + r2.w)
-							ScrollDown();
-						else
-						{
-							mScrollPress = event->button.x - ScrollerTop() - r.h;
-							if (mValueUp && mValueDown)
-								mScrollPress += mValueDown->Width();
-						}
-					}
-					break;
-				case MOUSE_BUTTON_WHEELUP:
-					ScrollUp();
-					break;
-				case MOUSE_BUTTON_WHEELDOWN:
-					ScrollDown();
-					break;
-				default: break;
-			}
+						break;
+					case MOUSE_BUTTON_WHEELUP:
+						ScrollUp();
+						break;
+					case MOUSE_BUTTON_WHEELDOWN:
+						ScrollDown();
+						break;
+					default: break;
+				}
+			} // if GetMax() > 0
 		} break;
 		case SDL_MOUSEBUTTONUP: {
 			mScrollPress = -1;

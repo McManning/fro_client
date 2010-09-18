@@ -265,7 +265,7 @@ void LocalActor::AvatarError(int err)
 			msg = "\\c900 [Avatar Error] Invalid frame sizes of " + file;
 			break;
 		case Actor::AVYERR_CONVERT:
-			msg = "\\c900 [Avatar Error] Could not convert " + file;
+			msg = "\\c900 [Avatar Error] Could not convert " + file + ". " + mLoadingAvatar->mError;
 			break;
 	}
 	

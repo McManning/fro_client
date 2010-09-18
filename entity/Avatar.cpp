@@ -101,7 +101,14 @@ bool Avatar::Convert()
 	//TODO: Remove this GIF-block when we fix gif crashers
 	if (mImage->mImage->format == IMG_FORMAT_GIF)
 	{
-		console->AddMessage("\\c900* Blocked GIF Avatar");
+		mError = "GIF format not supported";
+		return false;
+	}
+	
+	// jpg, for avies? Are you crazy?
+	if (mImage->mImage->format == IMG_FORMAT_JPG)
+	{
+		mError = "JPG format not supported";
 		return false;
 	}
 	

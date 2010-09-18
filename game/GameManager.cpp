@@ -423,23 +423,12 @@ uShort timer_gameManagerProcess(timer* t, uLong ms)
 
 void callback_showChatbox(Button* b)
 {
-	if (!game->IsInDuel())
-	{
-		b->Die();
-		game->mChat->SetVisible(true);
-		game->ToggleGameMode(GameManager::MODE_CHAT);
-	}
+	game->ShowChat();
 }
 
 void callback_hideChatbox(Button* b)
 {
-	game->mChat->SetVisible(false);
-	Button* b2 = new Button(game, "", rect(game->Width() - 30, game->Height() - 20, 30, 20), 
-							"", callback_showChatbox);
-		b2->mHoverText = "Show Chat";
-		b2->SetImage("assets/buttons/show_chat.png");
-	
-	game->ToggleGameMode(GameManager::MODE_ACTION);
+	game->HideChat();
 }
 
 uShort timer_DestroyInfoBar(timer* t, uLong ms)
@@ -718,6 +707,7 @@ void GameManager::_buildChatbox()
 {
 	mChat = new Console("chat", "", "assets/gui/chat/", "chat_", true, true);
 		mChat->mExit->onClickCallback = callback_hideChatbox;
+		mChat->mExit->mHoverText = "Hide Chat";
 		Add(mChat);
 	
 	TiXmlElement* e = mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
@@ -1189,7 +1179,7 @@ void GameManager::ShowInfoBar(string id, string msg, int duration, string imageF
 
 void GameManager::ToggleHud(bool visible)
 {
-	mChat->SetVisible(visible);
+	//mChat->SetVisible(visible);
 	mHud->SetVisible(visible);
 	
 	//kill any dialogs that may exist
@@ -1224,26 +1214,48 @@ void GameManager::EndPlayersDuelTurn()
 
 void GameManager::EnableDuelMode()
 {
-	//show & clear duel console, hide chat,
-
-	//mDuelConsole->SetVisible(true);
-	//mDuelConsole->Clear();
-	
 	ToggleHud(false);
+	HideChat();
 }
 
 void GameManager::DisableDuelMode()
 {
-	//show chat, hide duel console, 
-	
 	EndPlayersDuelTurn(); // in case it was disabled during their turn
-	
-	//mDuelConsole->SetVisible(false);
+
 	ToggleHud(true);
+	ShowChat();
 }
 
 bool GameManager::IsInDuel()
 {
 	return (mGameMode == MODE_DUEL);
 }
+
+void GameManager::HideChat()
+{
+	mChat->SetVisible(false);
+	
+	if (!Get("ShowChat"))
+	{
+		Button* b2 = new Button(this, "ShowChat", rect(Width() - 30, Height() - 20, 30, 20), 
+								"", callback_showChatbox);
+			b2->mHoverText = "Show Chat";
+			b2->SetImage("assets/buttons/show_chat.png");
+	}
+	
+	if (!IsInDuel())
+		ToggleGameMode(GameManager::MODE_ACTION);
+}
+
+void GameManager::ShowChat()
+{
+	Widget* w = Get("ShowChat");
+	if (w) w->Die();
+	
+	mChat->SetVisible(true);
+		
+	if (!IsInDuel())
+		ToggleGameMode(GameManager::MODE_CHAT);
+}
+
 
