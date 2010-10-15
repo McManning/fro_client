@@ -264,7 +264,14 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 
     unsigned int byte_count  = 0;
     unsigned int frame_count = 0;
+    unsigned int total_bytes = 0;
     unsigned int i;
+
+	// Get filesize
+	i = SDL_RWtell(src);
+	SDL_RWseek(src, 0, SEEK_END);
+    total_bytes = (unsigned int)(SDL_RWtell(src));
+    SDL_RWseek(src, i, SEEK_SET);
 
 	int count = 0;
 	SDL_Frame* frames = NULL;
@@ -336,7 +343,7 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 				*/
 				if (doneWithHeader)
 				{
-					dbgout("IMG_mng Encountered Plte that will be ignored\n");fflush(stdout);
+					dbgout("IMG_mng Encountered PLTE that will be ignored\n");fflush(stdout);
 				}
 				else
 				{
@@ -359,7 +366,7 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 			case MNG_UINT_tRNS:
 				if (doneWithHeader)
 				{
-					dbgout("IMG_mng Encountered Plte that will be ignored\n");fflush(stdout);
+					dbgout("IMG_mng Encountered tRNS that will be ignored\n");fflush(stdout);
 				}
 				else
 				{
@@ -440,13 +447,24 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
                 break;
 
             default:
+				// Keep finding an MNG_UINT_IDAT here, and infinite looping!
+				dbgout("IMG_mng unknown ID: %i byte_count: %i\n", current_chunk.chunk_ID, byte_count);fflush(stdout);
                 break;
         }
     }
-    while(current_chunk.chunk_ID != MNG_UINT_MEND);
-
-	dbgout("IMG_mng \nMEND HIT. Beginning copy\n");fflush(stdout);
-
+    while(current_chunk.chunk_ID != MNG_UINT_MEND && byte_count <= total_bytes);
+    
+    // if we didn't hit an MEND, consider this a failed half-loaded image
+    if (current_chunk.chunk_ID != MNG_UINT_MEND)
+    {
+    	count = 0;
+    	dbgout("IMG_mng \nNO MEND. Failing (Total: %i)\n", total_bytes);fflush(stdout);
+	}
+	else
+	{
+		dbgout("IMG_mng \nMEND HIT. Beginning copy\n");fflush(stdout);
+	}
+	
 done:
 	if (count < 1 || !frames)
 	{

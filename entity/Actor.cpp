@@ -731,6 +731,7 @@ bool Actor::SwapAvatars()
 
 		_syncAvatarFrameset();
 		UpdateCollisionAndOrigin();
+		PlayAnimation();
 		
 		mLoadingAvatar = NULL;
 		return true;
@@ -971,6 +972,8 @@ void Actor::Emote(uShort num)
 		timers->Add("emoMove", EMOTE_MOVE_DELAY, false, timer_moveEmote, NULL, this);
 		mEmoteOffset = mEmoticon->Height();
 	}
+	
+	ClearActiveChatBubble();
 }
 
 void Actor::Jump(byte type)

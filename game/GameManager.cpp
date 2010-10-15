@@ -831,6 +831,9 @@ void GameManager::Event(SDL_Event* event)
 	}
 	
 	Frame::Event(event);
+	
+	if (!gui->hasKeyFocus && mMap)
+		mMap->SetKeyFocus(true);
 }
 
 Console* GameManager::GetPrivateChat(string nick)

@@ -211,9 +211,9 @@ void Map::ClickRemoteActor(RemoteActor* ra)
 {
 	// Remote Player RCM 
 	RightClickMenu* m = new RightClickMenu();
-		m->AddOption("Beat", callback_playerMenuBeat, ra);
+		//m->AddOption("Beat", callback_playerMenuBeat, ra);
 		m->AddOption("Send PM", callback_playerMenuPrivmsg, ra);
-		m->AddOption("Send Trade", callback_playerMenuTrade, ra);
+		//m->AddOption("Send Trade", callback_playerMenuTrade, ra);
 		m->AddOption((ra->IsBlocked()) ? "Unblock" : "Block", callback_playerMenuToggleBlock, ra);
 }
 

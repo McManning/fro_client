@@ -143,7 +143,7 @@ void Avatar::Load()
 	{
 		string file = DIR_CACHE + md5(mUrl.c_str(), mUrl.length());
 		
-		if (!downloader->QueueDownload(mUrl, file, this, callback_avatarDownloadSuccess, callback_avatarDownloadFailure, false))
+		if (!downloader->QueueDownload(mUrl, file, this, callback_avatarDownloadSuccess, callback_avatarDownloadFailure, true))
 		{
 			DEBUGOUT("Could not queue avatar download");
 		}
