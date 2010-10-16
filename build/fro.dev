@@ -1,7 +1,7 @@
 [Project]
 Folder=../entity
 Name=fro
-UnitCount=187
+UnitCount=191
 Type=0
 Ver=1
 ObjFiles=
@@ -20,7 +20,7 @@ ObjectOutput=../w32obj
 OverrideOutput=0
 OverrideOutputName=fro-dbg.exe
 HostApplication=
-Folders=..,../core,../core/io,../core/io/tinyxml,../core/net,../core/SDL,../core/sound,../core/widgets,../entity,../game,../interface,../lua,../map
+Folders=..,../backpack,../core,../core/io,../core/io/tinyxml,../core/net,../core/SDL,../core/sound,../core/widgets,../entity,../game,../interface,../lua,../map
 CommandLine=
 UseCustomMakefile=0
 CustomMakefile=
@@ -474,7 +474,7 @@ BuildCmd=
 Major=1
 Minor=3
 Release=1
-Build=1970
+Build=2021
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1899,9 +1899,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit188]
-FileName=..\game\CheckIn.cpp
+FileName=..\backpack\Backpack.cpp
 CompileCpp=1
-Folder=../game
+Folder=../backpack
 Compile=1
 Link=1
 Priority=1000
@@ -1909,9 +1909,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit189]
-FileName=..\game\CheckIn.h
+FileName=..\backpack\Backpack.h
 CompileCpp=1
-Folder=../game
+Folder=../backpack
 Compile=1
 Link=1
 Priority=1000
@@ -1932,6 +1932,26 @@ BuildCmd=
 FileName=..\game\CollisionBlob.h
 CompileCpp=1
 Folder=../game
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit190]
+FileName=..\backpack\BackpackItem.cpp
+CompileCpp=1
+Folder=../backpack
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit191]
+FileName=..\backpack\BackpackItem.h
+CompileCpp=1
+Folder=../backpack
 Compile=1
 Link=1
 Priority=1000

@@ -46,6 +46,9 @@ Widget::~Widget()
 
 bool Widget::Add(Widget* child) 
 {
+	if (!child)
+		return false;
+		
 	if ( Get(child) != -1 )
 	{
 		FATAL("Cloning");
@@ -62,18 +65,21 @@ bool Widget::Add(Widget* child)
 
 bool Widget::Remove(Widget* child, bool deleteClass)
 {
-	for (int i = 0; i < mChildren.size(); ++i)
+	if (child)
 	{
-		if (mChildren.at(i) == child)
+		for (int i = 0; i < mChildren.size(); ++i)
 		{
-			child->mParent = NULL;
-			if (deleteClass)
-				SAFEDELETE(child);
-			mChildren.erase(mChildren.begin() + i);
-			
-			FlagRender();
-			
-			return true;
+			if (mChildren.at(i) == child)
+			{
+				child->mParent = NULL;
+				if (deleteClass)
+					SAFEDELETE(child);
+				mChildren.erase(mChildren.begin() + i);
+				
+				FlagRender();
+				
+				return true;
+			}
 		}
 	}
 
@@ -104,10 +110,13 @@ Widget* Widget::Get(string id, bool searchDeep, uShort type)
 
 sShort Widget::Get(Widget* w) 
 {
-	for (int i = 0;  i < mChildren.size(); ++i)
+	if (w)
 	{
-		if (mChildren.at(i) == w)
-			return i;
+		for (int i = 0;  i < mChildren.size(); ++i)
+		{
+			if (mChildren.at(i) == w)
+				return i;
+		}
 	}
 
 	return -1;

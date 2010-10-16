@@ -35,6 +35,8 @@
 #include "../interface/WorldsViewer.h"
 #include "../interface/ScreenText.h"
 
+#include "../backpack/Backpack.h"
+
 GameManager* game;
 
 TimeProfiler gameProcessProfiler("Game::Process");
@@ -566,6 +568,7 @@ GameManager::GameManager()
 	
 	ToggleGameMode(MODE_ACTION);
 
+	Backpack* pack = new Backpack();
 }
 
 GameManager::~GameManager()
@@ -685,7 +688,7 @@ void GameManager::_buildHud()
 		b->SetImage("assets/hud/avatars.png");
 	x += 40;
 	sx += 35;
-	
+/*	
 	b = new Button(mHud, "i", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "My Backpack";
 		b->SetImage("assets/hud/inventory.png");
@@ -697,7 +700,7 @@ void GameManager::_buildHud()
 		b->SetImage("assets/hud/party.png");
 	x += 40;
 	sx += 35;
-	
+*/
 	
 	
 	mHud->SetSize(x, 35);

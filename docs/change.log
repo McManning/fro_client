@@ -1224,6 +1224,17 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Fixed input focus issue when a right click menu was closed
 - Fixed bug where emotes would be displayed behind the chat bubble. Now deletes any active bubble.
 	
+(Commit to revision 52)
+
+101015
+- Added some NULL child Add/Remove checks in Widget class
+- Added alpha version of the Backpack, a complete renovation of the inventory system that includes
+	icon based item list, sortability, inherit properties to items, easily manageable item code, 
+	using unique indexes for items that will sync up item information with the master, and will 
+	eventually upload/download backpack contents from the master. 
+- Removed inventory and party buttons from the hud until the backpack is close enough to a release stage.
+- 
+
 	
 WORKING ON:
 
@@ -1231,8 +1242,8 @@ WORKING ON:
 	lists them in order (with no re-sorting) with a scrollbar set to scroll through widgets if 
 	they do not all fit on the screen at once. 
 	
-- If the RCM on remote click goes away, the game loses input focus for movement
 - Hide achievements, inventory, party, etc?
+- Get rid of achievements ... for now. Also party. Remove from menu, add it as a command for testing.
 	
 	
 	
