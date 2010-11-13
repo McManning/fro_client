@@ -870,7 +870,7 @@ void Actor::Render()
 		mAvatar->GetImage()->Render(scr, r.x, r.y);
 	}
 	
-	_doDepthRender();
+	//_doDepthRender();
 
 	//render mName
 	r = GetBoundingRect();

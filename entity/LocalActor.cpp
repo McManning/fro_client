@@ -31,6 +31,7 @@ LocalActor::LocalActor()
 	mNeedsToSendBuffer = false;
 	mShiftDown = false;
 	mManagerCanDeleteMe = false; // GameManager will delete it
+	mCanChangeAvatar = true;
 	mIsLocked = false;
 	mActionBufferSendDelayMs = DEFAULT_ACTION_BUFFER_SEND_DELAY;
 	
@@ -444,6 +445,7 @@ void LocalActor::Warp(point2d pos)
 int LocalActor::LuaSetProp(lua_State* ls, string& prop, int index)
 {
 	if (prop == "locked") mIsLocked = lua_toboolean(ls, index);
+	else if (prop == "avylocked") mCanChangeAvatar = lua_toboolean(ls, index);
 	else if (prop == "bufferdelay") mActionBufferSendDelayMs = (int)lua_tonumber(ls, index);
 	else return Actor::LuaSetProp(ls, prop, index);
 	
@@ -453,6 +455,7 @@ int LocalActor::LuaSetProp(lua_State* ls, string& prop, int index)
 int LocalActor::LuaGetProp(lua_State* ls, string& prop)
 {
 	if (prop == "locked") lua_pushboolean( ls, mIsLocked );
+	else if (prop == "avylocked") lua_pushboolean( ls, mCanChangeAvatar );
 	else if (prop == "bufferdelay") lua_pushnumber( ls, mActionBufferSendDelayMs );
 	else return Actor::LuaGetProp(ls, prop);
 	

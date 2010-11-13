@@ -17,9 +17,6 @@
 
 GuiManager* gui;
 
-TimeProfiler guiProcessProfiler("Gui::Process");
-TimeProfiler guiRenderProfiler("Gui::Render");
-
 uShort timer_GuiThinkInSeconds(timer* t, uLong ms)
 {
 	gui->ThinkInSeconds(ms);
@@ -302,6 +299,7 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 			hasMouseFocus = GrabWidgetUnderXY(this, GetMouseX(), GetMouseY());
 
 			if (hasMouseFocus) hasMouseFocus->Event(event);
+			if (previousMouseFocus) previousMouseFocus->Event(event);
 			_sendToGlobalEventHandlers(event, hasMouseFocus);
 
 		} break;
@@ -493,7 +491,7 @@ bool GuiManager::IsMouseButtonDown(byte button, int* x, int* y) const
 
 void GuiManager::SetMousePosition(int x, int y)
 {
-	screen->AddRect(GetMouseRect()); // Store old rect
+	g_screen->AddRect(GetMouseRect()); // Store old rect
 	
 	mLastMousePosition = mMousePosition;
 	
@@ -502,7 +500,7 @@ void GuiManager::SetMousePosition(int x, int y)
 	mMousePosition.x = x;
 	mMousePosition.y = y;
 
-	screen->AddRect(GetMouseRect()); // Store new rect
+	g_screen->AddRect(GetMouseRect()); // Store new rect
 }
 
 void GuiManager::AddGlobalEventHandler(Widget* w) 
@@ -712,7 +710,8 @@ void GuiManager::Process()
 	_cleanDeletionStack();
 	
 	//make sure console stays on top
-	console->MoveToTop();
+	if (console->IsVisible())
+		console->MoveToTop();
 	
 	//make sure focused window is always on top the other
 	if (GetDemandsFocus())
@@ -730,18 +729,14 @@ void GuiManager::MainLoop()
 	{
 		mTick = SDL_GetTicks();
 
-		guiProcessProfiler.Start();
 		Process();
-		guiProcessProfiler.Stop();
 
 		//Only render if: We've waited enough ticks or there's no wait time, AND the app isn't minimized
 		if ( (mTick >= mNextRenderTick || mNoFpsLimit)
 				&& (SDL_GetAppState() & SDL_APPACTIVE) 
 				&& Screen::Instance()->NeedsUpdate() )
 		{
-			guiRenderProfiler.Start();
 			Render();
-			guiRenderProfiler.Stop();
 		}
 
 		mBeatCounter++;

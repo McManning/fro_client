@@ -491,6 +491,7 @@ void WorldLoader::_syncPlayerWithWorld()
 	p->SetVisible(true);
 	
 	p->mIsLocked = false;
+	p->mCanChangeAvatar = true;
 	game->ToggleGameMode(GameManager::MODE_ACTION);
 	
 	// "Sync" our party with the world by recalculating their stats 

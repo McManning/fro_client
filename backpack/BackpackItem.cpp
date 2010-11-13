@@ -1,10 +1,12 @@
 
 #include "BackpackItem.h"
+//#include "ItemsDatabaseManager.h"
 
 BackpackItem::BackpackItem()
 	: Button(NULL, "", rect(0,0,40,40), "", NULL)
 {
-	SetIndex(-1);
+	mUsesImageOffsets = false;
+	SetIndex(0);
 }
 
 /*	NOTES
@@ -12,7 +14,7 @@ BackpackItem::BackpackItem()
 			Probably assets/backpack/*.png
 		- When the local file does not exist, it will load a assets/backpack/loading.png
 			and download from the master. 
-		- If the item has an index of -1, it will load assets/backpack/empty.png
+		- If the item has an index of 0, it will load assets/backpack/empty.png
 		- Full data will come from a local file. It MIGHT be possible to request it in xml 
 			format from the master, but I'm not sure how effective that would be. 
 			And it would be problematic for trades, if it's slow to respond. 
@@ -20,30 +22,32 @@ BackpackItem::BackpackItem()
 */
 void BackpackItem::SetIndex(int index)
 {
-	// TODO: SOMETHING! I'm thinking loading from a lua database file, or something. Or binary, binary is fine too. 
-	// Maybe there's an ItemManager that has some database loaded into memory, and this can request data, or some shit. 
+	mIndex = index;
 	
-	if (index < 0)
+	if (index == 0)
 	{
-		mIndex = -1;
 		mAmount = 0;
 		mUseType = USE_TYPE_NONE;
-		mTitle.clear();
+		mId.clear();
+		mIconFile = "assets/backpack/empty.png";
 		mDescription.clear();
-	
-		SetImage("assets/backpack/empty.png");
 	}
 	else
 	{
-		// TODO: If it doesn't exist, download, load temp, blah blah blah.
-		SetImage("assets/backpack/" + its(index) + ".png");
-		
-		mIndex = index;
+		//g_itemsDabaseManager.GetDetails(this);
+		// Work on database LATER
+
 		mAmount = 1;
 		mUseType = USE_TYPE_NONE;
-		mTitle = "TODO: This items title!";
-		mDescription = "TODO: this!";
+		mId = "???";
+		mIconFile = "assets/backpack/empty.png";
+		mDescription = "???";
+
+		mAmount = 1;
 	}
+	
+	// TODO: if file doesn't exist, download it
+	SetImage(mIconFile);
 }
 
 void BackpackItem::SetAmount(int amount)
@@ -57,7 +61,7 @@ void BackpackItem::SetAmount(int amount)
 
 void BackpackItem::Erase()
 {
-	SetIndex(-1);
+	SetIndex(0);
 }
 
 /** Sets this item as selected or not. When selected, it should change how it renders.. or some such */

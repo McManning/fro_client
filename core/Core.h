@@ -3,7 +3,6 @@
 #define _CORE_INCLUDE_H_
 
 #include "Common.h"
-#include "TimeProfiler.h"
 #include "MessageManager.h"
 #include "GuiManager.h"
 #include "Image.h"

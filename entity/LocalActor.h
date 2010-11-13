@@ -62,6 +62,8 @@ class LocalActor : public Actor
 	bool mIsLocked; //if true, user input is ignored
 
 	int mActionBufferSendDelayMs;
+	
+	bool mCanChangeAvatar;
 
   private:
 	void _checkInput();

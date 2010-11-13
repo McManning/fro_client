@@ -250,10 +250,21 @@ void AvatarFavorites::UseSelected()
 
 	avatarProperties* ap = mAvatars.at(mList->mSelected);
 	
+	if (!game->mPlayer->mCanChangeAvatar)
+	{
+		game->mChat->AddMessage("\\c900 * You cannot change avatars on this map!");
+		return;
+	}
+	
 	timer* t = timers->Find("avywait");
 	if (t)
 	{
-		int seconds = (t->lastMs + t->interval - gui->GetTick()) / 1000;
+		int seconds = t->lastMs + t->interval - gui->GetTick();
+		if (seconds < 0)
+			seconds = 0;
+		else
+			seconds /= 1000;
+
 		game->mChat->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
 		return;
 	}

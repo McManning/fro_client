@@ -251,6 +251,12 @@ bool isRectInPie(point2d center, int radius, rect r, int minDeg, int maxDeg)
 
 bool areRectsIntersecting(rect a, rect b)
 {
+	return !( b.x > a.x+a.w
+	        || b.x+b.w < a.x
+	        || b.y > a.y+a.h
+	        || b.y+b.h < a.y
+	        );
+/*
     //Go through boxTwos corners and see if they're in boxOne
 
     if (isPointInRect(a, b.x, b.y)) return true;
@@ -265,7 +271,7 @@ bool areRectsIntersecting(rect a, rect b)
     if (isPointInRect(b, a.x + a.w-1, a.y)) return true;
 
     //Didn't match up at all
-    return false;
+    return false;*/
 }
 
 rect rectIntersection(const rect& a, const rect& b)

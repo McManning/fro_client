@@ -95,6 +95,22 @@ class Widget
 	/* Returns true if this widget has mouse focus */
 	bool HasMouseFocus();
 	
+	/**
+		@return true if this widget has GuiManager::GetPreviousMouseXY() in its rect
+		@todo What if this widget moved? Would this return false positives?
+	*/
+	bool HadMouseFocus();
+	/**
+		@return true if the last mouse move event counted as the mouse entering this 
+			widget for the first time
+	*/
+	bool DidMouseEnter();
+	/**
+		@return true if the last mouse move event counted as the mouse leaving this 
+			widget for the first time
+	*/
+	bool DidMouseLeave();
+	
 	/*	Adds our widgets rect to the clipping system to allow it to be
 		redrawn to the screen next render
 	*/

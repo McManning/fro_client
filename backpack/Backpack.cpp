@@ -1,6 +1,17 @@
 
 #include "Backpack.h"
 #include "../core/GuiManager.h"
+#include "../core/TimerManager.h"
+#include "../core/widgets/RightClickMenu.h"
+#include "../core/widgets/Label.h"
+#include "../game/GameManager.h"
+
+
+const int BACKPACK_WIDTH = (45*MAX_BACKPACK_COLUMNS+50*2);
+const int BACKPACK_HEIGHT = (5+MAX_BACKPACK_ROWS*45+5+15+5);
+
+const int BACKPACK_SLIDE_SPEED = 5;
+const int BACKPACK_SLIDE_MS = 25;
 
 void callback_BackpackItem_RightClick(Button* b)
 {
@@ -34,36 +45,104 @@ void callback_Backpack_PreviousPage(Button* b)
 	pack->PreviousPage();
 }
 
+void callback_Backpack_Toggle(Button* b)
+{
+	Backpack* pack = (Backpack*)b->GetParent();
+	ASSERT(pack);
+
+	pack->ToggleState(pack->GetPosition().y < 0);
+}
+
+uShort timer_BackpackSlideUp(timer* t, uLong ms)
+{
+	Backpack* pack = (Backpack*)t->userData;
+	rect r;
+	
+	if (pack && pack->mVelocity < 0)
+	{
+		r = pack->GetPosition();
+		if (r.y + r.h > pack->mOpenPack->Height())
+		{
+			r.y += pack->mVelocity;
+			pack->SetPosition(r);
+			return TIMER_CONTINUE;
+		}
+		else
+		{
+			pack->mVelocity = 0;
+		}
+	}
+	
+	return TIMER_DESTROY;
+}
+
+uShort timer_BackpackSlideDown(timer* t, uLong ms)
+{
+	Backpack* pack = (Backpack*)t->userData;
+	rect r;
+	
+	if (pack && pack->mVelocity > 0)
+	{
+		r = pack->GetPosition();
+		if (r.y < 0)
+		{
+			r.y += pack->mVelocity;
+			pack->SetPosition(r);
+			return TIMER_CONTINUE;
+		}
+		else
+		{
+			pack->mVelocity = 0;
+		}
+	}
+	
+	return TIMER_DESTROY;
+}
+
 Backpack::Backpack()
-	: Frame(gui, "Backpack", rect(0, 0, 45*5+50*2, 45*4), "", true, false, false, true)
+	: Frame(gui, "Backpack", rect(gui->Width()/2-BACKPACK_WIDTH/2, -BACKPACK_HEIGHT + 25, BACKPACK_WIDTH, BACKPACK_HEIGHT), 
+			"", false, false, false, true)
 {
 	// TODO: Create buttons and hook!
 	// Say buttons are 45x45
 	mSelectedItem = NULL;
+	mVelocity = 0;
+	mDorra = 0;
 	mCanSortChildren = false; // Keep the selector above stuff, etc. 
 
-	mPreviousPageButton = new Button(this, "previous", rect(0,30,45,45), "", callback_Backpack_PreviousPage);
+	mPreviousPageButton = new Button(this, "", rect(0,5,45,45), "", callback_Backpack_PreviousPage);
 		mPreviousPageButton->SetImage("assets/backpack/previous.png");
 		mPreviousPageButton->mHoverText = "Previous Page";
 		
-	mNextPageButton = new Button(this, "next", rect(Width()-45,30,45,45), "", callback_Backpack_NextPage);
+	mNextPageButton = new Button(this, "", rect(Width()-45,5,45,45), "", callback_Backpack_NextPage);
 		mNextPageButton->SetImage("assets/backpack/next.png");
 		mNextPageButton->mHoverText = "Next Page";
 
-	mCloseButton = new Button(this, "close", rect(Width()-45,Height()-45,45,45), "", NULL); //callback_Backpack_Close);
-		mCloseButton->SetImage("assets/backpack/close.png");
-		mCloseButton->mHoverText = "Close";
-				
-	mSelectorIcon = new Button(this, "select", rect(0,0,20,20), "", NULL);
+	mSelectorIcon = new Button(this, "", rect(0,0,20,20), "", NULL);
 		mSelectorIcon->mUsesImageOffsets = false;
 		mSelectorIcon->SetImage("assets/backpack/selector.png");
 		mSelectorIcon->SetVisible(false);
-	
+
+	mClosePack = new Button(this, "", rect(Width()/2-40,Height()-25,80,25), "", callback_Backpack_Toggle);
+		mClosePack->SetImage("assets/backpack/close.png");
+		mClosePack->mHoverText = "Close Backpack";
+		mClosePack->SetVisible(false);
+		
+	mOpenPack = new Button(this, "", rect(Width()/2-40,Height()-25,80,25), "", callback_Backpack_Toggle);
+		mOpenPack->SetImage("assets/backpack/open.png");
+		mOpenPack->mHoverText = "Open Backpack";
+
+	mDorraIcon = new Button(this, "", rect(mOpenPack->GetPosition().x + mOpenPack->Width() + 20,Height()-23,20,20), "", NULL);
+		mDorraIcon->mUsesImageOffsets = false;
+		mDorraIcon->SetImage("assets/backpack/dorra.png");
+
+	mDorraLabel = new Label(this, "", rect(mDorraIcon->GetPosition().x + mDorraIcon->Width() + 5, Height()-20, 0, 0), its(mDorra));
+
 	mSelectorPage = 0;
 		
+	SetImage("assets/backpack/bg.png");
+		
 	Load();
-	
-	Center();
 }
 
 Backpack::~Backpack()
@@ -87,15 +166,15 @@ bool Backpack::Load()
 				
 					// For testing
 					if (p == 1 && x < 1)
-						w->SetIndex(0);
-					else if (p == 2 && x == 3)
 						w->SetIndex(1);
+					else if (p == 2 && x == 3)
+						w->SetIndex(2);
 						
-					//w->SetIndex(-1); // TODO: Load real index!
-					w->SetPosition( rect(50 + x * 45, 30 + y * 45, 40, 40) );
+					//w->SetIndex(0); // TODO: Load real index!
+					w->SetPosition( rect(50 + x * 45, 5 + y * 45, 40, 40) );
 					w->onClickCallback = callback_BackpackItem_Click;
 					w->onRightClickCallback = callback_BackpackItem_RightClick;
-					w->mHoverText = "Page: " + its(p) + " (" + its(x) + "," + its(y) + ")";
+					//w->mHoverText = "Page: " + its(p) + " (" + its(x) + "," + its(y) + ")";
 					
 				mPages[p].items[x+y*MAX_BACKPACK_COLUMNS] = w; 
 			}
@@ -103,6 +182,29 @@ bool Backpack::Load()
 	}
 	
 	SetPage(0);
+}
+
+void Backpack::ToggleState(bool b)
+{
+	if (mVelocity == 0)
+	{
+		if (b) // slide it out
+		{
+			mVelocity = BACKPACK_SLIDE_SPEED;
+			timers->Add("", BACKPACK_SLIDE_MS, false, 
+						timer_BackpackSlideDown, NULL, this);
+		}
+		else // slide it in
+		{
+			mVelocity = -BACKPACK_SLIDE_SPEED;
+			timers->Add("", BACKPACK_SLIDE_MS, false, 
+						timer_BackpackSlideUp, NULL, this);
+		}
+		
+		// Toggle buttons
+		mClosePack->SetVisible(b);
+		mOpenPack->SetVisible(!b);
+	}
 }
 
 void Backpack::SetPage(int p)
@@ -129,8 +231,11 @@ void Backpack::SetPage(int p)
 	// Re-add our buttons
 	Add(mPreviousPageButton);
 	Add(mNextPageButton);
-	Add(mCloseButton);
 	Add(mSelectorIcon);
+	Add(mOpenPack);
+	Add(mClosePack);
+	Add(mDorraIcon);
+	Add(mDorraLabel);
 
 	mCurrentPage = p;
 	
@@ -179,9 +284,38 @@ void Backpack::_deleteAllItems()
 	mSelectedItem = NULL;
 }
 
+void callback_Backpack_RCM_Info(RightClickMenu* m, void* userdata)
+{
+	BackpackItem* item = (BackpackItem*)userdata;
+	
+	if (item)
+	{
+		game->mChat->AddMessage("*** Item: " + item->mId + " x" + its(item->mAmount) + " ***");
+		game->mChat->AddMessage("Desc: " + item->mDescription);
+		game->mChat->AddMessage("Index: " + its(item->mIndex) + " UseType: " + its(item->mUseType));
+	}
+}
+
+void callback_Backpack_RCM_Use(RightClickMenu* m, void* userdata)
+{
+	BackpackItem* item = (BackpackItem*)userdata;
+	
+	if (item)
+	{
+		game->mChat->AddMessage("OAK: This isn't the time to use that!");
+	}
+}
+
 void Backpack::RightClickItem(BackpackItem* item)
 {
 	// TODO: Display a RCM menu based on item type, and current game state
+
+	if (item->mIndex > 0)
+	{
+		RightClickMenu* m = new RightClickMenu();
+			m->AddOption("Info", callback_Backpack_RCM_Info, item);
+			m->AddOption("Use", callback_Backpack_RCM_Use, item);
+	}
 }
 
 void Backpack::SelectItem(BackpackItem* item)
@@ -196,7 +330,7 @@ void Backpack::SelectItem(BackpackItem* item)
 		
 		mSelectorIcon->SetVisible(false);
 	}
-	else if (!mSelectedItem && item->mIndex > -1) //also prevent selecting empty slots first
+	else if (!mSelectedItem && item->mIndex > 0) //also prevent selecting empty slots first
 	{
 		mSelectedItem = item;
 		item->SetSelected(true);
@@ -340,6 +474,28 @@ BackpackItem* Backpack::_findItem(int index, int& page, int& slot)
 	When the cloud system is used, it will attempt to reupload our backpack to 
 	the master. Until then, it'll ... save to file or something */
 void Backpack::_itemsUpdated()
+{
+	// TODO: This!
+	
+	/* 	Should create an encrypted string containing info on all the items we own. Then upload
+		that string to the server via a POST message. (Since it'd probably be too long for a GET)
+		Contents:
+			- Item index in every slot (2 bytes)
+			- Amount of a particular item in every slot (1 byte)
+				If the slot is empty (0), it will skip this amount byte.
+	*/
+	
+}
+
+/**	Called when the order of the backpack items change. 
+	When the cloud system is used, it will attempt to reupload our backpack to 
+	the master. Until then, it'll ... save to file or something
+
+	Unlike _itemsUpdated(), this shouldn't upload to the cloud as soon as something changes,
+	but instead only update every so often. Backpack sorting is less important than backpack
+	contents, and it's fine if we lose the sort due to a crash or something.
+*/
+void Backpack::_itemsResorted()
 {
 	// TODO: This!
 }

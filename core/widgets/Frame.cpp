@@ -168,6 +168,8 @@ void Frame::ResizeChildren() //so that children don't size themselves while resi
 		if (mChildren.at(i) && mChildren.at(i)->mType == WIDGET_FRAME)
 			((Frame*)mChildren.at(i))->ResizeChildren();
 	}
+	
+	FlagRender();
 }
 
 void Frame::SetPosition(rect r)

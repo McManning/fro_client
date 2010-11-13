@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=1000000001001001000000
+CompilerSettings=1000000001001000000100
 FileName=fro.dev
 
 [Unit1]
@@ -472,9 +472,9 @@ BuildCmd=
 
 [VersionInfo]
 Major=1
-Minor=3
-Release=1
-Build=2021
+Minor=4
+Release=0
+Build=2083
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios

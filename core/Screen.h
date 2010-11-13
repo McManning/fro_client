@@ -38,7 +38,7 @@ class Screen : public Image
 	bool mNeedUpdate;
 };
 
-extern Screen* screen;
+extern Screen* g_screen;
 	
 //Define SDL Flags for our screen. Will require Resize() in order take effect.	
 void SetScreenFlags(Uint32 flags);

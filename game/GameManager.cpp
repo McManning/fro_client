@@ -39,9 +39,6 @@
 
 GameManager* game;
 
-TimeProfiler gameProcessProfiler("Game::Process");
-TimeProfiler gameRenderProfiler("Game::Render");
-
 /*
 // Load the file, assuming it's a 32x64 framed avatar with 5 rows and 2 columns, will 
 // replace the file with a new version that is 40x80
@@ -188,7 +185,7 @@ void callback_chatNoCommand(Console* c, string s)
 			game->mPlayer->UpdateCollisionAndOrigin();
 		}
 	}
-	else if (s == "/normalize")
+	else if (s == "/normal")
 	{
 		if (game->mPlayer->GetAvatar())
 		{
@@ -340,7 +337,12 @@ void callback_chatCommandJoin(Console* c, string s)
 	timer* t = timers->Find("joinwait");
 	if (t)
 	{
-		int seconds = (t->lastMs + t->interval - gui->GetTick()) / 1000;
+		int seconds = t->lastMs + t->interval - gui->GetTick();
+		if (seconds < 0)
+			seconds = 0;
+		else
+			seconds /= 1000;
+
 		c->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
 		return;
 	}
@@ -569,6 +571,8 @@ GameManager::GameManager()
 	ToggleGameMode(MODE_ACTION);
 
 	Backpack* pack = new Backpack();
+	
+	ToggleHud(false);
 }
 
 GameManager::~GameManager()
@@ -744,8 +748,6 @@ void GameManager::LoadOnlineWorld(string id, point2d target, string targetObject
 
 void GameManager::Process(uLong ms)
 {
-	gameProcessProfiler.Start();
-
 	if (mLoader && mLoader->m_state == WorldLoader::WORLD_READY)
 	{
 		mLoader->DisplayWorld();
@@ -762,8 +764,6 @@ void GameManager::Process(uLong ms)
 	}
 
 	MoveToBottom(); //keep game at the bottom of the screen.
-
-	gameProcessProfiler.Stop();
 }
 
 void GameManager::UnloadMap()
@@ -783,8 +783,6 @@ void GameManager::UnloadMap()
 
 void GameManager::Render()
 {
-	gameRenderProfiler.Start();
-	
 	rect r = GetScreenPosition();
 	Image* scr = Screen::Instance();
 
@@ -795,8 +793,6 @@ void GameManager::Render()
 	}
 	
 	Frame::Render();
-	
-	gameRenderProfiler.Stop();
 }
 
 void GameManager::Event(SDL_Event* event)
@@ -1148,6 +1144,8 @@ void GameManager::ToggleGameMode(gameMode mode)
 
 void GameManager::ShowInfoBar(string id, string msg, int duration, string imageFile)
 {
+	return; //TEMP DISABLED
+	
 	rect r;
 
 	//if (mInfoBar)
@@ -1204,6 +1202,9 @@ void GameManager::ToggleHud(bool visible)
 		
 	if (mParty)
 		mParty->SetVisible(false);
+		
+	w = gui->Get("Backpack");
+	if (w) w->SetVisible(visible);
 }
 
 void GameManager::EndPlayersDuelTurn()

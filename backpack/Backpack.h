@@ -23,6 +23,8 @@ class Backpack : public Frame
 		BackpackItem* items[MAX_BACKPACK_ROWS*MAX_BACKPACK_COLUMNS];
 	};
 
+	void ToggleState(bool b);
+
 	/** Load our Backpack data from web, or something */
 	bool Load();
 	
@@ -61,10 +63,16 @@ class Backpack : public Frame
 	
 	Button* mPreviousPageButton;
 	Button* mNextPageButton;
-	Button* mCloseButton;
 	Button* mSelectorIcon;
+	Button* mOpenPack;
+	Button* mClosePack;
+	Button* mDorraIcon;
+	Label* mDorraLabel;
 	
 	int mSelectorPage; // what page the mSelectorIcon is on
+	int mVelocity;
+	
+	int mDorra; // Our total currency
 	
   private:
   
@@ -77,6 +85,16 @@ class Backpack : public Frame
 		When the cloud system is used, it will attempt to reupload our backpack to 
 		the master. Until then, it'll ... save to file or something */
 	void _itemsUpdated();
+	
+	/**	Called when the order of the backpack items change. 
+		When the cloud system is used, it will attempt to reupload our backpack to 
+		the master. Until then, it'll ... save to file or something
+	
+		Unlike _itemsUpdated(), this shouldn't upload to the cloud as soon as something changes,
+		but instead only update every so often. Backpack sorting is less important than backpack
+		contents, and it's fine if we lose the sort due to a crash or something.
+	*/
+	void Backpack::_itemsResorted();
 	
 	BackpackItem* mSelectedItem; /// TODO: Remember to NULL this when the inventory hides!
 };

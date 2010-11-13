@@ -28,7 +28,12 @@ void callback_playerMenuBeat(RightClickMenu* m, void* userdata)
 	timer* t = timers->Find("rpbeat");
 	if (t)
 	{
-		int seconds = (t->lastMs + t->interval - gui->GetTick()) / 1000;
+		int seconds = t->lastMs + t->interval - gui->GetTick();
+		if (seconds < 0)
+			seconds = 0;
+		else
+			seconds /= 1000;
+
 		game->mChat->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
 		return;
 	}
@@ -212,7 +217,7 @@ void Map::ClickRemoteActor(RemoteActor* ra)
 	// Remote Player RCM 
 	RightClickMenu* m = new RightClickMenu();
 		//m->AddOption("Beat", callback_playerMenuBeat, ra);
-		m->AddOption("Send PM", callback_playerMenuPrivmsg, ra);
+		m->AddOption("Whisper", callback_playerMenuPrivmsg, ra);
 		//m->AddOption("Send Trade", callback_playerMenuTrade, ra);
 		m->AddOption((ra->IsBlocked()) ? "Unblock" : "Block", callback_playerMenuToggleBlock, ra);
 }
@@ -410,7 +415,7 @@ void Map::OffsetCamera(sShort offsetX, sShort offsetY)
 
 void Map::AddCameraRectForUpdate()
 {
-	screen->AddRect(GetScreenPosition());
+	g_screen->AddRect(GetScreenPosition());
 }
 
 void Map::OffsetCamera(point2d p)

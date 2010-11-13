@@ -224,7 +224,8 @@ void Widget::Render()
 
 void Widget::FlagRender()
 {
-	//OPTIMIZETODO: Add position to our clip rects
+	if (IsVisible())
+		g_screen->AddRect(GetScreenPosition());
 }
 
 void Widget::SetPosition(rect r)
@@ -295,6 +296,33 @@ bool Widget::HasKeyFocus()
 bool Widget::HasMouseFocus()
 {
 	return (gui->hasMouseFocus == this);
+}
+
+/**
+	@return true if this widget has GuiManager::GetPreviousMouseXY() in its rect
+	@todo What if this widget moved? Would this return false positives?
+*/
+bool Widget::HadMouseFocus()
+{
+	return (gui->previousMouseFocus == this);
+}
+
+/**
+	@return true if the last mouse move event counted as the mouse entering this 
+		widget for the first time
+*/
+bool Widget::DidMouseEnter()
+{
+	return (!HadMouseFocus() && HasMouseFocus());
+}
+
+/**
+	@return true if the last mouse move event counted as the mouse leaving this 
+		widget for the first time
+*/
+bool Widget::DidMouseLeave()
+{
+	return (HadMouseFocus() && !HasMouseFocus());
 }
 
 //Goes to the next sibling that can accept keyboard input. 

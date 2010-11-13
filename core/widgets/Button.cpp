@@ -106,8 +106,19 @@ void Button::Event(SDL_Event* event)
 			onClickCallback(this);
 		else if (event->button.button == SDL_BUTTON_RIGHT && onRightClickCallback)
 			onRightClickCallback(this);
+		
+		FlagRender();
+	}
+	else if (event->type == SDL_MOUSEMOTION)
+	{
+		// Our state is going to change, tell the renderer to update
+		if (HadMouseFocus() || HasMouseFocus())
+			FlagRender();
 	}
 		
 	Widget::Event(event);	
 }
+
+
+
 

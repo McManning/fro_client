@@ -201,24 +201,27 @@ void Multiline::Event(SDL_Event* event)
 			}
 		} break;
 		case SDL_MOUSEMOTION: {
-			mClickedOnce = false;
-			if (mSelectOnHover)
+			if (HasMouseFocus())
 			{
-				s = GetLineUnderXY(event->motion.x, event->motion.y);
-				if (s != -1)
+				mClickedOnce = false;
+				if (mSelectOnHover)
 				{
-					mSelected = s;
-					if (mSelected >= mLines.size())
-						mSelected = mLines.size() - 1;
+					s = GetLineUnderXY(event->motion.x, event->motion.y);
+					if (s != -1)
+					{
+						mSelected = s;
+						if (mSelected >= mLines.size())
+							mSelected = mLines.size() - 1;
+					}
 				}
-			}
-			else // Check for urls, and give a hint box
-			{
-				s = GetLineUnderXY(event->motion.x, event->motion.y);
-				if (s != -1 && !GetUrl(s).empty())
-					mHoverText = "Right click to open url";
-				else
-					mHoverText.clear();
+				else // Check for urls, and give a hint box
+				{
+					s = GetLineUnderXY(event->motion.x, event->motion.y);
+					if (s != -1 && !GetUrl(s).empty())
+						mHoverText = "Right click to open url";
+					else
+						mHoverText.clear();
+				}
 			}
 		} break;
 		default: break;
@@ -258,9 +261,8 @@ void Multiline::AddMessage(string msg)
 	mRawText.push_back(msg);
 	//	dbgout(stderr, "MSG:%s\nRAWTEXT:%s\n", msg.c_str(), mRawText.c_str());
 	SplitLines(msg, mMaxTextWidth);
-#ifdef OPTIMIZED
-	Screen::Instance()->Update();
-#endif
+
+	FlagRender();
 }
 
 void Multiline::SetLine(uShort line, string msg) //unwrapped multilines only
@@ -270,9 +272,8 @@ void Multiline::SetLine(uShort line, string msg) //unwrapped multilines only
 		mRawText.at(line) = msg;
 		mLines.at(line) = msg;
 	}
-#ifdef OPTIMIZED
-	Screen::Instance()->Update();
-#endif
+	
+	FlagRender();
 }
 
 void Multiline::RecalculateScrollbarMax()
@@ -439,6 +440,8 @@ void Multiline::Clear()
 	mBottomLine = 0;
 
 	RecalculateScrollbarMax();
+	
+	FlagRender();
 }
 
 sShort Multiline::GetLineUnderXY(sShort x, sShort y) //TODO: FUCKING CLEAN THIS SHIT UP
@@ -603,6 +606,8 @@ void Multiline::EraseLine(uShort line)
 		mSelected = mLines.size() - 1;
 
 //	mScrollbar->SetVisible(GetNumberOfLinesVisible() >= mLines.size());
+
+	FlagRender();
 }
 
 void Multiline::SetTopLine(uShort val)
@@ -619,6 +624,8 @@ void Multiline::_setTopLine(uShort val)
 
 	if (mBottomLine > mLines.size())
 		mBottomLine = mLines.size(); //make sure it's not set to an invalid line
+		
+	FlagRender();
 }
 
 //Overloaded so we can move the scrollbar

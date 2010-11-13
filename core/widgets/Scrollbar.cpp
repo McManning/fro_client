@@ -130,7 +130,7 @@ void Scrollbar::Event(SDL_Event* event)
 	switch (event->type)
 	{
 		case SDL_MOUSEMOTION: {
-			if (mScrollPress >= 0 && GetMax() > 0)
+			if (mScrollPress >= 0 && GetMax() > 0 && HasMouseFocus())
 			{
 				int p;
 				if (mOrientation == VERTICAL)

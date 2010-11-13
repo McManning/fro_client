@@ -1196,7 +1196,7 @@ without either compatibility mode enabled, or security warnings, as seen with th
 100902
 - Added constant check-in with the master server. Will send information from our client and return an
 	xml file every 15 minutes or so, allowing the server to keep better track of users and provide whatever
-	sort of information (Such as private message alerts, news alerts, etc).
+	sort of information (Such as private message alerts, news alerts, item drops, etc).
 - Removed "Back To Login" from the ESC menu. 
 	
 (Commit to revision 49)
@@ -1233,8 +1233,42 @@ without either compatibility mode enabled, or security warnings, as seen with th
 	using unique indexes for items that will sync up item information with the master, and will 
 	eventually upload/download backpack contents from the master. 
 - Removed inventory and party buttons from the hud until the backpack is close enough to a release stage.
-- 
 
+(Commit to revision 54)
+
+101016
+- Added FlagRender() to Multiline, Input classes. (Input unfinished)
+- Renamed global Screen* screen to g_screen
+- Fixed bug in Entity::ClearActiveChatBubble(). Didn't properly dereference mActiveChatBubble
+- Reskinned the Backpack, and added animation properties
+- Added Dorra display to the backpack
+	
+101017
+- Added LocalActor::mCanChangeAvatar and "AvyLocked" for SetProp/GetProp in Lua to query it. When enabled, players
+	cannot use an avatar from their favorites list. Resets on map change to false.
+- Added timer to stop emote spam. 1 second delay between when emotes.
+- Renamed /normalize to /normal
+- Adjusted FlagRender() in places, and added testing code to output chosen rectangles to update in Screen class
+	for later testing and implementation of the optimized renderer (Outputs only in debug mode).
+- Removed TimeProfiler usage from all files
+- Changed backpack empty slot to index 0 instead of -1
+- Added GuiManager::GetPreviousMouseX() and ::GetPreviousMouseY()
+- Temporarily disabled GameManager::ShowInfoBar() until I can figure out a solution for the collision with the
+	backpack dropdown
+
+101021
+- Fixed a major bug in net listeners for 'sup' and 'nm' messages. Messages considered 'illegal' would try to access a 
+	member of a null pointer when printing the warning to the console, causing random crashing of entire channels when
+	someone joins or leaves. (Brought to my attention by BD)
+- Fixed bug with the "You must wait XXX seconds" message giving a bad timeleft count when you activate it too often. 
+- Added ItemsDatabaseManager class and associated items.lua database
+
+101030
+- Rewrote areRectsInteresecting() to a proper working test, rather than the crap it was before. 
+	Doing so fixed several things, mainly isInCamera entity tests.
+- Removed the ItemsDatabaseManager for now, will deal with at a later date.
+- Removed depth rendering from actors since it's a cpu hog, and is never used. 
+- 
 	
 WORKING ON:
 
@@ -1244,7 +1278,10 @@ WORKING ON:
 	
 - Hide achievements, inventory, party, etc?
 - Get rid of achievements ... for now. Also party. Remove from menu, add it as a command for testing.
-	
+- Gui needs to be less lazy and only determine what widgets are under the mouse each frame, and not each time the mouse
+	moves. There's bugs when shit moves, and the mouse doesn't. 
+
+	- our info popup collides with our new backpack. Need to figure out a solution D:! (But I love the info popup! ;_;)
 	
 	
 	

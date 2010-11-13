@@ -15,6 +15,8 @@ void callback_smallSelectLeft(Button* b)
 	else
 		s->mSelectedIndex--;
 		
+	s->FlagRender();
+		
 	if (s->onChangeCallback)
 		s->onChangeCallback(s);
 }
@@ -27,6 +29,8 @@ void callback_smallSelectRight(Button* b)
 		s->mSelectedIndex = 0;
 	else
 		s->mSelectedIndex++;
+	
+	s->FlagRender();
 	
 	if (s->onChangeCallback)
 		s->onChangeCallback(s);

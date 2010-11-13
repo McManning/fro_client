@@ -47,6 +47,9 @@ class GuiManager : public Widget
 	uShort GetMouseX() const { return mMousePosition.x; };
 	uShort GetMouseY() const { return mMousePosition.y; };
 
+	uShort GetPreviousMouseX() const { return mLastMousePosition.x; };
+	uShort GetPreviousMouseY() const { return mLastMousePosition.y; };
+	
 	rect GetMouseRect();
 	
 	void SetMousePosition(int x, int y);

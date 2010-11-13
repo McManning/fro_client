@@ -68,7 +68,7 @@ bool Entity::IsVisibleInCamera()
 	}
 	else
 	{
-		return mMap->IsRectInCamera(GetBoundingRect());
+		return mMap->IsRectInCamera(r);
 	}
 }
 
@@ -117,7 +117,7 @@ void Entity::AddPositionRectForUpdate()
 		r = GetBoundingRect();	
 		if (!IsPositionRelativeToScreen())
 			r = mMap->ToScreenPosition( r );
-		screen->AddRect(r);
+		g_screen->AddRect(r);
 	}
 }
 
@@ -210,7 +210,7 @@ void Entity::RenderShadow()
 		r = mMap->ToScreenPosition( r );
 
 	// PROBLEM: Can't figure out a way to do this.. where it remains within the screen rects.
-	filledEllipseRGBA(screen->Surface(), r.x, r.y,
+	filledEllipseRGBA(g_screen->Surface(), r.x, r.y,
 				 	r.w, r.h, 0, 0, 0, 150);
 
 }
@@ -377,6 +377,7 @@ void Entity::ClearActiveChatBubble()
 	{
 		mActiveChatBubble->mOwner = NULL;
 		mMap->RemoveEntity(mActiveChatBubble);
+		mActiveChatBubble = NULL;
 	}
 }
 

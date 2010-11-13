@@ -328,6 +328,17 @@ void netSendEmote(uShort num) //emo num
 {
 	if (!game->mMap) return;
 
+	timer* t = timers->Find("emowait");
+	if (t)
+	{
+		game->mChat->AddMessage("\\c900 * Spam emotes less, jerk.");
+		return;
+	}
+	else
+	{
+		timers->Add("emowait", 1000, false, NULL, NULL, NULL);
+	}
+
 	game->mPlayer->Emote(num);
 		
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
@@ -565,21 +576,21 @@ void _handleNetMessage_Sup(string& nick, DataPacket& data)
 
 	if (ra)
 	{
-		console->AddMessage("Double 'sup' from " + ra->mName);
+		console->AddMessage("Double 'sup' from " + nick);
 		return;
 	}
 	
 	// make sure this sup is coming from our channel only
 	if (data.ReadString() != game->mNet->GetChannel()->mId)
 	{
-		console->AddMessage("Illegal 'sup' from " + ra->mName + " (chan)");
+		console->AddMessage("Illegal 'sup' from " + nick + " (chan)");
 		return;
 	}
 	
 	//Make sure someone didn't try to clone someone elses 'sup' message to mimic them
 	if (data.ReadString() != nick)
 	{
-		console->AddMessage("Illegal 'sup' from " + ra->mName + " (nick)");
+		console->AddMessage("Illegal 'sup' from " + nick + " (nick)");
 		return;	
 	}
 	
@@ -606,19 +617,19 @@ void _handleNetMessage_Nm(string& nick, DataPacket& data)
 
 	if (ra)
 	{
-		console->AddMessage("Double 'nm' from " + ra->mName);
+		console->AddMessage("Double 'nm' from " + nick);
 		return;
 	}
 
 	if (data.ReadString() != game->mNet->GetChannel()->mId)
 	{
-		console->AddMessage("Illegal 'nm' from " + ra->mName + " (chan)");
+		console->AddMessage("Illegal 'nm' from " + nick + " (chan)");
 		return;
 	}
 	
 	if (data.ReadString() != nick)
 	{
-		console->AddMessage("Illegal 'nm' from " + ra->mName + " (nick)");
+		console->AddMessage("Illegal 'nm' from " + nick + " (nick)");
 		return;	
 	}
 

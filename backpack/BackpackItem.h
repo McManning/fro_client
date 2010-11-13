@@ -34,8 +34,8 @@ class BackpackItem : public Button
 	// Item properties here
 	int mAmount;
 	int mIndex; //item index, used to load the following information:
-	string mTitle;
 	string mDescription;
+	string mIconFile;
 	int mUseType;
 };
 

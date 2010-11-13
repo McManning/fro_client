@@ -67,13 +67,9 @@ StaticObject::~StaticObject()
 	messenger.RemoveListener(mWarpEntityMoveListener);
 }
 
-TimeProfiler soRenderProfiler("StaticObject::Render");
-
 void StaticObject::Render()
 {
 	ASSERT(mMap);
-
-	soRenderProfiler.Start();
 
 	Image* scr = Screen::Instance();
 	rect r;
@@ -89,9 +85,7 @@ void StaticObject::Render()
 
 		mImage->Render(scr, r.x, r.y);
 	}
-	
-	soRenderProfiler.Stop();
-	
+
 	Entity::Render();
 }
 

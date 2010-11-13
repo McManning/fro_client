@@ -336,6 +336,8 @@ void Input::SetCaretPos(int rx, int ry)
 	}
 
 	mCaretPos = mText.length();
+	
+	FlagRender();
 }
 
 //Convert position between letters right back to a pixel pos
@@ -366,6 +368,8 @@ void Input::SetSelection(int start, int end)
 		
     mSelectionStart = start;
     mSelectionEnd = end;
+    
+    FlagRender();
 }
 
 void Input::Event(SDL_Event* event)
@@ -373,31 +377,39 @@ void Input::Event(SDL_Event* event)
 	switch (event->type)
 	{
 		case SDL_MOUSEMOTION: {
-			mClickedOnce = false;
-			rect r = GetScreenPosition();
-			
-			if (mSelecting)
+			if (HasMouseFocus())
 			{
-				if (event->motion.x < r.x)
+				mClickedOnce = false;
+				rect r = GetScreenPosition();
+				
+				if (mSelecting)
 				{
-					mCaretPos--;
-					if (mCaretPos < 0)
-						mCaretPos = 0;
-					SetSelection(mSelectionStart, mCaretPos);
-				} 
-				else if (event->motion.x > r.x + r.w)
-				{
-					mCaretPos++;
-					if (mCaretPos > mText.length()) 
-						mCaretPos = mText.length();
-					SetSelection(mSelectionStart, mCaretPos);
-				} 
-				else 
-				{
-					SetCaretPos(event->motion.x, event->motion.y);
-					SetSelection(mSelectionStart, mCaretPos);
+					if (event->motion.x < r.x)
+					{
+						mCaretPos--;
+						if (mCaretPos < 0)
+							mCaretPos = 0;
+						SetSelection(mSelectionStart, mCaretPos);
+					} 
+					else if (event->motion.x > r.x + r.w)
+					{
+						mCaretPos++;
+						if (mCaretPos > mText.length()) 
+							mCaretPos = mText.length();
+						SetSelection(mSelectionStart, mCaretPos);
+					} 
+					else 
+					{
+						SetCaretPos(event->motion.x, event->motion.y);
+						SetSelection(mSelectionStart, mCaretPos);
+					}
+					RecalculatePixelX();
 				}
-				RecalculatePixelX();
+				FlagRender();
+			}
+			else if (DidMouseLeave())
+			{
+				FlagRender();	
 			}
 			
 		} break;

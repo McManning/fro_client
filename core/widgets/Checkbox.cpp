@@ -105,6 +105,12 @@ void Checkbox::Event(SDL_Event* event)
 				FlagRender(); 	
 			}
 		} break;
+		case SDL_MOUSEMOTION: {
+		
+			// Our checkbox is going to highlight/unhighlight, or sparkle. Tell the renderer.
+			if (HadMouseFocus() || HasMouseFocus())
+				FlagRender();
+		} break;
 		default: break;
 	}
 	Widget::Event(event);
@@ -124,6 +130,7 @@ void Checkbox::SetState(byte state)
 	{
 		mLastState = mState;
 		mState = state;
+		FlagRender();
 	}
 }
 
