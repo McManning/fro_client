@@ -1,5 +1,6 @@
 
 #include "WidgetList.h"
+#include "Scrollbar.h"
 
 void callback_WidgetListScroller(Scrollbar* s)
 {
@@ -63,5 +64,9 @@ bool WidgetList::Remove(Widget* child, bool deleteClass)
 	return result;
 }
 
+void WidgetList::RemoveAll()
+{
+	Widget::RemoveAll();
+	UpdateChildrenPositions();
+}
 
-	

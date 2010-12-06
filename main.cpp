@@ -13,7 +13,6 @@
 
 #ifndef GUI_ONLY
 #	include "game/GameManager.h"
-#	include "game/TerrainTest.h"
 #endif
 
 /*	If the last time we ran this, it didn't shut down properly, log it */
@@ -73,26 +72,12 @@ int main (int argc, char *argv[])
 		Uint32 screenFlags = SDL_SWSURFACE | SDL_DOUBLEBUF;
 		SetScreenFlags(	screenFlags );
 
-#ifndef GUI_ONLY
-       	if (argc > 1) //argv[0] is full application path
-       	{
-			if (strcmp(argv[1], "-terra") == 0)
-			{
-				new GuiManager();
-				new TerrainTest();
-			}
-		}
-		else //no arguments, run natural game
-		{
-			new GuiManager();
-			
-			PRINT("Booting up GM");
-			new GameManager();
-		}
-		
-#else
 		new GuiManager();
-		
+
+#ifndef GUI_ONLY
+		PRINT("Booting up GM");
+		new GameManager();
+#else
 		new Checkbox(gui, "", rect(20, 20), "OMFG CHECKBOX", 0);
 		new Frame(gui, "", rect(20, 20, 200, 200), "This is a dialog", true, true, true, true);
 #endif		

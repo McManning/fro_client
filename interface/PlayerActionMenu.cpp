@@ -3,7 +3,7 @@
 #include "../core/widgets/Button.h"
 #include "../entity/Actor.h"
 #include "../game/GameManager.h"
-#include "../interface/LunemParty.h"
+//#include "../interface/LunemParty.h"
 #include "../interface/Inventory.h"
 
 void callback_Skill(Button* b)

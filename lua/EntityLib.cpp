@@ -7,7 +7,7 @@
 #include "../entity/ExplodingEntity.h"
 #include "../entity/DamageIcon.h"
 #include "../entity/ChatBubble.h"
-#include "../entity/Lunem.h"
+//#include "../entity/Lunem.h"
 #include "../game/GameManager.h"
 #include "../map/BasicMap.h"
 
@@ -587,10 +587,10 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 	{
 		e->mName = lua_tostring(ls, -1);
 	}
-	else if (key == "Species" && e->mType == ENTITY_LUNEM)
+	/*else if (key == "Species" && e->mType == ENTITY_LUNEM)
 	{	
 		((Lunem*)e)->SetSpecies( lua_tostring(ls, -1) );
-	}
+	}*/
 	else if (key == "Visible")
 	{
 		e->SetVisible( lua_toboolean(ls, -1) );
@@ -688,8 +688,8 @@ Entity* _createEntity(int type)
 		case ENTITY_DAMAGEICON:
 			e = new DamageIcon;
 			break;
-		case ENTITY_LUNEM:
-			e = new Lunem;
+		//case ENTITY_LUNEM:
+		//	e = new Lunem;
 			break;
 		default:
 			break;

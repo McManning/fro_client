@@ -1268,6 +1268,40 @@ without either compatibility mode enabled, or security warnings, as seen with th
 	Doing so fixed several things, mainly isInCamera entity tests.
 - Removed the ItemsDatabaseManager for now, will deal with at a later date.
 - Removed depth rendering from actors since it's a cpu hog, and is never used. 
+
+101113
+- Added Widget::RemoveAll() to purge all children
+- Rewrote WorldsViewer to use WidgetList for world storage
+	Also working towards another complete redesign
+
+(Commit to revision 55)
+
+101202
+- Removed Backpack.h/cpp and WorldsViewer.h/cpp, until they're finished
+- Fixed bug in Login screen that didn't re-display the login buttons after an error message was returned
+
+101205
+- Stripped out the following source files and all related routines:
+	Inventory.h/cpp
+	MyAchievements.h/cpp
+	Achievements.h/cpp
+	PlayerActionMenu.h/cpp
+	MiniMenu.h/cpp
+	TerrainTest.h/cpp
+	ActorStats.h/cpp
+	ItemTrade.h/cpp
+	ScreenText.h/cpp
+	Combatant.h/cpp
+	Lunem.h/cpp
+	This means the following general features have been removed:
+		- Lunem parties and combat
+		- Item management and trading
+		- Achievements
+		- RPG statistics
+		All of which were previously removed from the game (or under construction), 
+		and the source files were simply dead weight in the application.
+- Added link to Options Dialog back to HUD
+- Re-enabled Game::ShowInfoBar() as the new backpack is currently gone
 - 
 	
 WORKING ON:
@@ -1277,13 +1311,12 @@ WORKING ON:
 	they do not all fit on the screen at once. 
 	
 - Hide achievements, inventory, party, etc?
-- Get rid of achievements ... for now. Also party. Remove from menu, add it as a command for testing.
 - Gui needs to be less lazy and only determine what widgets are under the mouse each frame, and not each time the mouse
 	moves. There's bugs when shit moves, and the mouse doesn't. 
 
 	- our info popup collides with our new backpack. Need to figure out a solution D:! (But I love the info popup! ;_;)
 	
-	
-	
+- Add a way to see entity collision rects, for testing purposes!
+
 
 	

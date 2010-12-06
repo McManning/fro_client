@@ -3,7 +3,7 @@
 #define _ACTOR_H_
 
 #include "Entity.h"
-#include "Combatant.h"
+//#include "Combatant.h"
 
 #define SPEED_RUN (8)
 #define SPEED_WALK (4)
@@ -19,7 +19,7 @@ const int MAX_AVATAR_FILESIZE = (200 * 1024); //200 KB
 	have avatars that change based on their actions, etc. 
  */
 class Avatar;
-class Actor : public Entity, public Combatant
+class Actor : public Entity /*, public Combatant */
 {
   public:
 
@@ -142,11 +142,12 @@ class Actor : public Entity, public Combatant
 	/*	Change direction to face the other entity */
 	void Face(Entity* e);
 	
-	/* Inherited from Combatant */
+	/* Inherited from Combatant 
 	virtual void LevelUp();
 	virtual void RecalculateStats();
 	virtual void TakeDamage(Combatant* attacker, int damage);
-
+	*/
+	
 	bool _animate(); // Called by the mAnimationTimer
 	void PlayAnimation();
 	void StopAnimation();

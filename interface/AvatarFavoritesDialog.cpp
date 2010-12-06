@@ -10,7 +10,7 @@
 
 #include "../entity/LocalActor.h"
 #include "../game/GameManager.h"
-#include "../game/Achievements.h"
+//#include "../game/Achievements.h"
 
 AvatarFavorites* avatarFavorites;
 
@@ -273,7 +273,7 @@ void AvatarFavorites::UseSelected()
 		timers->Add("avywait", AVYCHANGE_INTERVAL_MS, false, NULL, NULL, NULL);
 	}
 	
-	achievement_FashionAddict();
+	//achievement_FashionAddict();
 	game->mPlayer->LoadAvatar(	ap->url, ap->pass, 
 								ap->w, ap->h, ap->delay, 
 								ap->loopStand, ap->loopSit

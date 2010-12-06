@@ -4,7 +4,7 @@
 #include "../entity/Actor.h"
 #include "../map/Map.h"
 #include "../game/GameManager.h"
-#include "../interface/LunemParty.h"
+//#include "../interface/LunemParty.h"
 
 const int HEALTH_SLIDE_MS = 10;
 

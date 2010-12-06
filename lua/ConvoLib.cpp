@@ -89,8 +89,8 @@ ConvoDialog::~ConvoDialog()
 	if (luaState)
 		luaL_unref(luaState, LUA_REGISTRYINDEX, luaReference);
 	
-	if (game && !game->IsInDuel())
-		game->ToggleHud(true);
+	//if (game && !game->IsInDuel())
+	//	game->ToggleHud(true);
 	
 	convo = NULL;
 }

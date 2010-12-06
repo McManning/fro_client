@@ -10,7 +10,7 @@
 #include "../core/io/FileIO.h"
 #include "../interface/Userlist.h"
 #include "../interface/LoginDialog.h"
-#include "../interface/LunemParty.h"
+//#include "../interface/LunemParty.h"
 
 #include "../lua/MapLib.h"
 
@@ -495,7 +495,7 @@ void WorldLoader::_syncPlayerWithWorld()
 	game->ToggleGameMode(GameManager::MODE_ACTION);
 	
 	// "Sync" our party with the world by recalculating their stats 
-	game->mParty->RecalculateAllStats();
+	//game->mParty->RecalculateAllStats();
 	
 	//spawn our player in a different position, based on the destination type
 	if (!m_sWarpDestinationEntityName.empty()) //warp us to the center of this object

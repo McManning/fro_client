@@ -10,7 +10,7 @@
 #include "../core/widgets/Label.h"
 #include "../lua/LuaCommon.h"
 #include "../game/GameManager.h"
-#include "../game/Achievements.h"
+//#include "../game/Achievements.h"
 #include "../map/Map.h"
 
 Inventory* inventory;

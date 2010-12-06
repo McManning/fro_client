@@ -1175,7 +1175,7 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 	}
 	
 	// Combatant properties
-	else if (prop == "level") SetLevel((char)lua_tonumber(ls, index));
+/*	else if (prop == "level") SetLevel((char)lua_tonumber(ls, index));
 	else if (prop == "gene") SetGene((char)lua_tonumber(ls, index));
 	else if (prop.find("type", 0) == 0) 
 	{
@@ -1201,7 +1201,7 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 	else if (prop == "basedefense") m_bBaseDefense = (char)lua_tonumber(ls, index);
 	else if (prop == "basespeed") m_bBaseSpeed = (char)lua_tonumber(ls, index);
 	else if (prop == "basehealth") m_bBaseHealth = (char)lua_tonumber(ls, index);
-
+*/
 	else return Entity::LuaSetProp(ls, prop, index);
 
 	return 1;
@@ -1215,7 +1215,7 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "noclip") lua_pushboolean( ls, IgnoreSolids() );
 	else if (prop == "mod" && GetAvatar()) lua_pushnumber( ls, GetAvatar()->mModifier );
 	
-	// Combatant properties
+/*	// Combatant properties
 	else if (prop == "level") lua_pushnumber(ls, m_bLevel);
 	else if (prop == "gene") lua_pushnumber(ls, m_bGene);
 	else if (prop.find("type", 0) == 0) 
@@ -1238,13 +1238,14 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "basedefense") lua_pushnumber(ls, m_bBaseDefense);
 	else if (prop == "basespeed") lua_pushnumber(ls, m_bBaseSpeed);
 	else if (prop == "basehealth") lua_pushnumber(ls, m_bBaseHealth);
-
+*/
 	
 	else return Entity::LuaGetProp(ls, prop);
 
 	return 1;
 }
 
+/*
 void Actor::TakeDamage(Combatant* attacker, int damage)
 {
 	if (m_iMaxHealth < 1)
@@ -1293,4 +1294,4 @@ void Actor::LevelUp()
 	messenger.Dispatch(md);
 }
 
-
+*/

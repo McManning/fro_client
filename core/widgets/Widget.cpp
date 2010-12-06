@@ -86,6 +86,21 @@ bool Widget::Remove(Widget* child, bool deleteClass)
 	return false; //not found
 }
 
+void Widget::RemoveAll()
+{
+	for (int i = 0; i < mChildren.size(); ++i)
+	{
+		if (mChildren.at(i))
+		{
+			mChildren.at(i)->mParent = NULL;
+			SAFEDELETE(mChildren.at(i));
+		}
+	}
+	
+	mChildren.clear();
+	FlagRender();
+}
+
 //Deep searching method. Allows us to grab Objects from the mChildren of our mChildrens mChildren
 Widget* Widget::Get(string id, bool searchDeep, uShort type) 
 {

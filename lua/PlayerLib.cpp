@@ -4,11 +4,11 @@
 #include "LuaCommon.h"
 #include "../core/TimerManager.h"
 #include "../entity/LocalActor.h"
-#include "../entity/Lunem.h"
+//#include "../entity/Lunem.h"
 #include "../game/GameManager.h"
-#include "../interface/Inventory.h"
-#include "../interface/PlayerActionMenu.h"
-#include "../interface/LunemParty.h"
+//#include "../interface/Inventory.h"
+//#include "../interface/PlayerActionMenu.h"
+//#include "../interface/LunemParty.h"
 #include "../map/Map.h"
 
 struct queuedPlayerWarp
@@ -105,6 +105,7 @@ int player_Warp(lua_State* ls)
 *	INVENTORY RELATED
 ********************************/
 
+/*
 //.GiveItem(tItem) - Adds the detailed item to our inventory. 
 int player_GiveItem(lua_State* ls)
 {
@@ -167,6 +168,7 @@ int player_AddCash(lua_State* ls)
 	inventory->SetCash( mydorra + amt );
 	return 0;
 }
+*/
 
 // .GetProp("property") returns a cptr, number, or string based on the property we're retrieving
 int player_GetProp(lua_State* ls) 
@@ -202,6 +204,7 @@ int player_SetProp(lua_State* ls)
 	return 0;
 }
 
+/*
 //	.EarnAchievement(title, desc<can only be set once>, max<can only be set once>)
 //		Will +1 the total for the achievement. If total == max, display to the player
 int player_EarnAchievement(lua_State* ls)
@@ -360,11 +363,13 @@ int player_HasUsablePartyMember(lua_State* ls)
 	lua_pushboolean( ls, game->mParty->HasLivingMember() );
 	return 1;
 }	
+*/
 
 /*	.UseItemOnPartyMember("id")
 		Will open the party dialog for the player to select a target party member. 
 		Once a member is selected, will send out ITEM_USE with an additional table item: slot
-*/				
+*/		
+/*		
 int player_UseItemOnPartyMember(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
@@ -383,19 +388,19 @@ int player_EndDuelTurn(lua_State* ls)
 	game->EndPlayersDuelTurn();
 	return 0;	
 }
-
+*/
 static const luaL_Reg functions[] = {
 	{"GetActor", player_GetActor},
 	{"IsInChatMode", player_IsInChatMode},
 	{"Warp", player_Warp},
-	{"GiveItem", player_GiveItem},
+/*	{"GiveItem", player_GiveItem},
 	{"GetItem", player_GetItem},
 	{"TakeItem", player_TakeItem},
 	{"GetCash", player_GetCash},
-	{"AddCash", player_AddCash},
+	{"AddCash", player_AddCash}, */
 	{"GetProp", player_GetProp},
 	{"SetProp", player_SetProp},
-	{"EarnAchievement", player_EarnAchievement},
+/*	{"EarnAchievement", player_EarnAchievement},
 	{"GetAchievement", player_GetAchievement},
 	{"RequestDuelAction", player_RequestDuelAction},
 	{"GetPartySlot", player_GetPartySlot},
@@ -404,7 +409,7 @@ static const luaL_Reg functions[] = {
 	{"IsPartyFull", player_IsPartyFull},
 	{"UseItemOnPartyMember", player_UseItemOnPartyMember},
 	{"EndDuelTurn", player_EndDuelTurn},
-	{"HasUsablePartyMember", player_HasUsablePartyMember},
+	{"HasUsablePartyMember", player_HasUsablePartyMember}, */
 	{NULL, NULL}
 };
 

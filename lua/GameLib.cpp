@@ -8,8 +8,8 @@
 #include "../core/net/IrcNet2.h"
 #include "../core/net/DataPacket.h"
 #include "../entity/RemoteActor.h"
-#include "../interface/ScreenText.h"
-#include "../interface/ActorStats.h"
+//#include "../interface/ScreenText.h"
+//#include "../interface/ActorStats.h"
 
 // .Print("Message")
 int game_Print(lua_State* ls)
@@ -86,6 +86,7 @@ int game_ToggleHud(lua_State* ls)
 	return 0;
 }
 
+/*
 //	.SetScreenText("text", r, g, b, animationType, y<300>)
 int game_SetScreenText(lua_State* ls)
 {
@@ -110,7 +111,7 @@ int game_SetScreenText(lua_State* ls)
 	
 	return 0;
 }
-
+*/
 //	.ShowInfoBar("id", "text", duration, "imagefile"<nil>)
 int game_ShowInfoBar(lua_State* ls)
 {
@@ -140,6 +141,7 @@ int game_GetMode(lua_State* ls)
 	return 1;
 }
 
+/*
 // ptr  = .NewStatsBar(actor, x, y)
 int game_NewStatsBar(lua_State* ls)
 {
@@ -190,6 +192,7 @@ int game_IsStatsBarDecreasing(lua_State* ls)
 		
 	return 1;	
 }
+*/
 
 //	x, y = .GetCursorPosition()
 int game_GetCursorPosition(lua_State* ls)
@@ -235,13 +238,13 @@ static const luaL_Reg functions[] = {
 	{"Version", game_Version},
 	{"ToggleChat", game_ToggleChat},
 	{"ToggleHud", game_ToggleHud},
-	{"SetScreenText", game_SetScreenText},
+//	{"SetScreenText", game_SetScreenText},
 	{"ShowInfoBar", game_ShowInfoBar},
 	{"SetMode", game_SetMode},
 	{"GetMode", game_GetMode},
-	{"NewStatsBar", game_NewStatsBar},
+/*	{"NewStatsBar", game_NewStatsBar},
 	{"RemoveStatsBar", game_RemoveStatsBar},
-	{"IsStatsBarDecreasing", game_IsStatsBarDecreasing},
+	{"IsStatsBarDecreasing", game_IsStatsBarDecreasing},*/
 	{"GetCursorPosition", game_GetCursorPosition},
 	{"GetCursorMapPosition", game_GetCursorMapPosition},
 	{NULL, NULL}

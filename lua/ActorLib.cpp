@@ -213,7 +213,7 @@ int actor_Face(lua_State* ls)
 	a->Face(e);
 	return 0;
 }
-
+/*
 // .GainExp(actor, number)
 int actor_GainExp(lua_State* ls)
 {
@@ -275,7 +275,7 @@ int actor_SetSkill(lua_State* ls)
 	
 	return 0;	
 }
-
+*/
 static const luaL_Reg functions[] = {
 	{"IsIdle", actor_IsIdle},
 	{"IsJumping", actor_IsJumping},
@@ -290,10 +290,10 @@ static const luaL_Reg functions[] = {
 	{"AddToBuffer", actor_AddToBuffer},
 	{"LoadAvatar", actor_LoadAvatar},
 	{"Face", actor_Face},
-	{"GainExp", actor_GainExp},
+/*	{"GainExp", actor_GainExp},
 	{"TakeDamage", actor_TakeDamage},
 	{"GetSkill", actor_GetSkill},
-	{"SetSkill", actor_SetSkill},
+	{"SetSkill", actor_SetSkill},*/
 	{NULL, NULL}
 };
 

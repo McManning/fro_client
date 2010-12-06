@@ -49,19 +49,18 @@ int callback_welcomeXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 	
 	if (id == "msg")
 	{
-		new MessagePopup("", xf->GetParamString(e, "title"), xf->GetText(e), true);	
+		new MessagePopup("", xf->GetParamString(e, "title"), xf->GetText(e), xf->GetParamInt(e, "long"));	
 	}
-	else if (id == "alert")
+	else if (id == "error") // <error title="blah" long="1">TEXT</error>
 	{
-		new MessagePopup("", xf->GetParamString(e, "title"), xf->GetText(e));	
-	}
-	else if (id == "error") // <error>TEXT</error>
-	{
-		new MessagePopup("", "Error", xf->GetText(e));	
+		new MessagePopup("", xf->GetParamString(e, "title"), xf->GetText(e), xf->GetParamInt(e, "long"));	
 		//game->syboltId.clear();
 		//game->syboltPass.clear();
 		game->mUsername.clear();
 		game->mPassword.clear();
+		
+		if (loginDialog)
+			loginDialog->SetControlState(true);
 	}
 	else if (id == "update") // <update title="??">TEXT</update>
 	{

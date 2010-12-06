@@ -139,6 +139,7 @@ class Widget
 	
 	virtual bool Add(Widget* child);
 	virtual bool Remove(Widget* child, bool deleteClass);
+	virtual void RemoveAll();
 	
 	/*	Deep searching method. Allows us to grab Objects from the 
 		children of our childrens children

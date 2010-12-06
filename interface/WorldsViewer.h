@@ -4,19 +4,15 @@
 
 #include "../core/Core.h"
 #include "../core/widgets/Frame.h"
-#include "../core/widgets/Scrollbar.h"
 #include "../core/widgets/Button.h"
+#include "../core/widgets/WidgetList.h"
 
 class WorldsViewer : public Frame
 {
   public:
 	WorldsViewer();
 	~WorldsViewer();
-	
-	void Render();
 
-	void UpdateChannelCount(string channel, int count);
-	
 	struct worldInfo
 	{
 		string title;
@@ -26,19 +22,6 @@ class WorldsViewer : public Frame
 		int rating;
 		Image* icon;
 	};
-
-	std::vector<worldInfo> mWorlds;
-
-	Frame* mListFrame;
-	Scrollbar* mScroller;
-	Button* mRefresh;
-	Button* mOfficialList;
-	Button* mPersonalsList;
-	
-	Image* mDefaultIcon;
-
-	void RefreshWorlds(int type);
-	int mCurrentView; 
 	
 	enum 
 	{
@@ -47,9 +30,17 @@ class WorldsViewer : public Frame
 		VIEW_FAVORITES
 	};
 	
-  private:
-	void _load();
-	int _renderSingle(rect r, int index);
+	void RefreshWorlds(int type);
+	
+	std::vector<worldInfo> mWorlds;
+
+	WidgetList* mList;
+	Label* mRefreshingNotice;
+	Button* mRefresh;
+	Button* mOfficialList;
+	Button* mPersonalsList;
+
+	int mCurrentView; 
 };
 
 #endif //_WORLDSVIEWER_H_

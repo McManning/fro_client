@@ -18,7 +18,7 @@ const char* const PLAYERDATA_FILE = "profile.save";
 class Map;
 class LocalActor;
 class IrcNet;
-class LunemParty;
+//class LunemParty;
 class GameManager : public Frame
 {
   public:
@@ -46,25 +46,25 @@ class GameManager : public Frame
 
 	void ToggleHud(bool visible);
 	
-	void EndPlayersDuelTurn();
+//	void EndPlayersDuelTurn();
 
 	bool IsMapLoading() const { return mLoader &&  mLoader->m_state != WorldLoader::WORLD_ACTIVE && mLoader->m_state != WorldLoader::IDLE; };
 	
 	void UnloadMap();
 	
-	void DisplayAchievement(string title);
+	//void DisplayAchievement(string title);
 	
 	/*	Returns the total number of points earned so far in the achievement, or 0 if passed in invalid parameters
 		(max < 1 or title is empty)
 	*/
-	int EarnAchievement(string title, string desc, int max);
+	//int EarnAchievement(string title, string desc, int max);
 	
 	Map* mMap;
 	LocalActor* mPlayer;
 	Console* mChat;
 	IrcNet* mNet;
 	WorldLoader* mLoader;
-	LunemParty* mParty;
+	//LunemParty* mParty;
 	
 	Frame* mHud;
 
@@ -94,10 +94,11 @@ class GameManager : public Frame
 	void ToggleGameMode(gameMode mode);
 	void ShowInfoBar(string id, string msg, int duration, string imageFile = "");
 
-	void EnableDuelMode();
+/*	void EnableDuelMode();
 	void DisableDuelMode();
 	bool IsInDuel();
-	
+*/
+
 	void HideChat();
 	void ShowChat();
 
@@ -105,7 +106,7 @@ class GameManager : public Frame
 	void _buildHud();
 	void _buildChatbox();
 	void _hookCommands();
-	void _addNewAchievement(string title, string desc, int max);
+	//void _addNewAchievement(string title, string desc, int max);
 };
 
 extern GameManager* game;

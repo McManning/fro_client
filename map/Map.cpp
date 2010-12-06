@@ -11,13 +11,13 @@
 #include "../game/IrcNetListeners.h"
 #include "../lua/MapLib.h"
 #include "../interface/AvatarFavoritesDialog.h"
-#include "../interface/Inventory.h"
-#include "../interface/ItemTrade.h"
+//#include "../interface/Inventory.h"
+//#include "../interface/ItemTrade.h"
 
 
 /*	TODO: Relocate these callbacks for the remote player menu */
 
-void callback_playerMenuBeat(RightClickMenu* m, void* userdata)
+/*void callback_playerMenuBeat(RightClickMenu* m, void* userdata)
 {
 	RemoteActor* ra = (RemoteActor*)userdata;
 	
@@ -58,6 +58,7 @@ void callback_playerMenuBeat(RightClickMenu* m, void* userdata)
 	//limit the number of times they can use the beat command
 	timers->Add("rpbeat", 10 * 1000, false, NULL, NULL, NULL);
 }
+*/
 
 void callback_playerMenuPrivmsg(RightClickMenu* m, void* userdata)
 {
@@ -67,6 +68,7 @@ void callback_playerMenuPrivmsg(RightClickMenu* m, void* userdata)
 		game->GetPrivateChat(ra->mName);
 }
 
+/*
 void callback_playerMenuTrade(RightClickMenu* m, void* userdata)
 {
 	RemoteActor* ra = (RemoteActor*)userdata;
@@ -74,6 +76,7 @@ void callback_playerMenuTrade(RightClickMenu* m, void* userdata)
 	if (ra)
 		handleOutboundTradeRequest(ra->mName);
 }
+*/
 
 void callback_playerMenuToggleBlock(RightClickMenu* m, void* userdata)
 {

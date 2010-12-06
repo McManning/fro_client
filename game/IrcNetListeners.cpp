@@ -1,12 +1,12 @@
 
 #include "IrcNetListeners.h"
 #include "GameManager.h"
-#include "Achievements.h"
+//#include "Achievements.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/widgets/Multiline.h"
 #include "../interface/UserList.h"
 #include "../interface/LoginDialog.h"
-#include "../interface/ItemTrade.h"
+//#include "../interface/ItemTrade.h"
 #include "../interface/OptionsDialog.h"
 #include "../map/Map.h"
 #include "../core/net/IrcNet2.h"
@@ -167,7 +167,7 @@ void netSendSay(string text) //say $message
 		cb->mMap = game->mMap;
 		cb->mMap->AddEntity(cb);
 		
-		achievement_NeedASpamBlocker();
+		//achievement_NeedASpamBlocker();
 		
 		gui->GetUserAttention(); //in case they still want sound while they send a msg
 		gui->mGetUserAttention = false; //hack to stop the title from flashing when we talk
@@ -447,6 +447,7 @@ void _handleNetMessage_TradeItem(string& nick, DataPacket& data) //trITM id desc
 
 void _handleNetMessage_TradeRequest(string& nick, DataPacket& data) //trREQ
 {
+#ifdef TRADE_ENABLED
 	if (!game->mMap) return;
 		
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
@@ -454,6 +455,7 @@ void _handleNetMessage_TradeRequest(string& nick, DataPacket& data) //trREQ
 	if (!ra) { _handleUnknownUser(nick); return; }
 
 	handleInboundTradeRequest(ra);
+#endif
 }
 
 void _handleNetMessage_RequestAvatar(string& nick, DataPacket& data) //reqAvy
@@ -649,16 +651,18 @@ void _handleNetMessage_Nm(string& nick, DataPacket& data)
 
 void _handleNetMessage_Ach(string& nick, DataPacket& data) // ach $id $desc #max
 {	
+/*
 	string title = data.ReadString();
 	string desc = data.ReadString();
 	int max = data.ReadInt();
 	
 	game->EarnAchievement(title, desc, max);
+*/
 }
 
 void _handleNetMessage_PlayerEarnedAchievement(string& nick, DataPacket& data) // ern $title
 {
-	if (!game->mMap) return;
+/*	if (!game->mMap) return;
 		
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
@@ -669,7 +673,7 @@ void _handleNetMessage_PlayerEarnedAchievement(string& nick, DataPacket& data) /
 	string title = data.ReadString();
 	
 	game->mChat->AddMessage("\\c139 * " + nick + "\\c999 achieved: \\c080 " + title);
-	ra->Emote(11);
+	ra->Emote(11);*/
 }
 
 void _handleNetMessage_Afk(string& nick, DataPacket& data)

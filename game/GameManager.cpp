@@ -4,7 +4,7 @@
 #endif
 
 #include "GameManager.h"
-#include "Achievements.h"
+//#include "Achievements.h"
 #include "IrcNetListeners.h"
 #include "CollisionBlob.h"
 #include "../map/BasicMap.h"
@@ -28,14 +28,14 @@
 #include "../interface/UserList.h"
 #include "../interface/AvatarFavoritesDialog.h"
 #include "../interface/OptionsDialog.h"
-#include "../interface/MyAchievements.h"
+//#include "../interface/MyAchievements.h"
 #include "../interface/AvatarCreator.h"
-#include "../interface/MiniMenu.h"
-#include "../interface/LunemParty.h"
-#include "../interface/WorldsViewer.h"
-#include "../interface/ScreenText.h"
+//#include "../interface/MiniMenu.h"
+//#include "../interface/LunemParty.h"
+//#include "../interface/WorldsViewer.h"
+//#include "../interface/ScreenText.h"
 
-#include "../backpack/Backpack.h"
+//#include "../backpack/Backpack.h"
 
 GameManager* game;
 
@@ -383,8 +383,8 @@ void callback_chatCommandNick(Console* c, string s) // /nick nickname
 
 void callback_chatCommandWorldsViewer(Console* c, string s)
 {	
-	if (!gui->Get("worldsviewer"))
-		new WorldsViewer();
+	//if (!gui->Get("worldsviewer"))
+	//	new WorldsViewer();
 }
 
 void callback_chatCommandMsg(Console* c, string s) // /msg nick message
@@ -503,7 +503,7 @@ GameManager::GameManager()
 	mChat = NULL;
 	mNet = NULL;
 	mLoader = NULL;
-	mParty = NULL;
+	//mParty = NULL;
 	
 	PRINT("[GM] Starting");
 	
@@ -551,11 +551,8 @@ GameManager::GameManager()
 
 	PRINT("[GM] Loading Inventory");
 
-	inventory = new Inventory();
-	inventory->SetVisible(false);
-
-	mParty = new LunemParty;
-	mParty->SetVisible(false);
+	//mParty = new LunemParty;
+	//mParty->SetVisible(false);
 
 	PRINT("[GM] Loading HUD");
 	_buildHud();
@@ -570,7 +567,7 @@ GameManager::GameManager()
 	
 	ToggleGameMode(MODE_ACTION);
 
-	Backpack* pack = new Backpack();
+	//Backpack* pack = new Backpack();
 	
 	ToggleHud(false);
 }
@@ -601,11 +598,6 @@ GameManager::~GameManager()
 	}
 	
 	PRINT("~GameManager 5");
-	
-	if (inventory)
-		inventory->Save();
-
-	PRINT("~GameManager 6");
 
 	SavePlayerData();
 
@@ -639,7 +631,14 @@ void callback_gameHudSubButton(Button* b)
 			if (!gui->Get("avyfavs"))
 				new AvatarFavorites();
 			break;
-		case 'i': //inventory
+		case 'o': 
+			if (!gui->Get("optionsdialog"))
+			{
+				OptionsDialog* o = new OptionsDialog();
+				o->DemandFocus(true);
+			}
+			break;
+		/*case 'i': //inventory
 			ASSERT(inventory);
 			inventory->SetVisible(true);
 			inventory->MoveToTop();
@@ -647,16 +646,16 @@ void callback_gameHudSubButton(Button* b)
 		case 'c': //achievements
 			if (!gui->Get("achievements"))
 				new MyAchievements();
-			break;
+			break;*/
 		case 'u': //userlist
 			if (!gui->Get("userlist"))
 				new UserList();
 			break;
-		case 'p': //party
+		/*case 'p': //party
 			game->mParty->SetVisible(true);
 			game->mParty->SetMenuMode(ActorStats::PARTY_VIEW_MENU);
 			game->mParty->MoveToTop();
-			break;
+			break;*/
 		default: break;
 	}
 }
@@ -669,23 +668,23 @@ void GameManager::_buildHud()
 
 	mHud = new Frame(this, "", rect(12,12,0,0));
 
-/*	b = new Button(mHud, "b", rect(x,0,35,35), "", callback_gameHudSubButton);
-		b->mHoverText = "Report A Bug";
-		b->SetImage("assets/hud/reportbug.png");
+	b = new Button(mHud, "o", rect(x,0,35,35), "", callback_gameHudSubButton);
+		b->mHoverText = "Options";
+		b->SetImage("assets/hud/options.png");
 	x += 40;
 	sx += 35;
-*/
+
 	b = new Button(mHud, "u", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "Userlist";
 		b->SetImage("assets/hud/userlist.png");
 	x += 40;
 	sx += 35;
 
-	b = new Button(mHud, "c", rect(x,0,35,35), "", callback_gameHudSubButton);
+	/*b = new Button(mHud, "c", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "My Achievements";
 		b->SetImage("assets/hud/achievements.png");
 	x += 40;
-	sx += 35;
+	sx += 35;*/
 
 	b = new Button(mHud, "a", rect(x,0,35,35), "", callback_gameHudSubButton);
 		b->mHoverText = "My Avatars";
@@ -804,13 +803,13 @@ void GameManager::Event(SDL_Event* event)
 			ResizeChildren();
 			break;
 		case SDL_KEYUP:
-			if (event->key.keysym.sym == SDLK_RSHIFT || event->key.keysym.sym == SDLK_LSHIFT)
+			/*if (event->key.keysym.sym == SDLK_RSHIFT || event->key.keysym.sym == SDLK_LSHIFT)
 			{
 				achievement_StickyKeys();
-			}
+			}*/
 			break;
 		case SDL_KEYDOWN:
-			if (event->key.keysym.sym == SDLK_ESCAPE)
+			/*if (event->key.keysym.sym == SDLK_ESCAPE)
 			{
 				Widget* w = gui->Get("MiniMenu");
 				if (!w)
@@ -818,7 +817,8 @@ void GameManager::Event(SDL_Event* event)
 				else
 					w->Die();
 			}
-			else if (event->key.keysym.sym == SDLK_TAB && mGameMode != MODE_DUEL)
+			else*/ 
+			if (event->key.keysym.sym == SDLK_TAB && mGameMode != MODE_DUEL)
 			{
 				ToggleGameMode( (mGameMode == MODE_ACTION) ? MODE_CHAT : MODE_ACTION );
 			}
@@ -889,8 +889,8 @@ void GameManager::GenerateDefaultPlayerData()
 	mPlayerData.SetParamInt(e, "amount", 100);
 
 	mPlayerData.AddChildElement(root, "flags");
-	mPlayerData.AddChildElement(root, "inventory");
-	mPlayerData.AddChildElement(root, "achievements");
+	//mPlayerData.AddChildElement(root, "inventory");
+	//mPlayerData.AddChildElement(root, "achievements");
 
 	// <chat position=""/>
 	e = mPlayerData.AddChildElement(root, "chat");
@@ -990,6 +990,7 @@ void GameManager::SavePlayerData()
 	}
 }
 
+/*
 void GameManager::DisplayAchievement(string title)
 {
 	//TODO: Popup and AWESOME STUFFS!
@@ -1083,7 +1084,8 @@ int GameManager::EarnAchievement(string title, string desc, int max)
 	
 	return 1;
 }
-	
+*/
+
 void GameManager::UpdateAppTitle()
 {
 	string title = "fro [Build ";
@@ -1114,10 +1116,11 @@ void GameManager::UpdateAppTitle()
 
 void GameManager::ToggleGameMode(gameMode mode)
 {	
-	if (mode == MODE_DUEL && mGameMode != MODE_DUEL)
+	/*if (mode == MODE_DUEL && mGameMode != MODE_DUEL)
 		EnableDuelMode();
 	else if (mGameMode == MODE_DUEL && mode != MODE_DUEL) //if we're switching FROM duel
 		DisableDuelMode();
+	*/
 	
 	mGameMode = mode;
 	
@@ -1194,19 +1197,20 @@ void GameManager::ToggleHud(bool visible)
 	w = gui->Get("userlist");
 	if (w) w->Die();
 	
-	w = gui->Get("achievements");
-	if (w) w->Die();
+	//w = gui->Get("achievements");
+	//if (w) w->Die();
 
-	if (inventory)
-		inventory->SetVisible(false);
+	//if (inventory)
+	//	inventory->SetVisible(false);
 		
-	if (mParty)
-		mParty->SetVisible(false);
+	//if (mParty)
+	//	mParty->SetVisible(false);
 		
-	w = gui->Get("Backpack");
-	if (w) w->SetVisible(visible);
+	//w = gui->Get("Backpack");
+	//if (w) w->SetVisible(visible);
 }
 
+/*
 void GameManager::EndPlayersDuelTurn()
 {
 	if (mMap)
@@ -1237,6 +1241,7 @@ bool GameManager::IsInDuel()
 {
 	return (mGameMode == MODE_DUEL);
 }
+*/
 
 void GameManager::HideChat()
 {
@@ -1250,8 +1255,8 @@ void GameManager::HideChat()
 			b2->SetImage("assets/buttons/show_chat.png");
 	}
 	
-	if (!IsInDuel())
-		ToggleGameMode(GameManager::MODE_ACTION);
+	//if (!IsInDuel())
+	//	ToggleGameMode(GameManager::MODE_ACTION);
 }
 
 void GameManager::ShowChat()
@@ -1261,8 +1266,8 @@ void GameManager::ShowChat()
 	
 	mChat->SetVisible(true);
 		
-	if (!IsInDuel())
-		ToggleGameMode(GameManager::MODE_CHAT);
+	//if (!IsInDuel())
+	//	ToggleGameMode(GameManager::MODE_CHAT);
 }
 
 

@@ -1,7 +1,6 @@
 
 #include <SDL/SDL.h>
 #include "GuiManager.h"
-#include "TimeProfiler.h"
 #include "widgets/Console.h"
 #include "widgets/Input.h"
 #include "Image.h"

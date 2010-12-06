@@ -29,7 +29,6 @@ class OptionsDialog : public Frame
 	Frame* mFrameGraphics;
 
 };
-extern OptionsDialog* optionsDialog;
 
 #endif //_OPTIONSDIALOG_H_
 

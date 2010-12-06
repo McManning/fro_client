@@ -128,7 +128,7 @@ bool Entity::CollidesWith(rect r)
 		return false; 
 		
 	rect rr;
-	for (uShort i = 0; i < mCollisionRects.size(); i++)
+	for (int i = 0; i < mCollisionRects.size(); i++)
 	{
 		rr = mCollisionRects.at(i);
 		rr.x += mPosition.x - mOrigin.x;
@@ -148,7 +148,7 @@ bool Entity::IsCollidingWithSolid()
 		
 	ASSERT(mMap);
 	rect r;
-	for (uShort i = 0; i < mCollisionRects.size(); i++)
+	for (int i = 0; i < mCollisionRects.size(); i++)
 	{
 		r = mCollisionRects.at(i);
 		r.x += mPosition.x - mOrigin.x;
@@ -165,7 +165,7 @@ bool Entity::IsCollidingWithEntity(Entity* e)
 		return false;
 		
 	rect r;
-	for (uShort i = 0; i < mCollisionRects.size(); i++)
+	for (int i = 0; i < mCollisionRects.size(); i++)
 	{
 		r = mCollisionRects.at(i);
 		r.x += mPosition.x - mOrigin.x;
