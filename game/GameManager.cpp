@@ -1147,8 +1147,6 @@ void GameManager::ToggleGameMode(gameMode mode)
 
 void GameManager::ShowInfoBar(string id, string msg, int duration, string imageFile)
 {
-	return; //TEMP DISABLED
-	
 	rect r;
 
 	//if (mInfoBar)
