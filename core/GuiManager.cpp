@@ -606,6 +606,20 @@ void GuiManager::GetUserAttention()
 	}
 }
 
+void _flashWindowState(bool bInvert)
+{
+#ifdef WIN32
+	// TODO: Check return values
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWMInfo(&wmInfo);
+	HWND hWnd = wmInfo.window;
+
+	// http://msdn.microsoft.com/en-us/library/ms679346(v=vs.85).aspx
+	FlashWindow(hWnd, bInvert);
+#endif
+}
+
 void GuiManager::ThinkInSeconds(uLong ms)
 {
 	if (isAppClosing())
@@ -615,11 +629,15 @@ void GuiManager::ThinkInSeconds(uLong ms)
 
 	//if we're flashing and focused, do flash
 	if (mTitleFlashOn && mGetUserAttention)
+	{
 		SDL_WM_SetCaption("--------------------------------", NULL);
+		_flashWindowState(true);
+	}
 	else
 	{
-		string title = mAppTitle; // + " [FPS: " + its(mFps) + " BPS: " + its(mBps) + "]";
-		SDL_WM_SetCaption(title.c_str(), NULL);
+		//string title = mAppTitle; // + " [FPS: " + its(mFps) + " BPS: " + its(mBps) + "]";
+		SDL_WM_SetCaption(mAppTitle.c_str(), NULL);
+		_flashWindowState(false); // TODO: Should this be called every second, even when disabled? 
 	}
 	
 	

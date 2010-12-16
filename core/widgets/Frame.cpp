@@ -138,8 +138,8 @@ void Frame::Event(SDL_Event* event)
 				if (mResizing)
 				{
 					SetPosition( rect(mPosition.x, mPosition.y,
-										mPosition.w + event->motion.xrel,
-										mPosition.h + event->motion.yrel)
+										mPosition.w + gui->GetMouseVelocityX(), //event->motion.xrel,
+										mPosition.h + gui->GetMouseVelocityY()) //event->motion.yrel)
 								);
 				}
 				else if (mMoveable)

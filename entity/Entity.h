@@ -21,7 +21,7 @@ typedef enum
 	ENTITY_ACTOR = 1000,
 	ENTITY_REMOTEACTOR,
 	ENTITY_LOCALACTOR,
-	ENTITY_LUNEM,
+	//ENTITY_LUNEM,
 	//Place other actor-inherited entities here.
 	ENTITY_END_ACTORS, //Do not use, just as a marker
 	

@@ -1302,8 +1302,18 @@ without either compatibility mode enabled, or security warnings, as seen with th
 		and the source files were simply dead weight in the application.
 - Added link to Options Dialog back to HUD
 - Re-enabled Game::ShowInfoBar() as the new backpack is currently gone
-- 
-	
+
+(Commit to revision 57)
+
+----- PUBLIC RELEASE AS 1.4.0 -----
+
+101214
+- Added FlashWindow() winapi call to GuiManager::ThinkInSeconds() to attempt to fix notifications in Windows 7
+- Fixed bug in saving avatars from AvatarCreator. If saved/ directory did not exist, it would not generate the avatar.
+- "Fixed" (Untested) exponential resize bug in Frame widget
+
+
+
 WORKING ON:
 
 - Added WidgetList widget (Inherited from Frame). Deals with children positioning differently and

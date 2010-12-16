@@ -45,7 +45,6 @@ string Entity::GetTypeName()
 		case ENTITY_ACTOR: return "actor";
 		case ENTITY_STATICOBJECT: return "object";
 		case ENTITY_TEXT: return "text";
-		case ENTITY_LUNEM: return "lunem";
 		case ENTITY_DAMAGEICON: return "damageicon";
 		default: return "unknown";
 	}

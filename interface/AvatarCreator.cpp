@@ -516,6 +516,8 @@ void AvatarCreator::SaveToFile()
 	if (!mFullComposite)
 		return;
 	
+	buildDirectoryTree("saved/");
+	
 	string file = "saved/creation_" + timestamp(true) + ".png";
 	mFullComposite->SavePNG(file);
 	new MessagePopup("", "Avatar Saved", "Saved to " + file);
