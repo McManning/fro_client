@@ -235,6 +235,8 @@ void Scrollbar::SetValue(int val)
 
 	if (mShowValue)
 		mHoverText = its(val);
+		
+	FlagRender();
 }
 
 uShort Scrollbar::ScrollArea()

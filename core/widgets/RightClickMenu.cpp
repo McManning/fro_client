@@ -40,6 +40,8 @@ uShort timer_SetTempWidget(timer* t, uLong u)
 RightClickMenu::RightClickMenu()
 {
 	mType = WIDGET_FRAME;
+	onCloseCallback = NULL;
+	
 	//mTemporary = true; // if we do anything outside this widget, it'll destroy itself
 	
 	//Mouse may move outside our frame while dragging. TODO: Find a way to fix that issue!
@@ -53,6 +55,12 @@ RightClickMenu::RightClickMenu()
 	
 	// Very VERY gross hack to activate temporary state after the event we were created on
 	timers->Add("", 1, false, timer_SetTempWidget, NULL, this);
+}
+
+RightClickMenu::~RightClickMenu()
+{
+	if (onCloseCallback)
+		onCloseCallback(this);	
 }
 
 void RightClickMenu::AddOption(string text, void (*callback)(RightClickMenu*, void*), void* userdata)

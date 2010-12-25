@@ -244,10 +244,10 @@ int map_GetID(lua_State* ls)
 	return 1;
 }
 
-// pEnt2 = .GetNextEntityUnderMouse(pEnt)
+// pEnt2 = .GetNextEntityUnderMouse(pEnt, bMustBeClickable, bPlayersOnly)
 int map_GetNextEntityUnderMouse(lua_State* ls)
 {
-	luaCountArgs(ls, 1);
+	luaCountArgs(ls, 3);
 	
 	Entity* ent;
 	
@@ -255,14 +255,31 @@ int map_GetNextEntityUnderMouse(lua_State* ls)
 		ent = NULL;
 	else
 		ent = (Entity*)lua_touserdata(ls, 1);
+		
+	bool mustBeClickable = lua_toboolean(ls, 2);
+	bool playersOnly = lua_toboolean(ls, 3);
 	
-	ent = game->mMap->GetNextEntityUnderMouse(ent);
+	ent = game->mMap->GetNextEntityUnderMouse(ent, mustBeClickable, playersOnly);
 	
 	if (ent)
 		lua_pushlightuserdata(ls, ent);
 	else
 		lua_pushnil(ls);
 		
+	return 1;
+}
+
+//	bool = .IsRectBlocked(x, y, w, h)
+int map_IsRectBlocked(lua_State* ls)
+{
+	luaCountArgs(ls, 4);
+	rect r;
+	r.x = (int)lua_tonumber(ls, 1);	
+	r.y = (int)lua_tonumber(ls, 2);
+	r.w = (int)lua_tonumber(ls, 3);
+	r.h = (int)lua_tonumber(ls, 4);
+	
+	lua_pushboolean(ls, game->mMap->IsRectBlocked(r));
 	return 1;
 }
 
@@ -277,6 +294,7 @@ static const luaL_Reg functions[] = {
 	{"IsEditorMode", map_IsEditorMode},
 	{"SetEditorMode", map_SetEditorMode},
 	{"GetNextEntityUnderMouse", map_GetNextEntityUnderMouse},
+	{"IsRectBlocked", map_IsRectBlocked},
 	{NULL, NULL}
 };
 

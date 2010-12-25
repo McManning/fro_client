@@ -1,4 +1,5 @@
 
+#include <lua.hpp>
 #include "RemoteActor.h"
 #include "Avatar.h"
 #include "../core/net/DataPacket.h"
@@ -83,5 +84,24 @@ bool RemoteActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShor
 	}
 	
 	return result;
+}
+
+/*	index - Index of the stack where our new value for the property should be */
+int RemoteActor::LuaSetProp(lua_State* ls, string& prop, int index)
+{
+	if (prop == "blocked") SetBlocked( lua_toboolean(ls, index) );
+
+	else return Actor::LuaSetProp(ls, prop, index);
+
+	return 1;
+}
+
+int RemoteActor::LuaGetProp(lua_State* ls, string& prop)
+{
+	if (prop == "blocked") lua_pushboolean( ls, IsBlocked() );
+
+	else return Actor::LuaGetProp(ls, prop);
+
+	return 1;
 }
 

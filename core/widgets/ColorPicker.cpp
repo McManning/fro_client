@@ -58,7 +58,8 @@ ColorPicker::ColorPicker(Input* creator) :
 	mResult = new Input(this, "", rect(60, y, 102, 20), "", 32, true, NULL);
 		mResult->SetText( "\\c999" );
 		mResult->SetMenuEnabled(false);
-	
+		mResult->mReadOnly = true;
+		
 	//add a button that'll send our color to the input
 	if (mCreator)
 	{
@@ -105,4 +106,5 @@ void ColorPicker::Render()
 void ColorPicker::Update()
 {
 	mResult->SetText("\\c" + its(mRed->GetValue()) + its(mGreen->GetValue()) + its(mBlue->GetValue()));
+	FlagRender();
 }

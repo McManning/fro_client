@@ -796,43 +796,76 @@ void GameManager::Render()
 
 void GameManager::Event(SDL_Event* event)
 {
+	MessageData md;
 	switch (event->type)
 	{
 		case SDL_VIDEORESIZE:
 			SetSize(gui->Width(), gui->Height());
 			ResizeChildren();
 			break;
-		case SDL_KEYUP:
-			/*if (event->key.keysym.sym == SDLK_RSHIFT || event->key.keysym.sym == SDLK_LSHIFT)
+		case SDL_MOUSEBUTTONDOWN:
+			if (mMap && mMap->HasMouseFocus())
 			{
-				achievement_StickyKeys();
-			}*/
+				md.SetId("MAP_MOUSEDOWN");
+				md.WriteInt("id", event->button.button);
+				messenger.Dispatch(md);
+			}
+			break;
+		case SDL_MOUSEBUTTONUP:
+			if (mMap && mMap->HasMouseFocus())
+			{
+				md.SetId("MAP_MOUSEUP");
+				md.WriteInt("id", event->button.button);
+				messenger.Dispatch(md);
+			}
+			break;
+		case SDL_MOUSEMOTION:
+			if (mMap && mMap->HasMouseFocus())
+			{
+				md.SetId("MAP_MOUSEMOVE");
+				md.WriteInt("x", event->motion.x);
+				md.WriteInt("y", event->motion.y);
+				messenger.Dispatch(md);	
+			}
 			break;
 		case SDL_KEYDOWN:
-			/*if (event->key.keysym.sym == SDLK_ESCAPE)
+			if (HasKeyFocusInTree())
 			{
-				Widget* w = gui->Get("MiniMenu");
-				if (!w)
-					new MiniMenu();
-				else
-					w->Die();
+				md.SetId("MAP_KEYDOWN");
+				md.WriteInt("id", event->key.keysym.sym);
+				messenger.Dispatch(md);
+				
+				if (event->key.keysym.sym == SDLK_TAB && mGameMode != MODE_DUEL)
+				{
+					ToggleGameMode( (mGameMode == MODE_ACTION) ? MODE_CHAT : MODE_ACTION );
+				}
 			}
-			else*/ 
-			if (event->key.keysym.sym == SDLK_TAB && mGameMode != MODE_DUEL)
+			break;
+		case SDL_KEYUP:
+			if (HasKeyFocusInTree())
 			{
-				ToggleGameMode( (mGameMode == MODE_ACTION) ? MODE_CHAT : MODE_ACTION );
+				/*if (event->key.keysym.sym == SDLK_RSHIFT || event->key.keysym.sym == SDLK_LSHIFT)
+				{
+					achievement_StickyKeys();
+				}*/
+			
+				md.SetId("MAP_KEYUP");
+				md.WriteInt("id", event->key.keysym.sym);
+				messenger.Dispatch(md);
 			}
-		
-			//if (mGameMode == MODE_CHAT && mChat)
-			//	mChat->mInput->SetKeyFocus(true);
 			break;
 		default: break;	
 	}
 	
 	Frame::Event(event);
 	
-	if (!gui->hasKeyFocus && mMap)
-		mMap->SetKeyFocus(true);
+	if (!gui->hasKeyFocus || gui->hasKeyFocus == mMap)
+	{
+		if (mGameMode != MODE_ACTION)
+			mChat->mInput->SetKeyFocus();
+		else if (mMap)
+			mMap->SetKeyFocus(true);
+	}
 }
 
 Console* GameManager::GetPrivateChat(string nick)

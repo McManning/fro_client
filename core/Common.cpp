@@ -1,5 +1,5 @@
 
-
+#include <SDL/SDL_syswm.h>
 #include "Common.h"
 #include "io/FileIO.h"
 #include "io/XmlFile.h"
@@ -851,4 +851,18 @@ void loadGlobalConfig()
 bool isWhitespace(char c)
 {
 	return ( isspace( (unsigned char) c ) || c == '\n' || c == '\r' || c == '\t' );
+}
+
+void flashWindowState(bool bInvert)
+{
+#ifdef WIN32
+	// TODO: Check return values
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWMInfo(&wmInfo);
+	HWND hWnd = wmInfo.window;
+
+	// http://msdn.microsoft.com/en-us/library/ms679346(v=vs.85).aspx
+	FlashWindow(hWnd, bInvert);
+#endif
 }

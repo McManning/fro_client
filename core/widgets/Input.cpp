@@ -729,9 +729,11 @@ void Input::Clear()
 void Input::Changed() 
 {
 	mNeedUpdate = true; 
-
+	
 	if (onChangeCallback)
 		onChangeCallback(this);
+	
+	FlagRender();
 }
 
 void Input::PushInput(string msg)

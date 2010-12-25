@@ -1309,12 +1309,47 @@ without either compatibility mode enabled, or security warnings, as seen with th
 
 101214
 - Added FlashWindow() winapi call to GuiManager::ThinkInSeconds() to attempt to fix notifications in Windows 7
-- Fixed bug in saving avatars from AvatarCreator. If saved/ directory did not exist, it would not generate the avatar.
-- "Fixed" (Untested) exponential resize bug in Frame widget
+- Fixed bug in saving avatars from AvatarCreator. If saved/ directory did  not exist, it would not generate the avatar.
 
+101215
+- Replaced titlebar "--------" toggling with native window flashing
 
+101216
+- Added MAP_KEYDOWN, MAP_KEYUP, MAP_MOUSEDOWN, MAP_MOUSEUP events that could be hookable by lua.
+	Each one comes with an "id" parameter that can be used to identify what button/key. 
+- Rewrote Map::GetNextEntityUnderMouse() and Lua's pEnt2 = Map.GetNextEntityUnderMouse(pEnt, bMustBeClickable, bPlayersOnly)
 
+101217
+- Added to lua: 
+	ptr = System.NewRightClickMenu()
+	System.AddToRightClickMenu(ptr, "text", "callback", userdata)
+	Game.OpenPrivateChat("nickname")
+	"blocked" property to RemoteActor's SetProp/GetProp (boolean)
+	
+101218
+- Added FlagRender() call to Widget deconstructor, Scroller, Input, and ColorPicker
+- Set ColorPicker input to readonly due to laziness when trying to hook to FlagRender()
+- Added to lua:
+	bool = Map.IsRectBlocked(x,y,w,h)
+- Added MAP_MOUSEMOVE event for listeners (Parameters: x, y)
+
+101224
+- Changed values of LAYER_USER and LAYER_SKY to seperate them out and allow abstract layers between LAYER_GROUND/LAYER_USER, etc.
+- Renamed login wallpaper to assets/login.jpg (instead of assets/tetrius.jpg)
+
+----- PUBLIC RELEASE AS 1.4.1 -----
+	
 WORKING ON:
+
+- Make the main.lua call Build()/Destroy() and return results and such. This way we have even MORE control over maps! :D
+	And it can be passed in map filenames, resfiles, whatever. And be told what the main lua file is, etc etc. So it can make
+	its own decisions. BASICALLY, tl;dr: Make it do more. 
+
+- if a focused widget loses visibility (by its parent losing visibility),
+	it can still get events. Ex: system console input after it's set to hidden
+- Buttons should really be MouseUp, not down..
+- Improve fucking lua errors. Instead of top-level function name, give the function the error
+	actually happens in, and try to give line number. God damn, real errors please. 
 
 - Added WidgetList widget (Inherited from Frame). Deals with children positioning differently and
 	lists them in order (with no re-sorting) with a scrollbar set to scroll through widgets if 

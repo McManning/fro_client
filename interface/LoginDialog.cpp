@@ -239,7 +239,7 @@ LoginDialog::LoginDialog() :
 	
 	loginDialog = this;
 	
-	mBackgroundImage = resman->LoadImg("assets/tetrius.jpg");
+	mBackgroundImage = resman->LoadImg("assets/login.jpg");
 }
 
 LoginDialog::~LoginDialog()

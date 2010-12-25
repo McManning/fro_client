@@ -231,6 +231,13 @@ int game_GetCursorMapPosition(lua_State* ls)
 	return 2;
 }
 
+//	.OpenPrivateChat("nickname")
+int game_OpenPrivateChat(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	game->GetPrivateChat( lua_tostring(ls, 1) );
+}
+
 static const luaL_Reg functions[] = {
 	{"Print", game_Print},
 	{"NetSendToChannel", game_NetSendToChannel},
@@ -247,6 +254,7 @@ static const luaL_Reg functions[] = {
 	{"IsStatsBarDecreasing", game_IsStatsBarDecreasing},*/
 	{"GetCursorPosition", game_GetCursorPosition},
 	{"GetCursorMapPosition", game_GetCursorMapPosition},
+	{"OpenPrivateChat", game_OpenPrivateChat},
 	{NULL, NULL}
 };
 

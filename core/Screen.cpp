@@ -3,7 +3,7 @@
 #include "Screen.h"
 #include "ResourceManager.h"
 
-#ifdef DEBUGxx
+#ifdef DEBUG
 #	define DRAW_RECTS 1
 #endif
 
@@ -61,7 +61,7 @@ Screen::~Screen()
 	g_screen = NULL;
 }
 
-#ifdef DEBUG
+#ifdef DRAW_RECTS
 std::vector<rect> g_rects;
 #endif
 
@@ -115,7 +115,7 @@ void Screen::Destroy()
 void Screen::AddRect(rect r)
 {
 	//sdfUpdate();
-#ifdef DEBUG
+#ifdef DRAW_RECTS
 	g_rects.push_back(r);
 #endif
 }

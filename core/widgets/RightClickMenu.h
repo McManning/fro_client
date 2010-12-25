@@ -15,12 +15,14 @@ class RightClickMenu : public Widget
 	};
 		
 	RightClickMenu();
+	~RightClickMenu();
 
 	void Render();
 
 	void AddOption(string text, void (*callback)(RightClickMenu*, void*), void* userdata = NULL);
 	
 	std::vector<sCallback> mCallbacks;
+	void (*onCloseCallback)(RightClickMenu*);
 	
 	bool mFirstEvent;
 };

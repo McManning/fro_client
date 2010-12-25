@@ -5,6 +5,7 @@
 #include "../core/widgets/MessagePopup.h"
 #include "../core/widgets/OpenUrl.h"
 #include "../core/widgets/YesNoPopup.h"
+#include "../core/widgets/RightClickMenu.h"
 #include "../core/io/FileIO.h"
 #include "../game/GameManager.h"
 #include "../map/Map.h"
@@ -16,6 +17,7 @@ struct luaCallback
 {
 	lua_State* state;
 	string func;
+	int reference; // in case there's lua userdata
 };
 
 // .Print("Message")
@@ -107,7 +109,93 @@ int system_YesNo(lua_State* ls)
 	
 	return 0;
 }
+/*
+void callback_LuaRCM_Close(RightClickMenu* rcm)
+{
+	luaCallback* lc;
+	
+	// TODO: Unload lua userdata of each item
+	for (int i = 0; i < rcm->mCallbacks.size(); ++i)
+	{
+		if (rcm->mCallbacks.at(i).userdata)
+		{
+			lc = (luaCallback*)rcm->mCallbacks.at(i).userdata;
+			
+			luaL_unref(lc->state, LUA_REGISTRYINDEX, lc->reference);
+			delete lc;
+		}
+	}
+}
 
+void callback_LuaRCM_Select(RightClickMenu* rcm, void* userdata)
+{
+	luaCallback* lc = (luaCallback*)userdata;
+	if (lc)
+	{
+		// call associated lua function
+		lua_getglobal(lc->state, lc->func); //get function name
+
+		//if there isn't a function at the top of the stack, we failed to find it
+		if (!lua_isfunction(lc->state, -1))
+		{
+			//cannot be luaError because we need to return!
+			WARNING("Lua Function " + lc->func + " not found during RCM Callback");
+			return 0;
+		}
+
+		if (lc->reference != LUA_BADREF)
+			lua_rawgeti(lc->state, LUA_REGISTRYINDEX, lc->reference);
+		else
+			lua_pushnil(lc->state);
+			
+		if (lua_pcall(lc->state, 1, 0, 0) != 0)
+		{
+			console->AddMessage("\\c900 * LUARCM [" + lc->func + "] " 
+								+ string(lua_tostring(lc->state, -1)));
+		}
+	}
+}
+
+// ptr = .NewRightClickMenu()
+int system_NewRightClickMenu(lua_State* ls)
+{
+	luaCountArgs(ls, 2);
+	RightClickMenu* rcm = new RightClickMenu();
+	rcm->onCloseCallback = callback_LuaRCM_Close;
+	
+	lua_pushlightuserdata(ls, rcm);
+	return 1;
+}
+
+// .AddToRightClickMenu(ptr, "Text", "lua_callback", userdata)
+int system_AddToRightClickMenu(lua_State* ls)
+{
+	luaCountArgs(ls, 3);
+	int numArgs = lua_gettop(ls);
+	
+	RightClickMenu* rcm = (RightClickMenu*)lua_touserdata(ls, 1);
+	if (!rcm)
+		return luaError(ls, "System.AddToRightClickMenu", "Invalid RCM");
+		
+	luaCallback* lc = new luaCallback;
+	lc->luaState = ls;
+	lc->luaFunc = lua_tostring(ls, 3);
+	
+	if (numArgs > 3) // has userdata
+	{
+		lua_pushvalue(ls, 4); //copy the value at index to the top of the stack
+		lc->reference = luaL_ref(ls, LUA_REGISTRYINDEX); // creates reference and pops
+	}
+	else
+	{
+		lc->reference = LUA_BADREF;
+	}
+	
+	rcm->AddOption(lua_tostring(ls, 2), callback_LuaRCM_Select, lc);
+	
+	return 0;
+}
+*/
 void _doMessagePopupCallback(luaCallback* data)
 {
 	if (!data || !data->state) return;
@@ -320,6 +408,8 @@ static const luaL_Reg functions[] = {
 	{"Print", system_Print},
 	{"Fatal", system_Fatal},
 	{"YesNo", system_YesNo},
+//	{"NewRightClickMenu", system_NewRightClickMenu},
+//	{"AddToRightClickMenu", system_AddToRightClickMenu},
 	{"MessageDialog", system_MessageDialog},
 	{"Alert", system_Alert},
 	{"Wildmatch", system_Wildmatch},

@@ -24,6 +24,9 @@ class RemoteActor : public Actor
 	void SetBlocked(bool b);
 	bool IsBlocked() const { return mBlocked; };
 	
+	int LuaSetProp(lua_State* ls, string& prop, int index);
+	int LuaGetProp(lua_State* ls, string& prop);
+	
 	bool mBlocked; //can we hear/see this player?
 	bool mAfk;
 };

@@ -133,20 +133,9 @@ void Map::Render()
 
 void Map::Event(SDL_Event* event)
 {
-	Entity* e;
 	switch (event->type)
 	{
-		case SDL_MOUSEBUTTONUP: {
-			if (HasMouseFocus())
-			{
-				if (event->button.button == SDL_BUTTON_LEFT)
-				{
-					MessageData md("MAP_LEFTBUTTONUP");
-					messenger.Dispatch(md);
-				}
-			}
-		} break;
-		case SDL_MOUSEBUTTONDOWN: {
+		case SDL_MOUSEBUTTONDOWN:
 			if (HasMouseFocus())
 			{
 				if (event->button.button == SDL_BUTTON_RIGHT)
@@ -156,29 +145,11 @@ void Map::Event(SDL_Event* event)
 				else if (event->button.button == SDL_BUTTON_LEFT)
 				{
 					HandleLeftClick();	
-					
-					MessageData md("MAP_LEFTBUTTONDOWN");
-					messenger.Dispatch(md);
 				}
 			}
-		} break;
-		case SDL_KEYDOWN: {
-			MessageData md("KEY_DOWN");
-			md.WriteInt("key", event->key.keysym.sym);
-			messenger.Dispatch(md, NULL);
-		} break;
-		case SDL_KEYUP: {
-			MessageData md("KEY_UP");
-			md.WriteInt("key", event->key.keysym.sym);
-			messenger.Dispatch(md, NULL);
-		
-		} break;
+			break;
 		default: break;	
 	}
-	
-	//make sure keys go to our input box
-	if (game && HasKeyFocus())
-		game->mChat->mInput->SetKeyFocus();	
 }
 
 void Map::HandleLeftClick()
@@ -228,53 +199,12 @@ void Map::ClickRemoteActor(RemoteActor* ra)
 /*	Will attempt to return the entity directly under the mouse, if it is clickable. */
 Entity* Map::GetEntityUnderMouse(bool mustBeClickable, bool playersOnly)
 {
-	int x, y;
-	rect r;
-	Entity* e;
-	Image* img;
-	
-	//for all entities, highest to lowest
-	for (int i = mEntities.size()-1; i > -1; --i)
-	{
-		e = mEntities.at(i);
-			
-		//if we can click this entity, (clickable OR playersOnly mode and it's considered a player)
-		if (!e || !e->IsVisibleInCamera())
-			continue;
-	
-		if (mustBeClickable && e->mClickRange < 1)
-			continue;
-			
-		if (playersOnly && e->mType != ENTITY_LOCALACTOR && e->mType != ENTITY_REMOTEACTOR)
-			continue;
-
-		r = e->GetBoundingRect();
-		
-		if (!e->IsPositionRelativeToScreen())
-			r = ToScreenPosition(r);
-		
-		if ( areRectsIntersecting(gui->GetMouseRect(), r) )
-		{
-			//Otherwise, if the mouse is touching a non transparent pixel
-			x = gui->GetMouseX() - r.x;
-			y = gui->GetMouseY() - r.y;
-			
-			img = e->GetImage();
-			if (img)
-			{
-				//if non transparent pixel, we found our entity. 
-				if (!img->IsPixelTransparent(x, y))
-					return e;
-			}
-		}
-	}
-	
-	return NULL;
+	return GetNextEntityUnderMouse(NULL, mustBeClickable, playersOnly);
 }
 
 // Will return an entity intersecting the screen point, that is lower in the list than the specified entity
 // Or NULL, if there are none.
-Entity* Map::GetNextEntityUnderMouse(Entity* start)
+Entity* Map::GetNextEntityUnderMouse(Entity* start, bool mustBeClickable, bool playersOnly)
 {
 	int x, y;
 	rect r;
@@ -296,6 +226,12 @@ Entity* Map::GetNextEntityUnderMouse(Entity* start)
 		
 		if (foundStart && e && e != start && e->IsVisibleInCamera() )
 		{
+			if (mustBeClickable && e->mClickRange < 1)
+				continue;
+				
+			if (playersOnly && e->mType != ENTITY_LOCALACTOR && e->mType != ENTITY_REMOTEACTOR)
+				continue;
+			
 			r = e->GetBoundingRect();
 			
 			if (!e->IsPositionRelativeToScreen())
@@ -339,6 +275,7 @@ void Map::Process()
 	around, and screw up the thing. Unfortunately, this is a CPU hog, and 
 	there's an obviously more efficient way to do it, but.. laziness.. 
 	it'll be the death of this project.
+	TODO: Optimize!
 */
 void Map::CheckForClickableEntity()
 {

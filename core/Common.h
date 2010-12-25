@@ -6,7 +6,7 @@
 #include <vector>
 #include <math.h>
 
-#define APP_VERSION "1.4.0"
+#define APP_VERSION "1.4.1"
 
 /*	In case the compiler doesn't define it for us */
 #ifndef WIN32
@@ -258,6 +258,8 @@ string shortTimestamp();
 void loadGlobalConfig();
 
 bool isWhitespace(char c);
+
+void flashWindowState(bool bInvert);
 
 #endif //_COMMON_H_
 

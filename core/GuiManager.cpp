@@ -50,6 +50,7 @@ GuiManager::GuiManager()
 
 	seedRnd();
 	loadGlobalConfig();
+	SetAppTitle(mAppTitle);
 
 //ResourceManager
 	PRINT("Loading ResMan");
@@ -245,6 +246,9 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		case SDL_MOUSEBUTTONDOWN:
 		{
 //			PRINT("Gui::EventMD");
+			previousMouseFocus = hasMouseFocus;
+			hasMouseFocus = GrabWidgetUnderXY(this, GetMouseX(), GetMouseY());
+			
 			if (hasMouseFocus)
 			{
 				if (hasMouseFocus->IsActive())
@@ -285,6 +289,11 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		case SDL_MOUSEBUTTONUP:
 		{
 //			PRINT("Gui::EventMU " + pts(hasKeyFocus));
+			previousMouseFocus = hasMouseFocus;
+			hasMouseFocus = GrabWidgetUnderXY(this, GetMouseX(), GetMouseY());
+			//if (hasMouseFocus) hasMouseFocus->Event(event);
+			//if (previousMouseFocus) previousMouseFocus->Event(event);
+			
 			if (hasKeyFocus)
 				hasKeyFocus->Event(event);
 			_sendToGlobalEventHandlers(event, hasKeyFocus);
@@ -606,38 +615,47 @@ void GuiManager::GetUserAttention()
 	}
 }
 
-void _flashWindowState(bool bInvert)
-{
-#ifdef WIN32
-	// TODO: Check return values
-	SDL_SysWMinfo wmInfo;
-	SDL_VERSION(&wmInfo.version);
-	SDL_GetWMInfo(&wmInfo);
-	HWND hWnd = wmInfo.window;
-
-	// http://msdn.microsoft.com/en-us/library/ms679346(v=vs.85).aspx
-	FlashWindow(hWnd, bInvert);
-#endif
-}
-
 void GuiManager::ThinkInSeconds(uLong ms)
 {
 	if (isAppClosing())
 		return;
 
-	mTitleFlashOn = !mTitleFlashOn;
+	if (mGetUserAttention) // toggle alert
+	{
+		flashWindowState(true);
+		
+		//mTitleFlashOn = !mTitleFlashOn;
+		/*if (mTitleFlashOn)
+			SDL_WM_SetCaption("--------------------------------", NULL);
+		else
+			SDL_WM_SetCaption(mAppTitle.c_str(), NULL);*/
+			
+		mTitleFlashOn = true;
+	}
+	else if (mTitleFlashOn) // turn off alert
+	{
+		flashWindowState(false);
+		mTitleFlashOn = false;
+		
+		SetAppTitle(mAppTitle); 
+	}
+	else // running normally
+	{
+		
+	}
+
+	
 
 	//if we're flashing and focused, do flash
 	if (mTitleFlashOn && mGetUserAttention)
 	{
-		SDL_WM_SetCaption("--------------------------------", NULL);
-		_flashWindowState(true);
+		
+		
 	}
 	else
 	{
 		//string title = mAppTitle; // + " [FPS: " + its(mFps) + " BPS: " + its(mBps) + "]";
-		SDL_WM_SetCaption(mAppTitle.c_str(), NULL);
-		_flashWindowState(false); // TODO: Should this be called every second, even when disabled? 
+		
 	}
 	
 	
@@ -695,7 +713,7 @@ void GuiManager::Process()
 		{
 			case SDL_QUIT:
 				appState = APPSTATE_CLOSING;
-				SDL_WM_SetCaption("Shutting down, please wait..", NULL);
+				SetAppTitle("Shutting down, please wait..");
 				break;
 			case SDL_VIDEORESIZE:
 				r.w = event.resize.w;

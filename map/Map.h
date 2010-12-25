@@ -42,7 +42,7 @@ class Map : public Frame, public EntityManager
 	/*	Will attempt to return the entity directly under the mouse, if it is clickable. */
 	Entity* GetEntityUnderMouse(bool mustBeClickable, bool playersOnly);
 	
-	Entity* GetNextEntityUnderMouse(Entity* start);
+	Entity* GetNextEntityUnderMouse(Entity* start, bool mustBeClickable, bool playersOnly);
 	
 	void CheckForClickableEntity();
 		

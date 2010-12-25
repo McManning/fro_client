@@ -25,10 +25,12 @@ Widget::Widget()
 
 Widget::~Widget()
 {
+	FlagRender();
+	
 	for (uShort i = 0;  i < mChildren.size(); i++)
 	{
 		mChildren.at(i)->mParent = NULL;
-		SAFEDELETE(mChildren.at(i));
+		delete mChildren.at(i);
 	}
 	
 	mChildren.clear();
@@ -265,6 +267,7 @@ void Widget::SetPosition(rect r)
 
 void Widget::SetVisible(bool b)
 {
+	FlagRender();
 	mVisible = b;
 	FlagRender();
 }
