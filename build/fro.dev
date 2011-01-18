@@ -1,7 +1,7 @@
 [Project]
 Folder=../entity
 Name=fro
-UnitCount=161
+UnitCount=163
 Type=0
 Ver=1
 ObjFiles=
@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=1000000000000000000100
+CompilerSettings=1000000000000001000000
 FileName=fro.dev
 
 [Unit1]
@@ -474,7 +474,7 @@ BuildCmd=
 Major=1
 Minor=4
 Release=1
-Build=2153
+Build=2199
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1829,9 +1829,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit162]
-FileName=..\game\CheckIn.cpp
+FileName=..\core\RectManager.cpp
 CompileCpp=1
-Folder=../game
+Folder=../core
 Compile=1
 Link=1
 Priority=1000
@@ -1839,9 +1839,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit163]
-FileName=..\game\CheckIn.h
+FileName=..\core\RectManager.h
 CompileCpp=1
-Folder=../game
+Folder=../core
 Compile=1
 Link=1
 Priority=1000

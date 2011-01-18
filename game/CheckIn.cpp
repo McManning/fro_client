@@ -5,6 +5,7 @@
 #include "GameManager.h"
 #include "../map/Map.h"
 #include "../entity/LocalActor.h"
+#include "../core/net/IrcNet2.h"
 
 const int CHECK_IN_TIMER_INTERVAL_MS = 15*60*1000; //15min
 
@@ -63,6 +64,10 @@ uShort timer_CheckInWithServer(timer* t, uLong ms)
 	string query;
 	TiXmlElement* e;
 	
+	// if we're not on a server, don't check in
+	if (!game->mNet->IsConnected())
+		return TIMER_CONTINUE;
+		
 	if (!xf.LoadFromFile("assets/connections.cfg"))
 	{
 		FATAL(xf.GetError());	

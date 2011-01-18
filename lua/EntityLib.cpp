@@ -834,13 +834,14 @@ int entity_Explode(lua_State* ls)
 	return 0;
 }
 	
-//	.SetText(ent, "text"<nil>, maxWidth<0>) - Set displayed text of a text object entity
+//	.SetText(ent, "text", r, g, b, maxWidth<0>) - Set displayed text of a text object entity
 int entity_SetText(lua_State* ls)
 {
 	luaCountArgs(ls, 2);
 	
 	int args = lua_gettop(ls);
 	int width = 0;
+	color c;
 	string text;
 		
 	TextObject* o = (TextObject*)_getReferencedEntity(ls);
@@ -848,14 +849,16 @@ int entity_SetText(lua_State* ls)
 	{
 		return luaError(ls, "Entity.SetText", "Invalid Entity type");
 	}
-	
-	if (args > 1)
-		text = lua_tostring(ls, 2);
 
-	if (args > 2)
-		width = (int)lua_tonumber(ls, 3);
+	text = lua_tostring(ls, 2);
+	c.r = (int)lua_tonumber(ls, 3);
+	c.g = (int)lua_tonumber(ls, 4);
+	c.b = (int)lua_tonumber(ls, 5);
 
-	o->SetText(text, width);
+	if (args > 5)
+		width = (int)lua_tonumber(ls, 6);
+
+	o->SetText(text, c, width);
 	return 0;
 }
 	

@@ -418,6 +418,8 @@ void GuiManager::Render()
 	uLong renderStart = SDL_GetTicks(); //keep track of how long this render takes
 	Screen* scr = Screen::Instance();
 
+	scr->PreRender();
+
 	//TODO: Do pre-rendering crap
 	scr->DrawRect(scr->GetClip(), color(237, 236, 235));
 
@@ -444,8 +446,7 @@ void GuiManager::Render()
 		}	
 	}
 
-	//Finally, display the changes to the user
-	scr->Flip();
+	scr->PostRender();
 
 	ms = SDL_GetTicks();
 
@@ -716,18 +717,24 @@ void GuiManager::Process()
 				SetAppTitle("Shutting down, please wait..");
 				break;
 			case SDL_VIDEORESIZE:
-				r.w = event.resize.w;
+			    r.w = event.resize.w;
 				r.h = event.resize.h;
 				Screen::Instance()->Resize(event.resize.w, event.resize.h);
 				
 				SetPosition(r);
-				_distributeEvent(&event); //let our global handlers know we resized
+				_sendToGlobalEventHandlers(&event, NULL);
 				break;
 			default:
 				_distributeEvent(&event);
 				break;
 		}
 		
+		// A little sanity checking (TODO: A better placement)
+		if (hasKeyFocus && !hasKeyFocus->IsVisible())
+			hasKeyFocus = NULL;
+		
+		if (hasMouseFocus && !hasMouseFocus->IsVisible())
+			hasMouseFocus = NULL;
 	}
 	
 #ifdef OPTIMIZED

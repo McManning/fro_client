@@ -266,6 +266,8 @@ bool Actor::ProcessMovement()
 			
 		_checkActionBuffer(); //could have steps to perform
 	}
+	
+	AddPositionRectForUpdate();
 
 	_stepTowardDestination();
 
@@ -285,6 +287,8 @@ bool Actor::ProcessMovement()
 	}
 
 	_processJump();
+
+	AddPositionRectForUpdate();
 
 	/*	If they just reached the target position,
 		do whatever is necessary after we're finished	*/

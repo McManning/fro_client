@@ -2,10 +2,11 @@
 #include <SDL/SDL.h>
 #include "Screen.h"
 #include "ResourceManager.h"
+#include "RectManager.h"
 
-#ifdef DEBUG
+//#ifdef DEBUG
 #	define DRAW_RECTS 1
-#endif
+//#endif
 
 Screen* g_screen;
 Uint32 uScreenFlags;
@@ -63,18 +64,52 @@ Screen::~Screen()
 
 #ifdef DRAW_RECTS
 std::vector<rect> g_rects;
+RectManager g_RectMan;
 #endif
 
-void Screen::Flip()
+void Screen::PreRender()
+{
+	DrawRect(rect(0, 0, 40, 40), color());
+}
+
+void Screen::PostRender()
 {
 #ifdef DRAW_RECTS
-	for (int i = 0; i < g_rects.size(); ++i)
-		DrawRound(g_rects.at(i), 0, color(255));
+//	for (int i = 0; i < g_rects.size(); ++i)
+//		DrawRound(g_rects.at(i), 0, color(255));
 		
 	g_rects.clear();
-#endif
-	SDL_Flip(Surface());
 	
+	g_RectMan.generate_clips(Surface());
+
+	//g_RectMan.rects_print(g_RectMan.m_RectSet);
+	
+	if (g_RectMan.m_Clips)
+	{
+		SDL_Rect* r;
+		for (int i = 0; i < g_RectMan.m_Clips->length; ++i)
+		{
+			r = &g_RectMan.m_Clips->rects + i;
+			DrawRound(rect(r->x, r->y, r->w, r->h), 0, color(0,255));	
+		}
+
+		g_RectMan.update_rects(Surface());
+		
+		// Now that we've done that, black out the old rects so we know they were
+		// still there, but don't get confused with new rects added each frame
+		/*for (int i = 0; i < g_RectMan.m_Clips->length; ++i)
+		{
+			r = &g_RectMan.m_Clips->rects + i;
+			DrawRound(rect(r->x, r->y, r->w, r->h), 0, color());	
+		}*/
+		
+		g_RectMan.purge();
+	}
+
+#else
+	SDL_Flip(Surface());
+#endif
+
 #ifdef OPTIMIZED
 	mNeedUpdate = false;
 #endif
@@ -117,6 +152,8 @@ void Screen::AddRect(rect r)
 	//sdfUpdate();
 #ifdef DRAW_RECTS
 	g_rects.push_back(r);
+	SDL_Rect sr = { r.x, r.y, r.w, r.h };
+	g_RectMan.add_rect(sr);
 #endif
 }
 

@@ -1337,7 +1337,26 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Changed values of LAYER_USER and LAYER_SKY to seperate them out and allow abstract layers between LAYER_GROUND/LAYER_USER, etc.
 - Renamed login wallpaper to assets/login.jpg (instead of assets/tetrius.jpg)
 
+(Could not commit as main server was under construction)
+
 ----- PUBLIC RELEASE AS 1.4.1 -----
+	
+101231
+- Added "center" bool to lua Get/SetProp for Text object entities along with internal centering property in TextObject entity
+- Rewrote Entity.SetText(...) to .SetText(ent, "text", r, g, b, maxWidth<0>)  (for TextObject entities only)
+	and added coloring support to TextObject::SetText()
+- Changed button callback activator to mouse up.
+
+110103
+- Made various adjustments related to the rendering optimizer
+- Added core/RectManager. Used to generate lists of rectangles that need to be redrawn by collecting
+	a dirty list of rectangles and optimizing in such a way that none overlap
+
+110105
+- Fixed bug where the client would continue to check into sybolt without being on an irc server
+- Fixed bug with login dialog not saving credentials when "Remember" is set
+- 
+
 	
 WORKING ON:
 
@@ -1345,6 +1364,10 @@ WORKING ON:
 	And it can be passed in map filenames, resfiles, whatever. And be told what the main lua file is, etc etc. So it can make
 	its own decisions. BASICALLY, tl;dr: Make it do more. 
 
+	This is already possible as Build() is called after main.lua is dofile'd. However, we'd have to rename all the build routines
+	in the map files. It'd be nice for main to determine what lua file to use as a primary, instead of assuming the first lua
+	found in .res is the lua file... :|
+	
 - if a focused widget loses visibility (by its parent losing visibility),
 	it can still get events. Ex: system console input after it's set to hidden
 - Buttons should really be MouseUp, not down..

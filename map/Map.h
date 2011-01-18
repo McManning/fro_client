@@ -126,6 +126,7 @@ class Map : public Frame, public EntityManager
 	Entity* mFollowedEntity; //entity the camera is following
 	
 	point2d mCameraPosition;
+	point2d mOldCameraPosition; //used for determining if the camera moved last frame
 	point2d mCameraFollowOffset;
 
 	uShort mGravity;

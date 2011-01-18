@@ -213,6 +213,7 @@ void Multiline::Event(SDL_Event* event)
 						if (mSelected >= mLines.size())
 							mSelected = mLines.size() - 1;
 					}
+					FlagRender();
 				}
 				else // Check for urls, and give a hint box
 				{

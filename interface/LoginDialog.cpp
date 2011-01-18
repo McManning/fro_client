@@ -285,7 +285,7 @@ void LoginDialog::SendLogin()
 	c = (Checkbox*)Get("remember");
 	if (c)
 	{
-		TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
+		TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("login");
 		
 		game->mPlayerData.SetParamInt(e, "remember", c->GetState());
 		

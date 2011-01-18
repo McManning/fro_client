@@ -129,8 +129,6 @@ void _stampMapText(int x, int y, int rotation, string& text)
 	if (!game->mMap)
 		return;
 
-	color c;
-	
 	TextObject* to = new TextObject();
 		to->mId = "stamp";
 		to->mMap = game->mMap;
@@ -138,7 +136,7 @@ void _stampMapText(int x, int y, int rotation, string& text)
 		to->mMap->AddEntity(to);
 		to->SetAA(true);
 		to->SetFont("", 10);
-		to->SetText(text);
+		to->SetText(text, color());
 		to->Rotozoom(rotation, 1.0);	
 		to->SetPosition( point2d(x - to->GetImage()->Width() / 2, y - to->GetImage()->Height() / 2) );
 	

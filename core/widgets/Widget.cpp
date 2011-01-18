@@ -4,7 +4,7 @@
 #include "../ResourceManager.h"
 #include "../GuiManager.h"
 #include "../FontManager.h"
-//#include "Console.h"
+#include "Console.h"
 
 Widget::Widget() 
 {
@@ -160,12 +160,15 @@ void Widget::MoveToTop()
 
 	ASSERT(pos >= 0 && pos < mParent->mChildren.size());
 
-	mParent->mChildren.erase(mParent->mChildren.begin() + pos);
-	mParent->mChildren.push_back(this);
+	// see if we should move at all
+	if (pos < mParent->mChildren.size()-1)
+	{
+		mParent->mChildren.erase(mParent->mChildren.begin() + pos);
+		mParent->mChildren.push_back(this);
 	
-	mParent->MoveToTop(); //Continue down the tree until this widget is at the VERY TOP.
-	
-	FlagRender();
+		mParent->MoveToTop(); //Continue down the tree until this widget is at the VERY TOP.
+		FlagRender();
+	}
 }
 
 void Widget::MoveToBottom()
@@ -185,9 +188,10 @@ void Widget::MoveToBottom()
 
 	mParent->mChildren.erase(mParent->mChildren.begin() + pos);
 	mParent->mChildren.insert(mParent->mChildren.begin(), this);
-	
+
 	//TODO: Necessary? mParent->MoveToBottom(); //Continue down the tree until this widget is at the VERY BOTTOM.
-	
+
+	console->AddMessage("Widget to bottom: " + mId);
 	FlagRender();
 }
 
@@ -267,15 +271,21 @@ void Widget::SetPosition(rect r)
 
 void Widget::SetVisible(bool b)
 {
-	FlagRender();
-	mVisible = b;
-	FlagRender();
+	if (mVisible != b)
+	{
+		FlagRender();
+		mVisible = b;
+		FlagRender();
+	}
 }
 
 void Widget::SetActive(bool b)
 {
-	mActive = b;
-	FlagRender();
+	if (mActive != b)
+	{
+		mActive = b;
+		FlagRender();
+	}
 }
 
 bool Widget::HasKeyFocusInTree()

@@ -607,6 +607,11 @@ bool Image::Render(SDL_Surface* dst, sShort x, sShort y, rect clip)
 		//if they want to do RGBA->RGBA (and can!), let them use the slower renderer
 		if (mUseBlitOverride && src->format->BytesPerPixel == 4 && dst->format->BytesPerPixel == 4)
 		{
+			if (dst == Screen::Instance()->Surface())
+			{	
+				FATAL("slowblit to screen");
+			}
+			
 			if ( SDL_gfxBlitRGBA(src, &rSrc, dst, &rDst) < 0 )
 			{
 		        WARNING(SDL_GetError());

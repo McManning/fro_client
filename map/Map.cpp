@@ -349,14 +349,17 @@ void Map::OffsetCamera(sShort offsetX, sShort offsetY)
 {
 	mCameraPosition.x += offsetX;
 	mCameraPosition.y += offsetY;
-	
-	AddCameraRectForUpdate();
 }
 
 void Map::AddCameraRectForUpdate()
 {
-	g_screen->AddRect(GetScreenPosition());
-}
+	if (mCameraPosition.x != mOldCameraPosition.x 
+		|| mCameraPosition.y != mOldCameraPosition.y)
+	{
+		g_screen->AddRect(GetScreenPosition());
+		mOldCameraPosition = mCameraPosition;
+	}
+}	
 
 void Map::OffsetCamera(point2d p)
 {
@@ -421,6 +424,8 @@ void Map::UpdateCamera()
 		if (mStopCameraAtMapEdge)
 			_constrainCameraToMap();
 	}
+	
+	AddCameraRectForUpdate();
 }
 
 bool Map::IsRectInCamera(rect mapRect)

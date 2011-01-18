@@ -148,6 +148,8 @@ class Entity
 	ChatBubble* mActiveChatBubble;
 	
 	std::map<string, string> mFlags;
+	
+	rect mOldPositionRect;
 };
 
 #endif //_ENTITY_H_

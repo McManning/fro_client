@@ -16,7 +16,8 @@ class Screen : public Image
   public:
 	void Resize(uShort w, uShort h);
 	
-	void Flip();
+	void PreRender();
+	void PostRender();
 	
 	/**	Adds a rect clip to the list of rects that can be drawn to during 
 		the next render phase

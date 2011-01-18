@@ -52,10 +52,11 @@ string Entity::GetTypeName()
 
 void Entity::SetVisible(bool v)
 {
-	mVisible = v;	
+	mVisible = v;
+	AddPositionRectForUpdate();	
 }
 
-bool Entity::IsVisibleInCamera() 
+bool Entity::IsVisibleInCamera()
 { 
 	if (!IsVisible() || !mMap)
 		return false;
@@ -117,6 +118,10 @@ void Entity::AddPositionRectForUpdate()
 		if (!IsPositionRelativeToScreen())
 			r = mMap->ToScreenPosition( r );
 		g_screen->AddRect(r);
+		
+		// Add the old rect too, in case of a size change or something else
+		g_screen->AddRect(mOldPositionRect);
+		mOldPositionRect = r;
 	}
 }
 

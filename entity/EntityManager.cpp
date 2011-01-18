@@ -196,6 +196,8 @@ void EntityManager::_delete(Entity* e)
 {
 	if (e->mManagerCanDeleteMe)
 	{	
+		e->AddPositionRectForUpdate(); // preparing for removal
+		
 		MessageData md("ENTITY_DESTROY");
 		md.WriteUserdata("entity", e);
 		messenger.Dispatch(md, e);
