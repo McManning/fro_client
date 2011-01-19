@@ -224,9 +224,9 @@ void Widget::Event(SDL_Event* event)
 		widget, thus instantly killing it after it's creation. Another method must be
 		found.
 	*/
-	if (mTemporary && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP
-						|| event->type == SDL_MOUSEBUTTONDOWN))
-		Die();
+	//if (mTemporary && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP
+	//					|| event->type == SDL_MOUSEBUTTONDOWN))
+	//	Die();
 }
 
 void Widget::Render()
@@ -236,9 +236,9 @@ void Widget::Render()
 	if (mBorderColor.a != 0) //default will have a zero alpha
 		scr->DrawRound(GetScreenPosition(), 0, mBorderColor);
 
-	for (uShort i = 0;  i < mChildren.size(); i++)
+	for (int i = 0;  i < mChildren.size(); i++)
 	{
-		if (mChildren.at(i)->IsVisible())
+		if (mChildren.at(i)->mVisible)
 			mChildren.at(i)->Render();	
 	}
 }
@@ -251,22 +251,25 @@ void Widget::FlagRender()
 
 void Widget::SetPosition(rect r)
 {
-	FlagRender(); //for old position
-
-	if (mParent && mParent->mConstrainChildrenToRect)
-	{
-		if (r.x + r.w > mParent->Width() && r.x == 0) r.w = mParent->Width();
-		if (r.y + r.h > mParent->Height() && r.y == 0) r.h = mParent->Height();
-		
-		if (r.x + r.w > mParent->Width()) r.x = mParent->Width() - r.w;
-		if (r.y + r.h > mParent->Height()) r.y = mParent->Height() - r.h;
-		
-		if (r.x < 0) r.x = 0;
-		if (r.y < 0) r.y = 0;
-	}
-	
-	mPosition = r;
-	FlagRender(); //for new position
+    if (mPosition.x != r.x && mPosition.y != r.y && mPosition.w != r.w && mPosition.h != r.h)
+    {
+    	FlagRender(); //for old position
+    
+    	if (mParent && mParent->mConstrainChildrenToRect)
+    	{
+    		if (r.x + r.w > mParent->Width() && r.x == 0) r.w = mParent->Width();
+    		if (r.y + r.h > mParent->Height() && r.y == 0) r.h = mParent->Height();
+    		
+    		if (r.x + r.w > mParent->Width()) r.x = mParent->Width() - r.w;
+    		if (r.y + r.h > mParent->Height()) r.y = mParent->Height() - r.h;
+    		
+    		if (r.x < 0) r.x = 0;
+    		if (r.y < 0) r.y = 0;
+    	}
+    	
+    	mPosition = r;
+    	FlagRender(); //for new position
+    }
 }
 
 void Widget::SetVisible(bool b)
@@ -279,6 +282,17 @@ void Widget::SetVisible(bool b)
 	}
 }
 
+void Widget::IsVisible()
+{
+	if (!mVisible) return false;
+	
+	//Recursively check if our parent is visible. If not, neither are we
+	if (GetParent())
+		return GetParent()->IsVisible();
+	else
+		return true;
+}
+
 void Widget::SetActive(bool b)
 {
 	if (mActive != b)
@@ -288,12 +302,23 @@ void Widget::SetActive(bool b)
 	}
 }
 
+bool IsActive()
+{
+	if (!mActive) return false;
+	
+	//Recursively check if our parent is active. If not, neither are we
+	if (GetParent())
+		return GetParent()->IsActive();
+	else
+		return mActive;
+}
+
 bool Widget::HasKeyFocusInTree()
 {
 	if (gui->hasKeyFocus == this)
 		return true;
 		
-	for (uShort i = 0;  i < mChildren.size(); i++)
+	for (int i = 0;  i < mChildren.size(); i++)
 	{
 		if (mChildren.at(i)->HasKeyFocusInTree())
 			return true;
@@ -307,7 +332,7 @@ bool Widget::HasMouseFocusInTree()
 	if (gui->hasMouseFocus == this)
 		return true;
 		
-	for (uShort i = 0;  i < mChildren.size(); i++)
+	for (int i = 0;  i < mChildren.size(); i++)
 	{
 		if (mChildren.at(i)->HasMouseFocusInTree())
 			return true;
@@ -419,8 +444,10 @@ void Widget::SetKeyFocus(bool b)
 		gui->hasKeyFocus = this;
 		MoveToTop();
 	}
-	else if (HasKeyFocus())
+	else if (gui->hasKeyFocus == this)
+	{
 		gui->hasKeyFocus = NULL;
+	}
 }
 
 /*	Calculate an offset of our source image based on widget state. (Mouse hover, normal, disabled, etc)

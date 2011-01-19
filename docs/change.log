@@ -1355,7 +1355,12 @@ without either compatibility mode enabled, or security warnings, as seen with th
 110105
 - Fixed bug where the client would continue to check into sybolt without being on an irc server
 - Fixed bug with login dialog not saving credentials when "Remember" is set
-- 
+
+110118
+- Did VERY slight optimization to GuiManager's main loop
+- Made Widget::IsVisible() recursively check parent visibility 
+
+
 
 	
 WORKING ON:

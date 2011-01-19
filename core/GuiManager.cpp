@@ -675,7 +675,6 @@ void GuiManager::SetAppTitle(string caption)
 
 void GuiManager::Process()
 {
-//	PRINT("Pump");
 	//If we're focused, don't worry about getting their attention
 	if (SDL_GetAppState() & SDL_APPINPUTFOCUS)
 	{
@@ -694,22 +693,15 @@ void GuiManager::Process()
 	}
 	else
 	{
-		if (mAppInputFocus)
-			mAppInputFocus = false;
+		mAppInputFocus = false;
 	}
 	
 	//Poll and distribute events from SDL
 	SDL_Event event;
 	rect r;
-#ifdef OPTIMIZED
-	bool gotEvent = false;
-#endif
+
 	while (SDL_PollEvent(&event))
 	{
-		
-#ifdef OPTIMIZED
-		gotEvent = true;
-#endif
 		switch (event.type)
 		{
 			case SDL_QUIT:
@@ -736,30 +728,16 @@ void GuiManager::Process()
 		if (hasMouseFocus && !hasMouseFocus->IsVisible())
 			hasMouseFocus = NULL;
 	}
-	
-#ifdef OPTIMIZED
-	if (gotEvent)
-		Screen::Instance()->Update(); //events almost always mean something changed.
-#endif
-	
-//	PRINT("MSGR:PROC");
+
 	messenger.Process(mTick);
-	
-//	PRINT("TIMER:PROC");
+
 	timers->Process(mTick);
 
-//	PRINT("STACK:CLEAN");
 	_cleanDeletionStack();
-	
-	//make sure console stays on top
-	if (console->IsVisible())
-		console->MoveToTop();
-	
+
 	//make sure focused window is always on top the other
 	if (GetDemandsFocus())
 		GetDemandsFocus()->MoveToTop();
-	
-//	PRINT("PumpDone");
 }
 
 void GuiManager::MainLoop()
@@ -775,8 +753,7 @@ void GuiManager::MainLoop()
 
 		//Only render if: We've waited enough ticks or there's no wait time, AND the app isn't minimized
 		if ( (mTick >= mNextRenderTick || mNoFpsLimit)
-				&& (SDL_GetAppState() & SDL_APPACTIVE) 
-				&& Screen::Instance()->NeedsUpdate() )
+				&& (SDL_GetAppState() & SDL_APPACTIVE) )
 		{
 			Render();
 		}

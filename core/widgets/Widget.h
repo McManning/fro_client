@@ -67,21 +67,9 @@ class Widget
 		return rect( GetScreenX(), GetScreenY(), mPosition.w, mPosition.h );	
 	}
 	
-	bool IsVisible()
-	{
-		return mVisible;
-	};
+	bool IsVisible();
 	
-	bool IsActive()
-	{
-		if (!mActive) return false;
-		
-		//Recursively check if our parent is active. If not, neither are
-		if (GetParent())
-			return GetParent()->IsActive();
-		else
-			return mActive;
-	};
+	bool IsActive();
 	
 	/* Returns true if this widget or any children have key focus */
 	bool HasKeyFocusInTree();
