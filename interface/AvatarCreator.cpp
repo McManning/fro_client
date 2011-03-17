@@ -501,7 +501,7 @@ void AvatarCreator::AddDesignToFavorites()
 	if (mOriginalUrl.empty())
 	{	
 		avatarFavorites->Add(url, mCompositePreview->Width(), mCompositePreview->Height(), 
-							"", 1000, false, false);
+							"", 1000, 0);
 	}
 	else //Otherwise, we need to replace the old one with this new data
 	{

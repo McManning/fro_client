@@ -5,7 +5,7 @@
 #include "RectManager.h"
 
 //#ifdef DEBUG
-#	define DRAW_RECTS 1
+//#	define DRAW_RECTS 1
 //#endif
 
 Screen* g_screen;
@@ -86,12 +86,12 @@ void Screen::PostRender()
 	
 	if (g_RectMan.m_Clips)
 	{
-		SDL_Rect* r;
+		/*SDL_Rect* r;
 		for (int i = 0; i < g_RectMan.m_Clips->length; ++i)
 		{
 			r = &g_RectMan.m_Clips->rects + i;
 			DrawRound(rect(r->x, r->y, r->w, r->h), 0, color(0,255));	
-		}
+		}*/
 
 		g_RectMan.update_rects(Surface());
 		

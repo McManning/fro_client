@@ -112,7 +112,7 @@ bool Avatar::Convert()
 		return false;
 	}
 	
-	return mImage->ConvertToAvatarFormat(mWidth, mHeight, mDelay, mLoopStand, mLoopSit);
+	return mImage->ConvertToAvatarFormat(mWidth, mHeight, mDelay, mFlags & AVATAR_FLAG_LOOPSTAND, mFlags & AVATAR_FLAG_LOOPSIT);
 }
 
 void Avatar::Serialize(DataPacket& dst)
@@ -121,8 +121,7 @@ void Avatar::Serialize(DataPacket& dst)
 	dst.WriteChar(mWidth);
 	dst.WriteChar(mHeight);
 	dst.WriteInt(mDelay);
-	dst.WriteChar(mLoopStand);
-	dst.WriteChar(mLoopSit);
+	dst.WriteInt(mFlags);
 	dst.WriteChar(mModifier);
 	dst.WriteString(mPass);
 }

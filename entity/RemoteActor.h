@@ -15,8 +15,7 @@ class RemoteActor : public Actor
 
 	void ReadAvatarFromPacket(DataPacket& data);
 	
-	bool LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, 
-							bool loopStand, bool loopSit);
+	bool LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags);
 	
 	// Set to true if this player is considered "away from keyboard"
 	void SetAfk(bool b) { mAfk = b; };

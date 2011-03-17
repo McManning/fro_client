@@ -16,7 +16,7 @@ RemoteActor::RemoteActor()
 	mBlocked = false;
 	SetAfk(false);
 	
-	LoadAvatar("assets/default.png", "", 32, 64, 1000, false, false);
+	LoadAvatar("assets/default.png", "", 32, 64, 1000, 0);
 	SwapAvatars();
 }
 
@@ -38,7 +38,7 @@ void RemoteActor::SetBlocked(bool b)
 	if (mBlocked)
 	{
 		//Change their avatar to the blocked form
-		LoadAvatar("assets/blocked.png", "", 48, 48, 1000, false, false);
+		LoadAvatar("assets/blocked.png", "", 48, 48, 1000, 0);
 	}
 	else
 	{
@@ -48,8 +48,7 @@ void RemoteActor::SetBlocked(bool b)
 
 void RemoteActor::ReadAvatarFromPacket(DataPacket& data)
 {
-	int w, h, delay = 1000;
-	bool loopStand = true, loopSit = false;
+	int w, h, delay = 1000, flags = 0;
 	string url, pass;
 	int modifier;
 
@@ -57,17 +56,15 @@ void RemoteActor::ReadAvatarFromPacket(DataPacket& data)
 	w = data.ReadChar();
 	h = data.ReadChar();
 	delay = data.ReadInt();
-	loopStand = data.ReadChar();
-	loopSit = data.ReadChar();
+	flags = data.ReadInt();
 	modifier = data.ReadChar();
 	pass = data.ReadString();
 		
-	if (LoadAvatar(url, pass, w, h, delay, loopStand, loopSit))
+	if (LoadAvatar(url, pass, w, h, delay, flags))
 		mLoadingAvatar->mModifier = modifier;
 }
 
-bool RemoteActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, 
-							bool loopStand, bool loopSit)
+bool RemoteActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags)
 {
 	PRINT("RemoteActor::LoadAvatar");
 
@@ -80,7 +77,7 @@ bool RemoteActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShor
 	// only allow remote files, composite avatars, or local files, for remote actors
 	if ( file.find("http://", 0) == 0 || file.find("avy://", 0) == 0 || file.find("assets", 0) == 0)
 	{	
-		result = Actor::LoadAvatar(file, pass, w, h, delay, loopStand, loopSit);
+		result = Actor::LoadAvatar(file, pass, w, h, delay, flags);
 	}
 	
 	return result;

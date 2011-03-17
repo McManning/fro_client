@@ -179,7 +179,7 @@ int actor_AddToBuffer(lua_State* ls)
 	return 0;
 }
 
-// .LoadAvatar(actor, "file", "pass", w, h, delay, loopstand, loopsit) Returns 1 on success, 0 otherwise.
+// .LoadAvatar(actor, "file", "pass", w, h, delay, flags) Returns 1 on success, 0 otherwise.
 int actor_LoadAvatar(lua_State* ls)
 {
 	PRINT("actor_LoadAvatar");
@@ -189,8 +189,7 @@ int actor_LoadAvatar(lua_State* ls)
 
 	bool result = a->LoadAvatar( game->mMap->mWorkingDir + lua_tostring(ls, 2), lua_tostring(ls, 3),
 							(uShort)lua_tonumber(ls, 4), (uShort)lua_tonumber(ls, 5),
-							(uShort)lua_tonumber(ls, 6), lua_tonumber(ls, 7),
-							lua_tonumber(ls, 8)
+							(uShort)lua_tonumber(ls, 6), (uShort)lua_tonumber(ls, 7)
 						);
 						
 	lua_pushboolean(ls, result);

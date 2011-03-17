@@ -3,7 +3,10 @@
 #define _AVATAR_H_
 
 #include "../core/Core.h"
-
+ 
+const int AVATAR_FLAG_LOOPSTAND = 1;
+const int AVATAR_FLAG_LOOPSIT = 2;
+ 
 class DataPacket;
 class Avatar
 {
@@ -63,8 +66,8 @@ class Avatar
 	uShort mWidth;
 	uShort mHeight;
 	uShort mDelay;
-	bool mLoopStand;
-	bool mLoopSit;
+	uShort mFlags;
+	
 	byte mModifier;
 };
 

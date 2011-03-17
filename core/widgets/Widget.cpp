@@ -251,7 +251,7 @@ void Widget::FlagRender()
 
 void Widget::SetPosition(rect r)
 {
-    if (mPosition.x != r.x && mPosition.y != r.y && mPosition.w != r.w && mPosition.h != r.h)
+    if (mPosition.x != r.x || mPosition.y != r.y || mPosition.w != r.w || mPosition.h != r.h)
     {
     	FlagRender(); //for old position
     
@@ -282,7 +282,7 @@ void Widget::SetVisible(bool b)
 	}
 }
 
-void Widget::IsVisible()
+bool Widget::IsVisible()
 {
 	if (!mVisible) return false;
 	
@@ -302,7 +302,7 @@ void Widget::SetActive(bool b)
 	}
 }
 
-bool IsActive()
+bool Widget::IsActive()
 {
 	if (!mActive) return false;
 	

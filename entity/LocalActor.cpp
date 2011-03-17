@@ -42,7 +42,7 @@ LocalActor::LocalActor()
 
 	string url = game->mPlayerData.GetParamString("avatar", "url");
 
-	LoadAvatar("assets/default.png", "", 32, 64, 1000, false, false);
+	LoadAvatar("assets/default.png", "", 32, 64, 1000, 0);
 	SwapAvatars();
 
 	if (!url.empty())
@@ -50,8 +50,7 @@ LocalActor::LocalActor()
 						game->mPlayerData.GetParamInt("avatar", "w"),
 						game->mPlayerData.GetParamInt("avatar", "h"),
 						game->mPlayerData.GetParamInt("avatar", "delay"),
-						game->mPlayerData.GetParamInt("avatar", "loopstand"),
-						game->mPlayerData.GetParamInt("avatar", "loopsit") );
+						game->mPlayerData.GetParamInt("avatar", "flags") );
 
 	LoadFlagsFromXml();
 
@@ -215,12 +214,11 @@ bool LocalActor::StepForward()
 	return true;
 }
 
-bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, 
-							bool loopStand, bool loopSit)
+bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags)
 {
 	PRINT("LocalActor::LoadAvatar");
 
-	bool result = Actor::LoadAvatar(file, pass, w, h, delay, loopStand, loopSit);
+	bool result = Actor::LoadAvatar(file, pass, w, h, delay, flags);
 	
 	//only save remote files
 	if (result && (file.find("http://", 0) == 0 || file.find("avy://", 0) == 0) )
@@ -230,8 +228,7 @@ bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort
 		game->mPlayerData.SetParamInt("avatar", "w", w);
 		game->mPlayerData.SetParamInt("avatar", "h", h);
 		game->mPlayerData.SetParamInt("avatar", "delay", delay);
-		game->mPlayerData.SetParamInt("avatar", "loopstand", loopStand);
-		game->mPlayerData.SetParamInt("avatar", "loopsit", loopSit);
+		game->mPlayerData.SetParamInt("avatar", "flags", flags);
 		game->SavePlayerData();
 
 		netSendAvatar(mLoadingAvatar);

@@ -480,9 +480,8 @@ int _parseEntityAvatar(lua_State* ls, Actor* a, int virtualIndex = -1)
 		return 0;
 	
 	string key, file;
-	int width = 0, height = 0, delay = 1000;
-	bool loopsit = false, loopstand = false;
-	
+	int width = 0, height = 0, delay = 1000, flags = 0;
+
 	lua_pushnil(ls);
 	while (lua_next(ls, virtualIndex) != 0)
 	{
@@ -495,10 +494,8 @@ int _parseEntityAvatar(lua_State* ls, Actor* a, int virtualIndex = -1)
 				width = (int)lua_tonumber(ls, -1);
 			else if (key == "Height")
 				height = (int)lua_tonumber(ls, -1);
-			else if (key == "LoopSit")
-				loopsit = lua_toboolean(ls, -1);
-			else if (key == "LoopStand")
-				loopstand = lua_toboolean(ls, -1);
+			else if (key == "Flags")
+				flags = (int)lua_tonumber(ls, -1);
 			else if (key == "Delay")
 				delay = (int)lua_tonumber(ls, -1);
 		}
@@ -507,7 +504,7 @@ int _parseEntityAvatar(lua_State* ls, Actor* a, int virtualIndex = -1)
 	
 	if (!file.empty())
 	{
-		a->LoadAvatar(game->mMap->mWorkingDir + file, "", width, height, delay, loopstand, loopsit);
+		a->LoadAvatar(game->mMap->mWorkingDir + file, "", width, height, delay, flags);
 	}
 	return 1;
 }

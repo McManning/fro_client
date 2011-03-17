@@ -1,4 +1,5 @@
 
+#include <lua.hpp>
 #include "AvatarFavoritesDialog.h"
 #include "AvatarCreator.h"
 
@@ -9,6 +10,7 @@
 #include "../core/widgets/Checkbox.h"
 
 #include "../entity/LocalActor.h"
+#include "../entity/Avatar.h"
 #include "../game/GameManager.h"
 //#include "../game/Achievements.h"
 
@@ -63,8 +65,13 @@ void callback_avatarEditSave(Button* b)
 		prop->delay = i;
 
 		prop->pass = getInputText(avatarFavorites->mAvatarEdit, "pass");
-		prop->loopSit = getCheckboxState(avatarFavorites->mAvatarEdit, "loopsit");
-		prop->loopStand = getCheckboxState(avatarFavorites->mAvatarEdit, "loopstand");
+		
+		prop->flags = 0;
+		if (getCheckboxState(avatarFavorites->mAvatarEdit, "loopsit"))
+		  prop->flags |= AVATAR_FLAG_LOOPSIT;
+		  
+		if (getCheckboxState(avatarFavorites->mAvatarEdit, "loopstand"))
+		  prop->flags |= AVATAR_FLAG_LOOPSTAND;
 
 		avatarFavorites->Add(prop);
 	}
@@ -113,10 +120,10 @@ AvatarEdit::AvatarEdit(avatarProperties* prop) :
 
 	Checkbox* c;
 	c = new Checkbox(this, "loopstand", rect(10,105), "Loop Stand Animation", 0);
-		c->SetState(prop->loopStand);
+		c->SetState(prop->flags & AVATAR_FLAG_LOOPSTAND);
 
 	c = new Checkbox(this, "loopsit", rect(10,130), "Loop Sit Animation", 0);
-		c->SetState(prop->loopSit);
+		c->SetState(prop->flags & AVATAR_FLAG_LOOPSIT);
 
 	mAlertLabel = new Label(this, "", rect(10,152), "");
 	mAlertLabel->mFontColor = color(255,0,0);
@@ -276,7 +283,7 @@ void AvatarFavorites::UseSelected()
 	//achievement_FashionAddict();
 	game->mPlayer->LoadAvatar(	ap->url, ap->pass, 
 								ap->w, ap->h, ap->delay, 
-								ap->loopStand, ap->loopSit
+								ap->flags
 							);
 }
 
@@ -287,8 +294,7 @@ void AvatarFavorites::AddNew()
 	prop->w = 0;
 	prop->h = 0;
 	prop->delay = 1000;
-	prop->loopStand = false;
-	prop->loopSit = false;
+	prop->flags = 0;
 
 	mAvatarEdit = new AvatarEdit(prop); //add a new one~
 	gui->Add(mAvatarEdit); //Not a child of ME, but instead the gui system.
@@ -341,8 +347,8 @@ avatarProperties* AvatarFavorites::Add(avatarProperties* prop)
 	return prop;
 }
 
-avatarProperties* AvatarFavorites::Add(string url, uShort w, uShort h, string pass,
-										uShort delay, bool loopStand, bool loopSit)
+avatarProperties* AvatarFavorites::Add(string url, uShort w, uShort h, string pass, 
+                                        uShort delay, uShort flags)
 {
 	if (url.empty()) return NULL;
 
@@ -359,8 +365,7 @@ avatarProperties* AvatarFavorites::Add(string url, uShort w, uShort h, string pa
 	prop->delay = delay;
 
 	prop->pass = pass;
-	prop->loopStand = loopStand;
-	prop->loopSit = loopSit;
+    prop->flags = flags;
 
 	return Add(prop);
 }
@@ -376,50 +381,88 @@ avatarProperties* AvatarFavorites::Find(string url)
 	return NULL;
 }
 
-int callback_avatarFavoritesXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
+bool AvatarFavorites::AvatarPropertiesFromLuaTable(lua_State* ls, avatarProperties* props)
 {
-	//OLD(v0.6.X): <avatar desc="$" url="$" w="#" h="#" params="$" />
-	//NEW: <avatar url="$" w="#" h="#" delay="#" loopsit="1|0" loopstand="1|0" />
+    string key;
+    
+    if (!lua_istable(ls, -1))
+    	return false;
 
-	AvatarFavorites* af = (AvatarFavorites*)userData;
-
-	string id = e->Value();
-	if (id == "avatar" && af)
+	lua_pushnil(ls);
+	while (lua_next(ls, -2) != 0)
 	{
-		af->Add(xf->GetParamString(e, "url"),
-				xf->GetParamInt(e, "w"),
-				xf->GetParamInt(e, "h"),
-				xf->GetParamString(e, "pass"),
-				xf->GetParamInt(e, "delay"),
-				xf->GetParamInt(e, "loopstand"),
-				xf->GetParamInt(e, "loopsit"));
-	}
-	return XMLPARSE_SUCCESS;
+		if (lua_isstring(ls, -2))
+		{
+			key = lua_tostring(ls, -2);
+			if (key == "url")
+				props->url = lua_tostring(ls, -1);
+			else if (key == "w")
+				props->w = (uShort)lua_tonumber(ls, -1);
+			else if (key == "h")
+				props->h = (uShort)lua_tonumber(ls, -1);
+			else if (key == "pass")
+				props->pass = lua_tostring(ls, -1);
+			else if (key == "delay")
+				props->delay = (uShort)lua_tonumber(ls, -1);
+			else if (key == "flags")
+				props->flags = (uShort)lua_tonumber(ls, -1);
+		}
+		lua_pop(ls, 1); //pop value	
+    }
+    
+    return true;
 }
 
 bool AvatarFavorites::Load()
 {
-	XmlFile xf;
-	xf.SetParser(callback_avatarFavoritesXmlParser);
+	string filename = DIR_PROFILE;
+	filename += AVATAR_FAVORITES_FILENAME;
 
-	string file = DIR_PROFILE;
-	file += AVATAR_FAVORITES_FILENAME;
-
-	//Load file contents into XML elements
-	if (!xf.LoadFromFile(file))
+    lua_State* ls = luaL_newstate();
+	
+	if ( luaL_dofile( ls, filename.c_str() ) != 0 )
 	{
-		WARNING(xf.GetError());
+		string err = lua_tostring(ls, -1);
+		
+		console->AddMessage("[AvatarFavorites] lua parse error: " + err);
+        lua_close(ls);
 		return false;
 	}
-	
-	//backwards support for old version
-	if (!xf.SetEntryPoint("avatars"))
-		xf.SetEntryPoint("drm::avatars");
+    
+	lua_getglobal(ls, "Avatars");
 
-	bool success = (xf.Parse(this) == XMLPARSE_SUCCESS);
-	return success;
+	// if this isn't a table, file is broken
+	if (!lua_istable(ls, -1))
+	{
+		console->AddMessage("[AvatarFavorites] no Avatars table");
+		lua_close(ls);
+		return false;
+	}
+
+	// parse through the avatars
+	lua_pushnil(ls);
+	
+	avatarProperties* props;
+	while (lua_next(ls, -2) != 0)
+	{
+        props = new avatarProperties;
+		AvatarPropertiesFromLuaTable(ls, props);
+		Add(props);
+		
+		lua_pop(ls, 1); //pop value	
+	}
+	
+	lua_close(ls);
+	return true;
 }
 
+/*
+    Avatars = {
+        { ["url"] = "url", ["w"] = w, ["h"] = h, ["delay"] = delay, ["pass"] = "pass", ["flags"] = flags },
+        { ... },
+        ...   
+    }
+*/
 bool AvatarFavorites::Save()
 {
 	//open new XML Doc
@@ -429,26 +472,36 @@ bool AvatarFavorites::Save()
 	TiXmlElement* top = new TiXmlElement("avatars");
 	xf.mDoc.LinkEndChild(top);
 
+    string filename = DIR_PROFILE;
+	filename += AVATAR_FAVORITES_FILENAME;
+
+    FILE* f;
+	f = fopen(filename.c_str(), "w");
+
+	if (!f)
+	   return false;
+
+    fprintf(f, "Avatars = {\n");
+
 	//Write all the items
-	TiXmlElement* e;
-	for (int i = mAvatars.size() - 1; i > -1; i--)
+	avatarProperties* props;
+    for (int i = mAvatars.size() - 1; i > -1; i--)
 	{
-		e = xf.AddChildElement(top, "avatar");
-		xf.SetParamString(e, "url", mAvatars.at(i)->url);
-		xf.SetParamInt(e, "w", mAvatars.at(i)->w);
-		xf.SetParamInt(e, "h", mAvatars.at(i)->h);
-		xf.SetParamInt(e, "delay", mAvatars.at(i)->delay);
-		xf.SetParamString(e, "pass", mAvatars.at(i)->pass);
-		xf.SetParamInt(e, "loopsit", mAvatars.at(i)->loopSit);
-		xf.SetParamInt(e, "loopstand", mAvatars.at(i)->loopStand);
+        props = mAvatars.at(i);
+        
+        fprintf(f, "\t{ [\"url\"] = \"%s\", [\"w\"] = %i, [\"h\"] = %i, [\"delay\"] = %i, [\"pass\"] = \"%s\", [\"flags\"] = %i },\n", 
+                    props->url.c_str(),
+                    props->w,
+                    props->h,
+                    props->delay,
+                    props->pass.c_str(),
+                    props->flags
+                );
 	}
 	
-	string file = DIR_PROFILE;
-	file += AVATAR_FAVORITES_FILENAME;
-
-	//save and close
-	bool success = xf.SaveToFile(file);
-	return success;
+	fprintf(f, "}\n");
+	fclose(f);
+	return true;
 }
 
 void AvatarFavorites::ResizeChildren() //overridden so we can move things around properly

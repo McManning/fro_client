@@ -797,8 +797,7 @@ void Actor::_checkLoadingAvatar()
 	}
 }
 
-bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, 
-								bool loopStand, bool loopSit)
+bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags)
 {
 	DEBUGOUT("\\c139* Loading avatar: " + file);
 		
@@ -810,8 +809,7 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 	mLoadingAvatar->mWidth = w;
 	mLoadingAvatar->mHeight = h;
 	mLoadingAvatar->mDelay = delay;
-	mLoadingAvatar->mLoopStand = loopStand;
-	mLoadingAvatar->mLoopSit = loopSit;
+	mLoadingAvatar->mFlags = flags;
 	
 	int oldcap = downloader->GetByteCap();
 

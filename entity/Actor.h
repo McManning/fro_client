@@ -58,8 +58,7 @@ class Actor : public Entity /*, public Combatant */
 		frame delay used when splitting single image avatars into frames.
 		Returns true on success, false otherwise.
 	*/
-	virtual bool LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, 
-							bool loopStand, bool loopSit);
+	virtual bool LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags);
 
 	/*	Attempts to convert mLoadingAvatar to avatar format and swaps with mAvatar. Returns true on success */
 	bool SwapAvatars();

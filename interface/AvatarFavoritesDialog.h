@@ -5,10 +5,10 @@
 #include "../core/Core.h"
 #include "../core/widgets/Frame.h"
 
-const char* const AVATAR_FAVORITES_FILENAME = "avatars.xml";
+const char* const AVATAR_FAVORITES_FILENAME = "avatars.lua";
  
 const int AVYCHANGE_INTERVAL_MS = 5000;
- 
+
 //TODO: Just use Avatar class!
 struct avatarProperties
 {
@@ -18,8 +18,7 @@ struct avatarProperties
 	uShort w;
 	uShort h;
 	uShort delay;
-	bool loopStand;
-	bool loopSit;
+    uShort flags;
 };
 
 class Label;
@@ -43,6 +42,7 @@ class AvatarEdit : public Frame
 class Button;
 class Multiline;
 class AvatarCreator;
+class lua_State;
 class AvatarFavorites : public Frame 
 {
   public:
@@ -58,9 +58,11 @@ class AvatarFavorites : public Frame
 	avatarProperties* Add(avatarProperties* prop);
 	
 	avatarProperties* Add(string url, uShort w, uShort h, string pass, 
-							uShort delay, bool loopStand, bool loopSit);
+							uShort delay, uShort flags);
 	
 	avatarProperties* Find(string url);
+	
+	bool AvatarPropertiesFromLuaTable(lua_State* ls, avatarProperties* props);
 	
 	void EraseSelected();
 	bool Load();

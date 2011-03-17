@@ -129,7 +129,7 @@ GuiManager::GuiManager()
 	console->ResizeChildren();
 	
 	Add(console);
-	console->SetVisible(false);
+	//console->SetVisible(false);
 	
 	PRINT("GuiManager Finished");
 }
@@ -215,21 +215,17 @@ Widget* GuiManager::GrabWidgetUnderXY(Widget* root, sShort x, sShort y) const
 
 void GuiManager::_distributeEvent(SDL_Event* event)
 {
-//	PRINT("Gui::Event");
-
 	switch (event->type)
 	{
 		case SDL_KEYDOWN:
 		{
-//			PRINT("Gui::EventKD");
 			if (hasKeyFocus)
 				hasKeyFocus->Event(event);
 			_sendToGlobalEventHandlers(event, hasKeyFocus);
 		} break;
 		case SDL_KEYUP:
 		{
-//			PRINT("Gui::EventKU");
-			
+
 			if (event->key.keysym.sym == SDLK_PRINT)
 			{
 				Screenshot();
@@ -245,7 +241,6 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		} break;
 		case SDL_MOUSEBUTTONDOWN:
 		{
-//			PRINT("Gui::EventMD");
 			previousMouseFocus = hasMouseFocus;
 			hasMouseFocus = GrabWidgetUnderXY(this, GetMouseX(), GetMouseY());
 			
@@ -269,11 +264,9 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 						{
 							hasKeyFocus = NULL;
 						}
-//						PRINT("Gui Demands Focus: " + pts(GetDemandsFocus()));
 					}
 					else
 					{
-//						PRINT("Gui KeyFocus: " + pts(hasKeyFocus));
 
 						hasKeyFocus->MoveToTop();
 						hasKeyFocus->Event(event);
@@ -288,7 +281,6 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		} break;
 		case SDL_MOUSEBUTTONUP:
 		{
-//			PRINT("Gui::EventMU " + pts(hasKeyFocus));
 			previousMouseFocus = hasMouseFocus;
 			hasMouseFocus = GrabWidgetUnderXY(this, GetMouseX(), GetMouseY());
 			//if (hasMouseFocus) hasMouseFocus->Event(event);
@@ -300,7 +292,6 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		} break;
 		case SDL_MOUSEMOTION:
 		{
-//			PRINT("Gui::EventMM");
 			SetMousePosition(event->motion.x, event->motion.y);
 		
 			previousMouseFocus = hasMouseFocus;
@@ -316,7 +307,6 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 			_sendToGlobalEventHandlers(event, NULL);
 		} break;
 	}
-//	PRINT("Gui::EventEnd");
 }
 
 void GuiManager::_renderStats(Image* scr)
