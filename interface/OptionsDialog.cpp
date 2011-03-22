@@ -253,7 +253,7 @@ void OptionsDialog::Save()
 		}
 		else
 		{
-			game->mChat->AddMessage("\\c900 * Invalid nickname, ignoring.");
+			game->GetChat()->AddMessage("\\c900 * Invalid nickname, ignoring.");
 		}
 	}
 

@@ -65,7 +65,7 @@ ColorPicker::ColorPicker(Input* creator) :
 	{
 		b = new Button(this, "ok", rect(180,y,20,20), "", callback_sendColor);
 		b->mHoverText = "Okay";
-		b->mImage = resman->LoadImg("assets/buttons/okay.png");
+		b->SetImage("assets/buttons/okay.png");
 	}
 	
 	y += 25;

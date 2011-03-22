@@ -174,247 +174,6 @@ void callback_consolePlayerFlags(Console* c, string s)
 	game->mPlayer->PrintFlags();
 }
 
-void callback_chatNoCommand(Console* c, string s)
-{
-	if (s == "/mini")
-	{
-		if (game->mPlayer->GetAvatar())
-		{
-			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_MINI);
-			game->mPlayer->NetSendAvatarMod();
-			game->mPlayer->UpdateCollisionAndOrigin();
-		}
-	}
-	else if (s == "/normal")
-	{
-		if (game->mPlayer->GetAvatar())
-		{
-			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_NONE);
-			game->mPlayer->NetSendAvatarMod();
-			game->mPlayer->UpdateCollisionAndOrigin();
-		}
-	}
-	else if (s == "/ghost")
-	{
-		if (game->mPlayer->GetAvatar())
-		{
-			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_GHOST);
-			game->mPlayer->NetSendAvatarMod();
-			game->mPlayer->UpdateCollisionAndOrigin();
-		}
-	}
-#ifdef DEBUG
-	else if (s == "/giant")
-	{
-		if (game->mPlayer->GetAvatar())
-		{
-			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_GIANT);
-			game->mPlayer->NetSendAvatarMod();
-			game->mPlayer->UpdateCollisionAndOrigin();
-		}
-	}
-#endif
-	else
-	{
-		if (!game->mMap)
-			c->AddMessage(s);
-		else
-			netSendSay(s);
-	}
-}
-
-void callback_chatCommandMe(Console* c, string s)
-{
-	if (s.length() < 5)
-		return;
-
-	netSendMe(s.substr(4));
-}
-
-void callback_chatCommandStamp(Console* c, string s)
-{
-	if (s.length() < 8)
-		return;
-
-	netSendStamp(s.substr(7));
-}
-
-void callback_chatCommandEmote(Console* c, string s)
-{
-	if (s.length() < 6)
-		return;
-
-	netSendEmote(sti(s.substr(5)));
-}
-
-void callback_chatCommandPos(Console* c, string s)
-{
-	c->AddMessage("Player: " + its(game->mPlayer->mPosition.x) + ", " + its(game->mPlayer->mPosition.y));
-	c->AddMessage("Cursor (Real): " + its(gui->GetMouseX()) + ", " + its(gui->GetMouseY()));
-	
-	rect r = game->mMap->ToCameraPosition(gui->GetMouseRect());
-	c->AddMessage("Cursor (Map): " + its(r.x) + ", " + its(r.y));
-}
-
-#ifdef WIN32
-BOOL CALLBACK callback_findWinamp(HWND hwnd, LPARAM lParam) //for the below code
-{
-	char buffer[255];
-	 
-	GetWindowText(hwnd, buffer, sizeof(buffer));
-    string title = buffer;
-	
-	int pos = title.find(" - Winamp", 0);
-	if (pos != string::npos)
-	{
-		//found it, clean it and send it
-		title.erase(pos, title.size() - pos);
-		netSendMusic(title);
-		return FALSE;
-	}
-
-	return TRUE; //keep searching
-}
-#endif //WIN32
-
-void callback_chatCommandListeningTo(Console* c, string s)
-{
-	//they manually specified a song
-	if (s.length() > 7)
-	{
-		netSendMusic(s.substr(7));
-		return;
-	}
-	
-	//otherwise, let's try to find Winamp!
-#ifdef WIN32
-	if (EnumWindows(callback_findWinamp, 0) == TRUE) //didn't find it
-	{
-		c->AddMessage("\\c900 * Can't find Winamp! Do /music <title> instead!");
-	}
-#else
-	c->AddMessage("\\c900 * Only supported in Windows! Do /music <title> instead!");
-#endif
-
-}
-
-void callback_chatCommandCoolface(Console* c, string s) { netSendEmote(1); }
-void callback_chatCommandBrofist(Console* c, string s) { netSendEmote(2); }
-void callback_chatCommandSpoilereyes(Console* c, string s) { netSendEmote(3); }
-void callback_chatCommandBaww(Console* c, string s) { netSendEmote(4); }
-void callback_chatCommandDerp(Console* c, string s) { netSendEmote(5); }
-void callback_chatCommandHappy(Console* c, string s) { netSendEmote(6); }
-void callback_chatCommandOmg(Console* c, string s) { netSendEmote(7); }
-void callback_chatCommandFFFUUU(Console* c, string s) { netSendEmote(8); }
-void callback_chatCommandHeart(Console* c, string s) { netSendEmote(9); }
-void callback_chatCommandAwesome(Console* c, string s) { netSendEmote(10); }
-void callback_chatCommandWtf(Console* c, string s) { netSendEmote(12); }
-void callback_chatCommandTroll(Console* c, string s) { netSendEmote(13); }
-void callback_chatCommandFacepalm(Console* c, string s) { netSendEmote(14); }
-void callback_chatCommandPedo(Console* c, string s) { netSendEmote(15); }
-void callback_chatCommandDatAss(Console* c, string s) { netSendEmote(16); }
-void callback_chatCommandRage(Console* c, string s) { netSendEmote(17); }
-
-void callback_chatCommandJoin(Console* c, string s)
-{
-	if (s.length() < 7)
-		return;
-
-	if (!game->mNet->IsConnected())
-	{
-		game->mChat->AddMessage("\\c900* No server connection! Could not jump worlds!");
-		return;
-	}
-
-	if (game->mLoader->m_state != WorldLoader::WORLD_ACTIVE
-		&& game->mLoader->m_state != WorldLoader::FAILED)
-	{
-		c->AddMessage("\\c900* Already loading a world!");
-		return;	
-	}
-	
-#ifndef DEBUG
-	timer* t = timers->Find("joinwait");
-	if (t)
-	{
-		int seconds = t->lastMs + t->interval - gui->GetTick();
-		if (seconds < 0)
-			seconds = 0;
-		else
-			seconds /= 1000;
-
-		c->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
-		return;
-	}
-#endif
-
-	s = stripCodes(s.substr(6));
-	c->AddMessage("\\c090* Loading " + s);
-
-	game->LoadOnlineWorld(s);
-
-#ifndef DEBUG
-	//limit the number of times they can change channels
-	timers->Add("joinwait", JOIN_INTERVAL_MS, false, NULL, NULL, NULL);
-#endif
-}
-
-void callback_chatCommandNick(Console* c, string s) // /nick nickname
-{	
-	if (s.length() < 7)
-		return;
-		
-	s = s.substr(6);
-	
-	replace(&s, "\\n", ""); //filter out \n 
-	
-	if (stripCodes(s).empty())
-		return;
-	
-	if (game->mNet->IsConnected())
-		game->mNet->ChangeNick(s);
-	else
-		game->mPlayer->mName = s;
-	
-	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
-	game->mPlayerData.SetParamString(e, "nick", s);
-	game->SavePlayerData();
-}
-
-void callback_chatCommandWorldsViewer(Console* c, string s)
-{	
-	//if (!gui->Get("worldsviewer"))
-	//	new WorldsViewer();
-}
-
-void callback_chatCommandMsg(Console* c, string s) // /msg nick message
-{
-	vString v;
-	explode(&v, &s, " ");
-	if (v.size() < 3)
-	{
-		c->AddMessage("Syntax: /msg nick message");
-		return;
-	}
-	
-	if (game->mNet)
-		game->mNet->Privmsg(v.at(1), s.substr( s.find(v.at(2))) );
-}
-
-void callback_chatCommandListEmotes(Console* c, string s)
-{
-	c->AddMessage("\\c990Emotes:\\n  /facepalm, /datass, /rage, /troll, /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf, /pedo");
-}
-
-void callback_chatCommandListCommands(Console* c, string s)
-{
-	c->AddMessage("\\c990Commands:\\n  /emotes - Display emotes list\\n  /save - Save chat log to an html file\\n"
-							"  /clear - Clear the chatbox\\n  /exit - Close the program\\n  /ss - Save a screenshot (same as PRTSCRN)\\n"
-							"  /stamp <text> - Stamp the text onto the map\\n  /nick <name> - Change your nickname\\n"
-							"  /music <text> - Tell everyone the song you're listening to\\n  /join <world> - Try to join specified world\\n"
-							"  /me <text> - Tell everyone what you're currently doing");
-}
-
 // GameManager callbacks
 
 uShort timer_gameManagerProcess(timer* t, uLong ms)
@@ -423,16 +182,6 @@ uShort timer_gameManagerProcess(timer* t, uLong ms)
 	ASSERT(g);
 	g->Process(ms);	
 	return TIMER_CONTINUE;
-}
-
-void callback_showChatbox(Button* b)
-{
-	game->ShowChat();
-}
-
-void callback_hideChatbox(Button* b)
-{
-	game->HideChat();
 }
 
 uShort timer_DestroyInfoBar(timer* t, uLong ms)
@@ -451,56 +200,11 @@ uShort timer_DestroyInfoBar(timer* t, uLong ms)
 	return TIMER_DESTROY;
 }
 
-
-void GameManager::_hookCommands()
-{
-	console->HookCommand("net_info", callback_consoleNetInfo);
-	console->HookCommand("avatarout", callback_consoleOutputAvatar);
-	console->HookCommand("test", callback_consoleTestMap);
-	console->HookCommand("screendraw", callback_consoleScreenDraw);
-	console->HookCommand("makecol", callback_consoleMakeCol);
-	console->HookCommand("player_flags", callback_consolePlayerFlags);
-	
-	mChat->HookCommand("", callback_chatNoCommand);
-	mChat->HookCommand("/me", callback_chatCommandMe);
-	mChat->HookCommand("/stamp", callback_chatCommandStamp);
-	mChat->HookCommand("/music", callback_chatCommandListeningTo);
-	mChat->HookCommand("/join", callback_chatCommandJoin);
-	mChat->HookCommand("/nick", callback_chatCommandNick);
-	mChat->HookCommand("/worlds", callback_chatCommandWorldsViewer);
-	mChat->HookCommand("/msg", callback_chatCommandMsg);
-	mChat->HookCommand("/emo", callback_chatCommandEmote);
-	mChat->HookCommand("/pos", callback_chatCommandPos);
-
-	//Emotes
-	mChat->HookCommand("/coolface", callback_chatCommandCoolface);
-	mChat->HookCommand("/troll", callback_chatCommandTroll);
-	mChat->HookCommand("/brofist", callback_chatCommandBrofist);
-	mChat->HookCommand("/spoilereyes", callback_chatCommandSpoilereyes);
-	mChat->HookCommand("/sad", callback_chatCommandBaww);
-	mChat->HookCommand("/derp", callback_chatCommandDerp);
-	mChat->HookCommand("/happy", callback_chatCommandHappy);
-	mChat->HookCommand("/omg", callback_chatCommandOmg);
-	mChat->HookCommand("/wtf", callback_chatCommandWtf);
-	mChat->HookCommand("/fff", callback_chatCommandFFFUUU);
-	mChat->HookCommand("/heart", callback_chatCommandHeart);
-	mChat->HookCommand("/awesome", callback_chatCommandAwesome);
-	mChat->HookCommand("/facepalm", callback_chatCommandFacepalm);
-	mChat->HookCommand("/pedo", callback_chatCommandPedo);
-	mChat->HookCommand("/datass", callback_chatCommandDatAss);
-	mChat->HookCommand("/rage", callback_chatCommandRage);
-	
-	mChat->HookCommand("/emotes", callback_chatCommandListEmotes);
-	mChat->HookCommand("/commands", callback_chatCommandListCommands);
-	
-}
-
 GameManager::GameManager()
 	: Frame( gui, "GameManager", rect(0,0,gui->Width(),gui->Height()) )
 {
 	mMap = NULL;
 	mPlayer = NULL;
-	mChat = NULL;
 	mNet = NULL;
 	mLoader = NULL;
 	//mParty = NULL;
@@ -524,10 +228,6 @@ GameManager::GameManager()
 	mShowJoinParts = mPlayerData.GetParamInt("map", "joinparts");
 	mShowAddresses = mPlayerData.GetParamInt("map", "addresses");
 
-	PRINT("[GM] Loading Chat");
-
-	_buildChatbox();
-
 	PRINT("[GM] Loading Network");
 	mNet = new IrcNet();
 	mNet->mRealname = "guest";
@@ -540,9 +240,6 @@ GameManager::GameManager()
 	mPlayer->mName = mPlayerData.GetParamString("user", "nick");
 	if (mPlayer->mName.empty())
 		mPlayer->mName = "fro_user";
-
-	PRINT("[GM] Hooking Commands");
-	_hookCommands();
 
 	timers->AddProcess("gameproc", 
 						timer_gameManagerProcess, 
@@ -568,8 +265,13 @@ GameManager::GameManager()
 	ToggleGameMode(MODE_ACTION);
 
 	//Backpack* pack = new Backpack();
-	
-	ToggleHud(false);
+
+	console->HookCommand("net_info", callback_consoleNetInfo);
+	console->HookCommand("avatarout", callback_consoleOutputAvatar);
+	console->HookCommand("test", callback_consoleTestMap);
+	console->HookCommand("screendraw", callback_consoleScreenDraw);
+	console->HookCommand("makecol", callback_consoleMakeCol);
+	console->HookCommand("player_flags", callback_consolePlayerFlags);
 }
 
 GameManager::~GameManager()
@@ -709,28 +411,6 @@ void GameManager::_buildHud()
 	mHud->SetSize(x, 35);
 }
 
-void GameManager::_buildChatbox()
-{
-	mChat = new Console("chat", "", "assets/gui/chat/", "chat_", true, true);
-		mChat->mExit->onClickCallback = callback_hideChatbox;
-		mChat->mExit->mHoverText = "Hide Chat";
-		Add(mChat);
-	
-	TiXmlElement* e = mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
-	rect r = mPlayerData.GetParamRect(e, "position");
-	if (isDefaultRect(r))
-	{
-		mChat->SetPosition( rect(mPosition.w - mChat->Width(), 
-								mPosition.h - mChat->Height(),
-								mChat->Width(), mChat->Height()) 
-							);
-	}
-	else
-	{
-		mChat->SetPosition(r);
-	}
-}
-	
 void GameManager::LoadTestWorld(string luafile)
 {
 	SAFEDELETE(mLoader);
@@ -760,6 +440,7 @@ void GameManager::Process(uLong ms)
 			loginDialog->Die();
 			
 		mMap->MoveToBottom();
+		mMap->Process();
 	}
 
 	MoveToBottom(); //keep game at the bottom of the screen.
@@ -1023,102 +704,6 @@ void GameManager::SavePlayerData()
 	}
 }
 
-/*
-void GameManager::DisplayAchievement(string title)
-{
-	//TODO: Popup and AWESOME STUFFS!
-	
-	game->mChat->AddMessage("\\c139 * " + mPlayer->mName + "\\c999 achieved: \\c080" + title);
-	mPlayer->Emote(11);
-	
-	ShowInfoBar("achievement", title, 5000, "assets/infobar_ach.png");
-	
-	//Tell everyone!
-	netSendAchievement(title);
-	
-	achievement_OverAchiever();
-}
-
-void GameManager::_addNewAchievement(string title, string desc, int max)
-{
-	TiXmlElement* top = mPlayerData.mDoc.FirstChildElement();
-	TiXmlElement* e;
-	
-	ASSERT(top);
-	
-	e = top->FirstChildElement("achievements");
-	if (!e) //make a new one
-	{
-		e = mPlayerData.AddChildElement(top, "achievements");
-	}
-	
-	e = mPlayerData.AddChildElement(e, "ach");
-	
-	mPlayerData.SetParamString(e, "title", title);
-	mPlayerData.SetParamString(e, "desc", desc);
-	mPlayerData.SetParamInt(e, "max", max);
-	mPlayerData.SetParamInt(e, "total", 1);
-
-	SavePlayerData();
-
-	//We earned the achievement if we don't have more than 1 total. Display it
-	if (max == 1)
-		DisplayAchievement(title);
-}
-	
-int GameManager::EarnAchievement(string title, string desc, int max)
-{
-	if (title.empty() || max < 1 || !mMap)
-		return 0;
-		
-	//if we already have it, update it
-		
-	//Get master element
-	TiXmlElement* top = mPlayerData.mDoc.FirstChildElement();
-	TiXmlElement* e;
-	
-	ASSERT(top);
-
-	e = top->FirstChildElement("achievements");
-	if (e)
-	{
-		e = e->FirstChildElement();
-		while (e)
-		{
-			if (mPlayerData.GetParamString(e, "title") == title)
-			{
-				int total = mPlayerData.GetParamInt(e, "total");
-				max = mPlayerData.GetParamInt(e, "max"); //ignore the new max, can't change it
-				
-				if (total + 1 < max) //just get closer to that max
-				{
-					mPlayerData.SetParamInt(e, "total", total+1);
-					SavePlayerData();
-					return total+1;
-				}
-				else if (total + 1 == max)
-				{
-					mPlayerData.SetParamInt(e, "total", max);
-					SavePlayerData();
-					DisplayAchievement(title);
-					return max;
-				}
-				else
-				{
-					return max;
-				}
-			}
-			e = e->NextSiblingElement();
-		}
-	}
-	
-	//not found, add it.
-	_addNewAchievement(title, desc, max);
-	
-	return 1;
-}
-*/
-
 void GameManager::UpdateAppTitle()
 {
 	string title = "fro [Build ";
@@ -1157,15 +742,17 @@ void GameManager::ToggleGameMode(gameMode mode)
 	
 	mGameMode = mode;
 	
+	Console* c = GetChat();
+	
 	if (mode == MODE_ACTION)
 	{
-		mChat->mInput->mReadOnly = true;
-		mChat->mInput->SetText("Hit TAB to enable or disable chat mode");
+		c->mInput->mReadOnly = true;
+		c->mInput->SetText("Hit TAB to enable or disable chat mode");
 	}
 	else if (mChat->IsVisible()) //has to be visible for chat mode
 	{
-		mChat->mInput->mReadOnly = false;
-		mChat->mInput->Clear();
+		c->mInput->mReadOnly = false;
+		c->mInput->Clear();
 	}
 	
 	// Reset our speed
@@ -1218,7 +805,8 @@ void GameManager::ShowInfoBar(string id, string msg, int duration, string imageF
 void GameManager::ToggleHud(bool visible)
 {
 	//mChat->SetVisible(visible);
-	mHud->SetVisible(visible);
+	if (mMap && mMap->mHud)
+	   mMap->mHud->SetVisible(visible);
 	
 	//kill any dialogs that may exist
 	Widget* w;
@@ -1227,78 +815,12 @@ void GameManager::ToggleHud(bool visible)
 	
 	w = gui->Get("userlist");
 	if (w) w->Die();
-	
-	//w = gui->Get("achievements");
-	//if (w) w->Die();
-
-	//if (inventory)
-	//	inventory->SetVisible(false);
-		
-	//if (mParty)
-	//	mParty->SetVisible(false);
-		
-	//w = gui->Get("Backpack");
-	//if (w) w->SetVisible(visible);
 }
 
-/*
-void GameManager::EndPlayersDuelTurn()
+Console* GameManager::GetChat()
 {
-	if (mMap)
-	{
-		Widget* w = mMap->Get("PlayerActionMenu");
-		if (w)
-			w->Die();
-	}
-	
-	ToggleHud(false);
+    if (mMap && mMap->mChat)
+        return mMap->mChat;
+       
+    return NULL;   
 }
-
-void GameManager::EnableDuelMode()
-{
-	ToggleHud(false);
-	HideChat();
-}
-
-void GameManager::DisableDuelMode()
-{
-	EndPlayersDuelTurn(); // in case it was disabled during their turn
-
-	ToggleHud(true);
-	ShowChat();
-}
-
-bool GameManager::IsInDuel()
-{
-	return (mGameMode == MODE_DUEL);
-}
-*/
-
-void GameManager::HideChat()
-{
-	mChat->SetVisible(false);
-	
-	if (!Get("ShowChat"))
-	{
-		Button* b2 = new Button(this, "ShowChat", rect(Width() - 30, Height() - 20, 30, 20), 
-								"", callback_showChatbox);
-			b2->mHoverText = "Show Chat";
-			b2->SetImage("assets/buttons/show_chat.png");
-	}
-	
-	//if (!IsInDuel())
-	//	ToggleGameMode(GameManager::MODE_ACTION);
-}
-
-void GameManager::ShowChat()
-{
-	Widget* w = Get("ShowChat");
-	if (w) w->Die();
-	
-	mChat->SetVisible(true);
-		
-	//if (!IsInDuel())
-	//	ToggleGameMode(GameManager::MODE_CHAT);
-}
-
-

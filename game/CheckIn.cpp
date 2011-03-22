@@ -23,8 +23,8 @@ int callback_CheckInXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 	if (id == "msg")
 	{	
 		// TODO: type.. blah blah
-		if (game && game->mChat)
-			game->mChat->AddMessage( xf->GetText(e) );
+		if (game && game->GetChat())
+			game->GetChat()->AddMessage( xf->GetText(e) );
 	}
 	else if (id == "alert") // <alert title="error">TEXT</alert>
 	{

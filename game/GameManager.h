@@ -99,13 +99,10 @@ class GameManager : public Frame
 	bool IsInDuel();
 */
 
-	void HideChat();
-	void ShowChat();
+    Console* GetChat();
 
   private:
 	void _buildHud();
-	void _buildChatbox();
-	void _hookCommands();
 	//void _addNewAchievement(string title, string desc, int max);
 };
 

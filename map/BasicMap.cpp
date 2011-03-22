@@ -16,8 +16,6 @@ BasicMap::~BasicMap()
 
 void BasicMap::Render()
 {
-	Process(); //Here until we have a timer for it
-
 	Image* scr = Screen::Instance();
 	rect r = GetScreenPosition();
 	

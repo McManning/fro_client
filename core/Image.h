@@ -137,7 +137,8 @@ class Image
 //Routines to render this Image to another using various techniques
 	
 	bool Render(Image* destination, sShort x, sShort y, rect clip = rect());
-	bool Render(SDL_Surface* dst, sShort x, sShort y, rect clip = rect());
+	bool _renderToSurface(SDL_Surface* dst, sShort x, sShort y, rect& clip);
+	bool _renderToScreen(sShort x, sShort y, rect& clip);
 	
 	// Shorthand rendering routines for various behavior
 	bool RenderHorizontalEdge(Image* dst, rect rSrc, rect rDst);

@@ -158,7 +158,7 @@ Input::Input(Widget* wParent, string sId, rect rPosition, string sMask,
 	mId = sId;
 	mCharacterMask = sMask;
 
-	mImage = resman->LoadImg("assets/gui/input_bg.png");
+	SetImage("assets/gui/input_bg.png");
 	
 	SetPosition(rPosition);
 	
@@ -790,10 +790,4 @@ void Input::PasteColor()
 {
 	ColorPicker* c = new ColorPicker(this);
 	gui->Add(c);
-}
-
-void Input::SetImage(string file)
-{
-	resman->Unload(mImage);
-	mImage = resman->LoadImg(file);
 }

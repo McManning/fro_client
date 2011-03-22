@@ -47,7 +47,7 @@ RightClickMenu::RightClickMenu()
 	//Mouse may move outside our frame while dragging. TODO: Find a way to fix that issue!
 	gui->AddGlobalEventHandler(this);
 
-	mImage = resman->LoadImg("assets/gui/rcm_bg.png");
+	SetImage("assets/gui/rcm_bg.png");
 
 	SetPosition( gui->GetMouseRect() );
 

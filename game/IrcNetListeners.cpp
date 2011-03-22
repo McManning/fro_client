@@ -28,10 +28,10 @@ const int MAX_STAMP_TEXT_LENGTH = 30;
 
 void printMessage(string& msg)
 {
-	if (!game->mChat) 
+	if (!game->GetChat()) 
 		console->AddMessage(msg);
 	else
-		game->mChat->AddMessage(msg);
+		game->GetChat()->AddMessage(msg);
 		
 	if (loginDialog)
 		loginDialog->mText->AddMessage(msg);
@@ -159,7 +159,7 @@ void netSendSay(string text) //say $message
 
 	if (text.at(0) != '/') //Ignore slash commands 
 	{
-		game->mChat->AddMessage(game->mPlayer->mName + ": " + text);
+		game->GetChat()->AddMessage(game->mPlayer->mName + ": " + text);
 
 		ChatBubble* cb = new ChatBubble(game->mPlayer, text);
 		cb->mMap = game->mMap;
@@ -239,7 +239,7 @@ void netSendMe(string text) //act #mode $text
 	text = stripCodes(text);
 	replace(&text, "\\n", "");
 	
-	game->mChat->AddMessage("\\c909* " + stripCodes(game->mPlayer->mName) 
+	game->GetChat()->AddMessage("\\c909* " + stripCodes(game->mPlayer->mName) 
 							+ " " + text + " *");
 
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
@@ -261,7 +261,7 @@ void netSendMusic(string song) //act 1 song
 	song = stripCodes(song);
 	replace(&song, "\\n", "");
 	
-	game->mChat->AddMessage(
+	game->GetChat()->AddMessage(
 					"\\c099* " + stripCodes(game->mPlayer->mName)
 					+ " is listening to \\c059" 
 					+ song + " \\c099*" 
@@ -287,7 +287,7 @@ void netSendBeat(Entity* target, string item) //act 2 target item
 	item = stripCodes(item);
 	replace(&item, "\\n", "");
 	
-	game->mChat->AddMessage(
+	game->GetChat()->AddMessage(
 					"\\c484 * " + stripCodes(game->mPlayer->mName) + " beats "
 					+ stripCodes(targetName) + " with a \\c784"
 					+ item + "\\c484 *"
@@ -329,7 +329,7 @@ void netSendEmote(uShort num) //emo num
 	timer* t = timers->Find("emowait");
 	if (t)
 	{
-		game->mChat->AddMessage("\\c900 * Spam emotes less, jerk.");
+		game->GetChat()->AddMessage("\\c900 * Spam emotes less, jerk.");
 		return;
 	}
 	else
@@ -477,7 +477,7 @@ void _handleNetMessage_Say(string& nick, DataPacket& data) // say msg
 	
 	if (msg.at(0) != '/') //Ignore slash commands 
 	{
-		game->mChat->AddMessage(nick + ": " + msg);
+		game->GetChat()->AddMessage(nick + ": " + msg);
 		
 		ChatBubble* cb = new ChatBubble(ra, msg);
 		cb->mMap = game->mMap;
@@ -670,7 +670,7 @@ void _handleNetMessage_PlayerEarnedAchievement(string& nick, DataPacket& data) /
 
 	string title = data.ReadString();
 	
-	game->mChat->AddMessage("\\c139 * " + nick + "\\c999 achieved: \\c080 " + title);
+	game->GetChat()->AddMessage("\\c139 * " + nick + "\\c999 achieved: \\c080 " + title);
 	ra->Emote(11);*/
 }
 

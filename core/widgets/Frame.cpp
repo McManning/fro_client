@@ -27,9 +27,8 @@ Frame::Frame(Widget* wParent, string sId, rect rPosition, string sCaption,
 	mMoveable = bMoveable;
 	mResizingBorderColor = color(0,64,200);
 
-	mImage = NULL;
 	if (bBackground)
-		mImage = resman->LoadImg("assets/gui/frame_bg.png");
+		SetImage("assets/gui/frame_bg.png");
 		
 	SetSizeable(bSizeable);
 

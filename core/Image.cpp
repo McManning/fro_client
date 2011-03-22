@@ -576,18 +576,58 @@ uShort Image::MaxHeight() const
 
 bool Image::Render(Image* dst, sShort x, sShort y, rect clip)
 {
-	return Render(dst->Surface(), x, y, clip);
+    if (dst->Surface() == Screen::Instance()->Surface())
+    {
+        return _renderToScreen(x, y, clip);
+    }
+    
+    return _renderToSurface(dst->Surface(), x, y, clip);
 }
 
-bool Image::Render(SDL_Surface* dst, sShort x, sShort y, rect clip)
+bool Image::_renderToSurface(SDL_Surface* dst, sShort x, sShort y, rect& clip)
 {
-	SDL_Surface* src = Surface();
-
-	if (!src || !dst) 
+    SDL_Surface* src = Surface();
+    
+    if (!src || !dst) 
 	{
 		WARNING("Invalid Src:" + pts(src) + " or Dst:" + pts(dst) + " File:" + Filename());
 		return false;
 	}
+	
+	if (clip.w == 0)
+    	clip.w = src->w;
+    	
+    if (clip.h == 0)
+    	clip.h = src->h;
+    	
+    SDL_Rect rDst = { x, y, clip.w, clip.h };
+    SDL_Rect rSrc = { clip.x, clip.y, clip.w, clip.h };
+    
+    bool bCanBlitOverride = (mUseBlitOverride && src->format->BytesPerPixel == 4 
+                                && dst->format->BytesPerPixel == 4);
+                                    
+    if (bCanBlitOverride && SDL_gfxBlitRGBA(src, &rSrc, dst, &rDst) < 0)
+	{
+	    WARNING(SDL_GetError());
+	    return false;
+	}
+	else if ( SDL_BlitSurface(src, &rSrc, dst, &rDst) < 0 )
+	{
+	    WARNING(SDL_GetError());
+	    return false;
+	}
+	
+    return true;
+}
+
+bool Image::_renderToScreen(sShort x, sShort y, rect& clip)
+{
+	SDL_Surface* src = Surface();
+	Screen* scr = Screen::Instance();
+    SDL_Surface* dst = scr->Surface();
+    
+    if (scr->mNoDraw)
+        return false;
 
 	if (clip.w == 0)
 		clip.w = src->w;
@@ -596,37 +636,38 @@ bool Image::Render(SDL_Surface* dst, sShort x, sShort y, rect clip)
 		clip.h = src->h;
 		
 	SDL_Rect rDst = { x, y, clip.w, clip.h };
-	SDL_Rect rSrc = { clip.x, clip.y, clip.w, clip.h };
+    SDL_Rect rSrc;
+    SDL_Rect* prDstClip;
 
-
-	//OPTIMIZETODO: Optimized version
-
-	if (!Screen::Instance()->mNoDraw)
-	{
-	
-		//if they want to do RGBA->RGBA (and can!), let them use the slower renderer
-		if (mUseBlitOverride && src->format->BytesPerPixel == 4 && dst->format->BytesPerPixel == 4)
-		{
-			if (dst == Screen::Instance()->Surface())
-			{	
-				FATAL("slowblit to screen");
-			}
-			
-			if ( SDL_gfxBlitRGBA(src, &rSrc, dst, &rDst) < 0 )
-			{
-		        WARNING(SDL_GetError());
-		        return false;
-			}
-		}
-		else
-		{
-			if ( SDL_BlitSurface(src, &rSrc, dst, &rDst) < 0 )
-			{
-		        WARNING(SDL_GetError());
-		        return false;
-			}
-		}
-	}
+    if (!g_RectMan.m_RectSet)
+    {
+        WARNING("No rect set");
+        return false;   
+    }
+    
+    Rect_Clips* rc = g_RectMan.rects_clip(g_RectMan.m_RectSet, &rDst);
+    if (rc->length > 0) // if we have anything drawable
+    {
+        // render each rect individually
+        for (int i = 0; i < rc->length; ++i)
+        {
+            prDstClip = &rc->rects + i;
+            
+            // construct a new source rect, related to the new destination
+            rSrc.x = clip.x + (prDstClip->x - rDst.x);
+            rSrc.y = clip.y + (prDstClip->y - rDst.y);
+            rSrc.w = prDstClip->w;
+            rSrc.h = prDstClip->h; 
+            
+            if ( SDL_BlitSurface(src, &rSrc, dst, prDstClip) < 0 )
+    		{
+    		    WARNING(SDL_GetError());
+    		    return false;
+    		}
+        }
+    }
+    
+    free(rc);
 
 	return true;
 }

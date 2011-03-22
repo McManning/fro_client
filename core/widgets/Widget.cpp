@@ -189,9 +189,8 @@ void Widget::MoveToBottom()
 	mParent->mChildren.erase(mParent->mChildren.begin() + pos);
 	mParent->mChildren.insert(mParent->mChildren.begin(), this);
 
-	//TODO: Necessary? mParent->MoveToBottom(); //Continue down the tree until this widget is at the VERY BOTTOM.
+	DEBUGOUT("Widget to bottom: " + mId);
 
-	console->AddMessage("Widget to bottom: " + mId);
 	FlagRender();
 }
 

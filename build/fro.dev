@@ -1,7 +1,7 @@
 [Project]
 Folder=../entity
 Name=fro
-UnitCount=163
+UnitCount=165
 Type=0
 Ver=1
 ObjFiles=
@@ -474,7 +474,7 @@ BuildCmd=
 Major=1
 Minor=4
 Release=1
-Build=2233
+Build=2277
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1849,9 +1849,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit165]
-FileName=..\entity\Lunem.h
+FileName=..\core\widgets\HintBalloon.h
 CompileCpp=1
-Folder=../entity
+Folder=../core/widgets
 Compile=1
 Link=1
 Priority=1000
@@ -1932,6 +1932,16 @@ BuildCmd=
 FileName=..\lua\MapLib.h
 CompileCpp=1
 Folder=../lua
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit164]
+FileName=..\core\widgets\HintBalloon.cpp
+CompileCpp=1
+Folder=../core/widgets
 Compile=1
 Link=1
 Priority=1000

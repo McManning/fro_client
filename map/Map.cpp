@@ -1,4 +1,8 @@
 
+#ifdef WIN32
+#include <windows.h> //for Winamp support
+#endif
+
 #include "Map.h"
 #include "../entity/RemoteActor.h"
 #include "../entity/LocalActor.h"
@@ -34,14 +38,14 @@
 		else
 			seconds /= 1000;
 
-		game->mChat->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
+		game->GetChat()->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
 		return;
 	}
 
 	//if too far, tell them!
 	if (getDistance(game->mPlayer->GetPosition(), ra->GetPosition()) > 100)
 	{
-		game->mChat->AddMessage("\\c900 * You're too far to hit your target!");	
+		game->GetChat()->AddMessage("\\c900 * You're too far to hit your target!");	
 		return;
 	}
 
@@ -52,13 +56,254 @@
 	}
 	else
 	{
-		game->mChat->AddMessage("\\c900 * You don't have any items to use!");
+		game->GetChat()->AddMessage("\\c900 * You don't have any items to use!");
 	}
 	
 	//limit the number of times they can use the beat command
 	timers->Add("rpbeat", 10 * 1000, false, NULL, NULL, NULL);
 }
 */
+
+void callback_chatNoCommand(Console* c, string s)
+{
+	if (s == "/mini")
+	{
+		if (game->mPlayer->GetAvatar())
+		{
+			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_MINI);
+			game->mPlayer->NetSendAvatarMod();
+			game->mPlayer->UpdateCollisionAndOrigin();
+		}
+	}
+	else if (s == "/normal")
+	{
+		if (game->mPlayer->GetAvatar())
+		{
+			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_NONE);
+			game->mPlayer->NetSendAvatarMod();
+			game->mPlayer->UpdateCollisionAndOrigin();
+		}
+	}
+	else if (s == "/ghost")
+	{
+		if (game->mPlayer->GetAvatar())
+		{
+			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_GHOST);
+			game->mPlayer->NetSendAvatarMod();
+			game->mPlayer->UpdateCollisionAndOrigin();
+		}
+	}
+#ifdef DEBUG
+	else if (s == "/giant")
+	{
+		if (game->mPlayer->GetAvatar())
+		{
+			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_GIANT);
+			game->mPlayer->NetSendAvatarMod();
+			game->mPlayer->UpdateCollisionAndOrigin();
+		}
+	}
+#endif
+	else
+	{
+		if (!game->mMap)
+			c->AddMessage(s);
+		else
+			netSendSay(s);
+	}
+}
+
+void callback_chatCommandMe(Console* c, string s)
+{
+	if (s.length() < 5)
+		return;
+
+	netSendMe(s.substr(4));
+}
+
+void callback_chatCommandStamp(Console* c, string s)
+{
+	if (s.length() < 8)
+		return;
+
+	netSendStamp(s.substr(7));
+}
+
+void callback_chatCommandEmote(Console* c, string s)
+{
+	if (s.length() < 6)
+		return;
+
+	netSendEmote(sti(s.substr(5)));
+}
+
+void callback_chatCommandPos(Console* c, string s)
+{
+	c->AddMessage("Player: " + its(game->mPlayer->mPosition.x) + ", " + its(game->mPlayer->mPosition.y));
+	c->AddMessage("Cursor (Real): " + its(gui->GetMouseX()) + ", " + its(gui->GetMouseY()));
+	
+	rect r = game->mMap->ToCameraPosition(gui->GetMouseRect());
+	c->AddMessage("Cursor (Map): " + its(r.x) + ", " + its(r.y));
+}
+
+#ifdef WIN32
+BOOL CALLBACK callback_findWinamp(HWND hwnd, LPARAM lParam) //for the below code
+{
+	char buffer[255];
+	 
+	GetWindowText(hwnd, buffer, sizeof(buffer));
+    string title = buffer;
+	
+	int pos = title.find(" - Winamp", 0);
+	if (pos != string::npos)
+	{
+		//found it, clean it and send it
+		title.erase(pos, title.size() - pos);
+		netSendMusic(title);
+		return FALSE;
+	}
+
+	return TRUE; //keep searching
+}
+#endif //WIN32
+
+void callback_chatCommandListeningTo(Console* c, string s)
+{
+	//they manually specified a song
+	if (s.length() > 7)
+	{
+		netSendMusic(s.substr(7));
+		return;
+	}
+	
+	//otherwise, let's try to find Winamp!
+#ifdef WIN32
+	if (EnumWindows(callback_findWinamp, 0) == TRUE) //didn't find it
+	{
+		c->AddMessage("\\c900 * Can't find Winamp! Do /music <title> instead!");
+	}
+#else
+	c->AddMessage("\\c900 * Only supported in Windows! Do /music <title> instead!");
+#endif
+
+}
+
+void callback_chatCommandCoolface(Console* c, string s) { netSendEmote(1); }
+void callback_chatCommandBrofist(Console* c, string s) { netSendEmote(2); }
+void callback_chatCommandSpoilereyes(Console* c, string s) { netSendEmote(3); }
+void callback_chatCommandBaww(Console* c, string s) { netSendEmote(4); }
+void callback_chatCommandDerp(Console* c, string s) { netSendEmote(5); }
+void callback_chatCommandHappy(Console* c, string s) { netSendEmote(6); }
+void callback_chatCommandOmg(Console* c, string s) { netSendEmote(7); }
+void callback_chatCommandFFFUUU(Console* c, string s) { netSendEmote(8); }
+void callback_chatCommandHeart(Console* c, string s) { netSendEmote(9); }
+void callback_chatCommandAwesome(Console* c, string s) { netSendEmote(10); }
+void callback_chatCommandWtf(Console* c, string s) { netSendEmote(12); }
+void callback_chatCommandTroll(Console* c, string s) { netSendEmote(13); }
+void callback_chatCommandFacepalm(Console* c, string s) { netSendEmote(14); }
+void callback_chatCommandPedo(Console* c, string s) { netSendEmote(15); }
+void callback_chatCommandDatAss(Console* c, string s) { netSendEmote(16); }
+void callback_chatCommandRage(Console* c, string s) { netSendEmote(17); }
+
+void callback_chatCommandJoin(Console* c, string s)
+{
+	if (s.length() < 7)
+		return;
+
+	if (!game->mNet->IsConnected())
+	{
+		c->AddMessage("\\c900* No server connection! Could not jump worlds!");
+		return;
+	}
+
+	if (game->mLoader->m_state != WorldLoader::WORLD_ACTIVE
+		&& game->mLoader->m_state != WorldLoader::FAILED)
+	{
+		c->AddMessage("\\c900* Already loading a world!");
+		return;	
+	}
+	
+#ifndef DEBUG
+	timer* t = timers->Find("joinwait");
+	if (t)
+	{
+		int seconds = t->lastMs + t->interval - gui->GetTick();
+		if (seconds < 0)
+			seconds = 0;
+		else
+			seconds /= 1000;
+
+		c->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
+		return;
+	}
+#endif
+
+	s = stripCodes(s.substr(6));
+	c->AddMessage("\\c090* Loading " + s);
+
+	game->LoadOnlineWorld(s);
+
+#ifndef DEBUG
+	//limit the number of times they can change channels
+	timers->Add("joinwait", JOIN_INTERVAL_MS, false, NULL, NULL, NULL);
+#endif
+}
+
+void callback_chatCommandNick(Console* c, string s) // /nick nickname
+{	
+	if (s.length() < 7)
+		return;
+		
+	s = s.substr(6);
+	
+	replace(&s, "\\n", ""); //filter out \n 
+	
+	if (stripCodes(s).empty())
+		return;
+	
+	if (game->mNet->IsConnected())
+		game->mNet->ChangeNick(s);
+	else
+		game->mPlayer->mName = s;
+	
+	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
+	game->mPlayerData.SetParamString(e, "nick", s);
+	game->SavePlayerData();
+}
+
+void callback_chatCommandWorldsViewer(Console* c, string s)
+{	
+	//if (!gui->Get("worldsviewer"))
+	//	new WorldsViewer();
+}
+
+void callback_chatCommandMsg(Console* c, string s) // /msg nick message
+{
+	vString v;
+	explode(&v, &s, " ");
+	if (v.size() < 3)
+	{
+		c->AddMessage("Syntax: /msg nick message");
+		return;
+	}
+	
+	if (game->mNet)
+		game->mNet->Privmsg(v.at(1), s.substr( s.find(v.at(2))) );
+}
+
+void callback_chatCommandListEmotes(Console* c, string s)
+{
+	c->AddMessage("\\c990Emotes:\\n  /facepalm, /datass, /rage, /troll, /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf, /pedo");
+}
+
+void callback_chatCommandListCommands(Console* c, string s)
+{
+	c->AddMessage("\\c990Commands:\\n  /emotes - Display emotes list\\n  /save - Save chat log to an html file\\n"
+							"  /clear - Clear the chatbox\\n  /exit - Close the program\\n  /ss - Save a screenshot (same as PRTSCRN)\\n"
+							"  /stamp <text> - Stamp the text onto the map\\n  /nick <name> - Change your nickname\\n"
+							"  /music <text> - Tell everyone the song you're listening to\\n  /join <world> - Try to join specified world\\n"
+							"  /me <text> - Tell everyone what you're currently doing");
+}
 
 void callback_playerMenuPrivmsg(RightClickMenu* m, void* userdata)
 {
@@ -86,6 +331,12 @@ void callback_playerMenuToggleBlock(RightClickMenu* m, void* userdata)
 		ra->SetBlocked(!ra->IsBlocked());
 }
 
+void callback_showChatbox(Button* b)
+{
+	Map* m = (Map*)b->GetParent();
+	m->ShowChat();
+}
+
 Map::Map() 
 	: Frame(NULL, "", rect())
 { 
@@ -94,7 +345,11 @@ Map::Map()
 	mFollowedEntity = NULL;
 	mStopCameraAtMapEdge = true;
 	mLuaState = NULL;
+	mChat = NULL;
 	mEditorMode = false;
+	mOldCameraPosition.x = mOldCameraPosition.y = -1;
+	
+	CreateChatbox();
 
 	TiXmlElement* top = game->mPlayerData.mDoc.FirstChildElement();
 	TiXmlElement* e;
@@ -150,6 +405,61 @@ void Map::Event(SDL_Event* event)
 			break;
 		default: break;	
 	}
+}
+
+void Map::CreateChatbox()
+{
+    mChat = new Console("chat", "", "assets/gui/chat/", "chat_", true, true);
+		//mChat->mExit->onClickCallback = callback_hideChatbox;
+		//mChat->mExit->mHoverText = "Hide Chat";
+		Add(mChat);
+	
+	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
+	rect r = game->mPlayerData.GetParamRect(e, "position");
+	if (isDefaultRect(r))
+	{
+		mChat->SetPosition( rect(mPosition.w - mChat->Width(), 
+								mPosition.h - mChat->Height(),
+								mChat->Width(), mChat->Height()) 
+							);
+	}
+	else
+	{
+		mChat->SetPosition(r);
+	}
+	
+	// Start hooking commands
+	mChat->HookCommand("", callback_chatNoCommand);
+	mChat->HookCommand("/me", callback_chatCommandMe);
+	mChat->HookCommand("/stamp", callback_chatCommandStamp);
+	mChat->HookCommand("/music", callback_chatCommandListeningTo);
+	mChat->HookCommand("/join", callback_chatCommandJoin);
+	mChat->HookCommand("/nick", callback_chatCommandNick);
+	mChat->HookCommand("/worlds", callback_chatCommandWorldsViewer);
+	mChat->HookCommand("/msg", callback_chatCommandMsg);
+	mChat->HookCommand("/emo", callback_chatCommandEmote);
+	mChat->HookCommand("/pos", callback_chatCommandPos);
+
+	//Emotes
+	mChat->HookCommand("/coolface", callback_chatCommandCoolface);
+	mChat->HookCommand("/troll", callback_chatCommandTroll);
+	mChat->HookCommand("/brofist", callback_chatCommandBrofist);
+	mChat->HookCommand("/spoilereyes", callback_chatCommandSpoilereyes);
+	mChat->HookCommand("/sad", callback_chatCommandBaww);
+	mChat->HookCommand("/derp", callback_chatCommandDerp);
+	mChat->HookCommand("/happy", callback_chatCommandHappy);
+	mChat->HookCommand("/omg", callback_chatCommandOmg);
+	mChat->HookCommand("/wtf", callback_chatCommandWtf);
+	mChat->HookCommand("/fff", callback_chatCommandFFFUUU);
+	mChat->HookCommand("/heart", callback_chatCommandHeart);
+	mChat->HookCommand("/awesome", callback_chatCommandAwesome);
+	mChat->HookCommand("/facepalm", callback_chatCommandFacepalm);
+	mChat->HookCommand("/pedo", callback_chatCommandPedo);
+	mChat->HookCommand("/datass", callback_chatCommandDatAss);
+	mChat->HookCommand("/rage", callback_chatCommandRage);
+	
+	mChat->HookCommand("/emotes", callback_chatCommandListEmotes);
+	mChat->HookCommand("/commands", callback_chatCommandListCommands);
 }
 
 void Map::HandleLeftClick()
@@ -356,6 +666,8 @@ void Map::AddCameraRectForUpdate()
 	if (mCameraPosition.x != mOldCameraPosition.x 
 		|| mCameraPosition.y != mOldCameraPosition.y)
 	{
+        DEBUGOUT("Map::AddCameraRectForUpdate()");
+        
 		g_screen->AddRect(GetScreenPosition());
 		mOldCameraPosition = mCameraPosition;
 	}
@@ -607,3 +919,26 @@ void Map::SaveFlags()
 	
 	game->mPlayerData.SetText(e, flags);
 }
+
+void Map::HideChat()
+{
+	mChat->SetVisible(false);
+	
+	if (!Get("ShowChat"))
+	{
+		Button* b = new Button(this, "ShowChat", rect(Width() - 30, Height() - 20, 30, 20), 
+								"", callback_showChatbox);
+			b->mHoverText = "Show Chat";
+			b->SetImage("assets/buttons/show_chat.png");
+	}
+}
+
+void Map::ShowChat()
+{
+	Widget* w = Get("ShowChat");
+	if (w) w->Die();
+	
+	mChat->SetVisible(true);
+}
+
+

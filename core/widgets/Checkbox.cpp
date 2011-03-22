@@ -27,7 +27,7 @@ Checkbox::Checkbox(Widget* wParent, string sId, rect rPosition, string sCaption,
 	mId = sId;
 	
 	SetCaption(sCaption);
-	mImage = resman->LoadImg("assets/gui/checkbox.png");
+	SetImage("assets/gui/checkbox.png");
 	
 	SetPosition(rPosition);
 	if (wParent)

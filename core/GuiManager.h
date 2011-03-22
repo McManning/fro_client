@@ -19,6 +19,7 @@ enum { //copying SDL_BUTTON masks for easy conversion
 
 class Font;
 class XmlFile;
+class HintBalloon;
 class GuiManager : public Widget
 {
   public:
@@ -67,6 +68,8 @@ class GuiManager : public Widget
 
 	/*	Makes sure the specified widget doesn't have any sort of focus (key, mouse, demanding, etc) */
 	void DereferenceWidget(Widget* w);
+	
+	void SetHasMouseFocus(Widget* w);
 	
 	/*	Flashes the applications title bar if the application doesn't have key focus, and until it gains said focus. 
 		Will also play a sound if settings allow it
@@ -158,6 +161,8 @@ class GuiManager : public Widget
 	void _renderCursorTipText(Image* scr, string& text);
 
 	std::vector<Widget*> mDeletionStack;
+	
+	HintBalloon* mHoverTextHintBalloon;
 
 };
 

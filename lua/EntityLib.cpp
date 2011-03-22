@@ -338,7 +338,7 @@ int entity_Say(lua_State* ls)
 	}
 	
 	if (showinchat)
-		game->mChat->AddMessage(e->mName + ": " + msg);
+		game->GetChat()->AddMessage(e->mName + ": " + msg);
 		
 	return 0;	
 }

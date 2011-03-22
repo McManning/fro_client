@@ -34,6 +34,8 @@ class Map : public Frame, public EntityManager
 	virtual void ResizeChildren();
 	virtual void Die(); //Graceful cleanup
 
+    void CreateChatbox();
+
 	void HandleLeftClick();
 	void HandleRightClick();
 	
@@ -99,6 +101,9 @@ class Map : public Frame, public EntityManager
 
 	uShort GetGravity() const { return mGravity; };
 	void SetGravity(uShort g) { mGravity = g; };
+	
+	void HideChat();
+	void ShowChat();
 
 	void SaveFlags();
 	void LoadFlags();
@@ -117,6 +122,8 @@ class Map : public Frame, public EntityManager
 	bool mStopCameraAtMapEdge;
 	
 	rect mCameraBounds; 
+	
+	Console* mChat;
 	
   private:
 	void _constrainCameraToMap();

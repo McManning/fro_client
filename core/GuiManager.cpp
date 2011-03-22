@@ -3,6 +3,7 @@
 #include "GuiManager.h"
 #include "widgets/Console.h"
 #include "widgets/Input.h"
+#include "widgets/HintBalloon.h"
 #include "Image.h"
 #include "TimerManager.h"
 #include "ResourceManager.h"
@@ -129,7 +130,10 @@ GuiManager::GuiManager()
 	console->ResizeChildren();
 	
 	Add(console);
-	//console->SetVisible(false);
+	console->SetVisible(false);
+
+// Gui Stuff
+    mHoverTextHintBalloon = new HintBalloon(this);
 	
 	PRINT("GuiManager Finished");
 }
@@ -154,6 +158,8 @@ GuiManager::~GuiManager()
 		SAFEDELETE(mChildren.at(i));
 	}
 	mChildren.clear();
+	
+	mHoverTextHintBalloon = NULL;
 
 	resman->Unload(mCursorImage);
 
@@ -233,6 +239,7 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 			else if (event->key.keysym.sym == SDLK_HOME)
 			{
 				console->SetVisible(!console->IsVisible());
+				console->MoveToTop();
 			}
 
 			if (hasKeyFocus)
@@ -241,8 +248,7 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		} break;
 		case SDL_MOUSEBUTTONDOWN:
 		{
-			previousMouseFocus = hasMouseFocus;
-			hasMouseFocus = GrabWidgetUnderXY(this, GetMouseX(), GetMouseY());
+			SetHasMouseFocus(GrabWidgetUnderXY(this, event->button.x, event->button.y));
 			
 			if (hasMouseFocus)
 			{
@@ -281,8 +287,7 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		} break;
 		case SDL_MOUSEBUTTONUP:
 		{
-			previousMouseFocus = hasMouseFocus;
-			hasMouseFocus = GrabWidgetUnderXY(this, GetMouseX(), GetMouseY());
+			SetHasMouseFocus(GrabWidgetUnderXY(this, event->button.x, event->button.y));
 			//if (hasMouseFocus) hasMouseFocus->Event(event);
 			//if (previousMouseFocus) previousMouseFocus->Event(event);
 			
@@ -294,8 +299,7 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		{
 			SetMousePosition(event->motion.x, event->motion.y);
 		
-			previousMouseFocus = hasMouseFocus;
-			hasMouseFocus = GrabWidgetUnderXY(this, GetMouseX(), GetMouseY());
+            SetHasMouseFocus(GrabWidgetUnderXY(this, event->motion.x, event->motion.y));
 
 			if (hasMouseFocus) hasMouseFocus->Event(event);
 			if (previousMouseFocus) previousMouseFocus->Event(event);
@@ -373,29 +377,6 @@ rect GuiManager::GetMouseRect()
 // TODO: Widget-ify this
 void GuiManager::_renderCursorTipText(Image* scr, string& text)
 {
-	rect pos;
-
-	int w, h;
-	mFont->GetTextSize(text, &w, &h);
-	pos.h = h + 2;
-	pos.w += w + 8;
-	pos.x = GetMouseX();
-	pos.y = GetMouseY() - pos.h;
-
-	//constrain to screen
-	if (pos.x + pos.w > scr->Width())
-		pos.x = scr->Width() - pos.w;
-	if (pos.y + pos.h > scr->Height())
-		pos.y = scr->Height() - pos.h;
-	if (pos.y < 0)
-		pos.y = 0;
-	if (pos.x < 0)
-		pos.x = 0;
-
-	if (mCursorImage)
-		mCursorImage->RenderBox(scr, rect(24, 0, 5, 5), pos);
-
-	mFont->Render(scr, pos.x+4, pos.y+1, hasMouseFocus->mHoverText, color(0, 0, 0));
 }
 
 void GuiManager::Render()
@@ -410,9 +391,6 @@ void GuiManager::Render()
 
 	scr->PreRender();
 
-	//TODO: Do pre-rendering crap
-	scr->DrawRect(scr->GetClip(), color(237, 236, 235));
-
 	//Render widget tree
 	Widget::Render();
 
@@ -424,16 +402,6 @@ void GuiManager::Render()
 	if (SDL_GetAppState() & SDL_APPMOUSEFOCUS)
 	{
 		_renderCursor(scr);
-		
-		//if we have text to be drawn on hover, do it.
-		if (mFont && hasMouseFocus)
-		{
-			text = stripCodes(hasMouseFocus->mHoverText);
-			if (!text.empty())
-			{
-				_renderCursorTipText(scr, text);
-			}
-		}	
 	}
 
 	scr->PostRender();
@@ -565,7 +533,7 @@ void GuiManager::_cleanDeletionStack()
 void GuiManager::DereferenceWidget(Widget* w)
 {
 	if (hasKeyFocus == w) hasKeyFocus = NULL;
-	if (hasMouseFocus == w) hasMouseFocus = NULL;
+	if (hasMouseFocus == w) SetHasMouseFocus(NULL);
 	if (previousMouseFocus == w) previousMouseFocus = NULL;
 
 	RemoveGlobalEventHandler(w);
@@ -593,6 +561,35 @@ void GuiManager::RemoveFromDemandFocusStack(Widget* w)
 			i--;
 		}
 	}
+}
+
+/**
+	Called during SDL_MOUSEMOTION, SDL_MOUSEBUTTONDOWN/UP events and DereferenceWidget() 
+*/
+void GuiManager::SetHasMouseFocus(Widget* w)
+{
+	previousMouseFocus = hasMouseFocus;
+	hasMouseFocus = w;
+	
+	// update hint balloon for widget hover text
+    if (mHoverTextHintBalloon)
+	{
+        if (w && !w->mHoverText.empty())
+        {
+            mHoverTextHintBalloon->SetCaption(w->mHoverText);
+            mHoverTextHintBalloon->SetVisible(true);
+            
+            
+            rect r = mHoverTextHintBalloon->GetPosition();
+            r.x = GetMouseX();
+            r.y = GetMouseY() - r.h;
+            mHoverTextHintBalloon->SetPosition(r);
+        }
+        else
+        {
+            mHoverTextHintBalloon->SetVisible(false);
+        }
+    }
 }
 
 void GuiManager::GetUserAttention()
@@ -630,26 +627,7 @@ void GuiManager::ThinkInSeconds(uLong ms)
 		
 		SetAppTitle(mAppTitle); 
 	}
-	else // running normally
-	{
-		
-	}
 
-	
-
-	//if we're flashing and focused, do flash
-	if (mTitleFlashOn && mGetUserAttention)
-	{
-		
-		
-	}
-	else
-	{
-		//string title = mAppTitle; // + " [FPS: " + its(mFps) + " BPS: " + its(mBps) + "]";
-		
-	}
-	
-	
 	//Also recalculate FPS since this is ran every minute anyway
 	mFps = mFrameCounter;
 	mBps = mBeatCounter;
@@ -660,7 +638,23 @@ void GuiManager::ThinkInSeconds(uLong ms)
 void GuiManager::SetAppTitle(string caption)
 {
 	mAppTitle = caption;
-	SDL_WM_SetCaption(mAppTitle.c_str(), NULL);
+	
+	// TODO: fps/bps is temp for testing purposes!
+	string s = mAppTitle;
+#ifdef DEBUG
+	if (downloader)
+	{
+	   s += " [DL " + its(downloader->mQueued.size()); // Count of queued files to download
+	   s += ">" + its(downloader->CountActiveDownloads()); // Count of active downloads
+	   s += ">" + its(downloader->mCompleted.size()) + "] "; // Count of completed files
+    }
+    
+	s += " [FPS:" + its(mFps); //frames rendered per second
+	s += " BPS:" + its(mBps); //heartbeats a second
+	s += " rMS:" + its(mRenderTime) + "]"; //time it took to render last frame
+#endif
+
+	SDL_WM_SetCaption(s.c_str(), NULL);
 }
 
 void GuiManager::Process()
@@ -728,6 +722,10 @@ void GuiManager::Process()
 	//make sure focused window is always on top the other
 	if (GetDemandsFocus())
 		GetDemandsFocus()->MoveToTop();
+		
+	// Has absolute topmost priority (other than the mouse)
+    if (mHoverTextHintBalloon->IsVisible())
+        mHoverTextHintBalloon->MoveToTop();
 }
 
 void GuiManager::MainLoop()
@@ -746,6 +744,9 @@ void GuiManager::MainLoop()
 				&& (SDL_GetAppState() & SDL_APPACTIVE) )
 		{
 			Render();
+#ifdef DEBUG
+			SetAppTitle(mAppTitle); // so we can get fast-updated render info
+#endif
 		}
 
 		mBeatCounter++;

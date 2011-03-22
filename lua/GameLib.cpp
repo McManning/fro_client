@@ -17,7 +17,7 @@ int game_Print(lua_State* ls)
 	PRINT("game_Print");
 	luaCountArgs(ls, 1);
 
-	game->mChat->AddMessage( lua_tostring(ls, 1) );
+	game->GetChat()->AddMessage( lua_tostring(ls, 1) );
 	
 	return 0;
 }
@@ -74,7 +74,7 @@ int game_Version(lua_State* ls)
 int game_ToggleChat(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	game->mChat->SetVisible(lua_toboolean(ls, 1));
+	game->GetChat()->SetVisible(lua_toboolean(ls, 1));
 	return 0;
 }
 

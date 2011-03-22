@@ -13,7 +13,6 @@ class Image;
 class Label: public Widget 
 {
   public:
-	Label();
 	Label(Widget* wParent, string sId, rect rPosition, string sCaption = "");
 	~Label();
 

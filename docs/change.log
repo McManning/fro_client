@@ -1360,6 +1360,15 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Did VERY slight optimization to GuiManager's main loop
 - Made Widget::IsVisible() recursively check parent visibility 
 
+110320
+- Made extensive progress on the optimized renderer
+
+110321
+- Made extensive changes across the engine in an attempt to reorganize. Including moving mChat/mHud out of GameManager,
+	adjusting function calls within Widgets, and more. Is a work in progress.
+- Added HintBalloon widget and implemented in GuiManager
+- Additional progress to the optimized renderer
+
 
 
 	

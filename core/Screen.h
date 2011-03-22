@@ -4,6 +4,7 @@
 
 #include "Common.h"
 #include "Image.h"
+#include "RectManager.h"
 
 #define SCREEN_WIDTH 800 //640
 #define SCREEN_HEIGHT 600 //480
@@ -40,7 +41,8 @@ class Screen : public Image
 };
 
 extern Screen* g_screen;
-	
+extern RectManager g_RectMan;
+
 //Define SDL Flags for our screen. Will require Resize() in order take effect.	
 void SetScreenFlags(Uint32 flags);
 

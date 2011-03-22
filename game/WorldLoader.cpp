@@ -44,7 +44,7 @@ void WorldLoader::LoadOnlineWorld(string id, point2d target, string targetObject
 	
 	if (!game->mNet->IsConnected())
 	{
-		game->mChat->AddMessage("\\c900* No server connection! Could not jump worlds!");
+		new MessagePopup("", "Not Connected", "No server connection! Could not jump worlds!");
 		return;
 	}
 	
@@ -156,7 +156,7 @@ void WorldLoader::_sendRequestForConfig()
 	url += "&ty=" + its(m_warpDestinationPoint.y);
 	url += "&to=" + htmlSafe(m_sWarpDestinationEntityName);
 */	
-	game->mChat->AddMessage("\\c139* Sending request to master server for " + m_sWorldName);
+	//game->mChat->AddMessage("\\c139* Sending request to master server for " + m_sWorldName);
 	DEBUGOUT(url);
 
 	string file = DIR_CACHE + string("map.res");
@@ -563,10 +563,12 @@ void WorldLoader::_error(string msg)
 	
 	new MessagePopup("", "Map Load Error", msg);
 	
-	game->mChat->AddMessage("\\c721Since the world load has failed, we suggest typing "
+/*	game->mChat->AddMessage("\\c721Since the world load has failed, we suggest typing "
 							"\\c900/join worldname \\c721where worldname is the name of "
 							"some existing world."
 							);
+*/
+    // TODO: Give them an option after the map load failed!
 }
 	
 /*	************************************
@@ -593,17 +595,6 @@ double WorldLoader::Progress()
 void WorldLoader::SetState(loaderState state)
 {
 	m_state = state;
-	
-	if (game && game->mChat)
-	{
-		//Disable the chatbox while loading
-		if (m_state <= FAILED)
-			game->mChat->SetVisible(true);
-		else if (m_state == WORLD_ACTIVE)
-			game->ToggleHud(true);
-		else
-			game->ToggleHud(false);
-	}
 	
 	UpdateStatusText();
 }

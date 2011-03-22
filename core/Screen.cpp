@@ -2,13 +2,13 @@
 #include <SDL/SDL.h>
 #include "Screen.h"
 #include "ResourceManager.h"
-#include "RectManager.h"
 
-//#ifdef DEBUG
-//#	define DRAW_RECTS 1
-//#endif
+#ifdef DEBUG
+#	define DRAW_RECTS 1
+#endif
 
 Screen* g_screen;
+RectManager g_RectMan;
 Uint32 uScreenFlags;
 
 void SetScreenFlags(Uint32 flags)
@@ -64,34 +64,37 @@ Screen::~Screen()
 
 #ifdef DRAW_RECTS
 std::vector<rect> g_rects;
-RectManager g_RectMan;
 #endif
 
 void Screen::PreRender()
 {
 	DrawRect(rect(0, 0, 40, 40), color());
+		
+#ifdef DRAW_RECTS
+	g_rects.clear();
+#endif
+
+	g_RectMan.generate_clips(Surface());
 }
 
 void Screen::PostRender()
 {
-#ifdef DRAW_RECTS
+
 //	for (int i = 0; i < g_rects.size(); ++i)
 //		DrawRound(g_rects.at(i), 0, color(255));
-		
-	g_rects.clear();
-	
-	g_RectMan.generate_clips(Surface());
 
 	//g_RectMan.rects_print(g_RectMan.m_RectSet);
 	
 	if (g_RectMan.m_Clips)
 	{
-		/*SDL_Rect* r;
+#ifdef DRAW_RECTS
+		SDL_Rect* r;
 		for (int i = 0; i < g_RectMan.m_Clips->length; ++i)
 		{
 			r = &g_RectMan.m_Clips->rects + i;
 			DrawRound(rect(r->x, r->y, r->w, r->h), 0, color(0,255));	
-		}*/
+		}
+#endif
 
 		g_RectMan.update_rects(Surface());
 		
@@ -106,9 +109,7 @@ void Screen::PostRender()
 		g_RectMan.purge();
 	}
 
-#else
-	SDL_Flip(Surface());
-#endif
+	//SDL_Flip(Surface());
 
 #ifdef OPTIMIZED
 	mNeedUpdate = false;
@@ -152,9 +153,9 @@ void Screen::AddRect(rect r)
 	//sdfUpdate();
 #ifdef DRAW_RECTS
 	g_rects.push_back(r);
+#endif
 	SDL_Rect sr = { r.x, r.y, r.w, r.h };
 	g_RectMan.add_rect(sr);
-#endif
 }
 
 

@@ -257,9 +257,9 @@ void AvatarFavorites::UseSelected()
 
 	avatarProperties* ap = mAvatars.at(mList->mSelected);
 	
-	if (!game->mPlayer->mCanChangeAvatar)
+	if (!game->mPlayer->mCanChangeAvatar && game->GetChat())
 	{
-		game->mChat->AddMessage("\\c900 * You cannot change avatars on this map!");
+		game->GetChat()->AddMessage("\\c900 * You cannot change avatars on this map!");
 		return;
 	}
 	
@@ -272,7 +272,9 @@ void AvatarFavorites::UseSelected()
 		else
 			seconds /= 1000;
 
-		game->mChat->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
+        if (game->GetChat())
+		  game->GetChat()->AddMessage("\\c900 * You must wait " + its(seconds+1) + " seconds.");
+		  
 		return;
 	}
 	else

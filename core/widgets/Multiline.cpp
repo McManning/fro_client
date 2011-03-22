@@ -49,7 +49,7 @@ Multiline::Multiline(Widget* wParent, string sId, rect rPosition)
 
 	mId = sId;
 
-	mImage = resman->LoadImg("assets/gui/multi_bg.png");
+	SetImage("assets/gui/multi_bg.png");
 		
 	mScrollbar = new Scrollbar(this, "", rect(0,0,15,rPosition.h), VERTICAL, 1, 1, 0,
 								callback_multilineScrollbar);

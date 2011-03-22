@@ -57,9 +57,6 @@ class Input: public Widget {
 	bool IsMenuEnabled() const { return mMenuEnabled && !mIsPassword; };
 	void SetMenuEnabled(bool b) { mMenuEnabled = b; };
 	
-	/*	Use this instead of accessing mImage directly */
-	void SetImage(string file);
-	
 	//VARIABLES AND SUCH -> GO!
 	string mCharacterMask; //list of allowed characters
 

@@ -319,10 +319,10 @@ void Scrollbar::SetPosition(rect r)
 
 void Scrollbar::SetImageBase(string base)
 {
-	resman->Unload(mImage);
 	resman->Unload(mTabImage);
 	
-	mImage = resman->LoadImg(base + "_bg.png");
+	SetImage(base + "_bg.png");
+	
 	mTabImage = resman->LoadImg(base + "_tab.png");
 	mValueDown->SetImage(base + "_down.png");
 	mValueUp->SetImage(base + "_up.png");

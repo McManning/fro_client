@@ -100,7 +100,7 @@ void LocalActor::_checkInput()
 	if (gui->GetDemandsFocus() || mIsLocked || IsMoving() || !mMap || !mActionBuffer.empty()) 
 		return;
 
-	if (!game->mChat->HasKeyFocusInTree() && !mMap->HasKeyFocus())
+	if (!game->GetChat()->HasKeyFocusInTree() && !mMap->HasKeyFocus())
 		return;
 
 	//Could use gui->IsKeyDown(key) however this method is probably faster
@@ -242,7 +242,7 @@ bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort
 // Give a more verbose error message
 void LocalActor::AvatarError(int err)
 {
-	if (!game || !game->mChat)
+	if (!game || !game->GetChat())
 		return;
 		
 	string msg;
@@ -267,8 +267,7 @@ void LocalActor::AvatarError(int err)
 			break;
 	}
 	
-	game->mChat->AddMessage(msg);
-	console->AddMessage(msg);
+	game->GetChat()->AddMessage(msg);
 }
 
 
