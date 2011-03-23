@@ -3,9 +3,9 @@
 #include "Actor.h"
 #include "StaticObject.h"
 #include "LocalActor.h"
+#include "ChatBubble.h"
 #include "../map/Map.h"
 #include "../entity/Avatar.h"
-#include "../core/io/FileIO.h"
 #include "../game/GameManager.h"
 
 uShort timer_processMovement(timer* t, uLong ms)
@@ -37,53 +37,30 @@ uShort timer_ActorAnimate(timer* t, uLong ms)
 	return (a->_animate()) ? TIMER_CONTINUE : TIMER_DESTROY;
 }
 
-uShort timer_destroyEmote(timer* t, uLong ms)
+uShort timer_checkLoadingAvatar(timer* t, uLong ms)
 {
-	Actor* a = (Actor*)t->userData;
-
-	if (a)
+    Actor* a = (Actor*)t->userData;
+    
+    if (a)
 	{
-		resman->Unload(a->mEmoticon);
-		a->mEmoticon = NULL;
-		a->AddPositionRectForUpdate();
-	}
-	else
-	{
-		WARNING("No actor assigned to timer " + pts(t));
-	}
+        // keep the timer alive until the avatar stops loading
+        if (a->CheckLoadingAvatar())
+            return TIMER_CONTINUE;
 
-	return TIMER_DESTROY;
+        a->mCheckLoadingAvatarTimer = NULL; 
+	}
+	
+    return TIMER_DESTROY;  
 }
 
-uShort timer_moveEmote(timer* t, uLong ms)
-{
-	Actor* a = (Actor*)t->userData;
-	
-	if (!a)
-	{
-		WARNING("No actor assigned to timer " + pts(t));
-		return TIMER_DESTROY;
-	}
-	
-	if (a->mEmoteOffset - 10 < 0)
-	{
-		a->mEmoteOffset = 0;
-		a->AddPositionRectForUpdate();
-		return TIMER_DESTROY;
-	}
-	
-	a->mEmoteOffset -= 10;
-	a->AddPositionRectForUpdate();
-	return TIMER_CONTINUE;
-}
 
 Actor::Actor()
 	: Entity()
 {
 	mAvatar = NULL;
 	mLoadingAvatar = NULL;
-	mEmoticon = NULL;
 	mAnimationTimer = NULL;
+	mCheckLoadingAvatarTimer = NULL;
 	mStep = 0;
 	mAction = IDLE;
 	mDirection = SOUTH;
@@ -103,8 +80,6 @@ Actor::Actor()
 
 Actor::~Actor()
 {
-	resman->Unload(mEmoticon);
-
 	SAFEDELETE(mAvatar);
 	SAFEDELETE(mLoadingAvatar);
 }
@@ -726,6 +701,9 @@ bool Actor::SwapAvatars()
 		else if (mAvatar) //if not, use the previous avatars mod
 			mod = mAvatar->mModifier;
 			
+		// If the new avy is smaller, this'll make sure the old one cleans up 
+		AddPositionRectForUpdate();
+			
 		SAFEDELETE(mAvatar);
 		mAvatar = mLoadingAvatar;
 			
@@ -773,7 +751,7 @@ void Actor::UpdateCollisionAndOrigin()
 	// OPTIMIZETODO: Reload shadow image if we got one
 }
 
-void Actor::_checkLoadingAvatar()
+bool Actor::CheckLoadingAvatar()
 {
 	if (mLoadingAvatar)
 	{
@@ -795,6 +773,8 @@ void Actor::_checkLoadingAvatar()
 			} break;
 		}
 	}
+	
+	return (mLoadingAvatar && mLoadingAvatar->mState == Avatar::LOADING);
 }
 
 bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags)
@@ -820,14 +800,13 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 	mLoadingAvatar->Load();
 	downloader->SetByteCap(oldcap);
 
-	bool result = (mLoadingAvatar != NULL);
-	
-	//TODO: If it's a map actor, and the file is from disk, just load it.
-	
-	// If it loads from disk (avy://, etc), we'll swap here.
-	// Screws up LocalActor::LoadAvatar()	 _checkLoadingAvatar();
-
-	return result;
+    if (!mCheckLoadingAvatarTimer)
+        mCheckLoadingAvatarTimer = timers->Add("avacheck", 
+                    					500, false,
+                    					timer_checkLoadingAvatar,
+                    					NULL,
+                    					this);
+	return true;
 }
 
 void Actor::AvatarError(int err)
@@ -842,8 +821,6 @@ void Actor::Render()
 	Font* f = fonts->Get("", 0, TTF_STYLE_BOLD);
 	Image* scr = Screen::Instance();
 	rect r;
-	
-	_checkLoadingAvatar();
 
 	//if we're not in a ghost mode, render a shadow
 	if (!mAvatar || mAvatar->mModifier != Avatar::MOD_GHOST)
@@ -887,8 +864,6 @@ void Actor::Render()
 					mName, color(255,255,255));
 	}
 
-	RenderEmote();
-	
 	Entity::Render();
 }
 
@@ -926,56 +901,6 @@ void Actor::_doDepthRender()
 			}
 		}
 	}	
-}
-
-void Actor::RenderEmote()
-{
-	if (!mEmoticon || mEmoteOffset == mEmoticon->Height())
-		return;
-		
-	Image* scr = Screen::Instance();
-	rect r;
-	
-	r = GetBoundingRect();
-	if (!IsPositionRelativeToScreen())
-		r = mMap->ToScreenPosition( r );
-
-	r.x = r.x + r.w / 2 - (mEmoticon->Width() / 2);
-	r.y -= mEmoticon->Height() - mEmoteOffset;
-
-	rect clip(0, 0, mEmoticon->Width(), mEmoticon->Height() - mEmoteOffset);
-	
-	mEmoticon->Render(scr, r.x, r.y, clip);
-}
-
-void Actor::Emote(uShort num)
-{
-	string file = "assets/emoticons/" + its(num) + ".*"; //wildcard extension
-	file = getRandomFileMatchingPattern(file);
-
-	if (file.empty()) //check for invalid emote
-		return;
-
-	file = "assets/emoticons/" + file; //append directory since getRandomFile doesn't do that
-
-	if (mEmoticon)
-	{
-		resman->Unload(mEmoticon);
-		timers->Remove("emote", this);
-		timers->Remove("emoMove", this);
-	}
-	
-	mEmoticon = resman->LoadImg(file);
-	if (mEmoticon)
-	{
-		ASSERT(mMap);
-
-		timers->Add("emote", EMOTE_DISPLAY_MS, false, timer_destroyEmote, NULL, this);
-		timers->Add("emoMove", EMOTE_MOVE_DELAY, false, timer_moveEmote, NULL, this);
-		mEmoteOffset = mEmoticon->Height();
-	}
-	
-	ClearActiveChatBubble();
 }
 
 void Actor::Jump(byte type)
@@ -1121,22 +1046,6 @@ void Actor::Face(Entity* e)
 	point2d p = GetPosition();
 	point2d pp = e->GetPosition();
 	direction dir;
-/*
-	for (direction dir = SOUTHWEST; dir <= NORTHEAST; dir++)
-	{
-		if (dir == 5) //invalid direction
-			continue;
-			
-		theta = directionToAngle(dir);
-		
-		if (isPointInPie(pp, 0, p.x, p.y, theta - 45, theta + 45))
-		{
-			SetDirection(dir);
-			return;
-		}
-	}
-	*/
-	//Not working, so let's use the ghetto technique. TODO: Fix
 
 	double dx = pp.x - p.x;
 	double dy = pp.y - p.y;
@@ -1175,35 +1084,7 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 		mJumpHeight = (int)lua_tonumber(ls, index);
 		mJumpType = STANDING_JUMP;
 	}
-	
-	// Combatant properties
-/*	else if (prop == "level") SetLevel((char)lua_tonumber(ls, index));
-	else if (prop == "gene") SetGene((char)lua_tonumber(ls, index));
-	else if (prop.find("type", 0) == 0) 
-	{
-		int slot = sti(prop.substr(4));
-		if (slot >= 0 && slot < MAX_COMBATANT_TYPES)
-			m_bType[slot] = (char)lua_tonumber(ls, index);
-	}
-	
-	else if (prop == "attack") m_iAttack = (int)lua_tonumber(ls, index);
-	else if (prop == "defense") m_iDefense = (int)lua_tonumber(ls, index);
-	else if (prop == "speed") m_iSpeed = (int)lua_tonumber(ls, index);
-	else if (prop == "maxhealth") m_iMaxHealth = (int)lua_tonumber(ls, index);
-	else if (prop == "health")
-	{ 
-		m_iCurrentHealth = (int)lua_tonumber(ls, index);
-		if (m_iCurrentHealth < 0)
-			m_iCurrentHealth = 0;
-	}
-	else if (prop == "exp") m_iExp = (int)lua_tonumber(ls, index);
-	else if (prop == "maxexp") m_iMaxExp = (int)lua_tonumber(ls, index);
-	
-	else if (prop == "baseattack") m_bBaseAttack = (char)lua_tonumber(ls, index);
-	else if (prop == "basedefense") m_bBaseDefense = (char)lua_tonumber(ls, index);
-	else if (prop == "basespeed") m_bBaseSpeed = (char)lua_tonumber(ls, index);
-	else if (prop == "basehealth") m_bBaseHealth = (char)lua_tonumber(ls, index);
-*/
+
 	else return Entity::LuaSetProp(ls, prop, index);
 
 	return 1;
@@ -1217,83 +1098,14 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "noclip") lua_pushboolean( ls, IgnoreSolids() );
 	else if (prop == "mod" && GetAvatar()) lua_pushnumber( ls, GetAvatar()->mModifier );
 	
-/*	// Combatant properties
-	else if (prop == "level") lua_pushnumber(ls, m_bLevel);
-	else if (prop == "gene") lua_pushnumber(ls, m_bGene);
-	else if (prop.find("type", 0) == 0) 
-	{
-		int slot = sti(prop.substr(4));
-		if (slot >= 0 && slot < MAX_COMBATANT_TYPES)
-			lua_pushnumber(ls, m_bType[slot]);
-	}
-	
-	else if (prop == "attack") lua_pushnumber( ls, m_iAttack );
-	else if (prop == "defense") lua_pushnumber( ls, m_iDefense );
-	else if (prop == "speed") lua_pushnumber( ls, m_iSpeed );
-	else if (prop == "maxhealth") lua_pushnumber(ls, m_iMaxHealth);
-	else if (prop == "health") lua_pushnumber(ls, m_iCurrentHealth);
-	else if (prop == "exp") lua_pushnumber(ls, m_iExp);
-	else if (prop == "maxexp") lua_pushnumber(ls, m_iMaxExp);
-	
-	// Base stats
-	else if (prop == "baseattack") lua_pushnumber(ls, m_bBaseAttack);
-	else if (prop == "basedefense") lua_pushnumber(ls, m_bBaseDefense);
-	else if (prop == "basespeed") lua_pushnumber(ls, m_bBaseSpeed);
-	else if (prop == "basehealth") lua_pushnumber(ls, m_bBaseHealth);
-*/
-	
 	else return Entity::LuaGetProp(ls, prop);
 
 	return 1;
 }
 
-/*
-void Actor::TakeDamage(Combatant* attacker, int damage)
+void Actor::Emote(int num)
 {
-	if (m_iMaxHealth < 1)
-		return;
-	
-	m_iCurrentHealth -= damage;
-	
-	// We died! Trigger an event!
-	if (m_iCurrentHealth <= 0)
-	{
-		m_iCurrentHealth = 0;
-		
-		MessageData md("ENTITY_DEATH");
-		md.WriteUserdata("entity", this);
-		md.WriteUserdata("attacker", attacker);
-		md.WriteInt("damage", damage);
-		messenger.Dispatch(md);
-	}
-	else 
-	{
-		MessageData md("ENTITY_HURT");
-		md.WriteUserdata("entity", this);
-		md.WriteUserdata("attacker", attacker);
-		md.WriteInt("damage", damage);
-		messenger.Dispatch(md);
-	}
+	ChatBubble* cb = new ChatBubble(this, num);
+	cb->mMap = mMap;
+	mMap->AddEntity(cb);
 }
-
-void Actor::RecalculateStats()
-{
-	// Send out a request for SOMEONE to recalculate our stats (hopefully picked up by lua)
-	// TODO: Should we use this particular method to calculate? Couldn't this be dangerous? 
-	//		Yet, still don't want to hard code it.
-	MessageData md("ENTITY_RECALC");
-	md.WriteUserdata("entity", this);
-	messenger.Dispatch(md);
-}
-
-void Actor::LevelUp()
-{
-	++m_bLevel;
-	RecalculateStats();
-	
-	MessageData md("ENTITY_LEVEL");
-	md.WriteUserdata("entity", this);
-	messenger.Dispatch(md);
-}
-
-*/

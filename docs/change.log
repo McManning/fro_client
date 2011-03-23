@@ -1360,6 +1360,9 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Did VERY slight optimization to GuiManager's main loop
 - Made Widget::IsVisible() recursively check parent visibility 
 
+110126
+- Realized the man I'm in love with is straight
+
 110320
 - Made extensive progress on the optimized renderer
 
@@ -1369,8 +1372,32 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Added HintBalloon widget and implemented in GuiManager
 - Additional progress to the optimized renderer
 
+(Commit to r68. Note: r68 is not meant to be compiled!)
 
-
+110322
+- Moved chatbox command hooking and callbacks to their own file: ChatCommands.h/cpp
+- Removed BasicMap
+- GameManager::ShowInfoBar now makes the bar a child of Map, rather than GameMan
+- Moved mChat and mHud to Map class
+- Split netSend* functions into IrcNetSenders.h/cpp
+- Relocated IrcNetListeners/IrcNetSenders to ./net subdir
+- Changed app attention flashing to just being on/off, instead of flashing states
+	at 1 second intervals (less annoying, but still apparent that something requires
+	user attention)
+- Cleaned up data types in Multiline
+- Added Multiline::SetSelected to force a redraw when the selected line is changed
+- Removed showinchat parameter from Entity.Say() in Lua
+- Added Entity::Say() and removed redundant code that mimiced the behavior
+- Fixed GuiManager::GetUserAttention() trying to flash window state when the window has focus
+- Redesigned CheckLoadingAvatar() in Actor. Now processes on its own timer, and doesn't get 
+	called during the render phase.
+- Removed Entity::SetFlag/GetFlag/LoadFlags/SaveFlags and associated Lua 
+	Entity.SetFlag/GetFlag/ClearFlag. The flag system will only be maintained at a Map-level.
+- Calculated Entity shadow into AddPositionRectForUpdate(), but it's a really lazy calculation
+	and not very accurate. 
+- Removed Emote management from Actor and gave the functionality to ChatBubble
+	(Emotes are not animated yet, though)
+- 
 	
 WORKING ON:
 
@@ -1382,21 +1409,15 @@ WORKING ON:
 	in the map files. It'd be nice for main to determine what lua file to use as a primary, instead of assuming the first lua
 	found in .res is the lua file... :|
 	
-- if a focused widget loses visibility (by its parent losing visibility),
-	it can still get events. Ex: system console input after it's set to hidden
-- Buttons should really be MouseUp, not down..
+	Main.lua should be sent an array of all the res files, allowed to verify them or whatever, wait for them all to download,
+	and then determine which one we should load into the luastate, and what function within it to call. 
+
 - Improve fucking lua errors. Instead of top-level function name, give the function the error
 	actually happens in, and try to give line number. God damn, real errors please. 
 
 - Added WidgetList widget (Inherited from Frame). Deals with children positioning differently and
 	lists them in order (with no re-sorting) with a scrollbar set to scroll through widgets if 
 	they do not all fit on the screen at once. 
-	
-- Hide achievements, inventory, party, etc?
-- Gui needs to be less lazy and only determine what widgets are under the mouse each frame, and not each time the mouse
-	moves. There's bugs when shit moves, and the mouse doesn't. 
-
-	- our info popup collides with our new backpack. Need to figure out a solution D:! (But I love the info popup! ;_;)
 	
 - Add a way to see entity collision rects, for testing purposes!
 

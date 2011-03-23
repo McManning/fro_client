@@ -2,7 +2,7 @@
 #include "LoginDialog.h"
 
 #include "../game/GameManager.h"
-#include "../game/CheckIn.h"
+#include "../net/CheckIn.h"
 
 #include "../core/widgets/Label.h"
 #include "../core/widgets/Input.h"
@@ -85,7 +85,7 @@ int callback_welcomeXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
 		game->mStartingWorldId = xf->GetText(e);
 		game->mNet->TryNextServer();
 		
-		StartCheckInTimer();
+		startCheckInTimer();
 		
 		//loginDialog = NULL;
 	}

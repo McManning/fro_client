@@ -54,7 +54,7 @@ class AvatarCreator : public Frame
 	void CycleBody(bool forward);
 	void CycleHair(bool forward);
 	
-	void Update() { mRedraw = true; };
+	void Update();
 	void Render();
 	
 	void SetError(string error);

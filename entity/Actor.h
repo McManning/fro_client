@@ -10,9 +10,6 @@
 
 #define PROCESS_MOVE_INTERVAL 40
 
-#define EMOTE_DISPLAY_MS 7000
-#define EMOTE_MOVE_DELAY 100
-
 const int MAX_AVATAR_FILESIZE = (200 * 1024); //200 KB
 
 /*	Actor is a base class for "living" entities. Basically entities that can act, move, 
@@ -59,6 +56,12 @@ class Actor : public Entity /*, public Combatant */
 		Returns true on success, false otherwise.
 	*/
 	virtual bool LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags);
+    
+    /** 
+        Used to trigger a SwapAvatars() when mLoadingAvatar is finished
+        @return true if mLoadingAvatar is still loading. False otherwise.
+    */
+    bool CheckLoadingAvatar();
 
 	/*	Attempts to convert mLoadingAvatar to avatar format and swaps with mAvatar. Returns true on success */
 	bool SwapAvatars();
@@ -134,7 +137,7 @@ class Actor : public Entity /*, public Combatant */
 		Due to the wildcard, there can be multiple versions. Such as 5.a.png, 5.b.png, and it will
 		randomly pick one. This allows the addition of variation to various emotes.
 	*/
-	void Emote(uShort num);
+	void Emote(int num);
 	
 	void RenderEmote();
 	
@@ -152,9 +155,7 @@ class Actor : public Entity /*, public Combatant */
 	void StopAnimation();
 	
 	timer* mAnimationTimer;
-
-	uShort mEmoteOffset;
-	Image* mEmoticon;
+	timer* mCheckLoadingAvatarTimer;
 
   protected:
   
@@ -174,8 +175,6 @@ class Actor : public Entity /*, public Combatant */
 	
 	/*	Actually move mPosition toward mDestination */
 	void _stepTowardDestination();
-	
-	void _checkLoadingAvatar();
 
 	/* Changes our jump height and position based on our jump type */
 	void _processJump();

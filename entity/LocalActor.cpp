@@ -7,7 +7,7 @@
 #include "../core/net/IrcNet2.h"
 #include "../core/net/DataPacket.h"
 #include "../core/io/Crypt.h"
-#include "../game/IrcNetListeners.h"
+#include "../net/IrcNetSenders.h"
 #include "../entity/Avatar.h"
 
 uShort timer_playerActionBufferSend(timer* t, uLong ms)
@@ -100,7 +100,7 @@ void LocalActor::_checkInput()
 	if (gui->GetDemandsFocus() || mIsLocked || IsMoving() || !mMap || !mActionBuffer.empty()) 
 		return;
 
-	if (!game->GetChat()->HasKeyFocusInTree() && !mMap->HasKeyFocus())
+	if ((game->GetChat() && !game->GetChat()->HasKeyFocusInTree()) && !mMap->HasKeyFocus())
 		return;
 
 	//Could use gui->IsKeyDown(key) however this method is probably faster
@@ -242,6 +242,7 @@ bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort
 // Give a more verbose error message
 void LocalActor::AvatarError(int err)
 {
+    //game->GetChat()->AddMessage("ADSG!");
 	if (!game || !game->GetChat())
 		return;
 		
@@ -265,6 +266,7 @@ void LocalActor::AvatarError(int err)
 		case Actor::AVYERR_CONVERT:
 			msg = "\\c900 [Avatar Error] Could not convert " + file + ". " + mLoadingAvatar->mError;
 			break;
+		default: break;
 	}
 	
 	game->GetChat()->AddMessage(msg);
@@ -308,7 +310,7 @@ void LocalActor::NetSendState(string targetNick, string header) //header VERSION
 	data.WriteChar(mAction);
 
 	//if our avatar loaded but has yet to swap, swap it to send properly.
-	_checkLoadingAvatar();
+	CheckLoadingAvatar();
 
 	//Add our avatar to the outbound message
 	if (mAvatar)

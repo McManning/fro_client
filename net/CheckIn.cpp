@@ -2,7 +2,7 @@
 #include "CheckIn.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/io/FileIO.h"
-#include "GameManager.h"
+#include "../game/GameManager.h"
 #include "../map/Map.h"
 #include "../entity/LocalActor.h"
 #include "../core/net/IrcNet2.h"
@@ -105,7 +105,7 @@ uShort timer_CheckInWithServer(timer* t, uLong ms)
 	return TIMER_CONTINUE;
 }
 
-void StartCheckInTimer()
+void startCheckInTimer()
 {
 	timers->Add("", CHECK_IN_TIMER_INTERVAL_MS, false, timer_CheckInWithServer);
 }

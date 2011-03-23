@@ -1,28 +1,21 @@
 
 #include "IrcNetListeners.h"
-#include "GameManager.h"
-//#include "Achievements.h"
+#include "IrcNetSenders.h"
+#include "../game/GameManager.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/widgets/Multiline.h"
 #include "../interface/UserList.h"
 #include "../interface/LoginDialog.h"
-//#include "../interface/ItemTrade.h"
 #include "../interface/OptionsDialog.h"
 #include "../map/Map.h"
 #include "../core/net/IrcNet2.h"
 #include "../entity/LocalActor.h"
 #include "../entity/ExplodingEntity.h"
 #include "../entity/TextObject.h"
-#include "../entity/ChatBubble.h"
 #include "../core/io/FileIO.h"
-#include "../core/widgets/Button.h"
 #include "../core/net/DataPacket.h"
-#include "../core/io/Crypt.h"
 #include "../entity/RemoteActor.h"
 #include "../entity/Avatar.h"
-#include "../core/sound/SoundManager.h"
-
-const int MAX_STAMP_TEXT_LENGTH = 30;
 
 /*	Utility */
 
@@ -37,19 +30,6 @@ void printMessage(string& msg)
 		loginDialog->mText->AddMessage(msg);
 }
 
-string compressActionBuffer(string buffer)
-{
-	return buffer;
-	string s;
-	s = compressString(buffer);
-
-	//if our compressed version is smaller than our raw, return that.
-	if (!s.empty() && s.length() < buffer.length())
-		return s;
-	else //Otherwise, return original.
-		return buffer;
-}
-
 string decompressActionBuffer(string buffer)
 {
 	string s;
@@ -62,7 +42,7 @@ string decompressActionBuffer(string buffer)
 		return buffer;
 }
 
-//Move to Map?
+//TODO: Move to Map?
 RemoteActor* _addRemoteActor(string& nick, DataPacket& data)
 {	
 	char c;
@@ -124,7 +104,8 @@ uShort timer_destroyMapStamp(timer* t, uLong ms)
 	return TIMER_DESTROY;	
 }
 
-void _stampMapText(int x, int y, int rotation, string& text)
+//TODO: Move to Map?
+void stampMapText(int x, int y, int rotation, string& text)
 {
 	if (!game->mMap)
 		return;
@@ -144,223 +125,6 @@ void _stampMapText(int x, int y, int rotation, string& text)
 	timers->Add("stamp", 5*60*1000, false, timer_destroyMapStamp, NULL, to);
 }
 
-/*	Net Senders */
-
-void netSendSay(string text) //say $message
-{
-	// disable the usage of \n in say
-	replace(&text, "\\n", "");
-	
-	if (game->IsMapLoading() || text.empty()) return;
-
-	//do a few modifications
-	if (text.find_last_of(">") == 0 && text.find("<", 0) == string::npos)
-		text.insert(0, "\\c561");
-
-	if (text.at(0) != '/') //Ignore slash commands 
-	{
-		game->GetChat()->AddMessage(game->mPlayer->mName + ": " + text);
-
-		ChatBubble* cb = new ChatBubble(game->mPlayer, text);
-		cb->mMap = game->mMap;
-		cb->mMap->AddEntity(cb);
-		
-		//achievement_NeedASpamBlocker();
-		
-		gui->GetUserAttention(); //in case they still want sound while they send a msg
-		gui->mGetUserAttention = false; //hack to stop the title from flashing when we talk
-	}
-	else
-	{	
-		//Dispatch a command message
-		MessageData md("ENTITY_CMD");
-		md.WriteUserdata("entity", game->mPlayer);
-		md.WriteString("message", text);
-		messenger.Dispatch(md, game->mPlayer);
-	}
-	
-	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
-	{
-		DataPacket data("say");
-		data.SetKey( game->mNet->GetEncryptionKey() );
-
-		data.WriteString(text);
-
-		game->mNet->MessageToChannel( data.ToString() );
-	}
-}
-
-void netSendAchievement(string title) // ern $title (earn, get it, get it!?)
-{
-	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
-	{
-		DataPacket data("ern");
-		data.SetKey( game->mNet->GetEncryptionKey() );
-
-		data.WriteString(title);
-
-		game->mNet->MessageToChannel( data.ToString() );
-	}
-}
-
-void netSendStamp(string text) //stp x y rotation color $text
-{
-	if (!game->mMap) return;
-	
-	replace(&text, "\\n", "");
-
-	//text = stripCodes(text);
-	point2d p = game->mPlayer->GetPosition();
-	sShort rotation = rnd2(-15, 15);
-	
-	if (text.length() > MAX_STAMP_TEXT_LENGTH)
-		text.erase(MAX_STAMP_TEXT_LENGTH);
-	
-	_stampMapText(p.x, p.y, rotation, text);
-
-	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
-	{
-		DataPacket data("stp");
-		data.SetKey( game->mNet->GetEncryptionKey() );
-
-		data.WriteInt(p.x);
-		data.WriteInt(p.y);
-		data.WriteInt(rotation);
-		data.WriteString(text);
-
-		game->mNet->MessageToChannel( data.ToString() );
-	}
-}
-
-void netSendMe(string text) //act #mode $text
-{
-	if (!game->mMap) return;
-
-	text = stripCodes(text);
-	replace(&text, "\\n", "");
-	
-	game->GetChat()->AddMessage("\\c909* " + stripCodes(game->mPlayer->mName) 
-							+ " " + text + " *");
-
-	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
-	{
-		DataPacket data("act");
-		data.SetKey( game->mNet->GetEncryptionKey() );
-
-		data.WriteChar(0);
-		data.WriteString(text);
-
-		game->mNet->MessageToChannel( data.ToString() );
-	}
-}
-
-void netSendMusic(string song) //act 1 song
-{
-	if (!game->mMap) return;
-	
-	song = stripCodes(song);
-	replace(&song, "\\n", "");
-	
-	game->GetChat()->AddMessage(
-					"\\c099* " + stripCodes(game->mPlayer->mName)
-					+ " is listening to \\c059" 
-					+ song + " \\c099*" 
-			);
-		
-	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
-	{
-		DataPacket data("act");
-		data.SetKey( game->mNet->GetEncryptionKey() );
-
-		data.WriteChar(1);
-		data.WriteString(song);
-
-		game->mNet->MessageToChannel( data.ToString() );
-	}
-}
-
-void netSendBeat(Entity* target, string item) //act 2 target item
-{
-	if (!game->mMap || !target) return;
-
-	string targetName = stripCodes(target->mName);
-	item = stripCodes(item);
-	replace(&item, "\\n", "");
-	
-	game->GetChat()->AddMessage(
-					"\\c484 * " + stripCodes(game->mPlayer->mName) + " beats "
-					+ stripCodes(targetName) + " with a \\c784"
-					+ item + "\\c484 *"
-				);
-
-	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
-	{
-		DataPacket data("act");
-		data.SetKey( game->mNet->GetEncryptionKey() );
-
-		data.WriteChar(2);
-		data.WriteString(targetName);
-		data.WriteString(item);
-		
-		game->mNet->MessageToChannel( data.ToString() );
-	}	
-}
-
-void netSendAvatar(Avatar* a, string nick) //avy $url #w #h ...
-{
-	if (!a || !game || !game->mNet || game->mNet->GetState() != ONCHANNEL)
-		return;
-		
-	DataPacket data("avy");
-	data.SetKey( game->mNet->GetEncryptionKey() );
-	
-	a->Serialize(data);
-
-	if (nick.empty())
-		game->mNet->MessageToChannel( data.ToString() );
-	else
-		game->mNet->Privmsg( nick, data.ToString() );
-}
-
-void netSendEmote(uShort num) //emo num
-{
-	if (!game->mMap) return;
-
-	timer* t = timers->Find("emowait");
-	if (t)
-	{
-		game->GetChat()->AddMessage("\\c900 * Spam emotes less, jerk.");
-		return;
-	}
-	else
-	{
-		timers->Add("emowait", 1000, false, NULL, NULL, NULL);
-	}
-
-	game->mPlayer->Emote(num);
-		
-	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
-	{
-		DataPacket data("emo");
-		data.SetKey( game->mNet->GetEncryptionKey() );
-
-		data.WriteChar(num);
-
-		game->mNet->MessageToChannel( data.ToString() );
-	}
-}
-
-void netSendRequestAvatar(string nick)
-{
-	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
-	{
-		DataPacket data("reqAvy");
-		data.SetKey( game->mNet->GetEncryptionKey() );
-
-		game->mNet->Privmsg(nick, data.ToString() );
-	}
-}
-
 /*	This user sent a valid message, but we don't have them on the map. Request for add */
 void _handleUnknownUser(string& nick)
 {
@@ -374,86 +138,6 @@ void _handleUnknownUser(string& nick)
 
 	//make sure we don't send this TOO often. Only once every couple seconds
 	timers->Add("pushNm", 2*1000, false, NULL, NULL);
-}
-
-/*	Net Message Listeners */
-
-void _handleNetMessage_TradeDeny(string& nick, DataPacket& data) //trDNY reason 
-{
-#ifdef TRADE_ENABLED
-	string msg = "\\c900 * Trade with " + nick + " has closed (Reason: " + data.ReadString() + ")";
-	printMessage(msg);
-	
-	//If we were trading with this person and they cancelled it, close everything on our side.
-	ItemTrade* i = (ItemTrade*)gui->Get("ItemTrade");
-	if (i && i->mTrader == nick)
-	{
-		i->Die();
-		inventory->mTrade->SetVisible(false);
-	}
-#endif
-}
-
-void _handleNetMessage_TradeOkay(string& nick, DataPacket& data) //trOK
-{
-#ifdef TRADE_ENABLED
-	//make sure we haven't gotten in a trade with someone else before the acceptance
-	if (gui->Get("ItemTrade"))
-	{
-		//send auto-deny if so
-		if (game->mNet && game->mNet->GetState() == ONCHANNEL)
-		{
-			DataPacket data("trDNY");
-			data.SetKey( game->mNet->GetEncryptionKey() );
-			data.WriteString("Already in a trade");
-			game->mNet->Privmsg( nick, data.ToString() );
-		}
-		return;
-	}
-	
-	string msg = "\\c090 * Trade with " + nick + " has been accepted!";
-	printMessage(msg);
-	
-	new ItemTrade(nick);
-#endif
-}
-
-void _handleNetMessage_TradeReady(string& nick, DataPacket& data) //trRDY
-{
-#ifdef TRADE_ENABLED
-	ItemTrade* trade = (ItemTrade*)gui->Get("ItemTrade");
-	if (trade && trade->mTrader == nick)
-		trade->RemoteReady();
-#endif
-}
-
-void _handleNetMessage_TradeItem(string& nick, DataPacket& data) //trITM id description amount
-{
-#ifdef TRADE_ENABLED
-	ItemTrade* trade = (ItemTrade*)gui->Get("ItemTrade");
-
-	string id = data.ReadString();
-	string desc = data.ReadString();
-	int amount = data.ReadInt();
-
-	if (trade && trade->mTrader == nick)
-	{
-		trade->SetRemoteItem(id, desc, amount);
-	}
-#endif
-}
-
-void _handleNetMessage_TradeRequest(string& nick, DataPacket& data) //trREQ
-{
-#ifdef TRADE_ENABLED
-	if (!game->mMap) return;
-		
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
-
-	if (!ra) { _handleUnknownUser(nick); return; }
-
-	handleInboundTradeRequest(ra);
-#endif
 }
 
 void _handleNetMessage_RequestAvatar(string& nick, DataPacket& data) //reqAvy
@@ -477,12 +161,7 @@ void _handleNetMessage_Say(string& nick, DataPacket& data) // say msg
 	
 	if (msg.at(0) != '/') //Ignore slash commands 
 	{
-		game->GetChat()->AddMessage(nick + ": " + msg);
-		
-		ChatBubble* cb = new ChatBubble(ra, msg);
-		cb->mMap = game->mMap;
-		cb->mMap->AddEntity(cb);
-		
+		ra->Say(msg, true);
 		gui->GetUserAttention();
 	}
 	else
@@ -511,7 +190,7 @@ void _handleNetMessage_Stamp(string& nick, DataPacket& data) // stamp x y angle 
 	int rot = data.ReadInt();
 	string msg = data.ReadString();
 	
-	_stampMapText(x, y, rot, msg);
+	stampMapText(x, y, rot, msg);
 }
 
 void _handleNetMessage_Act(string& nick, DataPacket& data)
@@ -645,33 +324,6 @@ void _handleNetMessage_Nm(string& nick, DataPacket& data)
 	{
 		console->AddMessage("Malformed 'nm' from " + nick);	
 	}
-}
-
-void _handleNetMessage_Ach(string& nick, DataPacket& data) // ach $id $desc #max
-{	
-/*
-	string title = data.ReadString();
-	string desc = data.ReadString();
-	int max = data.ReadInt();
-	
-	game->EarnAchievement(title, desc, max);
-*/
-}
-
-void _handleNetMessage_PlayerEarnedAchievement(string& nick, DataPacket& data) // ern $title
-{
-/*	if (!game->mMap) return;
-		
-	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
-	if (!ra) { _handleUnknownUser(nick); return; }
-	
-	if (ra->IsBlocked())
-		return;
-
-	string title = data.ReadString();
-	
-	game->GetChat()->AddMessage("\\c139 * " + nick + "\\c999 achieved: \\c080 " + title);
-	ra->Emote(11);*/
 }
 
 void _handleNetMessage_Afk(string& nick, DataPacket& data)
@@ -843,28 +495,14 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 		_handleNetMessage_Stamp(nick, data);
 	else if (id == "lua")
 		_handleNetMessage_Lua(nick, data);
-	else if (id == "ern")
-		_handleNetMessage_PlayerEarnedAchievement(nick, data);
 	else if (id == "mod")
 		_handleNetMessage_Mod(nick, data);
-	else if (id == "ach")
-		_handleNetMessage_Ach(nick, data);
 	else if (id == "afk")
 		_handleNetMessage_Afk(nick, data);
 	else if (id == "back")
 		_handleNetMessage_Back(nick, data);
 	else if (id == "reqAvy")
 		_handleNetMessage_RequestAvatar(nick, data);
-	else if (id == "trDNY")
-		_handleNetMessage_TradeDeny(nick, data);
-	else if (id == "trOK") 
-		_handleNetMessage_TradeOkay(nick, data);
-	else if (id == "trRDY")
-		_handleNetMessage_TradeReady(nick, data);
-	else if (id == "trITM")
-		_handleNetMessage_TradeItem(nick, data);
-	else if (id == "trREQ")
-		_handleNetMessage_TradeRequest(nick, data);
 	else if (target == game->mPlayer->mName)
 		_handleNetMessage_Private(nick, msg);
 		

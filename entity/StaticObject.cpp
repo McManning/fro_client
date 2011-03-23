@@ -126,29 +126,21 @@ void StaticObject::Rotozoom(double degree, double zoom)
 
 void StaticObject::LoadImage(string file)
 {
-	if (mImage != mOriginalImage)
-		resman->Unload(mImage);
-		
-	resman->Unload(mOriginalImage);
-	
-	mOriginalImage = resman->LoadImg(file);
-
-	if (!mOriginalImage)
+	Image* img = resman->LoadImg(file);
+	if (!img)
 	{
-		mImage = NULL;
 		console->AddMessage(" *\\c900 StaticObject:" + mId + " Failed to load " + file);
 	}
 	else
-		mImage = mOriginalImage->Clone();
-
-	
-	PlayAnimation();
-	mRotation = 0.0;
-	mScale = 1.0;
+	{
+        SetImage(img);   
+    }
 }
 
 void StaticObject::SetImage(Image* img)
 {
+    AddPositionRectForUpdate(); // add our old rect for update
+    
 	if (mImage != mOriginalImage)
 		resman->Unload(mImage);
 	
@@ -159,9 +151,10 @@ void StaticObject::SetImage(Image* img)
 	if (mOriginalImage)
 		mImage = mOriginalImage->Clone();
 
-	PlayAnimation();
 	mRotation = 0.0;
-	mScale = 1.0;	
+	mScale = 1.0;
+	
+	PlayAnimation(); // will also add new rect to update
 }
 
 void StaticObject::SetAA(bool b)

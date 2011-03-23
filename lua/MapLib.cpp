@@ -16,7 +16,7 @@
 #include "GameLib.h"
 
 #include "../game/GameManager.h"
-#include "../map/BasicMap.h"
+#include "../map/Map.h"
 
 /*	Calls Build() in the lua script. Return 0 on error */
 int mapLib_luaCallBuild(lua_State* ls)
@@ -113,7 +113,7 @@ int map_NewBasic(lua_State* ls)
 	
 	ASSERT(!game->mMap);
 	
-	game->mMap = new BasicMap();
+	game->mMap = new Map();
 	return 0;
 }
 

@@ -24,10 +24,8 @@ Widget::Widget()
 }
 
 Widget::~Widget()
-{
-	FlagRender();
-	
-	for (uShort i = 0;  i < mChildren.size(); i++)
+{	
+	for (int i = 0;  i < mChildren.size(); i++)
 	{
 		mChildren.at(i)->mParent = NULL;
 		delete mChildren.at(i);

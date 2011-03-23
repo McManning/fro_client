@@ -9,13 +9,16 @@ class ChatBubble : public Entity
 {
   public:
 	ChatBubble(Entity* owner, string& msg);
+	ChatBubble(Entity* owner, int emote);
+	
 	~ChatBubble();
 	
 	void Render();
 	rect GetBoundingRect();
 	void UpdatePosition();
 	
-	void Create(string& msg);
+	void CreateText(string& msg);
+	void CreateEmote(int id);
 	
 	Image* mImage;
 	Entity* mOwner;

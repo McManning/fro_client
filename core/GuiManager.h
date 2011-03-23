@@ -87,7 +87,7 @@ class GuiManager : public Widget
 
 	void Screenshot();
 
-	Image* mCursorImage; //cursor image. TODO: Rename to mCursor
+	Image* mCursorImage;
 
 	Widget* hasMouseFocus;
 	Widget* hasKeyFocus;
@@ -157,8 +157,6 @@ class GuiManager : public Widget
 	
 		/*	Recalculate the next tick we should do a full render call on */
 	void _getNextRenderTick(uLong ms);
-
-	void _renderCursorTipText(Image* scr, string& text);
 
 	std::vector<Widget*> mDeletionStack;
 	

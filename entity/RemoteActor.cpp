@@ -5,7 +5,7 @@
 #include "../core/net/DataPacket.h"
 #include "../map/Map.h"
 #include "../game/GameManager.h"
-#include "../game/IrcNetListeners.h"
+#include "../net/IrcNetSenders.h"
 
 RemoteActor::RemoteActor()
 	: Actor()
@@ -66,8 +66,6 @@ void RemoteActor::ReadAvatarFromPacket(DataPacket& data)
 
 bool RemoteActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags)
 {
-	PRINT("RemoteActor::LoadAvatar");
-
 	bool result = false;
 
 	// only allow local files to be loaded if blocked

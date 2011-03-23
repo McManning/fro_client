@@ -374,11 +374,6 @@ rect GuiManager::GetMouseRect()
 	return r;
 }
 
-// TODO: Widget-ify this
-void GuiManager::_renderCursorTipText(Image* scr, string& text)
-{
-}
-
 void GuiManager::Render()
 {
 //	PRINT("GuiMan::Render");
@@ -599,7 +594,11 @@ void GuiManager::GetUserAttention()
 	{
 		if (sound)
 			sound->Play("blip");
+			
 		mGetUserAttention = true;
+		
+		if (!SDL_GetAppState() & SDL_APPINPUTFOCUS)
+	   	   flashWindowState(true);
 	}
 }
 
@@ -607,26 +606,6 @@ void GuiManager::ThinkInSeconds(uLong ms)
 {
 	if (isAppClosing())
 		return;
-
-	if (mGetUserAttention) // toggle alert
-	{
-		flashWindowState(true);
-		
-		//mTitleFlashOn = !mTitleFlashOn;
-		/*if (mTitleFlashOn)
-			SDL_WM_SetCaption("--------------------------------", NULL);
-		else
-			SDL_WM_SetCaption(mAppTitle.c_str(), NULL);*/
-			
-		mTitleFlashOn = true;
-	}
-	else if (mTitleFlashOn) // turn off alert
-	{
-		flashWindowState(false);
-		mTitleFlashOn = false;
-		
-		SetAppTitle(mAppTitle); 
-	}
 
 	//Also recalculate FPS since this is ran every minute anyway
 	mFps = mFrameCounter;
@@ -662,7 +641,11 @@ void GuiManager::Process()
 	//If we're focused, don't worry about getting their attention
 	if (SDL_GetAppState() & SDL_APPINPUTFOCUS)
 	{
-		mGetUserAttention = false;
+		if (mGetUserAttention)
+		{
+			mGetUserAttention = false;
+			flashWindowState(false);
+		}
 		
 		if (!mAppInputFocus)
 		{

@@ -9,7 +9,7 @@
 #include "../entity/ChatBubble.h"
 //#include "../entity/Lunem.h"
 #include "../game/GameManager.h"
-#include "../map/BasicMap.h"
+#include "../map/Map.h"
 
 // Returns true if the entity is valid. (TODO: Make sure it's on the map) 
 bool _verifyEntity(Entity* e)
@@ -243,44 +243,6 @@ int entity_SetProp(lua_State* ls)
 	return 0;
 }
 
-// .GetFlag(entity, "key") Returns string of value. Empty string if key does not exist.
-int entity_GetFlag(lua_State* ls) 
-{
-	PRINT("entity_GetFlag");
-	luaCountArgs(ls, 2);
-
-	Entity* e = _getReferencedEntity(ls);
-
-	string s = e->GetFlag( lua_tostring(ls, 2) );
-	lua_pushstring(ls, s.c_str());
-	
-	return 1;
-}
-
-// .SetFlag(entity, "key", "value")
-int entity_SetFlag(lua_State* ls) 
-{
-	PRINT("entity_SetFlag");
-	luaCountArgs(ls, 3);
-
-	Entity* e = _getReferencedEntity(ls);
-
-	e->SetFlag(lua_tostring(ls, 2), lua_tostring(ls, 3));
-
-	return 0;	
-}
-
-//	.ClearFlag(entity, "key")
-int entity_ClearFlag(lua_State* ls)
-{
-	luaCountArgs(ls, 2);
-	Entity* e = _getReferencedEntity(ls);
-
-	e->ClearFlag(lua_tostring(ls, 2));
-
-	return 0;	
-}
-
 // .IsTouching(ent, ent) - Returns 1 if the two entities are intersecting collision rects, 0 otherwise. 
 //Also note, if the second ent is a bad pointer, it'll return 0 also.
 int entity_IsTouching(lua_State* ls)
@@ -315,7 +277,7 @@ int entity_GetDistance(lua_State* ls)
 	return 1;
 }
 
-// .Say(entity, "msg", showbubble, showinchat) - Say the message. Last two parameters are optional, and default to 1.
+// .Say(entity, "msg", showbubble) - Say the message. Last two parameters are optional, and default to 1.
 int entity_Say(lua_State* ls)
 {
 	PRINT("entity_Say");
@@ -326,19 +288,9 @@ int entity_Say(lua_State* ls)
 	int numArgs = lua_gettop(ls);
 
 	string msg = lua_tostring(ls, 2);
-
 	bool showbubble = (numArgs > 2) ? lua_toboolean(ls, 3) : 1;
-	bool showinchat = (numArgs > 3) ? lua_toboolean(ls, 4) : 1;
 
-	if (showbubble)
-	{
-		ChatBubble* cb = new ChatBubble(e, msg);
-		cb->mMap = game->mMap;
-		cb->mMap->AddEntity(cb);
-	}
-	
-	if (showinchat)
-		game->GetChat()->AddMessage(e->mName + ": " + msg);
+	e->Say(msg, showbubble);
 		
 	return 0;	
 }
@@ -899,9 +851,6 @@ static const luaL_Reg functions[] = {
 	{"GetRect", entity_GetRect},
 	{"GetProp", entity_GetProp},
 	{"SetProp", entity_SetProp},
-	{"GetFlag", entity_GetFlag},
-	{"SetFlag", entity_SetFlag},
-	{"ClearFlag", entity_ClearFlag},
 	{"IsTouching", entity_IsTouching},
 	{"GetDistance", entity_GetDistance},
 	{"Say", entity_Say},

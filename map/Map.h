@@ -16,25 +16,17 @@ class Map : public Frame, public EntityManager
 {
   public:
 	Map();
-	virtual ~Map();
+	~Map();
 
-	enum mapType 
-	{
-		NONE = 0,
-		BASIC,
-		EDITOR,
-		PURGATORY,
-		MAZE
-	};
-
-	virtual void Render();
-	virtual void Event(SDL_Event* event);
-	virtual void Process();
-	virtual bool IsRectBlocked(rect r);
-	virtual void ResizeChildren();
-	virtual void Die(); //Graceful cleanup
+	void Render();
+	void Event(SDL_Event* event);
+	void Process();
+	bool IsRectBlocked(rect r);
+	void ResizeChildren();
+	void Die(); //Graceful cleanup
 
     void CreateChatbox();
+    void CreateHud();
 
 	void HandleLeftClick();
 	void HandleRightClick();
@@ -53,8 +45,6 @@ class Map : public Frame, public EntityManager
 	uShort mWidth;
 	uShort mHeight;
 
-	mapType mType;
-	
 	color mBackground; //fill color for maps
 	string mWorkingDir;
 	
@@ -124,11 +114,13 @@ class Map : public Frame, public EntityManager
 	rect mCameraBounds; 
 	
 	Console* mChat;
+	Frame* mHud;
 	
   private:
 	void _constrainCameraToMap();
 	void _constrainCameraX();
 	void _constrainCameraY();
+	void _renderEntities();
 
 	Entity* mFollowedEntity; //entity the camera is following
 	

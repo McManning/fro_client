@@ -32,6 +32,7 @@ class Screen : public Image
 	static void Destroy();
 
 	bool mNoDraw;
+	bool mDrawOptimizedRects;
 
   private:
   	Screen();

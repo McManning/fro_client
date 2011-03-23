@@ -11,8 +11,13 @@
 #include <map>
 #include "../core/Core.h"
 
+#ifdef DEBUG
+const int MAX_AVATAR_WIDTH = 64*10;
+const int MAX_AVATAR_HEIGHT = 96*10;
+#else
 const int MAX_AVATAR_WIDTH = 64;
 const int MAX_AVATAR_HEIGHT = 96;
+#endif
 
 typedef enum
 {
@@ -86,6 +91,8 @@ class Entity
 
 	rect GetShadowRect();
 	
+	void Say(string msg, bool bubble);
+	
 	entityType mType;
 
 	string mId; //classname of this entity
@@ -123,15 +130,7 @@ class Entity
 		
 	bool IsSolid() const { return mSolid; };
 	void SetSolid(bool b) { mSolid = b; };
-	
-	void SetFlag(string flag, string value);
-	string GetFlag(string flag);
-	void ClearFlag(string flag);
-	
-	// Load/save flags from a binary file stream already opened
-	void LoadFlags(FILE* f);
-	void SaveFlags(FILE* f);
-	
+
 	void ClearActiveChatBubble();
 	
 	bool mLocked; //Map Editor only
@@ -148,8 +147,6 @@ class Entity
 	ChatBubble* mActiveChatBubble;
 	
 	std::map<string, string> mFlags;
-	
-	rect mOldPositionRect;
 };
 
 #endif //_ENTITY_H_

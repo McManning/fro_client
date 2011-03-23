@@ -28,16 +28,16 @@ class Multiline: public Widget
 
 	void AddMessage(string msg);
 
-	void SplitLines(string line, uShort w);
+	void SplitLines(string line, int w);
 
 	string GetUrl(int line);
-	sShort GetLineUnderXY(sShort x, sShort y);
+	int GetLineUnderXY(int x, int y);
 
 	void RecalculateScrollbarMax();
-	uShort GetNumberOfLinesVisible();
+	int GetNumberOfLinesVisible();
 
-	void SetTopLine(uShort val);
-	void _setTopLine(uShort val); //called by the scrollbar only
+	void SetTopLine(int val);
+	void _setTopLine(int val); //called by the scrollbar only
 
 	string GetSelectedText()
 	{
@@ -47,8 +47,10 @@ class Multiline: public Widget
 			return "";
 	};
 
-	void EraseLine(uShort line);
-	void SetLine(uShort line, string msg);
+	void EraseLine(int line);
+	void SetLine(int line, string msg);
+	
+	void SetSelected(int line);
 
 	Scrollbar* mScrollbar;
 
@@ -56,16 +58,16 @@ class Multiline: public Widget
 	std::vector<string> mRawText;
 	std::vector<string> mUrls; //blah.blah pulled from the text
 
-	uShort mBottomLine; //bottom line number
-	uShort mMaxTextWidth; //maximum width for text
+	int mBottomLine; //bottom line number
+	int mMaxTextWidth; //maximum width for text
 	bool mWrap;
 	bool mHighlightSelected;
 	bool mSelectOnHover;
 	bool mHideScrollbar;
-	sShort mSelected;
+	int mSelected;
 	color mHighlightBackground;
 
-	void ReflowLines(uShort w);
+	void ReflowLines(int w);
 
 	void (*onLeftDoubleClickCallback)(Multiline*);
 	void (*onLeftSingleClickCallback)(Multiline*);
@@ -74,8 +76,8 @@ class Multiline: public Widget
   protected:
 	void _addLine(string msg);
 
-	void SetWidth(uShort w);
-	void SetHeight(uShort h);
+	void _setWidth(int w);
+	void _setHeight(int h);
 
 	bool mClickedOnce; //allows double clicking (for links 'n shit)
 };

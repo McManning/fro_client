@@ -4,7 +4,7 @@
 #include "WorldLoader.h"
 #include "GameManager.h"
 #include "../entity/LocalActor.h"
-#include "../map/BasicMap.h"
+#include "../map/Map.h"
 #include "../core/net/IrcNet2.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/io/FileIO.h"

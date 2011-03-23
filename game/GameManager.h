@@ -61,12 +61,9 @@ class GameManager : public Frame
 	
 	Map* mMap;
 	LocalActor* mPlayer;
-	Console* mChat;
 	IrcNet* mNet;
 	WorldLoader* mLoader;
 	//LunemParty* mParty;
-	
-	Frame* mHud;
 
 	bool mShowJoinParts;
 	bool mShowAddresses;
@@ -102,7 +99,6 @@ class GameManager : public Frame
     Console* GetChat();
 
   private:
-	void _buildHud();
 	//void _addNewAchievement(string title, string desc, int max);
 };
 

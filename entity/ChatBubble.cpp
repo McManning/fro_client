@@ -1,10 +1,14 @@
 
 #include "ChatBubble.h"
 #include "../core/SDL/SDL_rotozoom.h"
+#include "../core/io/FileIO.h"
 #include "../map/Map.h"
 
 const int MAX_CHAT_BUBBLE_WIDTH = 300;
 const int CHAT_BUBBLE_UPDATE_MS = 10;
+
+const int EMOTE_DISPLAY_MS = 7000;
+const int EMOTE_MOVE_DELAY = 100;
 
 uShort timer_destroyChatBubble(timer* t, uLong ms)
 {
@@ -16,7 +20,20 @@ uShort timer_destroyChatBubble(timer* t, uLong ms)
 	return TIMER_DESTROY;
 }
 
-uShort timer_updateChatBubble(timer* t, uLong ms)
+uShort timer_updateChatBubbleText(timer* t, uLong ms)
+{
+	ChatBubble* cb = (ChatBubble*)t->userData;
+	
+	if (cb)
+	{
+		cb->UpdatePosition();
+		return TIMER_CONTINUE;
+	}
+	
+	return TIMER_DESTROY;
+}
+
+uShort timer_updateChatBubbleEmote(timer* t, uLong ms)
 {
 	ChatBubble* cb = (ChatBubble*)t->userData;
 	
@@ -33,24 +50,30 @@ ChatBubble::ChatBubble(Entity* owner, string& msg)
 {
 	mOwner = owner;
 	mImage = NULL;
-	
-	Create(msg);
-	
+
 	if (mOwner)
 	{
 		mOwner->ClearActiveChatBubble();
 		mOwner->mActiveChatBubble = this;
 		SetLayer(mOwner->GetLayer() + 1);	
-		
-		rect r = mOwner->GetBoundingRect();
-
-		r.y -= mImage->Height() - 2;
-		r.w = mImage->Width();
-		r.h = mImage->Height();
-		r.x = mOwner->mPosition.x - (r.w / 2);
-
-		SetPosition(point2d(r.x, r.y));
 	}
+    
+    CreateText(msg);
+}
+
+ChatBubble::ChatBubble(Entity* owner, int emote)
+{
+    mOwner = owner;
+	mImage = NULL;
+
+	if (mOwner)
+	{
+		mOwner->ClearActiveChatBubble();
+		mOwner->mActiveChatBubble = this;
+		SetLayer(mOwner->GetLayer() + 1);
+	}   
+    
+    CreateEmote(emote);
 }
 
 ChatBubble::~ChatBubble()
@@ -94,7 +117,7 @@ void ChatBubble::UpdatePosition()
 	}
 }
 
-void ChatBubble::Create(string& msg)
+void ChatBubble::CreateText(string& msg)
 {
 	string strippedMsg = stripCodes(msg);
 	
@@ -129,7 +152,7 @@ void ChatBubble::Create(string& msg)
 	mImage->Rotate(rnd(-5,5), 1, 1);
 	
 	timers->Add("", (strippedMsg.length() * 30) + 4000, false, timer_destroyChatBubble, NULL, this);
-	timers->Add("", CHAT_BUBBLE_UPDATE_MS, true, timer_updateChatBubble, NULL, this);
+	timers->Add("", CHAT_BUBBLE_UPDATE_MS, true, timer_updateChatBubbleText, NULL, this);
 	
 	
 	//Dispatch a say message
@@ -137,6 +160,25 @@ void ChatBubble::Create(string& msg)
 	md.WriteUserdata("entity", mOwner);
 	md.WriteString("message", msg);
 	messenger.Dispatch(md, NULL);
+}
+
+void ChatBubble::CreateEmote(int id)
+{
+    string file = "assets/emoticons/" + its(id) + ".*"; //wildcard extension
+	file = getRandomFileMatchingPattern(file);
+
+	if (file.empty()) //check for invalid emote
+		return;
+
+	file = "assets/emoticons/" + file;
+
+	mImage = resman->LoadImg(file);
+	//mImage->Rotate(rnd(-10,10), 1, 1);
+
+	timers->Add("", EMOTE_DISPLAY_MS, false, timer_destroyChatBubble, NULL, this);
+	timers->Add("", CHAT_BUBBLE_UPDATE_MS, false, timer_updateChatBubbleEmote, NULL, this);
+
+	//mEmoteOffset = (mImage) ? mImage->Height() : 0;
 }
 
 rect ChatBubble::GetBoundingRect()

@@ -3,10 +3,6 @@
 #include "Screen.h"
 #include "ResourceManager.h"
 
-#ifdef DEBUG
-#	define DRAW_RECTS 1
-#endif
-
 Screen* g_screen;
 RectManager g_RectMan;
 Uint32 uScreenFlags;
@@ -25,6 +21,12 @@ Screen::Screen()
 	
 	mNoDraw = false;
 	
+#ifdef DEBUG
+	mDrawOptimizedRects = true;
+#else
+    mDrawOptimizedRects = false;
+#endif
+
 	//Since we don't have a screen since now, it's safe to assume SDL hasn't been initialized yet.
 	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) < 0) 
 		FATAL(SDL_GetError());
@@ -62,17 +64,14 @@ Screen::~Screen()
 	g_screen = NULL;
 }
 
-#ifdef DRAW_RECTS
 std::vector<rect> g_rects;
-#endif
 
 void Screen::PreRender()
 {
 	DrawRect(rect(0, 0, 40, 40), color());
 		
-#ifdef DRAW_RECTS
-	g_rects.clear();
-#endif
+    if (mDrawOptimizedRects)
+	   g_rects.clear();
 
 	g_RectMan.generate_clips(Surface());
 }
@@ -87,14 +86,15 @@ void Screen::PostRender()
 	
 	if (g_RectMan.m_Clips)
 	{
-#ifdef DRAW_RECTS
-		SDL_Rect* r;
-		for (int i = 0; i < g_RectMan.m_Clips->length; ++i)
-		{
-			r = &g_RectMan.m_Clips->rects + i;
-			DrawRound(rect(r->x, r->y, r->w, r->h), 0, color(0,255));	
-		}
-#endif
+        if (mDrawOptimizedRects)
+        {
+    		SDL_Rect* r;
+    		for (int i = 0; i < g_RectMan.m_Clips->length; ++i)
+    		{
+    			r = &g_RectMan.m_Clips->rects + i;
+    			DrawRound(rect(r->x, r->y, r->w, r->h), 0, color(0,255,0,100));	
+    		}
+        }
 
 		g_RectMan.update_rects(Surface());
 		
@@ -151,9 +151,9 @@ void Screen::Destroy()
 void Screen::AddRect(rect r)
 {
 	//sdfUpdate();
-#ifdef DRAW_RECTS
-	g_rects.push_back(r);
-#endif
+    if (mDrawOptimizedRects)
+	   g_rects.push_back(r);
+
 	SDL_Rect sr = { r.x, r.y, r.w, r.h };
 	g_RectMan.add_rect(sr);
 }

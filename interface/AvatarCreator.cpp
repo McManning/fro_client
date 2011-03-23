@@ -94,6 +94,21 @@ AvatarCreator::AvatarCreator() :
 	mBodyFile = mBase + ".body.default.png";
 	mHairFile = mBase + ".hair.default.png";
 	
+	resman->Unload(mHead);
+	mHead = resman->LoadImg(DIR_AVA + mHeadFile);
+	if (!mHead)
+		SetError("Could not load " + mHeadFile);
+		
+	resman->Unload(mBody);
+	mBody = resman->LoadImg(DIR_AVA + mBodyFile);
+	if (!mBody)
+		SetError("Could not load " + mBodyFile);
+	
+	resman->Unload(mHair);
+	mHair = resman->LoadImg(DIR_AVA + mHairFile);
+	if (!mHair)
+		SetError("Could not load " + mHairFile);
+	
 	Update();
 	
 	if (avatarFavorites)
@@ -287,6 +302,12 @@ void AvatarCreator::CreateControls()
 
 }
 
+void AvatarCreator::Update()
+{
+	mRedraw = true;
+	FlagRender();
+}
+
 void AvatarCreator::Toggle(string id)
 {
 	mBaseFrame->SetVisible( (id == "base") );
@@ -318,6 +339,22 @@ void AvatarCreator::CycleBase(bool forward)
 	mBodyFile = mBase + ".body.default.png";
 	mHairFile = mBase + ".hair.default.png";
 	
+	resman->Unload(mHead);
+	mHead = resman->LoadImg(DIR_AVA + mHeadFile);
+	if (!mHead)
+		SetError("Could not load " + mHeadFile);
+		
+	resman->Unload(mBody);
+	mBody = resman->LoadImg(DIR_AVA + mBodyFile);
+	if (!mBody)
+		SetError("Could not load " + mBodyFile);
+	
+	resman->Unload(mHair);
+	mHair = resman->LoadImg(DIR_AVA + mHairFile);
+	if (!mHair)
+		SetError("Could not load " + mHairFile);
+
+	
 	Update();
 }
 
@@ -327,6 +364,11 @@ void AvatarCreator::CycleHead(bool forward)
 		mHeadFile = getNextFileMatchingPattern(mHeadFile, DIR_AVA + mBase + ".head.*.png");
 	else
 		mHeadFile = getPreviousFileMatchingPattern(mHeadFile, DIR_AVA + mBase + ".head.*.png");
+		
+	resman->Unload(mHead);
+	mHead = resman->LoadImg(DIR_AVA + mHeadFile);
+	if (!mHead)
+		SetError("Could not load " + mHeadFile);
 		
 	Update();
 }
@@ -338,6 +380,11 @@ void AvatarCreator::CycleBody(bool forward)
 	else
 		mBodyFile = getPreviousFileMatchingPattern(mBodyFile, DIR_AVA + mBase + ".body.*.png");
 	
+	resman->Unload(mBody);
+	mBody = resman->LoadImg(DIR_AVA + mBodyFile);
+	if (!mBody)
+		SetError("Could not load " + mBodyFile);
+
 	Update();
 }
 
@@ -348,73 +395,42 @@ void AvatarCreator::CycleHair(bool forward)
 	else
 		mHairFile = getPreviousFileMatchingPattern(mHairFile, DIR_AVA + mBase + ".hair.*.png");
 		
+	resman->Unload(mHair);
+	mHair = resman->LoadImg(DIR_AVA + mHairFile);
+	if (!mHair)
+		SetError("Could not load " + mHairFile);
+
 	Update();
 }
 
 void AvatarCreator::_redraw()
 {
-	uShort w, h;
+	int w, h;
 	
 	mRedraw = false;
 	
 	mHeadColor.r = getScrollbarValue(mHeadFrame, "r");
 	mHeadColor.g = getScrollbarValue(mHeadFrame, "g");
 	mHeadColor.b = getScrollbarValue(mHeadFrame, "b");
+	
 	if (isGreyscale(mHeadColor))
-	{
-		if (mHeadColor.r > 0)
-			--mHeadColor.r;
-		else
-			++mHeadColor.r;
-	}
+		mHeadColor.r ^= 1;
 	
 	mBodyColor.r = getScrollbarValue(mBodyFrame, "r");
 	mBodyColor.g = getScrollbarValue(mBodyFrame, "g");
 	mBodyColor.b = getScrollbarValue(mBodyFrame, "b");
+	
 	if (isGreyscale(mBodyColor))
-	{
-		if (mBodyColor.r > 0)
-			--mBodyColor.r;
-		else
-			++mBodyColor.r;
-	}
+		mBodyColor.r ^= 1;
 	
 	mHairColor.r = getScrollbarValue(mHairFrame, "r");
 	mHairColor.g = getScrollbarValue(mHairFrame, "g");
 	mHairColor.b = getScrollbarValue(mHairFrame, "b");
+	
 	if (isGreyscale(mHairColor))
-	{
-		if (mHairColor.r > 0)
-			--mHairColor.r;
-		else
-			++mHairColor.r;
-	}
+		mHairColor.r ^= 1;
 	
 	resman->Unload(mCompositePreview);
-
-	resman->Unload(mHead);
-	mHead = resman->LoadImg(DIR_AVA + mHeadFile);
-	if (!mHead)
-	{
-		SetError("Could not load " + mHeadFile);
-		return;
-	}
-
-	resman->Unload(mBody);
-	mBody = resman->LoadImg(DIR_AVA + mBodyFile);
-	if (!mBody)
-	{
-		SetError("Could not load " + mBodyFile);
-		return;
-	}
-
-	resman->Unload(mHair);
-	mHair = resman->LoadImg(DIR_AVA + mHairFile);
-	if (!mHair)
-	{
-		SetError("Could not load " + mHairFile);
-		return;
-	}
 
 	//calculate our dimensions based on the body. (All parts should have the same dimensions with this system)
 	//Each should contain 2 frames, 5 rows (4 dirs and 1 sit)
@@ -454,8 +470,6 @@ void AvatarCreator::_redraw()
 	
 	//Finally convert the resulting avatar to something we can control in terms of frames/animation
 	mCompositePreview->ConvertToAvatarFormat(w, h, 1000, true, false);
-	
-	FlagRender();
 }
 
 void AvatarCreator::Render()
@@ -549,6 +563,22 @@ void AvatarCreator::ImportUrl(string url)
 	mBodyColor = hexToColor(v.at(4));
 	mHairColor = hexToColor(v.at(6));
 	
+	resman->Unload(mHead);
+	mHead = resman->LoadImg(DIR_AVA + mHeadFile);
+	if (!mHead)
+		SetError("Could not load " + mHeadFile);
+		
+	resman->Unload(mBody);
+	mBody = resman->LoadImg(DIR_AVA + mBodyFile);
+	if (!mBody)
+		SetError("Could not load " + mBodyFile);
+	
+	resman->Unload(mHair);
+	mHair = resman->LoadImg(DIR_AVA + mHairFile);
+	if (!mHair)
+		SetError("Could not load " + mHairFile);
+
+	
 	// A little more gross here, have to adjust each scrollbar to match each color :(
 	
 	Scrollbar* s;
@@ -563,7 +593,22 @@ void AvatarCreator::ImportUrl(string url)
 	s = (Scrollbar*)mBodyFrame->Get("r");
 		s->SetValue(mBodyColor.r);
 	s = (Scrollbar*)mBodyFrame->Get("g");
-		s->SetValue(mBodyColor.g);
+		s->SetValue(mBodyColor.g);	
+	resman->Unload(mHead);
+	mHead = resman->LoadImg(DIR_AVA + mHeadFile);
+	if (!mHead)
+		SetError("Could not load " + mHeadFile);
+		
+	resman->Unload(mBody);
+	mBody = resman->LoadImg(DIR_AVA + mBodyFile);
+	if (!mBody)
+		SetError("Could not load " + mBodyFile);
+	
+	resman->Unload(mHair);
+	mHair = resman->LoadImg(DIR_AVA + mHairFile);
+	if (!mHair)
+		SetError("Could not load " + mHairFile);
+
 	s = (Scrollbar*)mBodyFrame->Get("b");
 		s->SetValue(mBodyColor.b);
 

@@ -110,18 +110,24 @@ void Entity::SetPosition(point2d position)
 //	Called when the entity moves, is created, deleted, changes state in any (visible) way.
 void Entity::AddPositionRectForUpdate()
 {
-	rect r;
+	rect r, s;
 	
 	if ( mMap && IsVisibleInCamera() )
 	{
 		r = GetBoundingRect();	
+		
 		if (!IsPositionRelativeToScreen())
-			r = mMap->ToScreenPosition( r );
+		    r = mMap->ToScreenPosition( r );
+		
+		// TODO: better calculation of where our shadow actually is!
+		if (mShadow)
+	        r.h += r.w / 10;
+
 		g_screen->AddRect(r);
 		
 		// Add the old rect too, in case of a size change or something else
-		g_screen->AddRect(mOldPositionRect);
-		mOldPositionRect = r;
+	   //g_screen->AddRect(mOldPositionRect);
+		//mOldPositionRect = r;
 	}
 }
 
@@ -273,76 +279,6 @@ int Entity::LoadCollisionFile(string file)
 	return 1;
 }
 
-void Entity::SetFlag(string flag, string value)
-{
-	flag = base64_encode(flag.c_str(), flag.length());
-	value = base64_encode(value.c_str(), value.length());
-	mFlags[flag] = value;
-}
-
-string Entity::GetFlag(string flag)
-{
-	flag = base64_encode(flag.c_str(), flag.length());
-	string value = mFlags[flag];
-	
-	if (value.empty())
-		return value;
-	
-	return base64_decode(value.c_str(), value.length());
-}
-
-void Entity::ClearFlag(string flag)
-{
-	flag = base64_encode(flag.c_str(), flag.length());
-	mFlags.erase(flag);
-}
-
-void Entity::LoadFlags(FILE* f)
-{
-	char buffer[255];
-	unsigned char c;
-	string key;
-	uShort total;
-	
-	// Read in a 2 byte uint counting how many flags we have.
-	fread(&total, sizeof(total), 1, f);
-	
-	for (int i = 0; i < total; ++i)
-	{
-		fread(&c, sizeof(c), 1, f); // string len
-		fread(&buffer, c, 1, f); //string
-		key = buffer;
-		
-		fread(&c, sizeof(c), 1, f); // string len
-		fread(&buffer, c, 1, f); //string
-		
-		mFlags[key].append(buffer, c);
-	}
-}
-
-// Save our entity flags to our main save file
-void Entity::SaveFlags(FILE* f)
-{
-	uShort size = mFlags.size();
-	unsigned char c;
-	
-	fwrite(&size, sizeof(size), 1, f);
-
-	if (size > 0)
-	{
-		for (std::map<string, string>::iterator it = mFlags.begin(); it != mFlags.end(); ++it) 
-		{
-			c = it->first.size();
-			fwrite(&c, sizeof(c), 1, f);
-			fwrite(it->first.c_str(), c, 1, f);
-			
-			c = it->second.size();
-			fwrite(&c, sizeof(c), 1, f);
-			fwrite(it->second.c_str(), c, 1, f);
-		}
-	}
-}
-
 /*	index - Index of the stack where our new value for the property should be */
 int Entity::LuaSetProp(lua_State* ls, string& prop, int index)
 {
@@ -383,5 +319,18 @@ void Entity::ClearActiveChatBubble()
 		mMap->RemoveEntity(mActiveChatBubble);
 		mActiveChatBubble = NULL;
 	}
+}
+
+void Entity::Say(string msg, bool bubble)
+{
+	if (bubble)
+	{
+		ChatBubble* cb = new ChatBubble(this, msg);
+		cb->mMap = mMap;
+		mMap->AddEntity(cb);
+	}
+
+    if (mMap && mMap->mChat)
+	   mMap->mChat->AddMessage(mName + ": " + msg);	
 }
 

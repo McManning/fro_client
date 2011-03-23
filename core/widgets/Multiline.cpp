@@ -88,7 +88,7 @@ void Multiline::Render()
 	{
 
 		int z = 0;
-		uShort height = GetNumberOfLinesVisible();
+		int height = GetNumberOfLinesVisible();
 		height *= (mFont->GetHeight());
 		height += mFont->GetHeight();
 
@@ -147,7 +147,7 @@ void Multiline::Render()
 
 void Multiline::Event(SDL_Event* event)
 {
-	sShort s;
+	int s;
 	string url;
 	switch (event->type)
 	{
@@ -171,9 +171,8 @@ void Multiline::Event(SDL_Event* event)
 			s = GetLineUnderXY(event->button.x, event->button.y);
 			if (s != -1)
 			{
-				mSelected = s;
-				if (mSelected >= mLines.size())
-					mSelected = mLines.size() - 1;
+				SetSelected(s);
+				
 				if (mClickedOnce)
 				{
 					if (event->button.button == SDL_BUTTON_LEFT)
@@ -209,9 +208,7 @@ void Multiline::Event(SDL_Event* event)
 					s = GetLineUnderXY(event->motion.x, event->motion.y);
 					if (s != -1)
 					{
-						mSelected = s;
-						if (mSelected >= mLines.size())
-							mSelected = mLines.size() - 1;
+						SetSelected(s);
 					}
 					FlagRender();
 				}
@@ -248,7 +245,7 @@ void Multiline::AddMessage(string msg)
 
 	if (!s.empty()) //we have a url
 	{
-		uShort start = msg.find(s, 0);
+		size_t start = msg.find(s, 0);
 		string url = "";
 
 		if (msg.find(" ", start)) //there's a space
@@ -266,7 +263,7 @@ void Multiline::AddMessage(string msg)
 	FlagRender();
 }
 
-void Multiline::SetLine(uShort line, string msg) //unwrapped multilines only
+void Multiline::SetLine(int line, string msg) //unwrapped multilines only
 {
 	if (line < mRawText.size() && line < mLines.size() && !mWrap)
 	{
@@ -294,7 +291,7 @@ void Multiline::RecalculateScrollbarMax()
 	}
 }
 
-void Multiline::SetWidth(uShort w) //move scrollbar and resplit all lines
+void Multiline::_setWidth(int w) //move scrollbar and resplit all lines
 {
 	if (!mScrollbar) return;
 
@@ -309,7 +306,7 @@ void Multiline::SetWidth(uShort w) //move scrollbar and resplit all lines
 	ReflowLines(w - mScrollbar->Width() - MULTILINE_LEFT_BUFFER - MULTILINE_RIGHT_BUFFER);
 }
 
-void Multiline::SetHeight(uShort h) //cloned from List
+void Multiline::_setHeight(int h) 
 {
 	if (!mScrollbar) return; //TODO: idk what to do here.
 
@@ -331,14 +328,14 @@ void Multiline::SetHeight(uShort h) //cloned from List
 
 //erase all line surfaces and re-splits the raw data into the lines vector (a lot of processing here...)
 //TODO: This. A lot of lines will LAG LIKE HELL.
-void Multiline::ReflowLines(uShort w)
+void Multiline::ReflowLines(int w)
 {
 	//split the raw data into lines based on \n
 	mMaxTextWidth = w;
 
 	mLines.clear();
 
-	for (uShort i = 0; i < mRawText.size(); i++)
+	for (int i = 0; i < mRawText.size(); i++)
 	{
 		SplitLines(mRawText.at(i), w);
 	}
@@ -348,7 +345,7 @@ void Multiline::ReflowLines(uShort w)
 }
 
 //Cuts up this line adds to lines list as multiple lines - Note: This does calculate in different character widths
-void Multiline::SplitLines(string line, uShort maxWidth)
+void Multiline::SplitLines(string line, int maxWidth)
 {
 	vString v;
 	string lastColor;
@@ -374,7 +371,7 @@ void Multiline::SplitLines(string line, uShort maxWidth)
 }
 
 //return number of lines visible
-uShort Multiline::GetNumberOfLinesVisible()
+int Multiline::GetNumberOfLinesVisible()
 {
 	if (!mFont)
 		return 1;
@@ -386,7 +383,7 @@ void Multiline::_addLine(string msg)
 {
 	mLines.push_back(msg);
 
-	uShort linesVisible = GetNumberOfLinesVisible();
+	int linesVisible = GetNumberOfLinesVisible();
 
 	if (mLines.size() > MULTILINE_MAX_LINES)
 		mLines.erase(mLines.begin());
@@ -406,7 +403,7 @@ void Multiline::_addLine(string msg)
 
 void Multiline::ScrollUp() //cloned from List
 {
-	uShort linesVisible = GetNumberOfLinesVisible();
+	int linesVisible = GetNumberOfLinesVisible();
 
 	if (mBottomLine > linesVisible)
 	{
@@ -420,7 +417,7 @@ void Multiline::ScrollUp() //cloned from List
 
 void Multiline::ScrollDown() //cloned from List
 {
-	uShort linesVisible = GetNumberOfLinesVisible();
+	int linesVisible = GetNumberOfLinesVisible();
 
 	if (mBottomLine < mLines.size())
 	{
@@ -445,7 +442,7 @@ void Multiline::Clear()
 	FlagRender();
 }
 
-sShort Multiline::GetLineUnderXY(sShort x, sShort y) //TODO: FUCKING CLEAN THIS SHIT UP
+int Multiline::GetLineUnderXY(int x, int y) //TODO: FUCKING CLEAN THIS SHIT UP
 {
 	if (!mFont || mLines.empty()) return -1;
 
@@ -481,7 +478,7 @@ sShort Multiline::GetLineUnderXY(sShort x, sShort y) //TODO: FUCKING CLEAN THIS 
 
 	}
 
-	uShort z = 1;
+	int z = 1;
 	for (int i = topLine; i < mBottomLine; i++)
 	{
 		if (isPointInRect(rect(r.x + MULTILINE_LEFT_BUFFER,
@@ -574,7 +571,6 @@ string Multiline::GetUrl(int line)
 			}
 		}
 		
-		printf("Final Url: %s\n", url.c_str());
 		url = stripCodes(url); //erase any \c that may have been inserted
 		
 		//now we have a url, however it may have some shit tagged on (from the next line)
@@ -594,7 +590,7 @@ string Multiline::GetUrl(int line)
 }
 
 //TODO: eraseable while wrapping?
-void Multiline::EraseLine(uShort line)
+void Multiline::EraseLine(int line)
 {
 	if (line >= mLines.size() || mWrap) return;
 
@@ -603,22 +599,21 @@ void Multiline::EraseLine(uShort line)
 
 	RecalculateScrollbarMax();
 
-	if (mSelected >= mLines.size())
-		mSelected = mLines.size() - 1;
-
+	SetSelected(mSelected); //shift if mSelected was the deleted down
+	
 //	mScrollbar->SetVisible(GetNumberOfLinesVisible() >= mLines.size());
 
 	FlagRender();
 }
 
-void Multiline::SetTopLine(uShort val)
+void Multiline::SetTopLine(int val)
 {
 	mScrollbar->SetValue(val); //calls below version
 }
 
-void Multiline::_setTopLine(uShort val)
+void Multiline::_setTopLine(int val)
 {
-	uShort linesVisible = GetNumberOfLinesVisible();
+	int linesVisible = GetNumberOfLinesVisible();
 	if (mBottomLine < linesVisible) return; //don't do
 
 	mBottomLine = val + linesVisible;
@@ -635,8 +630,18 @@ void Multiline::SetPosition(rect r)
 	FlagRender(); //for old position
 	mPosition.x = r.x;
 	mPosition.y = r.y;
-	SetWidth(r.w);
-	SetHeight(r.h);
+	_setWidth(r.w);
+	_setHeight(r.h);
 	mScrollbar->SetPosition( rect(Width() - mScrollbar->Width(), 0, mScrollbar->Width(), Height()) );
 	FlagRender(); //for new position
 }
+
+void Multiline::SetSelected(int line)
+{
+	mSelected = line;
+	if (mSelected >= mLines.size())
+		mSelected = mLines.size() - 1;
+		
+	FlagRender();
+}
+

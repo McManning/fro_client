@@ -5,9 +5,9 @@
 
 #include "GameManager.h"
 //#include "Achievements.h"
-#include "IrcNetListeners.h"
+#include "../net/IrcNetListeners.h"
 #include "CollisionBlob.h"
-#include "../map/BasicMap.h"
+#include "../map/Map.h"
 #include "../entity/LocalActor.h"
 #include "../entity/ExplodingEntity.h"
 #include "../entity/Avatar.h"
@@ -24,18 +24,7 @@
 #include "../core/io/FileIO.h"
 
 #include "../interface/LoginDialog.h"
-#include "../interface/Inventory.h"
 #include "../interface/UserList.h"
-#include "../interface/AvatarFavoritesDialog.h"
-#include "../interface/OptionsDialog.h"
-//#include "../interface/MyAchievements.h"
-#include "../interface/AvatarCreator.h"
-//#include "../interface/MiniMenu.h"
-//#include "../interface/LunemParty.h"
-//#include "../interface/WorldsViewer.h"
-//#include "../interface/ScreenText.h"
-
-//#include "../backpack/Backpack.h"
 
 GameManager* game;
 
@@ -153,6 +142,11 @@ void callback_consoleScreenDraw(Console* c, string s) //screendraw
 	Screen::Instance()->mNoDraw = !Screen::Instance()->mNoDraw;
 }
 
+void callback_consoleDrawRects(Console* c, string s) //drawrects
+{
+	Screen::Instance()->mDrawOptimizedRects = !Screen::Instance()->mDrawOptimizedRects;
+}
+
 void callback_consoleMakeCol(Console* c, string s) // makecol filename
 {
 	vString v;
@@ -246,16 +240,6 @@ GameManager::GameManager()
 						NULL, 
 						this);
 
-	PRINT("[GM] Loading Inventory");
-
-	//mParty = new LunemParty;
-	//mParty->SetVisible(false);
-
-	PRINT("[GM] Loading HUD");
-	_buildHud();
-	
-	ResizeChildren();
-
 	PRINT("[GM] Bringing up Login");
 
 	new LoginDialog();
@@ -270,6 +254,7 @@ GameManager::GameManager()
 	console->HookCommand("avatarout", callback_consoleOutputAvatar);
 	console->HookCommand("test", callback_consoleTestMap);
 	console->HookCommand("screendraw", callback_consoleScreenDraw);
+	console->HookCommand("drawrects", callback_consoleDrawRects);
 	console->HookCommand("makecol", callback_consoleMakeCol);
 	console->HookCommand("player_flags", callback_consolePlayerFlags);
 }
@@ -280,9 +265,6 @@ GameManager::~GameManager()
 	
 	UnloadMap();
 
-	TiXmlElement* e = mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
-	mPlayerData.SetParamRect(e, "position", mChat->GetPosition());
-	
 	PRINT("~GameManager 2");
 
 	//erase all entities before it gets deleted, so we can unlink localactor
@@ -323,92 +305,6 @@ void GameManager::ResizeChildren()
 		mMap->SetPosition( rect(0, 0, Width(), Height()) );
 
 	Frame::ResizeChildren();
-}
-
-void callback_gameHudSubButton(Button* b)
-{
-	switch (b->mId.at(0))
-	{
-		case 'a': //avatar favorites
-			if (!gui->Get("avyfavs"))
-				new AvatarFavorites();
-			break;
-		case 'o': 
-			if (!gui->Get("optionsdialog"))
-			{
-				OptionsDialog* o = new OptionsDialog();
-				o->DemandFocus(true);
-			}
-			break;
-		/*case 'i': //inventory
-			ASSERT(inventory);
-			inventory->SetVisible(true);
-			inventory->MoveToTop();
-			break;
-		case 'c': //achievements
-			if (!gui->Get("achievements"))
-				new MyAchievements();
-			break;*/
-		case 'u': //userlist
-			if (!gui->Get("userlist"))
-				new UserList();
-			break;
-		/*case 'p': //party
-			game->mParty->SetVisible(true);
-			game->mParty->SetMenuMode(ActorStats::PARTY_VIEW_MENU);
-			game->mParty->MoveToTop();
-			break;*/
-		default: break;
-	}
-}
-
-void GameManager::_buildHud()
-{
-	string file = "assets/hud_controls.png";
-	uShort x = 0, sx = 0;
-	Button* b;
-
-	mHud = new Frame(this, "", rect(12,12,0,0));
-
-	b = new Button(mHud, "o", rect(x,0,35,35), "", callback_gameHudSubButton);
-		b->mHoverText = "Options";
-		b->SetImage("assets/hud/options.png");
-	x += 40;
-	sx += 35;
-
-	b = new Button(mHud, "u", rect(x,0,35,35), "", callback_gameHudSubButton);
-		b->mHoverText = "Userlist";
-		b->SetImage("assets/hud/userlist.png");
-	x += 40;
-	sx += 35;
-
-	/*b = new Button(mHud, "c", rect(x,0,35,35), "", callback_gameHudSubButton);
-		b->mHoverText = "My Achievements";
-		b->SetImage("assets/hud/achievements.png");
-	x += 40;
-	sx += 35;*/
-
-	b = new Button(mHud, "a", rect(x,0,35,35), "", callback_gameHudSubButton);
-		b->mHoverText = "My Avatars";
-		b->SetImage("assets/hud/avatars.png");
-	x += 40;
-	sx += 35;
-/*	
-	b = new Button(mHud, "i", rect(x,0,35,35), "", callback_gameHudSubButton);
-		b->mHoverText = "My Backpack";
-		b->SetImage("assets/hud/inventory.png");
-	x += 40;
-	sx += 35;
-	
-	b = new Button(mHud, "p", rect(x,0,35,35), "", callback_gameHudSubButton);
-		b->mHoverText = "My Party";
-		b->SetImage("assets/hud/party.png");
-	x += 40;
-	sx += 35;
-*/
-	
-	
-	mHud->SetSize(x, 35);
 }
 
 void GameManager::LoadTestWorld(string luafile)
@@ -542,10 +438,13 @@ void GameManager::Event(SDL_Event* event)
 	
 	if (!gui->hasKeyFocus || gui->hasKeyFocus == mMap)
 	{
-		if (mGameMode != MODE_ACTION)
-			mChat->mInput->SetKeyFocus();
-		else if (mMap)
-			mMap->SetKeyFocus(true);
+        if (mMap)
+        { //TODO: Better redirection of mChat's focus
+    		if (mGameMode != MODE_ACTION)
+    			mMap->mChat->mInput->SetKeyFocus();
+    		else if (mMap)
+    			mMap->SetKeyFocus(true);
+        }
 	}
 }
 
@@ -744,16 +643,19 @@ void GameManager::ToggleGameMode(gameMode mode)
 	
 	Console* c = GetChat();
 	
-	if (mode == MODE_ACTION)
+	if (c)
 	{
-		c->mInput->mReadOnly = true;
-		c->mInput->SetText("Hit TAB to enable or disable chat mode");
-	}
-	else if (mChat->IsVisible()) //has to be visible for chat mode
-	{
-		c->mInput->mReadOnly = false;
-		c->mInput->Clear();
-	}
+    	if (mode == MODE_ACTION)
+    	{
+    		c->mInput->mReadOnly = true;
+    		c->mInput->SetText("Hit TAB to toggle chat mode");
+    	}
+    	else if (c->IsVisible()) //has to be visible for chat mode
+    	{
+    		c->mInput->mReadOnly = false;
+    		c->mInput->Clear();
+    	}
+    }
 	
 	// Reset our speed
 	if (mPlayer->GetSpeed() == SPEED_RUN)
@@ -772,37 +674,40 @@ void GameManager::ShowInfoBar(string id, string msg, int duration, string imageF
 	//if (mInfoBar)
 //		mInfoBar->Die();
 
-//	mInfoBar 
-	Frame* f = new Frame(this, id, rect(175, 0, 450, 30), "", false, false, false, true);
-		f->mBoxRender = false;
-		f->SetImage("assets/infobar.png");
-	Label* l = new Label(f, "", rect(0, 8), msg);
-		l->mFontColor = color(255, 255, 255);
-		
-		r = l->GetPosition();
-		r.x = f->Width()/2 - r.w/2;
-		if (!imageFile.empty())
-			r.x += 25;
-		r.y = f->Height()/2 - r.h/2 + 2;
-		l->SetPosition( r );
-	
-	if (!imageFile.empty())
-	{
-		r.x -= 25;
-		r.w = 20;
-		r.h = 20;
-		r.y = f->Height()/2 - 8;
-		
-		// Add a button that just acts as an image
-		Button* b = new Button(f, "", r, "", NULL);
-			b->mUsesImageOffsets = false;
-			b->SetImage(imageFile);
-	}
-	
-	timers->Add("", duration, false, timer_DestroyInfoBar, NULL, f);
+    if (mMap)
+    {
+    	Frame* f = new Frame(mMap, id, rect(175, 0, 450, 30), "", false, false, false, true);
+    		f->mBoxRender = false;
+    		f->SetImage("assets/infobar.png");
+    		
+    	Label* l = new Label(f, "", rect(0, 8), msg);
+    		l->mFontColor = color(255, 255, 255);
+    		
+    		r = l->GetPosition();
+    		r.x = f->Width()/2 - r.w/2;
+    		if (!imageFile.empty())
+    			r.x += 25;
+    		r.y = f->Height()/2 - r.h/2 + 2;
+    		l->SetPosition( r );
+    	
+    	if (!imageFile.empty())
+    	{
+    		r.x -= 25;
+    		r.w = 20;
+    		r.h = 20;
+    		r.y = f->Height()/2 - 8;
+    		
+    		// Add a button that just acts as an image
+    		Button* b = new Button(f, "", r, "", NULL);
+    			b->mUsesImageOffsets = false;
+    			b->SetImage(imageFile);
+    	}
+    	
+    	timers->Add("", duration, false, timer_DestroyInfoBar, NULL, f);
+    }
 }
 
-void GameManager::ToggleHud(bool visible)
+void GameManager::ToggleHud(bool visible) // TODO: Eliminate this function?
 {
 	//mChat->SetVisible(visible);
 	if (mMap && mMap->mHud)
@@ -824,3 +729,4 @@ Console* GameManager::GetChat()
        
     return NULL;   
 }
+
