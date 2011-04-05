@@ -17,7 +17,7 @@ void callback_chatNoCommand(Console* c, string s)
 		if (game->mPlayer->GetAvatar())
 		{
 			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_MINI);
-			game->mPlayer->NetSendAvatarMod();
+			netSendAvatarMod();
 			game->mPlayer->UpdateCollisionAndOrigin();
 		}
 	}
@@ -26,7 +26,7 @@ void callback_chatNoCommand(Console* c, string s)
 		if (game->mPlayer->GetAvatar())
 		{
 			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_NONE);
-			game->mPlayer->NetSendAvatarMod();
+			netSendAvatarMod();
 			game->mPlayer->UpdateCollisionAndOrigin();
 		}
 	}
@@ -35,7 +35,7 @@ void callback_chatNoCommand(Console* c, string s)
 		if (game->mPlayer->GetAvatar())
 		{
 			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_GHOST);
-			game->mPlayer->NetSendAvatarMod();
+			netSendAvatarMod();
 			game->mPlayer->UpdateCollisionAndOrigin();
 		}
 	}
@@ -45,7 +45,7 @@ void callback_chatNoCommand(Console* c, string s)
 		if (game->mPlayer->GetAvatar())
 		{
 			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_GIANT);
-			game->mPlayer->NetSendAvatarMod();
+			netSendAvatarMod();
 			game->mPlayer->UpdateCollisionAndOrigin();
 		}
 	}

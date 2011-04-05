@@ -5,17 +5,11 @@
 EntityManager::EntityManager()
 {
 	mNeedToResort = false;
-	
-	mLoadingAvatarIcon = resman->LoadImg("assets/avatarloadanim.png");
-	mLoadingAvatarIcon->ConvertToHorizontalAnimation( rect(0, 0, 46, 40), 100 );
-
 }
 
 EntityManager::~EntityManager()
 {
 	FlushEntities();
-	
-	resman->Unload(mLoadingAvatarIcon);
 }
 
 bool EntityManager::RemoveEntity(Entity* e)

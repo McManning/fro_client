@@ -1,7 +1,7 @@
 [Project]
 Folder=../entity
 Name=fro
-UnitCount=167
+UnitCount=171
 Type=0
 Ver=1
 ObjFiles=
@@ -474,7 +474,7 @@ BuildCmd=
 Major=1
 Minor=4
 Release=1
-Build=2367
+Build=2512
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1309,9 +1309,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit170]
-FileName=..\game\CheckIn.cpp
+FileName=..\interface\WorldViewer.cpp
 CompileCpp=1
-Folder=../game
+Folder=../interface
 Compile=1
 Link=1
 Priority=1000
@@ -1319,9 +1319,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit171]
-FileName=..\game\CheckIn.h
+FileName=..\interface\WorldViewer.h
 CompileCpp=1
-Folder=../game
+Folder=../interface
 Compile=1
 Link=1
 Priority=1000
@@ -1649,9 +1649,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit169]
-FileName=..\game\CheckIn.h
+FileName=..\core\widgets\WidgetList.h
 CompileCpp=1
-Folder=../game
+Folder=../core/widgets
 Compile=1
 Link=1
 Priority=1000
@@ -1739,9 +1739,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit168]
-FileName=..\game\CheckIn.cpp
+FileName=..\core\widgets\WidgetList.cpp
 CompileCpp=1
-Folder=../game
+Folder=../core/widgets
 Compile=1
 Link=1
 Priority=1000

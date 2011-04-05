@@ -66,8 +66,6 @@ class EntityManager
 	*/
 	std::vector<Entity*> mEntities;
 
-	Image* mLoadingAvatarIcon;
-
   private:
 	
 	bool mNeedToResort;

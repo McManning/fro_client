@@ -92,18 +92,21 @@ void Entity::SetPosition(point2d position)
 		position.y = position.y * 8;
 	}
 	
-	//If this is the first time we call SetPosition, line up previous with current.
-	if (isDefaultPoint2d(mPosition))
-		mPreviousPosition = position;
-	else
-		mPreviousPosition = mPosition;
-
-	AddPositionRectForUpdate(); // Update old position
-	mPosition = position;	
-	AddPositionRectForUpdate(); // Update new position
+	if (position.x != mPosition.x || position.y != mPosition.y)
+	{	
+		if (mMap && position.y != mPosition.y)
+			mMap->QueueEntityResort();
+		
+		//If this is the first time we call SetPosition, line up previous with current.
+		if (isDefaultPoint2d(mPosition))
+			mPreviousPosition = position;
+		else
+			mPreviousPosition = mPosition;
 	
-	if (mMap)
-		mMap->QueueEntityResort();
+		AddPositionRectForUpdate(); // Update old position
+		mPosition = position;	
+		AddPositionRectForUpdate(); // Update new position
+	}
 }
 
 //	Will add the bounding rect of this entity to the screen's update manager

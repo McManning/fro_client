@@ -124,17 +124,17 @@ void StaticObject::Rotozoom(double degree, double zoom)
 	AddPositionRectForUpdate();
 }
 
-void StaticObject::LoadImage(string file)
+bool StaticObject::LoadImage(string file)
 {
 	Image* img = resman->LoadImg(file);
 	if (!img)
 	{
 		console->AddMessage(" *\\c900 StaticObject:" + mId + " Failed to load " + file);
+		return false;
 	}
-	else
-	{
-        SetImage(img);   
-    }
+	
+	SetImage(img);   
+    return true;
 }
 
 void StaticObject::SetImage(Image* img)
@@ -179,6 +179,17 @@ void StaticObject::SetWarp(string id, string objectName)
 														NULL, this);
 }
 
+void StaticObject::ToHorizontalAnimation(int frameWidth, int delay)
+{
+	if (mImage)
+		mImage->ConvertToHorizontalAnimation(rect(0, 0, frameWidth, mImage->Height()), delay);
+	
+    if (mOriginalImage && mOriginalImage != mImage)
+		mOriginalImage->ConvertToHorizontalAnimation(rect(0, 0, frameWidth, mOriginalImage->Height()), delay);
+	
+	PlayAnimation();   
+}
+
 // Called by the timer
 bool StaticObject::_animate()
 {
@@ -204,25 +215,26 @@ bool StaticObject::_animate()
 void StaticObject::PlayAnimation()
 {
 	Image* img = GetImage();
-	ASSERT(img);
-	
-	img->Reset();
-	
-	SDL_Frame* f = img->Frame();
-	ASSERT(f);
-	
-	if (!mAnimationTimer)
+	if (img)
 	{
-		// only add if there's a reason to animate
-		if (img->mImage->CountFrames() > 1)
-			mAnimationTimer = timers->Add("", f->delay, false, timer_StaticObjectAnimate, NULL, this);
+		img->Reset();
+		
+		SDL_Frame* f = img->Frame();
+		ASSERT(f);
+		
+		if (!mAnimationTimer)
+		{
+			// only add if there's a reason to animate
+			if (img->mImage->CountFrames() > 1)
+				mAnimationTimer = timers->Add("", f->delay, false, timer_StaticObjectAnimate, NULL, this);
+		}
+		else
+		{
+			mAnimationTimer->interval = f->delay;
+		}
+		
+		AddPositionRectForUpdate();
 	}
-	else
-	{
-		mAnimationTimer->interval = f->delay;
-	}
-	
-	AddPositionRectForUpdate();
 }
 
 void StaticObject::StopAnimation()

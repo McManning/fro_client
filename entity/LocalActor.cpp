@@ -16,7 +16,6 @@ uShort timer_playerActionBufferSend(timer* t, uLong ms)
 	if (p && p == game->mPlayer && game->mMap)
 	{
 		p->mNeedsToSendBuffer = true;
-		//p->NetSendActionBuffer();
 		t->interval = p->mActionBufferSendDelayMs; //readjust if necessary
 	}
 	return TIMER_CONTINUE;
@@ -88,10 +87,20 @@ void LocalActor::_checkInput()
 	if (!IsMoving() && mNeedsToSendBuffer)
 	{
 		mNeedsToSendBuffer = false;	
-		//mLastSavedPosition = mPosition;
-		//mLastSavedSpeed = mSpeed;
 
-		NetSendActionBuffer();
+		if (!mOutputActionBuffer.empty())
+		{
+			netSendActionBuffer();
+					
+			mLastSavedPosition.x = mDestination.x;
+			mLastSavedPosition.y = mDestination.y;
+		
+			mOutputActionBuffer.clear();
+		
+			//So we don't prematurely send again after a forced sending
+			if (mActionBufferTimer)
+				mActionBufferTimer->lastMs = gui->GetTick();
+		}
 	}
 	
 	if (game->mGameMode != GameManager::MODE_ACTION)
@@ -242,34 +251,35 @@ bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort
 // Give a more verbose error message
 void LocalActor::AvatarError(int err)
 {
-    //game->GetChat()->AddMessage("ADSG!");
-	if (!game || !game->GetChat())
-		return;
-		
-	string msg;
-	string file;
-	
-	if (mLoadingAvatar)
-		file = GetFilenameFromUrl(mLoadingAvatar->mUrl);
-	
-	switch (err)
+    string msg;
+    string file;
+    	
+	if (game && game->GetChat())
 	{
-		case Actor::AVYERR_LOADFAIL:
-			msg = "\\c900 [Avatar Error] Failed to download " + file;
-			break;
-		case Actor::AVYERR_BADIMAGE:
-			msg = "\\c900 [Avatar Error] Could not read format of " + file;
-			break;
-		case Actor::AVYERR_SIZE:
-			msg = "\\c900 [Avatar Error] Invalid frame sizes of " + file;
-			break;
-		case Actor::AVYERR_CONVERT:
-			msg = "\\c900 [Avatar Error] Could not convert " + file + ". " + mLoadingAvatar->mError;
-			break;
-		default: break;
-	}
+    	if (mLoadingAvatar)
+    		file = GetFilenameFromUrl(mLoadingAvatar->mUrl);
+    	
+    	switch (err)
+    	{
+    		case Actor::AVYERR_LOADFAIL:
+    			msg = "\\c900 [Avatar Error] Failed to download " + file;
+    			break;
+    		case Actor::AVYERR_BADIMAGE:
+    			msg = "\\c900 [Avatar Error] Could not read format of " + file;
+    			break;
+    		case Actor::AVYERR_SIZE:
+    			msg = "\\c900 [Avatar Error] Invalid frame sizes of " + file;
+    			break;
+    		case Actor::AVYERR_CONVERT:
+    			msg = "\\c900 [Avatar Error] Could not convert " + file + ". " + mLoadingAvatar->mError;
+    			break;
+    		default: break;
+    	}
+    	
+    	game->GetChat()->AddMessage(msg);
+    }
 	
-	game->GetChat()->AddMessage(msg);
+	Actor::AvatarError(err);
 }
 
 
@@ -282,93 +292,6 @@ void LocalActor::AddToActionBuffer(string data)
 {
 	mActionBuffer += data;
 	mOutputActionBuffer += data;
-}
-
-const int NMREPLY_RESET_MS = 3*1000;
-
-void LocalActor::NetSendState(string targetNick, string header) //header VERSION $id #x #y #dir #action Avatar Stuff
-{
-	if (!game->mNet || game->mNet->GetState() != ONCHANNEL)
-		return;
-			
-	if (header == "nm")
-	{
-		if ( timers->Find("resetNm") )
-			return;
-
-		timers->Add("resetNm", NMREPLY_RESET_MS, false, NULL, NULL);
-	}
-	
-	DataPacket data(header);
-	data.SetKey( game->mNet->GetEncryptionKey() );
-	
-	data.WriteString(game->mNet->GetChannel()->mId);
-	data.WriteString(mName);
-	data.WriteInt(mPosition.x);
-	data.WriteInt(mPosition.y);
-	data.WriteChar(mDirection);
-	data.WriteChar(mAction);
-
-	//if our avatar loaded but has yet to swap, swap it to send properly.
-	CheckLoadingAvatar();
-
-	//Add our avatar to the outbound message
-	if (mAvatar)
-		mAvatar->Serialize(data);
-	else if (mLoadingAvatar)
-		mLoadingAvatar->Serialize(data);
-
-	if (targetNick.empty())
-		game->mNet->MessageToChannel( data.ToString() );
-	else
-		game->mNet->Privmsg( targetNick, data.ToString() );
-}
-
-void LocalActor::NetSendActionBuffer() //mov #x #y $buffer
-{
-	if (mOutputActionBuffer.empty()) return;
-	
-	DEBUGOUT("Sending: (" + its(mLastSavedPosition.x) + "," + its(mLastSavedPosition.y)
-				+ ") " + mOutputActionBuffer);
-			
-	// add position correction to the end of the buffer
-	mOutputActionBuffer += 'c' + its(mPosition.x) + '.' + its(mPosition.y) + '.';
-						
-	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
-	{
-		DataPacket data("mov");
-		data.SetKey( game->mNet->GetEncryptionKey() );
-	
-		data.WriteInt(mLastSavedPosition.x);
-		data.WriteInt(mLastSavedPosition.y);
-		
-		//Appends speed in the beginning in order to keep speed synced more or less
-		data.WriteString( compressActionBuffer( ((mSpeed == SPEED_WALK) ? 'w' : 'r') + mOutputActionBuffer ) );
-	
-		game->mNet->MessageToChannel( data.ToString() );
-	}
-	
-	mLastSavedPosition.x = mDestination.x;
-	mLastSavedPosition.y = mDestination.y;
-
-	mOutputActionBuffer.clear();
-
-	//So we don't prematurely send again after a forced sending
-	if (mActionBufferTimer)
-		mActionBufferTimer->lastMs = gui->GetTick();
-}
-
-void LocalActor::NetSendAvatarMod()
-{
-	if (!GetAvatar() || !game->mNet || game->mNet->GetState() != ONCHANNEL)
-		return;
-	
-	DataPacket data("mod");
-	data.SetKey( game->mNet->GetEncryptionKey() );
-	
-	data.WriteChar(GetAvatar()->mModifier);
-	
-	game->mNet->MessageToChannel( data.ToString() );
 }
 
 // Load our entity flags from our main save file
@@ -445,6 +368,13 @@ int LocalActor::LuaSetProp(lua_State* ls, string& prop, int index)
 	if (prop == "locked") mIsLocked = lua_toboolean(ls, index);
 	else if (prop == "avylocked") mCanChangeAvatar = lua_toboolean(ls, index);
 	else if (prop == "bufferdelay") mActionBufferSendDelayMs = (int)lua_tonumber(ls, index);
+	else if (prop == "mod" && GetAvatar()) // override the mod prop to send to the network when changed
+	{
+		if ( GetAvatar()->Modify( (byte)lua_tonumber(ls, index) ) )
+		{
+			netSendAvatarMod();
+		}
+	}
 	else return Actor::LuaSetProp(ls, prop, index);
 	
 	return 1;

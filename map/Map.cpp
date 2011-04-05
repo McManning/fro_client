@@ -16,6 +16,7 @@
 #include "../interface/UserList.h"
 #include "../interface/OptionsDialog.h"
 #include "../interface/AvatarCreator.h"
+#include "../interface/WorldViewer.h"
 
 /*	TODO: Relocate these callbacks for the remote player menu */
 
@@ -149,8 +150,8 @@ void Map::Render()
 {
     Image* scr = Screen::Instance();
 	rect r = GetScreenPosition();
-	
-	scr->SetClip(r);
+
+	scr->PushClip(r);
 	
 	//fill with background color
 	scr->DrawRect(r, mBackground);
@@ -159,7 +160,7 @@ void Map::Render()
 
 	Frame::Render();
 		
-	scr->SetClip();
+	scr->PopClip();
 }
 
 void Map::_renderEntities()
@@ -257,11 +258,10 @@ void callback_hudSubButton(Button* b)
 			if (!gui->Get("userlist"))
 				new UserList();
 			break;
-		/*case 'p': //party
-			game->mParty->SetVisible(true);
-			game->mParty->SetMenuMode(ActorStats::PARTY_VIEW_MENU);
-			game->mParty->MoveToTop();
-			break;*/
+		case 'w': //world viewer
+			if (!gui->Get("worldviewer"))
+				new WorldViewer();
+			break;
 		default: break;
 	}
 }
@@ -302,13 +302,13 @@ void Map::CreateHud()
 		b->SetImage("assets/hud/inventory.png");
 	x += 40;
 	sx += 35;
-	
-	b = new Button(mHud, "p", rect(x,0,35,35), "", callback_hudSubButton);
-		b->mHoverText = "My Party";
-		b->SetImage("assets/hud/party.png");
+*/	
+	b = new Button(mHud, "w", rect(x,0,35,35), "", callback_hudSubButton);
+		b->mHoverText = "World Viewer";
+		b->SetImage("assets/hud/worldviewer.png");
 	x += 40;
 	sx += 35;
-*/
+
 
 	mHud->SetSize(x, 35);
 }

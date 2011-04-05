@@ -265,6 +265,7 @@ void DownloadManager::Process()
 			ProcessMatchingWaitingDownloads(mCompleted.at(i));
 	
 			delete mCompleted.at(i);
+			mCompleted.at(i) = NULL;
 		}
 	}
 	mCompleted.clear(); //Clear all completed downloads
@@ -337,7 +338,7 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 	buildDirectoryTree(file);
 	
 	// if we're already downloading this file, store elsewhere
-	if (IsUrlQueued(url))
+	if (IsUrlQueued(data->url))
 	{
 		mWaiting.push_back(data);
 	}
@@ -361,7 +362,7 @@ bool DownloadManager::IsUrlQueued(const string& url)
 	
 	for (i = 0; i < mCompleted.size(); i++)
 	{
-		if (mCompleted.at(i)->url == url)
+		if (mCompleted.at(i) && mCompleted.at(i)->url == url)
 		{
 			result = true;
 			break;
@@ -372,7 +373,7 @@ bool DownloadManager::IsUrlQueued(const string& url)
 	{
 		for (i = 0; i < mQueued.size(); i++)
 		{
-			if (mQueued.at(i)->url == url)
+			if (mQueued.at(i) && mQueued.at(i)->url == url)
 			{
 				result = true;
 				break;

@@ -18,24 +18,35 @@
 #include "../game/GameManager.h"
 #include "../map/Map.h"
 
-/*	Calls Build() in the lua script. Return 0 on error */
-int mapLib_luaCallBuild(lua_State* ls)
+/*	Calls __BUILD() in the lua script. Return 0 on error */
+int mapLib_luaCallBuildWorld(lua_State* ls, bool testMode, string& worldName, std::vector<string>& reslist)
 {
-	lua_getglobal(ls, "Build");
+	lua_getglobal(ls, "__MAIN_BUILD");
 
 	//if there isn't a function at the top of the stack, we failed to find it
 	if (!lua_isfunction(ls, -1))
 	{
-		console->AddMessage("\\c900 * LUA Build() Not Found");
+		console->AddMessage("\\c900 * LUA __MAIN_BUILD Not Found");
 		return 0;
 	}
 
-	//What should be passed? lua_pushstring(ls, msg.c_str()); //first argument
+	lua_pushboolean(ls, testMode); // first parameter: test mode boolean
+	lua_pushstring(ls, worldName.c_str()); // second parameter: world id string
+
+	//Convert our std::vector to a lua table as the third parameter
+	lua_newtable(ls);
+	int top = lua_gettop(ls);
+	for (int i = 0; i < reslist.size(); ++i)
+	{
+		lua_pushnumber(ls, i);
+		lua_pushstring(ls, reslist.at(i).c_str());
+		lua_settable(ls, top);	
+	}
 
 	int result = 1;
-	if (lua_pcall(ls, 0, 1, 0) != 0) // result = Build(), return of 0 indicates error.
+	if (lua_pcall(ls, 3, 1, 0) != 0) // return of 0 indicates error.
 	{
-		console->AddMessage("\\c900 * LUA [Build] " + string(lua_tostring(ls, -1)));
+		console->AddMessage("\\c900 * LUA [__MAIN_BUILD] " + string(lua_tostring(ls, -1)));
 		result = 0;
 	}
 	else
@@ -54,19 +65,19 @@ int mapLib_luaCallBuild(lua_State* ls)
 /*	Calls Display() in the lua script when the map has been loaded fully and displayed onscreen */
 void mapLib_CallDisplay(lua_State* ls)
 {
-	lua_getglobal(ls, "Display");
+	lua_getglobal(ls, "__MAIN_DISPLAY");
 	
 	if (lua_isfunction(ls, -1) && lua_pcall(ls, 0, 0, 0) != 0)
-		console->AddMessage("\\c900 * LUA [Display] " + string(lua_tostring(ls, -1)));
+		console->AddMessage("\\c900 * LUA [__MAIN_DISPLAY] " + string(lua_tostring(ls, -1)));
 }
 
 /*	Calls Destroy() in the lua script when the script is being unloaded. */
 void mapLib_CallDestroy(lua_State* ls)
 {
-	lua_getglobal(ls, "Destroy");
+	lua_getglobal(ls, "__MAIN_DESTROY");
 	
 	if (lua_isfunction(ls, -1) && lua_pcall(ls, 0, 0, 0) != 0)
-		console->AddMessage("\\c900 * LUA [Destroy] " + string(lua_tostring(ls, -1)));
+		console->AddMessage("\\c900 * LUA [__MAIN_DESTROY] " + string(lua_tostring(ls, -1)));
 }
 
 /*	Called in WorldLoader if the load fails, or ~Map when the map is destroyed */

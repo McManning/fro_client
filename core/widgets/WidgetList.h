@@ -13,11 +13,13 @@ class WidgetList : public Frame
 	
 	void UpdateChildrenPositions();
 		
+	int GetMaxChildWidth();
+	
 	// Overriden from Widget
 	bool Add(Widget* child);
 	bool Remove(Widget* child, bool deleteClass);
 	void RemoveAll();
-	
+
 	Scrollbar* mScroller;
 };
 

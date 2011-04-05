@@ -176,7 +176,6 @@ Input::~Input()
 void Input::Render() 
 {
 	Image* scr = Screen::Instance();
-	rect oldclip;
 	rect r = GetScreenPosition();
 
 	if (mNeedUpdate) { //rerender text if necessary
@@ -185,11 +184,11 @@ void Input::Render()
 	}
 
 	//Do a little bit of calculating
-	if (gui->GetTick() > mLastBlink && !mReadOnly) 
+	/*if (gui->GetTick() > mLastBlink && !mReadOnly && IsActive()) 
 	{
 		mLastBlink = gui->GetTick() + 600;
 		mDrawCaret = !mDrawCaret;
-	}
+	}*/
 	
 	if (!HasKeyFocus() && mSelectionStart != mSelectionEnd)
 	{
@@ -213,12 +212,11 @@ void Input::Render()
 	else
 	{
 		// TODO: Good calculations that don't need clipping!
-		oldclip = scr->GetClip();
-		scr->SetClip(r);
+		scr->PushClip(r);
 		
 		_renderText(scr, r);
 		
-		scr->SetClip(oldclip);	
+		scr->PopClip();	
 	}
 
 	Widget::Render();
@@ -274,8 +272,8 @@ void Input::_renderText(Image* scr, rect& r)
 
 	x = r.x + (CaretPosToPixel() - mPixelX);// - 1;
 
-	if (x < r.x + r.w && mDrawCaret == true
-		&& !mReadOnly && HasKeyFocus() && x > r.x) 
+	if (x < r.x + r.w /*&& mDrawCaret*/
+		&& !mReadOnly && IsActive() && HasKeyFocus() && x > r.x) 
 	{
 		//render the caret (Same color as text)
 		scr->DrawRect(rect(x-1, r.y /*+ 1*/, 2, mTextImage->Height()/* - 2*/), mFontColor);
@@ -377,7 +375,7 @@ void Input::Event(SDL_Event* event)
 	switch (event->type)
 	{
 		case SDL_MOUSEMOTION: {
-			if (HasMouseFocus())
+			if (HasKeyFocus())
 			{
 				mClickedOnce = false;
 				rect r = GetScreenPosition();
@@ -407,7 +405,8 @@ void Input::Event(SDL_Event* event)
 				}
 				FlagRender();
 			}
-			else if (DidMouseLeave())
+			
+            if (DidMouseLeave() || DidMouseEnter())
 			{
 				FlagRender();	
 			}
@@ -432,7 +431,7 @@ void Input::Event(SDL_Event* event)
 					SetSelection(mCaretPos, mCaretPos);
 				}
 			}
-			else if (event->button.button == SDL_BUTTON_RIGHT && HasMouseFocus() && !mReadOnly)
+			else if (event->button.button == SDL_BUTTON_RIGHT && HasMouseFocus() && !mReadOnly && IsActive())
 			{
 				if (IsMenuEnabled())
 				{
@@ -452,7 +451,7 @@ void Input::Event(SDL_Event* event)
 			if (selStart > selEnd)
 				std::swap(selStart, selEnd);
 
-			if (!mReadOnly && HasKeyFocus())
+			if (!mReadOnly && HasKeyFocus() && IsActive())
 			{
 				if (event->key.keysym.mod & KMOD_CTRL) //handle ctrl+? shortcuts
 				{
@@ -632,7 +631,7 @@ void Input::_updateText()
 	if (!mIsPassword)
 	{
 		c = mFontColor; 
-		if (!IsActive() || mReadOnly)
+		if (/*!IsActive() ||*/ mReadOnly)
 			c.r = c.g = c.b = 128;
 		mTextImage = resman->ImageFromSurface( mFont->RenderToSDL(mText.c_str(), c) );
 	}

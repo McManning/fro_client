@@ -32,12 +32,6 @@ class LocalActor : public Actor
 	int LuaSetProp(lua_State* ls, string& prop, int index);
 	int LuaGetProp(lua_State* ls, string& prop);
 					
-	void NetSendState(string targetNick, string header);
-	void NetSendActionBuffer();
-	
-	/*	 Tell the network what our current avatar mod is so that they can apply it locally */
-	void NetSendAvatarMod();
-
 	void LoadFlagsFromXml();
 	void SaveFlagsToXml();
 	void PrintFlags();
@@ -45,7 +39,7 @@ class LocalActor : public Actor
 	void Warp(string id, point2d position, string targetObjectName);
 	void Warp(point2d pos); //override to warp on the same map
 	
-	/* Information that was sent out in the last NetSendActionBuffer */
+	/* Information that was sent out in the last netSendActionBuffer */
 	point2d mLastSavedPosition;
 	byte mLastSavedSpeed;
 	

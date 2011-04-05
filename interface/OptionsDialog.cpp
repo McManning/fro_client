@@ -131,14 +131,14 @@ void OptionsDialog::_buildFrameUser()
 		ss->mHoverText = "Ex: Titlebar flashing when a message is received.";
 	y += 25;
 	
-	c = new Checkbox(mFrameUser, "names", rect(0,y), "Show Player Names", 0);
+/*	c = new Checkbox(mFrameUser, "names", rect(0,y), "Show Player Names", 0);
 		c->SetState( game->mPlayerData.GetParamInt("map", "shownames") );
 	y += 25;
 		
 	c = new Checkbox(mFrameUser, "trading", rect(0,y), "Allow Trade Requests", 0);
 		c->SetState( game->mPlayerData.GetParamInt("map", "trading") );
 	y += 25;
-
+*/
 
 	c = new Checkbox(mFrameUser, "stamps", rect(0,y), "Show Timestamps", 0);
 		c->SetState( config.GetParamInt("console", "timestamps") );

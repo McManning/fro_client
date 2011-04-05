@@ -125,7 +125,7 @@ void callback_consoleOutputAvatar(Console* c, string s)
 
 void callback_consoleTestMap(Console* c, string s) //test <file>
 {
-	if (s.length() < 10)
+	if (s.length() < 5)
 	{
 		c->AddMessage("Syntax: test id");
 		return;
@@ -270,8 +270,6 @@ GameManager::~GameManager()
 	//erase all entities before it gets deleted, so we can unlink localactor
 	if (mMap)
 		mMap->FlushEntities();
-
-	SAFEDELETE(mLoader);
 	
 	PRINT("~GameManager 4");
 	
@@ -309,16 +307,33 @@ void GameManager::ResizeChildren()
 
 void GameManager::LoadTestWorld(string luafile)
 {
-	SAFEDELETE(mLoader);
+	if (mLoader)
+		mLoader->Die();
+		
+	if (loginDialog)
+		loginDialog->Die();
+		
 	mLoader = new WorldLoader();
 	mLoader->LoadTestWorld(luafile);
 }
 
 void GameManager::LoadOnlineWorld(string id, point2d target, string targetObjectName)
-{
-	SAFEDELETE(mLoader);
-	mLoader = new WorldLoader();
-	mLoader->LoadOnlineWorld(id, target, targetObjectName);
+{	
+	if (!mNet->IsConnected())
+	{
+		new MessagePopup("", "Not Connected", "No server connection! Could not jump worlds!");
+	}
+	else
+	{
+		if (mLoader)
+			mLoader->Die();
+			
+		if (loginDialog)
+			loginDialog->Die();
+			
+		mLoader = new WorldLoader();
+		mLoader->LoadOnlineWorld(id, target, targetObjectName);
+	}
 }
 
 void GameManager::Process(uLong ms)
@@ -326,6 +341,8 @@ void GameManager::Process(uLong ms)
 	if (mLoader && mLoader->m_state == WorldLoader::WORLD_READY)
 	{
 		mLoader->DisplayWorld();
+		mLoader->Die();
+		mLoader = NULL;
 		ResizeChildren();
 	}
 
@@ -648,7 +665,7 @@ void GameManager::ToggleGameMode(gameMode mode)
     	if (mode == MODE_ACTION)
     	{
     		c->mInput->mReadOnly = true;
-    		c->mInput->SetText("Hit TAB to toggle chat mode");
+    		c->mInput->SetText("Hit TAB to toggle chat mode"); //, or ENTER for quick chat");
     	}
     	else if (c->IsVisible()) //has to be visible for chat mode
     	{

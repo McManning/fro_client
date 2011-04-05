@@ -68,8 +68,6 @@ std::vector<rect> g_rects;
 
 void Screen::PreRender()
 {
-	DrawRect(rect(0, 0, 40, 40), color());
-		
     if (mDrawOptimizedRects)
 	   g_rects.clear();
 

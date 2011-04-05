@@ -13,7 +13,7 @@ class StaticObject : public Entity
 
 	void Render();
 
-	void LoadImage(string file);
+	bool LoadImage(string file);
 	
 	/* Uses the supplied image as mOriginalImage and clones for mImage */
 	void SetImage(Image* img); 
@@ -48,6 +48,8 @@ class StaticObject : public Entity
 
 	string GetWarpId() const { return mWarpDestinationId; };
 	string GetWarpObject() const { return mWarpDestinationObject; };
+
+    void ToHorizontalAnimation(int frameWidth, int delay);
 
 	bool _animate(); // Called by the mAnimationTimer
 	void PlayAnimation();

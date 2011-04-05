@@ -1376,14 +1376,13 @@ without either compatibility mode enabled, or security warnings, as seen with th
 
 110322
 - Moved chatbox command hooking and callbacks to their own file: ChatCommands.h/cpp
-- Removed BasicMap
+- Removed BasicMap and added all functionality to Map. 
 - GameManager::ShowInfoBar now makes the bar a child of Map, rather than GameMan
 - Moved mChat and mHud to Map class
 - Split netSend* functions into IrcNetSenders.h/cpp
 - Relocated IrcNetListeners/IrcNetSenders to ./net subdir
-- Changed app attention flashing to just being on/off, instead of flashing states
-	at 1 second intervals (less annoying, but still apparent that something requires
-	user attention)
+- Changed app attention flashing to just being on/off, instead of flashing states at 1 second intervals 
+	(less annoying, but still apparent that something requires user attention)
 - Cleaned up data types in Multiline
 - Added Multiline::SetSelected to force a redraw when the selected line is changed
 - Removed showinchat parameter from Entity.Say() in Lua
@@ -1391,15 +1390,63 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Fixed GuiManager::GetUserAttention() trying to flash window state when the window has focus
 - Redesigned CheckLoadingAvatar() in Actor. Now processes on its own timer, and doesn't get 
 	called during the render phase.
-- Removed Entity::SetFlag/GetFlag/LoadFlags/SaveFlags and associated Lua 
-	Entity.SetFlag/GetFlag/ClearFlag. The flag system will only be maintained at a Map-level.
-- Calculated Entity shadow into AddPositionRectForUpdate(), but it's a really lazy calculation
-	and not very accurate. 
-- Removed Emote management from Actor and gave the functionality to ChatBubble
-	(Emotes are not animated yet, though)
-- 
+- Removed Entity::SetFlag/GetFlag/LoadFlags/SaveFlags and associated Lua Entity.SetFlag/GetFlag/ClearFlag. 
+	The flag system will only be maintained at a Map-level.
+- Calculated Entity shadow into AddPositionRectForUpdate(), but it's a really lazy calculation and not very accurate. 
+- Removed Emote management from Actor and gave the functionality to ChatBubble (Emotes are not animated yet, though)
+
+(Commit to r69)
+
+110324
+- Fixed highlight + mouse drag in input boxes. Will now continue to scroll text properly when
+	the user drags the cursor outside the input box.
+- Added SDL_VIDEOEXPOSE handling to GuiManager() to trigger a FlagRender() for the entire screen
+
+110325
+- Added an additional exclusion parameter to GuiManager::_sendToGlobalEventHandlers(), but frankly,
+	it's just a hack to prevent a globally listening widget from getting SDL_MOUSEMOTION in
+	GuiManager::_distributeEvent() if they have/had mouse focus.
+- Fixed bug where a widget would be sent the same SDL_MOUSEMOTION event twice if it happened within the widget
+- Added StaticObject::ToHorizontalAnimation()
+- Removed avatar loading icon from actors (Will be handled via lua instead)
+- Added messenger events ENTITY_LOADAVATAR{entity, file, replaced}, ENTITY_SWAPAVATAR{entity}, ENTITY_BADAVATAR{entity, id}
+	to let Lua do whatever it wants when an avatar change is triggered
+- Removed actor name rendering temporarily until a new method is found that works well with the new renderer
+- Removed some unused options from the OptionsDialog, sans voice chat, of course. 
+- Moved NetSend* routines out of LocalActor and into IrcNetSenders
+- Disabled rendering of GuiManager::mAlert, until it gets replaced by a Label or something
+- Added slide animation to ChatBubble (also applied to text messages, as well as emotes)
+- Added complete skip of the render pass in GuiManager when there's no dirty rects to update. 
+- Added "LoadingAvatar" boolean to Entity.GetProp() for Actors (to see if there's a background avy loading)
+- Added check in Entity::SetPosition() as to whether the new position was different than the current before telling
+	the renderer to redraw it's rect. Additionally, EntityManager will no longer QueueResort() if the y position doesn't change.
 	
+110403
+- Added WorldViewer dialog class
+- Children of Frame widgets will only be drawn within that parent frames clip (bounds)
+- Fixed bug in Input widget where SetActive(true) would set mReadOnly to true. 
+- Fixed minor bug in DownloadManager. While processing through downloader callbacks, if we tried to queue up another 
+	download, a crash could occur when a previously completed download wasn't cleaned up properly in the list. 
+	Although technically a bad idea to queue up downloads from within callbacks of completed downloads, it is a scenario
+	that could happen, and suprisingly hasn't happened until now. 
+- Implemented WorldViewer on connect, and when map loading fails
+- Removed resize calculations from Checkbox::Render() and put into Checkbox::SetCaption()
+- Removed Image::SetClip() and replaced with a real clip stack, accessed via Image::PushClip()/PopClip().
+	Clips popped onto the stack will be the intersection of the new clip and the clip at the stack top. 
+- Temporarily removed caret flashing for Input class until a timer is added for it (since it won't update on its own)
+- 
+
 WORKING ON:
+
+- CLIPPING OPTIMIZATION TODO: Check if the shit we're going to render is within the clip rect of the screen.
+	If it's not, skip it. Things like multilines will benefit from this, so we can skip rendering strings early-on
+	FURTHERMORE, we don't know if our text is in the RENDER RECT anyways. Even though it may fall within the clip
+		rect of a parent, it doesn't necessarily have to fall within the renderable rectangles. A parent should
+		skip render altogether if no child falls under the rects of renderability, but then this requires each widget
+		parent (frames, I suppose) to test each render call. Which may not be THAT expensive.. when considering the
+		calculations below that...
+	
+- Caret doesn't blink on input boxes 
 
 - Make the main.lua call Build()/Destroy() and return results and such. This way we have even MORE control over maps! :D
 	And it can be passed in map filenames, resfiles, whatever. And be told what the main lua file is, etc etc. So it can make

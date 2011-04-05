@@ -6,7 +6,6 @@
 #include "ChatBubble.h"
 #include "../map/Map.h"
 #include "../entity/Avatar.h"
-#include "../game/GameManager.h"
 
 uShort timer_processMovement(timer* t, uLong ms)
 {
@@ -679,48 +678,51 @@ void Actor::_stepTowardDestination()
 
 bool Actor::SwapAvatars()
 {
-	if (!mLoadingAvatar)
-		return false;
+    if (mLoadingAvatar)
+    {
+    	if (!mLoadingAvatar->Convert())
+    	{
+    		AvatarError(AVYERR_CONVERT);
+    	}
+    	else if ((mLoadingAvatar->GetImage()->Width() > MAX_AVATAR_WIDTH && mLimitedAvatarSize)
+    		|| (mLoadingAvatar->GetImage()->Height() > MAX_AVATAR_HEIGHT && mLimitedAvatarSize))
+    	{
+    		AvatarError(AVYERR_SIZE);
+    	}
+    	else // All post-load checks are fine, load it.
+    	{
+    		byte mod = Avatar::MOD_NONE;
+    
+    		//if our loading avatar decided to set a custom mod, set it
+    		if (mLoadingAvatar->mModifier != Avatar::MOD_NONE)
+    			mod = mLoadingAvatar->mModifier;
+    		else if (mAvatar) //if not, use the previous avatars mod
+    			mod = mAvatar->mModifier;
+    			
+    		// If the new avy is smaller, this'll make sure the old one cleans up 
+    		AddPositionRectForUpdate();
+    			
+    		SAFEDELETE(mAvatar);
+    		mAvatar = mLoadingAvatar;
+    			
+    		//Carry the modifier over to the new avatar
+    		if (mod != Avatar::MOD_NONE)
+    			mAvatar->Modify(mod);
+    
+    		_syncAvatarFrameset();
+    		UpdateCollisionAndOrigin();
+    		PlayAnimation();
+    		
+    		mLoadingAvatar = NULL;
+    		
+    	    MessageData md("ENTITY_SWAPAVATAR");
+        	md.WriteUserdata("entity", this);
+        	messenger.Dispatch(md);
+	
+    		return true;
+    	}
+    }
 
-	if (!mLoadingAvatar->Convert())
-	{
-		AvatarError(AVYERR_CONVERT);
-	}
-	else if ((mLoadingAvatar->GetImage()->Width() > MAX_AVATAR_WIDTH && mLimitedAvatarSize)
-		|| (mLoadingAvatar->GetImage()->Height() > MAX_AVATAR_HEIGHT && mLimitedAvatarSize))
-	{
-		AvatarError(AVYERR_SIZE);
-	}
-	else // All post-load checks are fine, load it.
-	{
-		byte mod = Avatar::MOD_NONE;
-
-		//if our loading avatar decided to set a custom mod, set it
-		if (mLoadingAvatar->mModifier != Avatar::MOD_NONE)
-			mod = mLoadingAvatar->mModifier;
-		else if (mAvatar) //if not, use the previous avatars mod
-			mod = mAvatar->mModifier;
-			
-		// If the new avy is smaller, this'll make sure the old one cleans up 
-		AddPositionRectForUpdate();
-			
-		SAFEDELETE(mAvatar);
-		mAvatar = mLoadingAvatar;
-			
-		//Carry the modifier over to the new avatar
-		if (mod != Avatar::MOD_NONE)
-			mAvatar->Modify(mod);
-
-		_syncAvatarFrameset();
-		UpdateCollisionAndOrigin();
-		PlayAnimation();
-		
-		mLoadingAvatar = NULL;
-		return true;
-	}
-
-	// Failed somewhere
-	SAFEDELETE(mLoadingAvatar);
 	return false;
 }
 
@@ -765,11 +767,9 @@ bool Actor::CheckLoadingAvatar()
 			} break;
 			case Avatar::BADIMAGE: {
 				AvatarError(AVYERR_BADIMAGE);
-				SAFEDELETE(mLoadingAvatar);
 			} break;
 			default: { //FAILED or other
 				AvatarError(AVYERR_LOADFAIL);
-				SAFEDELETE(mLoadingAvatar);
 			} break;
 		}
 	}
@@ -781,7 +781,10 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 {
 	DEBUGOUT("\\c139* Loading avatar: " + file);
 		
+	bool wasLoadingAvatar = (mLoadingAvatar != NULL);
+		
 	SAFEDELETE(mLoadingAvatar);
+	
 	mLoadingAvatar = new Avatar();
 	
 	mLoadingAvatar->mUrl = file;
@@ -806,12 +809,25 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
                     					timer_checkLoadingAvatar,
                     					NULL,
                     					this);
+                    					
+    MessageData md("ENTITY_LOADAVATAR");
+	md.WriteUserdata("entity", this);
+	md.WriteString("file", file);
+	md.WriteInt("replaced", wasLoadingAvatar);
+	messenger.Dispatch(md);
+	
 	return true;
 }
 
 void Actor::AvatarError(int err)
 {
 	console->AddMessage(mName + " Avatar Error: " + its(err));
+	SAFEDELETE(mLoadingAvatar);
+	
+	MessageData md("ENTITY_BADAVATAR");
+    md.WriteUserdata("entity", this);
+    md.WriteInt("id", err);
+    messenger.Dispatch(md);
 }
 
 void Actor::Render()
@@ -826,19 +842,6 @@ void Actor::Render()
 	if (!mAvatar || mAvatar->mModifier != Avatar::MOD_GHOST)
 		RenderShadow();	
 
-	//render loading icon if we're loading an avatar
-	if (mLoadingAvatar && mMap->mLoadingAvatarIcon)
-	{
-		r.w = mMap->mLoadingAvatarIcon->Width();
-		r.h = mMap->mLoadingAvatarIcon->Height();
-		r.x = mPosition.x - (r.w / 2);
-		r.y = mPosition.y - (r.h / 2) - 4;
-		if (!IsPositionRelativeToScreen())
-			r = mMap->ToScreenPosition( r );
-
-		mMap->mLoadingAvatarIcon->Render(scr, r.x, r.y);
-	}
-
 	//render mAvatar
 	if (mAvatar && mAvatar->GetImage())
 	{
@@ -852,7 +855,7 @@ void Actor::Render()
 	//_doDepthRender();
 
 	//render mName
-	r = GetBoundingRect();
+	/*r = GetBoundingRect();
 	if (!IsPositionRelativeToScreen())
 		r = mMap->ToScreenPosition( r );
 
@@ -863,6 +866,7 @@ void Actor::Render()
 					r.y - (f->GetHeight() + 2), 
 					mName, color(255,255,255));
 	}
+	*/
 
 	Entity::Render();
 }
@@ -1070,15 +1074,7 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 	else if (prop == "movespeed") SetSpeed( (byte)lua_tonumber(ls, index) );
 	else if (prop == "action") SetAction( (byte)lua_tonumber(ls, index) );
 	else if (prop == "noclip") SetIgnoreSolids( lua_toboolean(ls, index) );
-	else if (prop == "mod" && GetAvatar())
-	{
-		if ( GetAvatar()->Modify( (byte)lua_tonumber(ls, index) ) )
-		{
-			//if we modified our local players avatar, we need to send this mod to the network
-			if (this == (Actor*)game->mPlayer)
-				game->mPlayer->NetSendAvatarMod();
-		}
-	}
+	else if (prop == "mod" && GetAvatar()) GetAvatar()->Modify( (byte)lua_tonumber(ls, index) );
 	else if (prop == "zheight") //forces them to fall from a certain height
 	{
 		mJumpHeight = (int)lua_tonumber(ls, index);
@@ -1097,7 +1093,7 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "action") lua_pushnumber( ls, GetAction() );
 	else if (prop == "noclip") lua_pushboolean( ls, IgnoreSolids() );
 	else if (prop == "mod" && GetAvatar()) lua_pushnumber( ls, GetAvatar()->mModifier );
-	
+	else if (prop == "loadingavatar") lua_pushboolean( ls, mLoadingAvatar != NULL ); 
 	else return Entity::LuaGetProp(ls, prop);
 
 	return 1;

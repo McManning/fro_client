@@ -147,7 +147,7 @@ class GuiManager : public Widget
 	/*	Pass the event to all global listeners excluding the one defined. This is to prevent double-firing certain events.
 		(For example, if it's a mousemove and it hasMouseFocus is in the global handlers)
 	*/
-	void _sendToGlobalEventHandlers(SDL_Event* event, Widget* excluding);
+	void _sendToGlobalEventHandlers(SDL_Event* event, Widget* excludingA = NULL, Widget* excludingB = NULL);
 
 	/*	Free memory of all widgets queued to delete. */
 	void _cleanDeletionStack();

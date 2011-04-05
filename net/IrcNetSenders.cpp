@@ -231,3 +231,89 @@ void netSendRequestAvatar(string nick)
 		game->mNet->Privmsg(nick, data.ToString() );
 	}
 }
+
+const int NMREPLY_RESET_MS = 3*1000;
+
+void netSendState(string targetNick, string header) //header VERSION $id #x #y #dir #action Avatar Stuff
+{
+	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
+	{
+		LocalActor* a = game->mPlayer;
+		
+    	if (header == "nm")
+    	{
+    		if ( timers->Find("resetNm") )
+    			return;
+    
+    		timers->Add("resetNm", NMREPLY_RESET_MS, false, NULL, NULL);
+    	}
+    	
+    	DataPacket data(header);
+    	data.SetKey( game->mNet->GetEncryptionKey() );
+    	
+    	data.WriteString(game->mNet->GetChannel()->mId);
+    	data.WriteString(a->mName);
+    	data.WriteInt(a->mPosition.x);
+    	data.WriteInt(a->mPosition.y);
+    	data.WriteChar(a->mDirection);
+    	data.WriteChar(a->mAction);
+    
+    	//if our avatar loaded but has yet to swap, swap it to send properly.
+    	a->CheckLoadingAvatar();
+    
+    	//Add our avatar to the outbound message
+    	if (a->mAvatar)
+    		a->mAvatar->Serialize(data);
+    	else if (a->mLoadingAvatar)
+    		a->mLoadingAvatar->Serialize(data);
+    
+    	if (targetNick.empty())
+    		game->mNet->MessageToChannel( data.ToString() );
+    	else
+    		game->mNet->Privmsg( targetNick, data.ToString() );
+    }
+}
+
+void netSendActionBuffer() //mov #x #y $buffer
+{
+	LocalActor* a = game->mPlayer;
+
+	DEBUGOUT("Sending: (" + its(a->mLastSavedPosition.x) 
+				+ "," + its(a->mLastSavedPosition.y)
+				+ ") " + a->mOutputActionBuffer);
+			
+	// add position correction to the end of the buffer
+	a->mOutputActionBuffer += 'c' + its(a->mPosition.x) + '.' + its(a->mPosition.y) + '.';
+	
+	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
+	{
+		DataPacket data("mov");
+		data.SetKey( game->mNet->GetEncryptionKey() );
+	
+		data.WriteInt(a->mLastSavedPosition.x);
+		data.WriteInt(a->mLastSavedPosition.y);
+		
+		//Appends speed in the beginning in order to keep speed synced more or less
+		data.WriteString( compressActionBuffer( ((a->mSpeed == SPEED_WALK) ? 'w' : 'r') + a->mOutputActionBuffer ) );
+	
+		game->mNet->MessageToChannel( data.ToString() );
+	}
+}
+
+void netSendAvatarMod()
+{
+	LocalActor* a = game->mPlayer;
+	
+	if (a->GetAvatar() && game->mNet && game->mNet->GetState() == ONCHANNEL)
+	{
+		DataPacket data("mod");
+		data.SetKey( game->mNet->GetEncryptionKey() );
+		
+		data.WriteChar(a->GetAvatar()->mModifier);
+		
+		game->mNet->MessageToChannel( data.ToString() );
+	}
+}
+
+
+

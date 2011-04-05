@@ -101,13 +101,12 @@ void RightClickMenu::Render()
 	rect r = GetScreenPosition();
 	Image* scr = Screen::Instance();
 
-	rect oldclip = scr->GetClip();
-	scr->SetClip(r);
+	scr->PushClip(r);
 	
 	if (mImage)
 		mImage->RenderBox(scr, rect(0, 0, 24, 24), r);
 
-	scr->SetClip(oldclip);
+	scr->PopClip();
 
 	//draw children
 	Widget::Render();

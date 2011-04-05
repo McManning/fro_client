@@ -24,9 +24,7 @@ class Input: public Widget {
 	
 	void AddText(string msg);
 	void Clear();
-	
-	void SetActive(bool b) { mReadOnly = b; Widget::SetActive(b); };
-	
+
 	void Cut();
 	void Copy();
 	void Paste();

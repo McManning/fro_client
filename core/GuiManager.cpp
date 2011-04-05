@@ -301,14 +301,23 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		
             SetHasMouseFocus(GrabWidgetUnderXY(this, event->motion.x, event->motion.y));
 
-			if (hasMouseFocus) hasMouseFocus->Event(event);
-			if (previousMouseFocus) previousMouseFocus->Event(event);
-			_sendToGlobalEventHandlers(event, hasMouseFocus);
+			if (hasMouseFocus) 
+                hasMouseFocus->Event(event);
+			
+			if (previousMouseFocus && previousMouseFocus != hasMouseFocus) 
+                previousMouseFocus->Event(event);
+			
+			//DEBUGOUT("Has: " + ((hasMouseFocus) ? hasMouseFocus->mId : string("NULL")));
+			//DEBUGOUT("Prev: " + ((previousMouseFocus) ? previousMouseFocus->mId : string("NULL")));
+			
+			//Don't want either hasMouseFocus or previousMouseFocus to be sent the event, globally,
+			// else it'll double-send. 
+			_sendToGlobalEventHandlers(event, hasMouseFocus, previousMouseFocus);
 
 		} break;
 		default: //don't know what it is, just pass it through globals.
 		{
-			_sendToGlobalEventHandlers(event, NULL);
+			_sendToGlobalEventHandlers(event);
 		} break;
 	}
 }
@@ -385,21 +394,21 @@ void GuiManager::Render()
 	Screen* scr = Screen::Instance();
 
 	scr->PreRender();
-
-	//Render widget tree
-	Widget::Render();
-
-	if (!mAlert.empty())
-		mFont->Render(scr, 5, 5, mAlert, color(255,0,0));
-		
-	_renderStats(scr);
 	
-	if (SDL_GetAppState() & SDL_APPMOUSEFOCUS)
+	if (g_RectMan.m_RectSet)
 	{
-		_renderCursor(scr);
+		//Render widget tree
+		Widget::Render();
+	
+		//_renderStats(scr);
+		
+		if (SDL_GetAppState() & SDL_APPMOUSEFOCUS)
+		{
+			_renderCursor(scr);
+		}	
+	
+		scr->PostRender();
 	}
-
-	scr->PostRender();
 
 	ms = SDL_GetTicks();
 
@@ -482,7 +491,7 @@ void GuiManager::RemoveGlobalEventHandler(Widget* w)
 	}
 }
 
-void GuiManager::_sendToGlobalEventHandlers(SDL_Event* event, Widget* excluding)
+void GuiManager::_sendToGlobalEventHandlers(SDL_Event* event, Widget* excludingA, Widget* excludingB)
 {
 //	PRINT("Gui::_sendToGlobalEventHandlers");
 
@@ -493,7 +502,7 @@ void GuiManager::_sendToGlobalEventHandlers(SDL_Event* event, Widget* excluding)
 			mGlobalEventHandlers.erase(mGlobalEventHandlers.begin() + i);
 			i--;
 		}
-		else if (mGlobalEventHandlers.at(i) != excluding)
+		else if (mGlobalEventHandlers.at(i) != excludingA && mGlobalEventHandlers.at(i) != excludingB)
 		{
 			if (!GetDemandsFocus() || GetDemandsFocus()->HasKeyFocusInTree()) //TODO: What about mouse movement? Should they really still get it?
 			{
@@ -681,8 +690,11 @@ void GuiManager::Process()
 				Screen::Instance()->Resize(event.resize.w, event.resize.h);
 				
 				SetPosition(r);
-				_sendToGlobalEventHandlers(&event, NULL);
+				//_sendToGlobalEventHandlers(&event, NULL);
 				break;
+			case SDL_VIDEOEXPOSE:
+                FlagRender();
+                break;
 			default:
 				_distributeEvent(&event);
 				break;

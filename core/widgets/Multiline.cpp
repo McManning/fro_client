@@ -69,7 +69,6 @@ Multiline::~Multiline()
 void Multiline::Render()
 {
     rect r = GetScreenPosition();
-
 	Image* scr = Screen::Instance();
 
 	//TODO: color curColor = color(255,255,255); //current color we're drawing text in
@@ -82,7 +81,7 @@ void Multiline::Render()
 	r.h -= 4;
 	r.y += 2;
 
-	scr->SetClip(r);
+	scr->PushClip(r);
 
 	if (!mLines.empty() && mFont)
 	{
@@ -140,7 +139,7 @@ void Multiline::Render()
 			z++;
 		}
     }
-	scr->SetClip();
+	scr->PopClip();
 
 	Widget::Render();
 }

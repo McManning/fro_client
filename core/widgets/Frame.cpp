@@ -8,6 +8,8 @@
 #include "../FontManager.h"
 #include "../ResourceManager.h"
 
+#include "Console.h"
+
 void callback_frameCloseButton(Button* b)
 {
 	if (b->GetParent())
@@ -62,12 +64,11 @@ Frame::~Frame()
 void Frame::Render()
 {
 	rect r = GetScreenPosition();
-	string s;
 	Image* scr = Screen::Instance();
-	
+
 	if (mResizing) //draw custom stuff
 	{
-		scr->SetClip(r);
+		scr->PushClip(r);
 
 		//draw dashed line at the top & bottom
 		for (uShort x = r.x; x < r.x+r.w; x += 6)
@@ -81,11 +82,11 @@ void Frame::Render()
 			scr->DrawLine( r.x+r.w-3, y, r.x+r.w-3, y+4, mResizingBorderColor, 3 );
 		}
 	
-		scr->SetClip();
+		scr->PopClip();
 	}
 	else
 	{
-		scr->SetClip(r);
+		scr->PushClip(r);
 		
 		if (mImage)
 		{
@@ -98,10 +99,10 @@ void Frame::Render()
 		if (mSizer)
 			mSizer->Render(scr, r.x + r.w - 24, r.y + r.h - 24);
 		
-		scr->SetClip();
-
 		//draw children
 		Widget::Render();
+		
+		scr->PopClip();
 	}
 }
 
@@ -136,10 +137,7 @@ void Frame::Event(SDL_Event* event)
 			{
 				if (mResizing)
 				{
-					SetPosition( rect(mPosition.x, mPosition.y,
-										mPosition.w + gui->GetMouseVelocityX(), //event->motion.xrel,
-										mPosition.h + gui->GetMouseVelocityY()) //event->motion.yrel)
-								);
+                    SetSize(mPosition.w + event->motion.xrel, mPosition.h + event->motion.yrel);
 				}
 				else if (mMoveable)
 				{

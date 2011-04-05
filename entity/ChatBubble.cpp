@@ -50,6 +50,7 @@ ChatBubble::ChatBubble(Entity* owner, string& msg)
 {
 	mOwner = owner;
 	mImage = NULL;
+	mRiseHeight = 0;
 
 	if (mOwner)
 	{
@@ -65,6 +66,7 @@ ChatBubble::ChatBubble(Entity* owner, int emote)
 {
     mOwner = owner;
 	mImage = NULL;
+	mRiseHeight = 0;
 
 	if (mOwner)
 	{
@@ -89,14 +91,20 @@ void ChatBubble::Render()
 	ASSERT(mMap);
 	ASSERT(mImage);
 	rect r;
-
-	Image* scr = Screen::Instance();
-	r = GetBoundingRect();
-
-	if (!IsPositionRelativeToScreen())
-		r = mMap->ToScreenPosition( r );
-
-	mImage->Render(scr, r.x, r.y);
+	rect clip;
+	
+	if (mRiseHeight > 0)
+	{
+		Image* scr = Screen::Instance();
+		r = GetBoundingRect();
+	
+		if (!IsPositionRelativeToScreen())
+			r = mMap->ToScreenPosition( r );
+	
+		clip.h = mRiseHeight;
+	
+		mImage->Render(scr, r.x, r.y, clip);
+	}
 }
 
 void ChatBubble::UpdatePosition()
@@ -108,12 +116,19 @@ void ChatBubble::UpdatePosition()
 	{
 		r = mOwner->GetBoundingRect();
 
-		r.y -= mImage->Height() + 2;
-		r.w = mImage->Width();
-		r.h = mImage->Height();
-		r.x = mOwner->mPosition.x - (r.w / 2);
+		r.y -= mRiseHeight + 2;
+		r.x = mOwner->mPosition.x - (mImage->Width() / 2);
 
 		SetPosition(point2d(r.x, r.y));
+		
+		if (mRiseHeight < mImage->Height())
+		{	
+			int speed = mImage->Height() / 32;
+			mRiseHeight += (speed > 0) ? speed : 1;
+		}
+		
+		if (mRiseHeight > mImage->Height())
+			mRiseHeight = mImage->Height();
 	}
 }
 
@@ -188,7 +203,7 @@ rect ChatBubble::GetBoundingRect()
 
 	return rect( mPosition.x - mOrigin.x,
 				mPosition.y - mOrigin.y,
-				mImage->Width(), mImage->Height() );
+				mImage->Width(), mRiseHeight );
 }
 
 

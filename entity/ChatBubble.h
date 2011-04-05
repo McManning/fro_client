@@ -22,6 +22,8 @@ class ChatBubble : public Entity
 	
 	Image* mImage;
 	Entity* mOwner;
+	
+	int mRiseHeight;
 };
 
 #endif //_CHATBUBBLE_H_

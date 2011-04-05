@@ -375,12 +375,18 @@ int _parseEntityImage(lua_State* ls, StaticObject* so, int virtualIndex = -1)
 	if (virtualIndex < 0)
 		virtualIndex = lua_gettop(ls) + virtualIndex + 1;
 	
-	printf("vi: %i top:%i\n", virtualIndex, lua_gettop(ls));
-	luaStackdump(ls);
+	//printf("vi: %i top:%i\n", virtualIndex, lua_gettop(ls));
+	//luaStackdump(ls);
+	
+	string file;
 	
 	if (lua_isstring(ls, virtualIndex))
 	{
-		so->LoadImage(game->mMap->mWorkingDir + lua_tostring(ls, virtualIndex));
+		file = game->mMap->mWorkingDir + lua_tostring(ls, virtualIndex);
+		if (!so->LoadImage(file))
+		{
+			return luaError(ls, "", "Could not load entity image: " + file);
+		}
 		return 1;
 	}
 	
@@ -398,7 +404,13 @@ int _parseEntityImage(lua_State* ls, StaticObject* so, int virtualIndex = -1)
 		{
 			key = lua_tostring(ls, -2);
 			if (key == "File")
-				so->LoadImage(game->mMap->mWorkingDir + lua_tostring(ls, -1));
+			{
+				file = game->mMap->mWorkingDir + lua_tostring(ls, -1);
+				if (!so->LoadImage(file))
+				{
+					return luaError(ls, "", "Could not load entity image: " + file);
+				}
+			}
 			else if (key == "Width")
 				width = (int)lua_tonumber(ls, -1);
 			else if (key == "Delay")
@@ -410,12 +422,7 @@ int _parseEntityImage(lua_State* ls, StaticObject* so, int virtualIndex = -1)
 	// TODO: A better way to handle this?
 	if (width > 0)
 	{
-		if (so->mImage)
-			so->mImage->ConvertToHorizontalAnimation(rect(0, 0, width, so->mImage->Height()), delay);
-		if (so->mOriginalImage)
-			so->mOriginalImage->ConvertToHorizontalAnimation(rect(0, 0, width, so->mOriginalImage->Height()), delay);
-		
-		so->PlayAnimation();
+		so->ToHorizontalAnimation(width, delay);
 	}
 
 	return 1;

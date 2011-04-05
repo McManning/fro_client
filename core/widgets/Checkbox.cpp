@@ -26,12 +26,13 @@ Checkbox::Checkbox(Widget* wParent, string sId, rect rPosition, string sCaption,
 	mFont = fonts->Get();
 	mId = sId;
 	
-	SetCaption(sCaption);
 	SetImage("assets/gui/checkbox.png");
 	
 	SetPosition(rPosition);
 	if (wParent)
 		wParent->Add(this);
+		
+	SetCaption(sCaption);
 }
 
 Checkbox::~Checkbox()
@@ -45,18 +46,6 @@ void Checkbox::Render()
 	if (!mImage) return;
 	
 	Image* scr = Screen::Instance();
-
-	//change the size value to match whatever is being displayed
-	mPosition.w = CHECKBOX_LABEL_BUFFER + CHECKBOX_SIZE;
-	if (!mCaption.empty())
-		mPosition.w += mFont->GetWidth(stripCodes(mCaption));
-	
-	//height is whichever is larger, caption or src
-	if (!mCaption.empty() && mFont->GetHeight() < CHECKBOX_SIZE) 
-		mPosition.h = mFont->GetHeight();
-	else 
-		mPosition.h = CHECKBOX_SIZE;
-		
 	rect pos = GetScreenPosition();
 
 	mImage->Render( scr, pos.x, pos.y, rect(CHECKBOX_SIZE * mState, 
@@ -92,7 +81,7 @@ void Checkbox::Event(SDL_Event* event)
 				}
 				if (mGroup > 0 && mParent) //alert all other checkboxes of this group of the change
 				{ 
-					for (uShort i = 0; i < mParent->mChildren.size(); i++)
+					for (int i = 0; i < mParent->mChildren.size(); i++)
 					{
 						if (mParent->mChildren.at(i)->mType == WIDGET_CHECKBOX)
 						{
@@ -118,10 +107,27 @@ void Checkbox::Event(SDL_Event* event)
 
 void Checkbox::SetCaption(string text)
 {
-	if (!mFont) return;
-	mCaption = text;
-
-	FlagRender();
+	if (mCaption != text)
+    {    
+    	mCaption = text;
+    
+    	if (!mFont) return;
+    
+    	mPosition.w = CHECKBOX_LABEL_BUFFER + CHECKBOX_SIZE;
+    	mPosition.h = CHECKBOX_SIZE;
+    
+    	if (!text.empty())
+    	{
+    		text = stripCodes(text); //clean it for calculating size
+    		mPosition.w += mFont->GetWidth(text);
+    		mPosition.h = mFont->GetHeight(text);
+    		
+    		if (mPosition.h < CHECKBOX_SIZE)
+    			mPosition.h = CHECKBOX_SIZE;
+    	}
+    
+    	FlagRender();
+    }
 }
 
 void Checkbox::SetState(byte state)

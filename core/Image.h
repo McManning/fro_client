@@ -90,9 +90,16 @@ class Image
 	
 	SDL_Frameset* GetFrameset(string key) const;
 	bool SetFrameset(string key);
+
+	void PushClip(rect clip);
+	void PopClip();
 	
-	void SetClip(rect clip = rect());
 	rect GetClip() const;
+	
+	/**
+		@return true if the surface can be drawn to. Ie, GetClip() has a nonzero width/height
+	*/
+	bool IsDrawable() const;
 	
 	string Filename() const;
 
@@ -211,7 +218,9 @@ class Image
 	uShort mFrameIndex;
 
 	bool mUseBlitOverride;
-
+	
+	std::vector<rect> mClipStack;
+	
   private:
 	void _checkStatus();
 };

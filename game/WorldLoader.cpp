@@ -7,47 +7,50 @@
 #include "../map/Map.h"
 #include "../core/net/IrcNet2.h"
 #include "../core/widgets/MessagePopup.h"
+#include "../core/widgets/Label.h"
+#include "../core/widgets/Button.h"
 #include "../core/io/FileIO.h"
 #include "../interface/Userlist.h"
 #include "../interface/LoginDialog.h"
-//#include "../interface/LunemParty.h"
+#include "../interface/WorldViewer.h"
 
 #include "../lua/MapLib.h"
 
 #define ONLINE_ENABLED
 
 WorldLoader::WorldLoader()
+	: Frame(game, "worldloader", rect(0,0,game->Width(),game->Height()), "", 
+		false, false, false, false)
 {
 	PRINT("Creating WorldLoader");
 
 	m_BackgroundImage = resman->LoadImg("assets/loading.jpg");
-	m_OverlayImage = resman->LoadImg("assets/loading_overlay.png");
-	m_StatusTextImage = NULL;
+
+	m_StatusLabel = new Label(this, "", rect(10, 10), "");
 	
+/*	Button* b;
+	
+	b = new Button(this, "", rect(x,y,w,h), "", callback_???);
+		b->SetImage("????.png");
+*/
+	
+
 	SetState(IDLE);
 	PRINT("WorldLoader Done");
 }
 
 WorldLoader::~WorldLoader()
 {
-	// TODO: Some sort of cleanup if we're deleted mid-download!
+	downloader->NullMatchingUserData(this);
 	
 	resman->Unload(m_BackgroundImage);
-	resman->Unload(m_OverlayImage);
-	resman->Unload(m_StatusTextImage);
 }
 
 void WorldLoader::LoadOnlineWorld(string id, point2d target, string targetObjectName)
 {
 #ifdef ONLINE_ENABLED
 	SetState(IDLE);
-	
-	if (!game->mNet->IsConnected())
-	{
-		new MessagePopup("", "Not Connected", "No server connection! Could not jump worlds!");
-		return;
-	}
-	
+
 	if (game->mMap) //save previous info if we got it
 	{
 		m_previousPosition = game->mPlayer->GetPosition();
@@ -67,12 +70,11 @@ void WorldLoader::LoadOnlineWorld(string id, point2d target, string targetObject
 }
 
 /*	Load a world directly from the lua file. It assumes all resources exist locally */
-void WorldLoader::LoadTestWorld(string luafile)
+void WorldLoader::LoadTestWorld(string id)
 {		
 	SetState(IDLE);
 
-	m_sWorldName = luafile;
-	m_sPrimaryLuaFile = luafile;
+	m_sWorldName = id;
 	m_bTestMode = true;
 	
 	//if we're going from online->offline, get out of the online world
@@ -97,6 +99,8 @@ void callback_masterResponse_Success(downloadData* data)
 	WorldLoader* loader = (WorldLoader*)data->userData;
 	if (loader)
 		loader->_parseConfig();
+	else
+		removeFile(data->filename);	
 }
 
 void callback_masterResponse_Failure(downloadData* data)
@@ -200,7 +204,6 @@ void WorldLoader::_parseConfig()
 		return;	
 	}
 
-	m_iTotalResources = 0;
 	m_iCompletedResources = 0;
 	SetState(GETTING_RESOURCES);
 	
@@ -231,19 +234,23 @@ void callback_ResourceDownload_Success(downloadData* data)
 	
 	if (loader)
 		loader->_resourceDownloadSuccess(data->url, data->filename);
+	else
+		removeFile(data->filename);	
 }
 
 void callback_ResourceDownload_Failure(downloadData* data) 
 {
 	WorldLoader* loader = (WorldLoader*)data->userData;
 	
-	if (data->errorCode == DEC_BADHASH)
-		console->AddMessage(data->url + " failed hash check.");
-	else
-		console->AddMessage(data->url + " failed with error code: " + its(data->errorCode));
-	
 	if (loader)
+	{
+		if (data->errorCode == DEC_BADHASH)
+			console->AddMessage(data->url + " failed hash check.");
+		else
+			console->AddMessage(data->url + " failed with error code: " + its(data->errorCode));
+
 		loader->_resourceDownloadFailure(data->url, data->filename);
+	}
 }
 
 /*
@@ -310,21 +317,14 @@ int WorldLoader::_queueResources(string items)
 				hash = v.at(i).substr(pos+1, v.at(i).length() - pos);
 				overwrite = true; //will only download & overwrite if the old hash doesn't match the new one
 			}
-			
-			//See if this is the first lua file we've encountered (if it has .lua extension). If so, consider it the primary
-			if (m_sPrimaryLuaFile.empty() && path.find(".lua", 0) != string::npos)
-			{
-				m_sPrimaryLuaFile = path;
-				console->AddMessage(" * Set Primary Script: " + m_sPrimaryLuaFile);
-			}
-			
+
 			console->AddMessage(" * Queuing master:" + master + " path:" + path + " hash:" + hash);
 			
 			downloader->QueueDownload(master + path, DIR_CACHE + path, this,
 										callback_ResourceDownload_Success,
 										callback_ResourceDownload_Failure,
 										overwrite, false, hash);
-			++m_iTotalResources;
+			m_vsResources.push_back(DIR_CACHE + path);
 		}
 	}
 	
@@ -338,10 +338,10 @@ void WorldLoader::_resourceDownloadSuccess(string url, string file)
 	++m_iCompletedResources;
 	UpdateStatusText(); // will update the output of how many resources are done
 	
-	console->AddMessage("\\c990Completed: " + its(m_iCompletedResources) + " Total: " + its(m_iTotalResources) + " (" + file + ")");
+	console->AddMessage("\\c990Completed: " + its(m_iCompletedResources) + " Total: " + its(m_vsResources.size()) + " (" + file + ")");
 	
 	//if we downloaded all our resources, proceed onto the next phase of load
-	if (m_iCompletedResources == m_iTotalResources)
+	if (m_iCompletedResources == m_vsResources.size())
 	{
 		_buildWorld();
 	}
@@ -367,63 +367,43 @@ void WorldLoader::_buildWorld()
 {
 	lua_State* ls = mapLib_OpenLuaState();
 
-	string mainFile, mapFile;
-	
-	if (m_sPrimaryLuaFile.empty())
-	{
-		_error( "Primary lua file missing" );
-		return;
-	}
+	string mainFile;
 	
 	if (!m_bTestMode)
-	{		
+	{	
 		mainFile = DIR_CACHE;
 		mainFile += COMMON_LUA_INCLUSION; 
-		mapFile = DIR_CACHE + m_sPrimaryLuaFile;
 	}
 	else
 	{
 		mainFile = DIR_DEV;
 		mainFile += COMMON_LUA_INCLUSION; 
-		mapFile = DIR_DEV + m_sPrimaryLuaFile;
 	}
 
-	// Load the maps primary .lua script
-	if ( luaL_dofile( ls, mapFile.c_str() ) != 0 )
-	{
-		string err = lua_tostring(ls, -1);
-		lua_close(ls);
-		
-		console->AddMessage("Primary lua parse error: " + err);
-
-		_error( "Primary lua parse error (see console output)" );
-		return;
-	}
-	
-	// Load the common main.lua script
+	// Load the primary .lua script
 	if ( luaL_dofile( ls, mainFile.c_str() ) != 0 )
 	{
 		string err = lua_tostring(ls, -1);
 		lua_close(ls);
 		
-		console->AddMessage("Common lua parse error: " + err);
+		console->AddMessage(mainFile + " parse error: " + err);
 
-		_error( "Common lua parse error (see console output)" );
+		_error( "Lua parse error (see console output for details)" );
 		return;
 	}
 
-	// Parsed right, now let's run our Build()!
-	if ( !mapLib_luaCallBuild(ls) )
+	// Parsed right, now let's run our BuildWorld()!
+	if ( !mapLib_luaCallBuildWorld(ls, m_bTestMode, m_sWorldName, m_vsResources) )
 	{
 		mapLib_CloseLuaState(ls);
-		_error("Lua call to Build() failed");
+		_error("Failed to build world (see console output for details)");
 		return;
 	}
 	
 	if (!game->mMap)
 	{
 		mapLib_CloseLuaState(ls);
-		_error("Lua Build() never created the map");
+		_error("Map instance never created");
 		return;
 	}
 	
@@ -568,7 +548,8 @@ void WorldLoader::_error(string msg)
 							"some existing world."
 							);
 */
-    // TODO: Give them an option after the map load failed!
+    WorldViewer* viewer = new WorldViewer();
+    viewer->mClose->SetActive(false);
 }
 	
 /*	************************************
@@ -587,7 +568,7 @@ double WorldLoader::Progress()
 		return 0.1;
 		
 	if (m_state >= GETTING_RESOURCES && m_state < JOINING_WORLD)
-		return 0.1 + (0.8 / m_iTotalResources) * m_iCompletedResources;
+		return 0.1 + (0.8 / m_vsResources.size()) * m_iCompletedResources;
 
 	return 0.9; //m_state == JOINING_WORLD
 }
@@ -605,12 +586,8 @@ void WorldLoader::Render()
 	
 	if (m_BackgroundImage)
 		m_BackgroundImage->Render(scr, 0, 0);
-	
-	if (m_StatusTextImage)
-		m_StatusTextImage->Render(scr, 200-m_StatusTextImage->Width(), 229);
-	
-	if (m_OverlayImage)
-		m_OverlayImage->Render(scr, 129, 351);
+
+	Frame::Render();
 }
 
 void WorldLoader::UpdateStatusText()
@@ -623,13 +600,13 @@ void WorldLoader::UpdateStatusText()
 			msg = "Bored";
 			break;
 		case FAILED:
-			msg = "WORLD LOAD FAILED";
+			msg = "We fucked up. Try again...";
 			break;
 		case GETTING_CONFIG:
 			msg = "Getting Config";
 			break;
 		case GETTING_RESOURCES:
-			msg = "Getting Resource " + its(m_iCompletedResources) + " / " + its(m_iTotalResources);
+			msg = "Getting Resource " + its(m_iCompletedResources) + " / " + its(m_vsResources.size());
 			break;
 		case BUILDING_WORLD:
 			msg = "Constructing World";
@@ -646,15 +623,7 @@ void WorldLoader::UpdateStatusText()
 		default: break;
 	}
 
-	resman->Unload(m_StatusTextImage);
-	if (!msg.empty())
-	{
-		m_StatusTextImage = resman->ImageFromSurface( gui->mFont->RenderToSDL(msg.c_str(), color(27,14,16)) );
-		m_StatusTextImage->Rotate(81.0, 1.2, 1);
-	}
-	else
-	{
-		m_StatusTextImage = NULL;	
-	}
+
+	m_StatusLabel->SetCaption(msg);
 }
 

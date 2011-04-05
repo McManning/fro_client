@@ -2,11 +2,12 @@
 #ifndef _WORLDLOADER_H_
 #define _WORLDLOADER_H_
 
-#include "../core/Core.h"
+#include "../core/widgets/Frame.h"
 
 const char* const COMMON_LUA_INCLUSION = "scripts/main.lua";
 
-class WorldLoader
+class Label;
+class WorldLoader : public Frame
 {
   public:
 	WorldLoader();
@@ -26,9 +27,10 @@ class WorldLoader
 	
 	void LoadOnlineWorld(string id, point2d target = point2d(), string targetObjectName = "");
 	
-	/*	Load a world directly from the lua file. It assumes all resources exist locally */
-	
-	void LoadTestWorld(string luafile);
+	/*	Load a world, using /dev/ as our cache. It assumes all resources exist locally and will
+		not attempt to download any. 
+	*/
+	void LoadTestWorld(string id);
 	
 	/*
 		Load the primary lua file of this map and tries to run the Build(); function 
@@ -64,20 +66,19 @@ class WorldLoader
 
 	bool m_bTestMode; //is this map being loaded in a testing mode, or online
 
-	int m_iTotalResources;
 	int m_iCompletedResources;
-
+	
+	std::vector<string> m_vsResources;
+	
 	string m_sWorldName; // Set in PHASE A
-	string m_sPrimaryLuaFile; // Set in PHASE B, accessed in PHASE C
 	string m_sChannelName; // Set in PHASE A, accessed in PHASE D
 	string m_sResourcesList; // Set in PHASE A, accessed in PHASE B
 
 	point2d m_previousPosition;
 	string m_sPreviousMap;
-	
+
 	Image* m_BackgroundImage;
-	Image* m_OverlayImage;
-	Image* m_StatusTextImage;
+	Label* m_StatusLabel;
 };
 
 #endif //_WORLDLOADER_H_

@@ -157,7 +157,7 @@ class Actor : public Entity /*, public Combatant */
 	timer* mAnimationTimer;
 	timer* mCheckLoadingAvatarTimer;
 
-  protected:
+ // protected:
   
 	/* 	Based on the current action of our character, change the frameset we are currently playing. 
 		Will also reset the current frame we're on, so only call when it needs to be changed. 

@@ -209,15 +209,15 @@ LoginDialog::LoginDialog() :
 	//bottom button set
 	b = new Button(this, "register",rect(10,y,20,20), "", callback_LoginDialogRegister);
 		b->mHoverText = "Register";
-		b->SetImage("assets/buttons/register.png");
+		b->SetImage("assets/buttons/login_register.png");
 	
 	b = new Button(this, "login",rect(160,y,20,20), "", callback_LoginDialogSendLogin);
 		b->mHoverText = "Send Login";
-		b->SetImage("assets/buttons/okay.png");
+		b->SetImage("assets/buttons/login_send.png");
 	
 	b = new Button(this, "skip",rect(190,y,20,20), "", callback_LoginDialogSkip);
 		b->mHoverText = "Skip Login";
-		b->SetImage("assets/buttons/no.png");
+		b->SetImage("assets/buttons/login_skip.png");
 
 	l = new Label(this, "status", rect(10,y), "Getting Server Verification...");
 		l->SetVisible(false);

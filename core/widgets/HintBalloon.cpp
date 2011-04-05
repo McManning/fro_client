@@ -9,7 +9,7 @@ HintBalloon::HintBalloon(Widget* wParent)
 	mMaxWidth = 0;
 	
 	mFont = fonts->Get();
-	SetImage("assets/gui/gui.png");
+	SetImage("assets/gui/hint.png");
 
 	if (wParent)
 		wParent->Add(this);
@@ -27,7 +27,7 @@ void HintBalloon::Render()
 	
 	// draw background
 	if (mImage)
-		mImage->RenderBox(scr, rect(24, 0, 5, 5), pos);
+		mImage->RenderBox(scr, rect(0, 0, 5, 5), pos);
 	
 	// draw caption
 	if (mFont && !mCaption.empty())

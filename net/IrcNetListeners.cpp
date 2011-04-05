@@ -7,6 +7,7 @@
 #include "../interface/UserList.h"
 #include "../interface/LoginDialog.h"
 #include "../interface/OptionsDialog.h"
+#include "../interface/WorldViewer.h"
 #include "../map/Map.h"
 #include "../core/net/IrcNet2.h"
 #include "../entity/LocalActor.h"
@@ -134,7 +135,7 @@ void _handleUnknownUser(string& nick)
 		return;
 			
 	if (game->mPlayer->mName != nick)
-		game->mPlayer->NetSendState(nick, "sup");
+		netSendState(nick, "sup");
 
 	//make sure we don't send this TOO often. Only once every couple seconds
 	timers->Add("pushNm", 2*1000, false, NULL, NULL);
@@ -279,7 +280,7 @@ void _handleNetMessage_Sup(string& nick, DataPacket& data)
 	ra = _addRemoteActor(nick, data);
 	if (ra)
 	{
-		game->mPlayer->NetSendState("", "nm");
+		netSendState("", "nm");
 		DEBUGOUT("\\c090" + ra->mName + " has been added to the map");
 	}
 	else
@@ -568,7 +569,7 @@ void listener_NetChannelJoin(MessageListener* ml, MessageData& md, void* sender)
 	//If it's not us, send our data to them
 	if (game->mPlayer->mName != nick)
 	{
-		game->mPlayer->NetSendState(nick, "sup");
+		netSendState(nick, "sup");
 	}
 	
 	//This is here, because anywhere else it would play constantly when we join a new map filled with people.	
@@ -875,13 +876,16 @@ void listener_NetVerified(MessageListener* ml, MessageData& md, void* sender)
 	IrcNet* net = (IrcNet*)sender;
 	
 	if (loginDialog)
-		loginDialog->Die();
+		loginDialog->SetActive(false);
 	
 	// Bug fix, the server could have changed our nick on join (if it was too long, etc)
 	// Without giving an Erronous Nickname message.
 	game->mPlayer->mName = net->GetNick();
 	
-	game->LoadOnlineWorld(game->mStartingWorldId);
+	//game->LoadOnlineWorld(game->mStartingWorldId);
+
+	WorldViewer* viewer = new WorldViewer();
+    viewer->mClose->SetActive(false);
 }
 
 void listener_NetWhois(MessageListener* ml, MessageData& md, void* sender)

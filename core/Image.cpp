@@ -641,7 +641,7 @@ bool Image::_renderToScreen(sShort x, sShort y, rect& clip)
 
     if (!g_RectMan.m_RectSet)
     {
-        WARNING("No rect set");
+        FATAL("No rect set");
         return false;   
     }
     
@@ -672,19 +672,53 @@ bool Image::_renderToScreen(sShort x, sShort y, rect& clip)
 	return true;
 }
 
-void Image::SetClip(rect clip)
+void Image::PushClip(rect clip)
 {
+	SDL_Surface* surf = Surface();
+	SDL_Rect r;
+	
+	if (surf)
+	{
+		if (mClipStack.empty())
+		{
+			r.x = clip.x; 
+			r.y = clip.y; 
+			r.w = clip.w; 
+			r.h = clip.h;
+			mClipStack.push_back(clip);
+			SDL_SetClipRect(surf, &r);
+		}
+		else // get the intersection between the two clips
+		{
+			rect c = rectIntersection(clip, mClipStack.at(mClipStack.size()-1));
+			r.x = c.x;
+			r.y = c.y;
+			r.w = c.w;
+			r.h = c.h;
+			mClipStack.push_back(c);
+			SDL_SetClipRect(surf, &r);
+		}
+	}
+}
+
+void Image::PopClip()
+{
+	mClipStack.pop_back();
+	
+	// TODO: Set for all surfaces
 	SDL_Surface* surf = Surface();
 	
 	if (surf)
 	{
-		if (isDefaultRect(clip))
+		if (mClipStack.empty())
 		{
 			SDL_SetClipRect(surf, NULL);
 		}
 		else
 		{
-			SDL_Rect r = { clip.x, clip.y, clip.w, clip.h };
+			rect c = mClipStack.at(mClipStack.size()-1);
+			
+			SDL_Rect r = { c.x, c.y, c.w, c.h };
 			SDL_SetClipRect(surf, &r);
 		}
 	}
@@ -700,6 +734,12 @@ rect Image::GetClip() const
 	SDL_GetClipRect(surf, &r);
 	
 	return rect( r.x, r.y, r.w, r.h );
+}
+
+bool Image::IsDrawable() const
+{
+	rect r = GetClip();
+	return r.w > 0 && r.h > 0;
 }
 
 string Image::Filename() const

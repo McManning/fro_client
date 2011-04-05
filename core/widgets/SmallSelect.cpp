@@ -88,8 +88,6 @@ void SmallSelect::Render()
 	//draw mItems.at(mSelectedIndex), clipped between the two buttons
 	if (mSelectedIndex < mItems.size() && mFont)
 	{
-		//memorize our old clip to return to it. (TODO: A clip stack would be nice... )
-		rect oldClip = scr->GetClip();
 		if (mLeft)
 		{
 			r.x += mLeft->Width() + SMALLSELECT_BUFFER;
@@ -99,12 +97,12 @@ void SmallSelect::Render()
 		{
 			r.w -= (mRight->Width() + SMALLSELECT_BUFFER);
 		}
-		scr->SetClip(r);
+		scr->PushClip(r);
 
 		//draw text
 		mFont->Render(scr, r.x, r.y + (r.h / 2 - mFont->GetHeight() / 2), mItems.at(mSelectedIndex), mFontColor);
 		
-		scr->SetClip(oldClip);
+		scr->PopClip();
 	}
 	
 	Widget::Render(); //draws children
