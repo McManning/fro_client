@@ -28,6 +28,14 @@ class Screen : public Image
 	void Update() { mNeedUpdate = true; };
 	bool NeedsUpdate() const { return mNeedUpdate; };
 	
+	/**
+		Checks if the input rect intersects any of the drawable clips in RectManager.
+		Callable only during the Render phase (ie: after PreRender() & before PostRender())
+		
+		@return true if the specific rect intersects any of the clips in RectManager
+	*/
+	bool IsRectDrawable(rect r);
+	
 	static Screen* Instance();
 	static void Destroy();
 

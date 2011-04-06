@@ -1434,7 +1434,14 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Removed Image::SetClip() and replaced with a real clip stack, accessed via Image::PushClip()/PopClip().
 	Clips popped onto the stack will be the intersection of the new clip and the clip at the stack top. 
 - Temporarily removed caret flashing for Input class until a timer is added for it (since it won't update on its own)
+
+(Commit to r75)
+
+110405
+- Added Screen::IsRectDrawable() and implemented in Multiline
 - 
+
+
 
 WORKING ON:
 
@@ -1447,17 +1454,6 @@ WORKING ON:
 		calculations below that...
 	
 - Caret doesn't blink on input boxes 
-
-- Make the main.lua call Build()/Destroy() and return results and such. This way we have even MORE control over maps! :D
-	And it can be passed in map filenames, resfiles, whatever. And be told what the main lua file is, etc etc. So it can make
-	its own decisions. BASICALLY, tl;dr: Make it do more. 
-
-	This is already possible as Build() is called after main.lua is dofile'd. However, we'd have to rename all the build routines
-	in the map files. It'd be nice for main to determine what lua file to use as a primary, instead of assuming the first lua
-	found in .res is the lua file... :|
-	
-	Main.lua should be sent an array of all the res files, allowed to verify them or whatever, wait for them all to download,
-	and then determine which one we should load into the luastate, and what function within it to call. 
 
 - Improve fucking lua errors. Instead of top-level function name, give the function the error
 	actually happens in, and try to give line number. God damn, real errors please. 

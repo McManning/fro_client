@@ -7,6 +7,8 @@ Screen* g_screen;
 RectManager g_RectMan;
 Uint32 uScreenFlags;
 
+std::vector<rect> g_rects;
+
 void SetScreenFlags(Uint32 flags)
 {
 	uScreenFlags = flags;
@@ -63,8 +65,6 @@ Screen::~Screen()
 	
 	g_screen = NULL;
 }
-
-std::vector<rect> g_rects;
 
 void Screen::PreRender()
 {
@@ -156,5 +156,8 @@ void Screen::AddRect(rect r)
 	g_RectMan.add_rect(sr);
 }
 
-
+bool Screen::IsRectDrawable(rect r)
+{
+	return (g_RectMan.m_RectSet && g_RectMan.rects_intersects(g_RectMan.m_RectSet, r.x, r.y, r.w, r.h) == _NO_ERR);
+}
 

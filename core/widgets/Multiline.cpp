@@ -69,9 +69,11 @@ Multiline::~Multiline()
 void Multiline::Render()
 {
     rect r = GetScreenPosition();
-	Image* scr = Screen::Instance();
+	Screen* scr = Screen::Instance();
 
-	//TODO: color curColor = color(255,255,255); //current color we're drawing text in
+	// Don't even bother rendering the lines if nothing is in the clips
+	if (!scr->IsRectDrawable(r))
+		return;
 
 	if (mImage)
 		mImage->RenderBox(scr, rect(0, 0, 5, 5), r);
@@ -85,7 +87,6 @@ void Multiline::Render()
 
 	if (!mLines.empty() && mFont)
 	{
-
 		int z = 0;
 		int height = GetNumberOfLinesVisible();
 		height *= (mFont->GetHeight());
@@ -105,8 +106,6 @@ void Multiline::Render()
 		//draw the line above topline if it's > 0 for a hint of overflow
 		if (topLine > 0)
 		{
-			/*TODO: curColor = renderSlashCPixelText(curColor, mFont, target, r.x, renderTop - 3,
-											mLines.at(topLine - 1)); */
 			if (mSelected == topLine - 1 && mHighlightSelected)
 				scr->DrawRect( rect(r.x + MULTILINE_LEFT_BUFFER, renderTop,
 										r.w, mFont->GetHeight()),
@@ -118,14 +117,10 @@ void Multiline::Render()
 							mFontColor );
 
 		}
+		
     	for (int i = topLine; i < mBottomLine; i++)
 		{
 			if (mLines.size() - 1 < i) break; //invalid line
-
-    	    //mFont->renderTextBlended(target, r.x, renderTop + (mFont->GetHeight() * z) - 3,
-		//								mLines.at(i).c_str(), mLines.at(i).color);
-        	/*TODO: curColor = renderSlashCPixelText(curColor, mFont, target, r.x, renderTop + (mFont->GetHeight() * z) - 3,
-											mLines.at(i)); */
 
 			if (mSelected == i && mHighlightSelected)
 				scr->DrawRect( rect(r.x + MULTILINE_LEFT_BUFFER, renderTop + (mFont->GetHeight() * z),
