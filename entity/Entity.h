@@ -80,6 +80,8 @@ class Entity
 	void SetVisible(bool v);
 	bool IsVisible() { return mVisible; };
 	
+	void SetShadow(bool b);
+	
 	bool IsPositionRelativeToScreen();
 	
 	void AddPositionRectForUpdate();
@@ -135,7 +137,6 @@ class Entity
 	
 	bool mLocked; //Map Editor only
 	bool mShadow; //does this entity cast a shadow
-	bool mShowBorder; // Do we render a border
 
  // protected:
 	bool mSolid; //can other entities pass through our collision rects?

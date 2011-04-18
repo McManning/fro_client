@@ -274,4 +274,32 @@ SDL_Surface* SDL_CopySurface(SDL_Surface* src, SDL_Rect r)
 	return dst;
 }
 
+void SDL_Colorize(SDL_Surface* src, Uint8 r, Uint8 g, Uint8 b)
+{
+	Uint8 r2, g2, b2, a2;
+
+	LOCKSURF(src);
+	for (Uint32 y = 0; y < src->h; y++)
+	{
+		for (Uint32 x = 0; x < src->w; x++)
+		{
+			
+			SDL_GetRGBA( SDL_GetPixel(src, x, y), src->format, &r2, &g2, &b2, &a2 );
+			
+			//If greyscale, perform pixel adjustment
+			if ( r2 == g2 && g2 == b2)
+			{
+				// TODO: Better calculation
+				r2 = (Uint8)((double)r + ( (double)(255 - r2) / 255 * (-(double)r) ));
+				g2 = (Uint8)((double)g + ( (double)(255 - g2) / 255 * (-(double)g) ));
+				b2 = (Uint8)((double)b + ( (double)(255 - b2) / 255 * (-(double)b) ));
+				
+				SDL_SetPixel(src, x, y, r2, g2, b2, a2, true);
+			}
+		
+		}
+	}	
+	UNLOCKSURF(src);
+}
+
 

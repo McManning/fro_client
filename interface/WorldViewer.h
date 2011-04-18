@@ -40,9 +40,12 @@ class WorldViewer : public Frame
 	void RequestWorldList(listType type);
 	void SetControlState(bool active);
 	
+	Frame* CreateWorldInfoFrame(int width, worldData& data);
+	
 	std::vector<worldData> mWorldData;
 	
 	WidgetList* mWorldList;
+	Frame* mRecommendedFrame;
 	Button* mReloadButton;
 	Input* mFilterInput;
 	

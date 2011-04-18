@@ -24,6 +24,8 @@ class ResourceManager
 	Image* ImageFromSurface(SDL_Surface* src);
 	SDL_Image* SDLImgFromSurface(SDL_Surface* surf);
 	
+	void ReloadFromDisk(SDL_Image* img);
+	
 	std::vector<SDL_Image*> mImages;
 };
 

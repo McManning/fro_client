@@ -149,11 +149,15 @@ void Screen::Destroy()
 void Screen::AddRect(rect r)
 {
 	//sdfUpdate();
-    if (mDrawOptimizedRects)
-	   g_rects.push_back(r);
-
-	SDL_Rect sr = { r.x, r.y, r.w, r.h };
-	g_RectMan.add_rect(sr);
+	
+	if (SDL_GetAppState() & SDL_APPACTIVE)
+	{	
+	    if (mDrawOptimizedRects)
+		   g_rects.push_back(r);
+	
+		SDL_Rect sr = { r.x, r.y, r.w, r.h };
+		g_RectMan.add_rect(sr);
+	}
 }
 
 bool Screen::IsRectDrawable(rect r)

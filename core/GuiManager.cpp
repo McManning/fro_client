@@ -1,8 +1,10 @@
 
 #include <SDL/SDL.h>
 #include "GuiManager.h"
+#include "SDL/SDL_Misc.h"
 #include "widgets/Console.h"
 #include "widgets/Input.h"
+#include "widgets/Label.h"
 #include "widgets/HintBalloon.h"
 #include "Image.h"
 #include "TimerManager.h"
@@ -38,8 +40,10 @@ GuiManager::GuiManager()
 {
 	gui = this;
 	mConstrainChildrenToRect = false;
+	mInputFlashStateOn = false;
+	mPendingScreenshot = false;
 	mCustomCursorSourceY = 0;
-	
+
 	PRINT("--------------------------------------------------");
 	PRINT("-Begin Gui Initialization-------------------------\n  *\n *\n*\n");
 	
@@ -86,29 +90,31 @@ GuiManager::GuiManager()
 
 //Configurations/Settings
 
+	PrecacheColorizedAssets();
+
 	hasMouseFocus 
 		= hasKeyFocus 
 		= previousMouseFocus = NULL;
 	mNoFpsLimit = config.GetParamInt("system", "nolimit");
 	mUseLowCpu = config.GetParamInt("system", "lowcpu");
 	mFpsCap = config.GetParamInt("system", "fps");
-	mGetUserAttention = false;
-	mTitleFlashOn = false;
-	mShowStats = true;
 	mTick = 0;
 	mNextRenderTick = 0;
 	mBeatCounter = 0;
 	mFrameCounter = 0;
+	mRenderTime = 0;
+	mBaseColor = color(255,255,255);
 	mCursorImage = resman->LoadImg("assets/gui/gui.png");
 	mPosition = scr->GetClip();
 	mFont = fonts->Get();
+	mAppInputFocus = true;
 	
 	mDarkOverlay = resman->NewImage(scr->Width(), scr->Height(), color(255,255,255), true);
 	mDarkOverlay->DrawRect(mDarkOverlay->GetClip(), color(0,0,0,200));
 
 //Consoles
 	PRINT("Loading Console");
-	console = new Console("console", "Build " + string(APP_VERSION), "assets/gui/console/", "log_", false, true);
+	console = new Console("console", "Console @ Build " + string(APP_VERSION), "log_", color(85,90,100), false, true, true);
 	
 	PRINT("Configuring Console");
 	
@@ -126,7 +132,7 @@ GuiManager::GuiManager()
 	
 	console->HookCommand("messenger_debug", callback_ToggleMessengerDebug);
 
-	console->mBackgroundColor = color(85,90,100);
+	//console->mBackgroundColor = color(0,0,0,50);
 	console->ResizeChildren();
 	
 	Add(console);
@@ -134,6 +140,9 @@ GuiManager::GuiManager()
 
 // Gui Stuff
     mHoverTextHintBalloon = new HintBalloon(this);
+    
+    mStatsLabel = new Label(this, "", rect(5, Height() - 20), "");
+		mStatsLabel->mFont = fonts->Get("", 0, TTF_STYLE_BOLD);
 	
 	PRINT("GuiManager Finished");
 }
@@ -162,6 +171,8 @@ GuiManager::~GuiManager()
 	mHoverTextHintBalloon = NULL;
 
 	resman->Unload(mCursorImage);
+	
+	UnloadColorizedAssets();
 
 	PRINT("Flushing Timers");
 
@@ -204,11 +215,11 @@ Widget* GuiManager::GrabWidgetUnderXY(Widget* root, sShort x, sShort y) const
 	Widget* result = (isPointInRect(root->GetScreenPosition(), x, y)) ? root : NULL;
 
 	//if we're currently not in root, and it doesn't allow outside children, then return NULL
-	if (!result && root->mConstrainChildrenToRect)
+	if (!result) // && root->mConstrainChildrenToRect)
 		return NULL;
 
 	//Go through each child from bottom to top, checking if they have the point
-	for (uShort i = 0; i < root->mChildren.size(); i++)
+	for (int i = 0; i < root->mChildren.size(); i++)
 	{
 		//recurse children to find out which one has the point instead of the parent
 		grabbed = GrabWidgetUnderXY(root->mChildren.at(i), x, y);
@@ -322,29 +333,22 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 	}
 }
 
-void GuiManager::_renderStats(Image* scr)
+void GuiManager::_updateStatsLabel()
 {
-	if (!mShowStats)
-		return;
-
 	string s;
 	
-	s += " [DL " + its(downloader->mQueued.size()); // Count of queued files to download
-	s += ">" + its(downloader->CountActiveDownloads()); // Count of active downloads
-	s += ">" + its(downloader->mCompleted.size()) + "] "; // Count of completed files
+	if (mStatsLabel->IsVisible())
+	{
+		s += "\\c550 [DL " + its(downloader->mQueued.size()); // Count of queued files to download
+		s += ">" + its(downloader->CountActiveDownloads()); // Count of active downloads
+		s += ">" + its(downloader->mCompleted.size()) + "] "; // Count of completed files
+		
+		s += " [FPS:" + its(mFps); //frames rendered per second
+		s += " BPS:" + its(mBps); //heartbeats a second
+		s += " rMS:" + its(mRenderTime) + "]"; //time it took to render last frame
 	
-	s += " [FPS:" + its(mFps); //frames rendered per second
-	s += " BPS:" + its(mBps); //heartbeats a second
-	s += " rMS:" + its(mRenderTime) + "]"; //time it took to render last frame
-	
-	rect r;
-	r.w = mFont->GetWidth(s);
-	r.h = mFont->GetHeight();
-	r.x = 3;
-	r.y = scr->Height() - r.h - 3;
-
-	//scr->DrawRect(r, color());
-	mFont->Render(scr, r.x, r.y, s, color(128, 128, 0));
+		mStatsLabel->SetCaption(s);
+	}
 }
 
 void GuiManager::_renderCursor(Image* scr)
@@ -399,9 +403,7 @@ void GuiManager::Render()
 	{
 		//Render widget tree
 		Widget::Render();
-	
-		//_renderStats(scr);
-		
+
 		if (SDL_GetAppState() & SDL_APPMOUSEFOCUS)
 		{
 			_renderCursor(scr);
@@ -433,20 +435,18 @@ void GuiManager::RenderDarkOverlay()
 void GuiManager::_getNextRenderTick(uLong ms)
 {
 	if (mNoFpsLimit)
-		return;
+	{
+		mNoFpsLimit = 0;
+	}
+	else
+	{
+		//Slow rendering speed if this window doesn't have focus (If that feature is enabled). Also make sure fps cap isn't set below 5.
+		int fps = ((mAppInputFocus || !mUseLowCpu) && mFpsCap > 5) ? mFpsCap : 5;
+		if (fps < 1)
+			fps = 1;
 
-	//Slow rendering speed if this window doesn't have focus (If that feature is enabled). Also make sure fps cap isn't set below 5.
-	int fps = (((SDL_GetAppState() & SDL_APPINPUTFOCUS) || !mUseLowCpu) && mFpsCap > 5) ? mFpsCap : 5;
-	if (fps < 1)
-		fps = 1;
-
-	//TODO: Bug here, idk wtf is going on. Sometimes goes negative at startup.
-	//I threw in a signed long and checked for negative before sending to the uLong.
-	signed long sl = ms + (1000 / fps) - mRenderTime; //Subtract render time to create a more constant FPS
-	if (sl < 0)
-		sl = 0;
-		
-	mNextRenderTick = sl;
+		mNextRenderTick = ms + (1000 / fps) - mRenderTime;
+	}
 }
 
 bool GuiManager::IsKeyDown(int key) const
@@ -599,15 +599,17 @@ void GuiManager::SetHasMouseFocus(Widget* w)
 void GuiManager::GetUserAttention()
 {
 	int i = config.GetParamInt("system", "alerts");
-	if ( i == 1 || (i == 2 && !(SDL_GetAppState() & SDL_APPINPUTFOCUS)) )
+	if ( i == 1 || (i == 2 && !mAppInputFocus) )
 	{
 		if (sound)
 			sound->Play("blip");
-			
-		mGetUserAttention = true;
-		
-		if (!SDL_GetAppState() & SDL_APPINPUTFOCUS)
-	   	   flashWindowState(true);
+
+		if (!mAppInputFocus)
+		{
+	   		flashWindowState(true);
+			mInputFlashStateOn = true;
+			DEBUGOUT("State flash true");
+		}
 	}
 }
 
@@ -628,7 +630,9 @@ void GuiManager::SetAppTitle(string caption)
 	mAppTitle = caption;
 	
 	// TODO: fps/bps is temp for testing purposes!
-	string s = mAppTitle;
+/*	string s = mAppTitle;
+
+
 #ifdef DEBUG
 	if (downloader)
 	{
@@ -641,40 +645,25 @@ void GuiManager::SetAppTitle(string caption)
 	s += " BPS:" + its(mBps); //heartbeats a second
 	s += " rMS:" + its(mRenderTime) + "]"; //time it took to render last frame
 #endif
+*/
 
-	SDL_WM_SetCaption(s.c_str(), NULL);
+	SDL_WM_SetCaption(caption.c_str(), NULL);
 }
 
 void GuiManager::Process()
 {
-	//If we're focused, don't worry about getting their attention
-	if (SDL_GetAppState() & SDL_APPINPUTFOCUS)
-	{
-		if (mGetUserAttention)
-		{
-			mGetUserAttention = false;
-			flashWindowState(false);
-		}
-		
-		if (!mAppInputFocus)
-		{
-			mAppInputFocus = true;
-			
-			/* HACK: 
-				http://bugzilla.libsdl.org/show_bug.cgi?id=659
-				SDL does not like alt+tab on Windows, it sticks the alt modifier.
-			*/ 
-			SDL_SetModState(KMOD_NONE);
-		}
-	}
-	else
-	{
-		mAppInputFocus = false;
-	}
-	
 	//Poll and distribute events from SDL
 	SDL_Event event;
 	rect r;
+
+	if (mPendingScreenshot)
+	{
+		mPendingScreenshot = false;
+		string s = "saved/ss_" + timestamp(true) + ".png";
+		buildDirectoryTree(s);
+	
+		IMG_SavePNG(s.c_str(), Screen::Instance()->Surface());
+	}
 
 	while (SDL_PollEvent(&event))
 	{
@@ -695,6 +684,24 @@ void GuiManager::Process()
 			case SDL_VIDEOEXPOSE:
                 FlagRender();
                 break;
+            case SDL_ACTIVEEVENT:
+				if (event.active.state & SDL_APPINPUTFOCUS)
+				{
+					mAppInputFocus = (event.active.gain == 1);
+					DEBUGOUT("Setting appinputfocus: " + its(mAppInputFocus));
+					if (mAppInputFocus && mInputFlashStateOn)
+					{
+						DEBUGOUT("State flash false");
+						flashWindowState(false);
+						mInputFlashStateOn = false;
+					}
+					/* HACK: 
+						http://bugzilla.libsdl.org/show_bug.cgi?id=659
+						SDL does not like alt+tab on Windows, it sticks the alt modifier.
+					*/ 
+					SDL_SetModState(KMOD_NONE);
+				}				
+				break;
 			default:
 				_distributeEvent(&event);
 				break;
@@ -713,10 +720,14 @@ void GuiManager::Process()
 	timers->Process(mTick);
 
 	_cleanDeletionStack();
+    _updateStatsLabel();
 
 	//make sure focused window is always on top the other
 	if (GetDemandsFocus())
 		GetDemandsFocus()->MoveToTop();
+		
+	if (mStatsLabel->IsVisible())
+		mStatsLabel->MoveToTop();
 		
 	// Has absolute topmost priority (other than the mouse)
     if (mHoverTextHintBalloon->IsVisible())
@@ -735,13 +746,10 @@ void GuiManager::MainLoop()
 		Process();
 
 		//Only render if: We've waited enough ticks or there's no wait time, AND the app isn't minimized
-		if ( (mTick >= mNextRenderTick || mNoFpsLimit)
+		if ( (mTick >= mNextRenderTick)
 				&& (SDL_GetAppState() & SDL_APPACTIVE) )
 		{
 			Render();
-#ifdef DEBUG
-			SetAppTitle(mAppTitle); // so we can get fast-updated render info
-#endif
 		}
 
 		mBeatCounter++;
@@ -753,12 +761,17 @@ void GuiManager::MainLoop()
 
 void GuiManager::Screenshot()
 {
-	string s = "saved/ss_" + timestamp(true) + ".png";
+	mPendingScreenshot = true;
+	mNextRenderTick = 0; // force a redraw asap
+	FlagRender();
+	
+/*	string s = "saved/ss_" + timestamp(true) + ".png";
 	buildDirectoryTree(s);
 	
 	IMG_SavePNG(s.c_str(), Screen::Instance()->Surface());
 
 	SetAlert("\\c090* Screenshot saved to: " + s);
+	*/
 }
 
 void GuiManager::SetAlert(string msg)
@@ -769,4 +782,89 @@ void GuiManager::SetAlert(string msg)
 	
 	timers->Remove("KillGuiAlert");
 	timers->Add("KillGuiAlert", GUI_ALERT_DISPLAY_MS, false, timer_killGuiAlert);
+}
+
+
+const char* const COLORIZED_ASSETS[] = 
+{
+	"assets/gui/console/input.png",
+	"assets/gui/console/bg.png",
+	"assets/gui/console/vscroller_bg.png",
+	"assets/gui/console/vscroller_tab.png",
+	"assets/gui/console/vscroller_down.png",
+	"assets/gui/console/vscroller_up.png",
+	"assets/gui/console/exit.png",
+	"assets/gui/console/toggle.png",
+	"assets/gui/checkbox.png",
+	"assets/gui/rcm_button.png",
+	"assets/gui/frame_bg.png",
+	"assets/gui/hscroller_tab.png",
+	"assets/gui/vscroller_tab.png",
+	"assets/gui/input_bg.png",
+	NULL,
+};
+
+void GuiManager::PrecacheColorizedAssets()
+{
+	int i = 0, d;
+	while (COLORIZED_ASSETS[i] != NULL)
+	{
+		if (resman->Load(COLORIZED_ASSETS[i]) == NULL)
+		{
+			WARNING("Could not precache " + string(COLORIZED_ASSETS[i]));
+		}
+		
+		++i;
+	}
+}
+
+void GuiManager::UnloadColorizedAssets()
+{
+	int i = 0, d;
+	while (COLORIZED_ASSETS[i] != NULL)
+	{
+		for (d = 0; d < resman->mImages.size(); ++d)
+		{
+			if (resman->mImages.at(d)->filename == COLORIZED_ASSETS[i])
+			{
+				resman->Unload(resman->mImages.at(d));
+				break;
+			}
+		}
+		
+		++i;
+	}	
+}
+
+void GuiManager::ColorizeGui(color c)
+{
+	mBaseColor = c;
+	
+	// Reload and colorize all colorizeable "assets and globals used by the GUI
+	int i = 0, d, fs, f;
+	SDL_Image* img;
+	while (COLORIZED_ASSETS[i] != NULL)
+	{
+		for (d = 0; d < resman->mImages.size(); ++d)
+		{
+			img = resman->mImages.at(d);
+			
+			if (img->filename == COLORIZED_ASSETS[i])
+			{
+				DEBUGOUT("Reloading " + img->filename);
+				resman->ReloadFromDisk(img);
+				
+				// colorize all subsurfaces
+				for (fs = 0; fs < img->framesets.size(); ++fs)
+				{
+					for (f = 0; f < img->framesets.at(fs).frames.size(); ++f)
+					{
+						SDL_Colorize(img->framesets.at(fs).frames.at(f).surf, c.r, c.g, c.b);
+					}
+				}
+			}
+		}
+		
+		++i;
+	}
 }

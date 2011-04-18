@@ -4,6 +4,7 @@
 #include "ColorPicker.h"
 #include "RightClickMenu.h"
 #include "../GuiManager.h"
+#include "../TimerManager.h"
 #include "../Image.h"
 #include "../Screen.h"
 #include "../FontManager.h"
@@ -12,6 +13,20 @@
 #include "Console.h"
 
 const int MAX_PASSWORD_SYMBOLS = 10;
+
+uShort timer_inputThink(timer* t, uLong ms)
+{
+	Input* i = (Input*)t->userData;
+	if (!i)
+		return TIMER_DESTROY;
+		
+	if (i->mIsPassword && !i->GetText().empty())
+		i->Changed();
+
+	// TODO: Blink the caret!
+	
+	return TIMER_CONTINUE;	
+}
 
 string getInputText(Widget* parent, string id)
 {
@@ -153,8 +168,7 @@ Input::Input(Widget* wParent, string sId, rect rPosition, string sMask,
 
 	//we need to know mouse positions outside our widget for highlight dragging
 	gui->AddGlobalEventHandler(this);
-	
-	mHighlightBackground = HIGHLIGHT_COLOR;
+
 	mId = sId;
 	mCharacterMask = sMask;
 
@@ -165,6 +179,7 @@ Input::Input(Widget* wParent, string sId, rect rPosition, string sMask,
 	if (wParent)
 		wParent->Add(this);
 	
+	timers->Add("", 100, false, timer_inputThink, NULL, this);
 }
 
 Input::~Input() 
@@ -189,12 +204,6 @@ void Input::Render()
 		mLastBlink = gui->GetTick() + 600;
 		mDrawCaret = !mDrawCaret;
 	}*/
-	
-	if (!HasKeyFocus() && mSelectionStart != mSelectionEnd)
-	{
-		if (!Get("inputmenu") || !Get("inputmenu")->HasKeyFocus())
-			SetSelection(0, 0);
-	}
 
 	if (mImage)
 		mImage->RenderBox(scr, rect(0, CalculateImageOffset(15), 5, 5), r);
@@ -262,7 +271,7 @@ void Input::_renderText(Image* scr, rect& r)
 			w = r.w - x;
 		
 		//now have a clipped width~ Now draw the rect.
-		scr->DrawRect( rect(r.x + x, r.y, w, mTextImage->Height()), mHighlightBackground );
+		scr->DrawRect( rect(r.x + x, r.y, w, mTextImage->Height()), gui->mBaseColor );
 	}
 	
 	//render the visible text
@@ -444,6 +453,23 @@ void Input::Event(SDL_Event* event)
 						m->AddOption("Select All", callback_inputMenuSelectAll, this);
 				}
 			}
+			
+			// Small hack (Probably a better way to do this) to force a redraw once we lose key focus
+			// To be completely honest, custom events from GuiManager would be so fucking helpful
+			// right now...
+			if (!HasKeyFocus())
+			{
+				if (mHasFocusCheck)
+				{
+					mHasFocusCheck = false;
+					Changed();	
+				}
+			}
+			else
+			{
+				mHasFocusCheck = true;	
+			}
+			
 		} break;
 		case SDL_KEYDOWN: {
 			int selStart = mSelectionStart;
@@ -757,7 +783,12 @@ void Input::Cut()
 						mText.begin() + selEnd);
 		mCaretPos = selStart;
 		SetSelection(0, 0);
+		
+		DEBUGOUT("changed");
 	}
+	
+	
+	
 	Changed();
 }
 

@@ -20,6 +20,7 @@ enum { //copying SDL_BUTTON masks for easy conversion
 class Font;
 class XmlFile;
 class HintBalloon;
+class Label;
 class GuiManager : public Widget
 {
   public:
@@ -86,6 +87,10 @@ class GuiManager : public Widget
 	void SetAlert(string msg);
 
 	void Screenshot();
+	
+	void PrecacheColorizedAssets();
+	void UnloadColorizedAssets();
+	void ColorizeGui(color c);
 
 	Image* mCursorImage;
 
@@ -112,17 +117,13 @@ class GuiManager : public Widget
 	uShort mFps; //Frames per second
 	uShort mBps; //Heartbeats per second
 	uShort mRenderTime; //time it takes for a single Render() call
-	bool mShowStats;
-	
+
 	/*
 		disables all SDL_Delays in the main loop and frame caps to get maximum performance
 		Quite unnecessary but useful for testing limits
 	*/
 	bool mNoFpsLimit; 
-	
-	bool mTitleFlashOn;
-	bool mGetUserAttention;
-	
+
 	string mAppTitle;
 	
 	//Used by a lot of widgets, and it takes a while to rebuild, so it's stored here.
@@ -134,6 +135,10 @@ class GuiManager : public Widget
 	int mCustomCursorSourceY;
 	
 	bool mAppInputFocus;
+	bool mInputFlashStateOn;
+	bool mPendingScreenshot;
+	
+	color mBaseColor; // for use with colorization of assets
 	
   private:
 	rect mMousePosition;
@@ -152,16 +157,17 @@ class GuiManager : public Widget
 	/*	Free memory of all widgets queued to delete. */
 	void _cleanDeletionStack();
 	
-	void _renderStats(Image* scr);
 	void _renderCursor(Image* scr);
 	
 		/*	Recalculate the next tick we should do a full render call on */
 	void _getNextRenderTick(uLong ms);
 
+	void _updateStatsLabel();
+
 	std::vector<Widget*> mDeletionStack;
 	
 	HintBalloon* mHoverTextHintBalloon;
-
+	Label* mStatsLabel;
 };
 
 extern GuiManager* gui;

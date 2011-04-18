@@ -125,10 +125,10 @@ void OptionsDialog::_buildFrameUser()
 	new Label(mFrameUser, "", rect(0,y), "Alerts");
 	ss = new SmallSelect(mFrameUser, "alerts", rect(95, y, 150, 20), NULL);
 		ss->AddItem("Off");
-		ss->AddItem("On");
-		ss->AddItem("On While Inactive");
+		ss->AddItem("Always");
+		ss->AddItem("Only When Inactive");
 		ss->mSelectedIndex = config.GetParamInt("system", "alerts");
-		ss->mHoverText = "Ex: Titlebar flashing when a message is received.";
+		ss->mHoverText = "Controls when to flash the title bar for a new message";
 	y += 25;
 	
 /*	c = new Checkbox(mFrameUser, "names", rect(0,y), "Show Player Names", 0);
@@ -190,7 +190,7 @@ void OptionsDialog::_buildFrameAudio()
 	
 	c = new Checkbox(mFrameAudio, "", rect(0,y), "Enable Voice Chat", 0);
 		c->SetState( 0 );
-		c->mHoverText = "Hahaha, you wish";
+		c->mHoverText = "Haha, you wish";
 	y += 25;
 
 }
@@ -214,7 +214,7 @@ void OptionsDialog::_buildFrameGraphics()
 		
 	c = new Checkbox(mFrameGraphics, "nolimit", rect(0,y), "Max Speed (Not Recommended)", 0);
 		c->SetState( config.GetParamInt("system", "nolimit") );
-		c->mHoverText = "Seriously, this is a 2D chat room. Why have 100 FPS?";
+		c->mHoverText = "Seriously, this is a 2D chat room. Why have 4000 FPS?";
 	y += 25;	
 }
 

@@ -23,6 +23,11 @@ SDL_Image::~SDL_Image()
 		WARNING("Deleting SDL_Image [" + filename + "] With " + its(refCount) + " References!");
 	}
 
+	_unloadFramesets();
+}
+
+void SDL_Image::_unloadFramesets()
+{
 	int a, b;
 	for (a = 0; a < framesets.size(); a++)
 	{
@@ -35,6 +40,8 @@ SDL_Image::~SDL_Image()
 				free ( framesets.at(a).frames.at(b).key );
 		}
 	}
+	
+	framesets.clear();	
 }
 
 bool SDL_Image::Load(string file, string pass)
@@ -44,6 +51,8 @@ bool SDL_Image::Load(string file, string pass)
 	bool result;
 	
 	state = LOADING;
+	
+	_unloadFramesets(); // in case we tried to reload it
 
 	//TODO: load boltFile (and decrypt), then load an SDL RW handle from that memory, then pass to image loader
 
@@ -324,10 +333,7 @@ bool Image::ConvertToHorizontalAnimation(rect clip, uShort delay)
 	
 	//if it's already animated, don't deal with this.
 	if (mImage->CountFrames() > 1)
-	{
-		WARNING("Already Animated");
 		return false;
-	}
 
 	SDL_Surface* src = mImage->framesets.at(0).frames.at(0).surf;
 	mImage->framesets.clear();
@@ -1192,26 +1198,7 @@ void Image::ColorizeGreyscale(color modifier)
 	color c;
 	SDL_Surface* surf = Surface();
 
-	for (int y = 0; y < surf->h; y++)
-	{
-		for (int x = 0; x < surf->w; x++)
-		{
-			c = GetPixel(x, y);
-			
-			//If greyscale, perform pixel adjustment
-			if ( isGreyscale(c) )
-			{
-				r = (double)modifier.r + ( (double)(255 - c.r) / 255 * (0.0 - (double)modifier.r) );
-				g = (double)modifier.g + ( (double)(255 - c.g) / 255 * (0.0 - (double)modifier.g) );
-				b = (double)modifier.b + ( (double)(255 - c.b) / 255 * (0.0 - (double)modifier.b) );
-				c.r = (byte)r;
-				c.g = (byte)g;
-				c.b = (byte)b;
-				SetPixel(x, y, c);
-			}
-		}
-	}
-
+	SDL_Colorize(surf, modifier.r, modifier.g, modifier.b);
 }
 
 void Image::ReduceAlpha(byte amount)

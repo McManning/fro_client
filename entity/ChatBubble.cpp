@@ -123,7 +123,7 @@ void ChatBubble::UpdatePosition()
 		
 		if (mRiseHeight < mImage->Height())
 		{	
-			int speed = mImage->Height() / 32;
+			int speed = mImage->Height() / 20;
 			mRiseHeight += (speed > 0) ? speed : 1;
 		}
 		

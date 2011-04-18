@@ -8,6 +8,7 @@
 #include "../core/widgets/Label.h"
 #include "../core/widgets/Input.h"
 #include "../core/widgets/Checkbox.h"
+#include "../core/widgets/YesNoPopup.h"
 
 #include "../entity/LocalActor.h"
 #include "../entity/Avatar.h"
@@ -131,7 +132,7 @@ AvatarEdit::AvatarEdit(avatarProperties* prop) :
 	Button* b;
 	b = new Button(this, "save",rect(230,152,20,20), "", callback_avatarEditSave);
 		b->mHoverText = "Save Avatar";
-		b->SetImage("assets/buttons/go.png");
+		b->SetImage("assets/buttons/okay.png");
 
 	mCurrentProperties = prop;
 	
@@ -150,11 +151,39 @@ AvatarEdit::~AvatarEdit()
 
 /////////////////////////////////////////////////////////////////////////////////
 
+void callback_yesDeleteAvatar(YesNoPopup* yn)
+{
+	if (avatarFavorites)
+	{
+		avatarFavorites->SetActive(true);	
+		avatarFavorites->EraseSelected();
+	}
+}
+
+void callback_noDeleteAvatar(YesNoPopup* yn)
+{
+	if (avatarFavorites)
+	{
+		avatarFavorites->SetActive(true);
+	}
+}
+
 void callback_avatarFavorites(Button* b)
 {
 	if (b->mId == "del")
 	{
-		avatarFavorites->EraseSelected();
+		if (avatarFavorites->mList->mSelected > -1)
+		{
+			avatarProperties* ap = avatarFavorites->mAvatars.at(avatarFavorites->mList->mSelected);
+			YesNoPopup* yn = new YesNoPopup("", "Confirm Erase Avatar", 
+											"Are you sure you want to erase " + ap->id, false);
+											
+			yn->onYesCallback = callback_yesDeleteAvatar;
+			yn->onNoCallback = callback_noDeleteAvatar;
+			
+			avatarFavorites->SetActive(false);
+		}
+		//avatarFavorites->EraseSelected();
 	}
 	else if (b->mId == "new")
 	{
@@ -184,23 +213,23 @@ AvatarFavorites::AvatarFavorites() :
 	//make bottom buttons
 	mNew = new Button(this, "new", rect(0,0,20,20), "", callback_avatarFavorites);
 		mNew->mHoverText = "Add New Avatar";
-		mNew->SetImage("assets/buttons/star_plus.png");
+		mNew->SetImage("assets/buttons/new_avatar.png");
 
 	mEdit = new Button(this, "edit", rect(0,0,20,20), "", callback_avatarFavorites);
 		mEdit->mHoverText = "Edit Selected";
-		mEdit->SetImage("assets/buttons/star_bar.png");
+		mEdit->SetImage("assets/buttons/edit_avatar.png");
 
 	mDelete = new Button(this, "del", rect(0,0,20,20), "", callback_avatarFavorites);
 		mDelete->mHoverText = "Delete Selected";
-		mDelete->SetImage("assets/buttons/star_minus.png");
+		mDelete->SetImage("assets/buttons/delete_avatar.png");
 
 	mUse = new Button(this, "use", rect(0,0,20,20), "", callback_avatarFavorites);
 		mUse->mHoverText = "Use Selected";
-		mUse->SetImage("assets/buttons/go.png");
+		mUse->SetImage("assets/buttons/use_avatar.png");
 
 	mDesign = new Button(this, "", rect(0,0,20,20), "", callback_createAvatar);
 		mDesign->mHoverText = "Open Avatar Designer";
-		mDesign->SetImage("assets/buttons/star_plus.png");
+		mDesign->SetImage("assets/buttons/design_avatar.png");
 
 	ResizeChildren(); //get them into position
 	Center();

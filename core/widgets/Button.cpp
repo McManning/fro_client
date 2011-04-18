@@ -46,6 +46,8 @@ void Button::Render()
 	rect r = GetScreenPosition();
 	Image* scr = Screen::Instance();
 	
+	scr->PushClip(r);
+	
 	if (mImage)
 	{
 		if (mCaptionImage) //gotta do a hedge render
@@ -72,11 +74,13 @@ void Button::Render()
 							);
 	}
 	Widget::Render();
+	
+	scr->PopClip();
 }
 
 void Button::SetCaption(string text)
 {
-	mCaption = text;
+	mCaption = stripCodes(text);
 	resman->Unload(mCaptionImage);
 	mCaptionImage = NULL;
 	

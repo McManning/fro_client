@@ -729,8 +729,8 @@ bool Actor::SwapAvatars()
 void Actor::UpdateCollisionAndOrigin()
 {
 	rect r;
-	r.w = 16;
-	r.h = 16;
+	r.w = 12;
+	r.h = 8;
 	if (mAvatar)
 	{
 		mOrigin.x =	mAvatar->GetImage()->Width() / 2;
@@ -742,8 +742,8 @@ void Actor::UpdateCollisionAndOrigin()
 		mOrigin.y = 0;	
 	}
 	
-	r.x = mOrigin.x - 8;
-	r.y = mOrigin.y - 16;
+	r.x = mOrigin.x - 6;
+	r.y = mOrigin.y - 10;
 	
 	mCollisionRects.clear();
 	mCollisionRects.push_back(r);	

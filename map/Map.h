@@ -103,6 +103,7 @@ class Map : public Frame, public EntityManager
 
 	bool mShowPlayerNames; //TODO: Move to Game or something
 	bool mEditorMode;
+	bool mShowDebug;
 	
 	std::vector<point2d> mCameraDestinationStack;
 	uShort mCameraSpeed;
@@ -125,8 +126,8 @@ class Map : public Frame, public EntityManager
 	Entity* mFollowedEntity; //entity the camera is following
 	
 	point2d mCameraPosition;
-	point2d mOldCameraPosition; //used for determining if the camera moved last frame
 	point2d mCameraFollowOffset;
+	rect mOldCameraRect; //used for determining if the camera moved last frame
 
 	uShort mGravity;
 		

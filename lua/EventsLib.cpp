@@ -57,8 +57,6 @@ int LuaMessageListener::DoFunction(MessageListener* ml, MessageData& data)
 {
 	if (!luaState) return 0;
 
-PRINT("LuaMessageListener::DoFunction get function");
-
 	lua_getglobal(luaState, luaFunction.c_str()); //get function name
 
 	//if there isn't a function at the top of the stack, we failed to find it
@@ -67,8 +65,6 @@ PRINT("LuaMessageListener::DoFunction get function");
 		WARNING("Lua Function " + luaFunction + " not found during firing of event " + data.mId);
 		return 0;	
 	}
-
-PRINT("LuaMessageListener::DoFunction push args");
 
 	//first argument, listener handle
 	lua_pushnumber(luaState, ml->handle);
@@ -108,8 +104,6 @@ PRINT("LuaMessageListener::DoFunction push args");
 
 	int result;
 
-PRINT("LuaMessageListener::DoFunction lua_pcall");
-
 	if (lua_pcall(luaState, 4, 1, 0) != 0)
 	{
 		console->AddMessage("\\c900 * LUAEVENT [" + luaFunction + "] " + string(lua_tostring(luaState, -1)));
@@ -126,8 +120,6 @@ PRINT("LuaMessageListener::DoFunction lua_pcall");
 	}
 
 	lua_pop(luaState, 1); //get rid of result from stack
-	
-PRINT("LuaMessageListener::DoFunction end");
 
 	return result;
 }

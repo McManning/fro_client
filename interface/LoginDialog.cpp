@@ -240,6 +240,9 @@ LoginDialog::LoginDialog() :
 	loginDialog = this;
 	
 	mBackgroundImage = resman->LoadImg("assets/login.jpg");
+	
+	// match the first pixel in our background image
+	gui->ColorizeGui( mBackgroundImage->GetPixel(0, 0) );
 }
 
 LoginDialog::~LoginDialog()
@@ -310,26 +313,9 @@ void LoginDialog::SendLoginQuery(bool skip)
 	string query;
 	
 	//send http get: login.php?ver=1.1.0&id=test&pass=test
-	
-	XmlFile xf;
-	if (!xf.LoadFromFile("assets/connections.cfg"))
-	{
-		FATAL(xf.GetError());	
-	}
-	
-	TiXmlElement* e = xf.mDoc.FirstChildElement();
-	if (e)
-		e = e->FirstChildElement("login");
-	
-	if (e)
-		query = xf.GetText(e);
-	
-	if (query.empty() || query.find("http://", 0) != 0)
-	{
-		FATAL("Invalid login address");
-	}
-	
-	query += "?ver=";
+
+	query = "http://sybolt.com/drm-svr/";
+	query += "login.php?ver=";
 	query += APP_VERSION;
 
 	if (!skip)
@@ -352,8 +338,8 @@ void LoginDialog::SendLoginQuery(bool skip)
 		}
 	}
 	
-	e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("map");
-	query += "&lm=" + game->mPlayerData.GetParamString(e, "lastid");
+	//e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("map");
+	//query += "&lm=" + game->mPlayerData.GetParamString(e, "lastid");
 	
 	downloader->QueueDownload(query, getTemporaryCacheFilename(),
 									NULL, dlCallback_welcomeXmlSuccess,

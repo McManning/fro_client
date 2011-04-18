@@ -21,7 +21,6 @@ Entity::Entity()
 	mLayer = 0;
 	mLocked = false;
 	mShadow = false;
-	mShowBorder = false;
 	mManagerCanDeleteMe = true;
 	mClickRange = 0;
 	mActiveChatBubble = NULL;
@@ -51,9 +50,21 @@ string Entity::GetTypeName()
 }
 
 void Entity::SetVisible(bool v)
-{
+{	
+	// if we're trying to hide them, add the rect before toggling visibility
+	if (mVisible && !v)
+		AddPositionRectForUpdate();	
+	
 	mVisible = v;
+	
+	// write anyway, in case it went from invis->vis
 	AddPositionRectForUpdate();	
+}
+
+void Entity::SetShadow(bool b)
+{
+	mShadow = b;
+	AddPositionRectForUpdate();		
 }
 
 bool Entity::IsVisibleInCamera()
@@ -191,19 +202,32 @@ bool Entity::IsCollidingWithEntity(Entity* e)
 
 void Entity::Render()
 {
-	if (mShowBorder) // Show debugging information 
+	if (mMap->mShowDebug) // Show debugging information 
 	{
 		rect r = GetBoundingRect();
-		
+
 		// if we're based on map position, convert
 		if (!IsPositionRelativeToScreen())
 			r = mMap->ToScreenPosition( r );
 			
 		Image* scr = Screen::Instance();
-		scr->DrawRect(r, color(255,0,0), false);
+		scr->DrawRect(r, color(255,0,255), false);
 		
-		scr->DrawLine(r.x, r.y, r.x + r.w, r.y + r.h, color(255,0,0), 1);
-		scr->DrawLine(r.x+r.w, r.y, r.x, r.y + r.h, color(255,0,0), 1);
+		// X in the middle of objects. Doesn't play well when objects go offscreen
+		//scr->DrawLine(r.x, r.y, r.x + r.w, r.y + r.h, color(255,0,255), 1);
+		//scr->DrawLine(r.x+r.w, r.y, r.x, r.y + r.h, color(255,0,255), 1);
+		
+		//draw collisions
+		for (int i = 0; i < mCollisionRects.size(); i++)
+		{
+			r = mCollisionRects.at(i);
+			r.x += mPosition.x - mOrigin.x;
+			r.y += mPosition.y - mOrigin.y;
+			if (!IsPositionRelativeToScreen())
+				r = mMap->ToScreenPosition( r );
+				
+			scr->DrawRect(r, color(255,0,0), false);
+		}
 	}
 }	
 
@@ -246,6 +270,7 @@ rect Entity::GetShadowRect()
 void Entity::SetLayer(int l)
 {
 	mLayer = l;
+	AddPositionRectForUpdate();
 }
 
 int Entity::LoadCollisionFile(string file)
@@ -289,10 +314,9 @@ int Entity::LuaSetProp(lua_State* ls, string& prop, int index)
 	else if (prop == "name") mName = lua_tostring(ls, index);
 	else if (prop == "visible") SetVisible( lua_toboolean(ls, index) );
 	else if (prop == "solid") SetSolid( lua_toboolean(ls, index) );
-	else if (prop == "shadow") mShadow = lua_toboolean(ls, index);
+	else if (prop == "shadow") SetShadow( lua_toboolean(ls, index) );
 	else if (prop == "layer") SetLayer( (int)lua_tonumber(ls, index) );
 	else if (prop == "clickable") mClickRange = (int)lua_tonumber(ls, index);
-	else if (prop == "border") mShowBorder = lua_toboolean(ls, index);
 	else return 0;
 	
 	return 1;
@@ -308,7 +332,6 @@ int Entity::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "layer") lua_pushnumber( ls, GetLayer() );
 	else if (prop == "ctype") lua_pushstring( ls, GetTypeName().c_str() );
 	else if (prop == "clickable") lua_pushnumber( ls, mClickRange );
-	else if (prop == "border") lua_pushboolean( ls, mShowBorder );
 	else return 0;
 	
 	return 1;

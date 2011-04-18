@@ -22,7 +22,17 @@ void callback_joinWorld(Button* b)
 {
 	// b->mId = world ID to join
 	game->LoadOnlineWorld(b->mId);
-	b->GetParent()->GetParent()->GetParent()->Die();
+	
+	Widget* wv = gui->Get("worldviewer");
+	if (wv)
+		wv->Die();
+}
+
+void callback_tryClose(Button* b)
+{
+	// only let them close it if we're not between worlds
+	if (game->mMap)
+		b->GetParent()->Die();	
 }
 
 void callback_sortByName(Button* b)
@@ -81,13 +91,21 @@ void dlCallback_worldDataFailure(downloadData* data)
 WorldViewer::WorldViewer()
 	: Frame(gui, "worldviewer", rect(0, 0, 400, 400), "Pick A World, Any World...", true, false, true, true)
 {
-	mWorldList = new WidgetList(this, rect(5, 30, Width() - 10, Height() - 65));
+	Label* l;
+	Button* b;
+	
+	mRecommendedFrame = NULL;
+	
+	// override our close callback to check if it really is legal to close this
+	mClose->onClickCallback = callback_tryClose;
+	
+	new Label(this, "", rect(5, 30), "Recommended World:");
+	
+	mWorldList = new WidgetList(this, rect(5, 105, Width() - 10, Height() - (105+35)));
 	
 	mReloadButton = new Button(this, "", rect(5, Height() - 25, 20, 20), "", callback_reloadWorlds);
 		mReloadButton->mHoverText = "Reload List";
 		mReloadButton->SetImage("assets/buttons/reload_worlds.png");
-
-	Button* b;
 
 	b = new Button(this, "", rect(30, Height() - 25, 20, 20), "", callback_sortByName);
 		b->mHoverText = "Sort by name";
@@ -111,10 +129,11 @@ WorldViewer::WorldViewer()
 		b->SetImage("assets/buttons/go.png");
 	*/
 	
-	Label* l = new Label(this, "", rect(80, Height() - 20), "Filter:");
+	l = new Label(this, "", rect(80, Height() - 25), "Filter:");
 	
 	mFilterInput = new Input(this, "filter", rect(80 + l->Width()+5, Height() - 25, 150, 20), "", 0, true, NULL);
 		mFilterInput->onChangeCallback = callback_filterChanged;
+		mFilterInput->mHoverText = "Use * as a wildcard";
 		//mFilterInput->SetText("*");
 	
 	RequestWorldList(LIST_ALL);
@@ -181,6 +200,16 @@ bool WorldViewer::LoadWorldDataFromFile(string filename)
 			wd.users = sti(line.at(2));
 			wd.description = line.at(3);
 			mWorldData.push_back(wd);
+			
+			if (i == 0) // first item is our "recommended world"
+			{
+				if (mRecommendedFrame)
+					mRecommendedFrame->Die();
+		
+				mRecommendedFrame = CreateWorldInfoFrame(Width() - 10, mWorldData.at(i));
+				Add(mRecommendedFrame);	
+				mRecommendedFrame->SetPosition(rect(5, 50, Width() - 10, mRecommendedFrame->Height()));
+			}
 		}
 	}
 	
@@ -196,6 +225,35 @@ void WorldViewer::FailedToLoadWorldData(string reason)
 	SetControlState(true);
 }
 
+Frame* WorldViewer::CreateWorldInfoFrame(int width, worldData& data)
+{
+	Frame* f;
+	Button* b;
+	Label* l;
+	
+	f = new Frame(NULL, "", rect(0, 0, width, 50));
+	
+	l = new Label(f, "", rect(5, 5), "");
+		l->mFont = fonts->Get("", 14, TTF_STYLE_BOLD);
+		l->SetCaption(data.name); // + " @ " + mWorldData.at(i).id);
+	
+	l = new Label(f, "", rect(0, 5), "");
+		l->mFont = fonts->Get("", 12, TTF_STYLE_NORMAL);
+		l->SetCaption("(Users: " + its(data.users) + ")");
+		l->SetPosition(rect(f->Width() - l->Width() - 5, 5, l->Width(), l->Height()));
+		
+	l = new Label(f, "", rect(5, 30), "");
+		l->mFont = fonts->Get("", 12, TTF_STYLE_NORMAL);
+		l->SetCaption(data.description);
+	
+	b = new Button(f, data.id, rect(f->Width() - 25, f->Height() - 25, 20, 20), 
+					"", callback_joinWorld);
+		b->mHoverText = "Join " + data.name;
+		b->SetImage("assets/buttons/join_world.png");
+	
+	return f;
+}
+
 void WorldViewer::UpdateWorldList()
 {
 	// clear mWorldList, sort our list, display all worlds that match current filters
@@ -203,30 +261,15 @@ void WorldViewer::UpdateWorldList()
 	mWorldList->RemoveAll();
 
 	Frame* f;
-	Button* b;
-	Label* l;
 	string filter = "*" + lowercase(mFilterInput->GetText()) + "*";
 	
 	for (int i = 0; i < mWorldData.size(); ++i)
 	{
-		if (wildmatch(filter.c_str(), lowercase(mWorldData.at(i).name).c_str()))
+		if (wildmatch(filter.c_str(), lowercase(mWorldData.at(i).name).c_str())
+			|| wildmatch(filter.c_str(), lowercase(mWorldData.at(i).description).c_str()))
 		{
-			f = new Frame(mWorldList, "", rect(0, 0, mWorldList->GetMaxChildWidth(), 50));
-			
-			l = new Label(f, "", rect(5, 5), "");
-				l->mFont = fonts->Get("", 14, TTF_STYLE_BOLD);
-				l->SetCaption(mWorldData.at(i).name + " @ " + mWorldData.at(i).id);
-			
-			l = new Label(f, "", rect(0, 5), "(Users: " + its(mWorldData.at(i).users) + ")");
-				l->SetPosition(rect(f->Width() - l->Width() - 5, 5, l->Width(), l->Height()));
-			
-			l = new Label(f, "", rect(5, 30), "");
-				l->SetCaption(mWorldData.at(i).description);
-			
-			b = new Button(f, mWorldData.at(i).id, rect(f->Width() - 25, f->Height() - 25, 20, 20), 
-							"", callback_joinWorld);
-				b->mHoverText = "Join " + mWorldData.at(i).name;
-				b->SetImage("assets/buttons/join_world.png");
+			f = CreateWorldInfoFrame(mWorldList->GetMaxChildWidth(), mWorldData.at(i));
+			mWorldList->Add(f);
 		}
 	}
 }
@@ -239,11 +282,11 @@ void WorldViewer::RequestWorldList(listType type)
 	
 	//send http get: worlds.php?ver=1.2.3&id=test&pass=test&type=???
 	
-	query = "http://sybolt.com/drm-svr/worlds.php"; // TODO: less hardcoding
-	query += "?ver=";
+	query = "http://sybolt.com/drm-svr/"; // TODO: less hardcoding
+	query += "worldlist.php?ver=";
 	query += APP_VERSION;
-	query += "&user=" + game->mUsername;
-	query += "&pass=" + game->mPassword;
+	query += "&user=" + htmlSafe(game->mUsername);
+	query += "&pass=" + htmlSafe(game->mPassword);
 	query += "&type=" + its(mCurrentListType);
 	
 	downloader->QueueDownload(query, getTemporaryCacheFilename(),

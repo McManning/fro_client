@@ -42,18 +42,20 @@ void Label::SetCaption(string text)
     	mCaption = text;
     
     	if (!mFont) return;
-    
+    	
+    	rect r = mPosition;
+	
     	if (!text.empty())
     	{
     		text = stripCodes(text); //clean it for calculating size
-    		mPosition.w = mFont->GetWidth(text);
-    		if (mMaxWidth != 0 && mPosition.w > mMaxWidth)
-    			mPosition.w = mMaxWidth;
+    		r.w = mFont->GetWidth(text);
+    		if (mMaxWidth != 0 && r.w > mMaxWidth)
+    			r.w = mMaxWidth;
     			
-    		mPosition.h = mFont->GetHeight(text, mMaxWidth);
+    		r.h = mFont->GetHeight(text, mMaxWidth);
     	}
-    
-    	FlagRender();
+    	
+    	SetPosition(r);
     }
 }
 

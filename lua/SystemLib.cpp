@@ -404,6 +404,19 @@ int system_Decrypt(lua_State* ls)
 	return 1;
 }
 
+// .SetGuiColor(r, g, b)
+int system_SetGuiColor(lua_State* ls)
+{
+	color c;
+	luaCountArgs(ls, 3);
+	c.r = (int)lua_tonumber(ls, 1);
+	c.g = (int)lua_tonumber(ls, 2);
+	c.b = (int)lua_tonumber(ls, 3);
+	gui->ColorizeGui(c);
+	
+	return 1;
+}
+
 static const luaL_Reg functions[] = {
 	{"Print", system_Print},
 	{"Fatal", system_Fatal},
@@ -421,6 +434,7 @@ static const luaL_Reg functions[] = {
 	{"GenerateFilename", system_GenerateFilename},
 	{"Encrypt", system_Encrypt},
 	{"Decrypt", system_Decrypt},
+	{"SetGuiColor", system_SetGuiColor},
 	{NULL, NULL}
 };
 

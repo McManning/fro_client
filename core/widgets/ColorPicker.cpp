@@ -43,15 +43,16 @@ ColorPicker::ColorPicker(Input* creator) :
 
 	mRed = new Scrollbar(this, "", rect(10,y,150,20), HORIZONTAL, 9, 1, 9, callback_updateColor);
 		mRed->mHoverText = "Red Value";
-	//	mRed->mTabImage->mSrc.x = 90;
+		mRed->SetImageBase("assets/gui/rgbscroller/red");
 	y += 25;
 	mGreen = new Scrollbar(this, "", rect(10,y,150,20), HORIZONTAL, 9, 1, 9, callback_updateColor);
 		mGreen->mHoverText = "Green Value";
-//		mGreen->mTabImage->mSrc.x = 105;
+		mGreen->SetImageBase("assets/gui/rgbscroller/green");
+
 	y += 25;
 	mBlue = new Scrollbar(this, "", rect(10,y,150,20), HORIZONTAL, 9, 1, 9, callback_updateColor);
 		mBlue->mHoverText = "Blue Value";
-//		mBlue->mTabImage->mSrc.x = 120;
+		mBlue->SetImageBase("assets/gui/rgbscroller/blue");
 	y += 25;
 	
 	new Label(this, "", rect(10,y), "Code");

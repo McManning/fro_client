@@ -24,9 +24,9 @@ WorldLoader::WorldLoader()
 {
 	PRINT("Creating WorldLoader");
 
-	m_BackgroundImage = resman->LoadImg("assets/loading.jpg");
+	m_BackgroundImage = resman->LoadImg("assets/loading.png");
 
-	m_StatusLabel = new Label(this, "", rect(10, 10), "");
+	m_StatusLabel = new Label(this, "", rect(125, 112), "");
 	
 /*	Button* b;
 	
@@ -120,26 +120,12 @@ void WorldLoader::_sendRequestForConfig()
 		return;
 	}
 
-	XmlFile xf;
-	if (!xf.LoadFromFile("assets/connections.cfg"))
-	{
-		FATAL(xf.GetError());	
-	}
-	
-	TiXmlElement* e = xf.mDoc.FirstChildElement();
-	if (e)
-		e = e->FirstChildElement("master");
-	
-	if (e)
-		url = xf.GetText(e);
-	
-	if (url.empty() || url.find("http://", 0) != 0)
-	{
-		FATAL("Invalid master address");
-	}
-
 	//generate the request url
-	url += "?id=" + htmlSafe(m_sWorldName);
+	
+	url = "http://sybolt.com/drm-svr/";
+	url += "worlds/master.php?ver=";
+	url += APP_VERSION;
+	url += "&id=" + htmlSafe(m_sWorldName);
 	url += "&nick=" + htmlSafe(game->mPlayer->mName);
 	
 	if (!game->mUsername.empty())
@@ -548,8 +534,11 @@ void WorldLoader::_error(string msg)
 							"some existing world."
 							);
 */
-    WorldViewer* viewer = new WorldViewer();
-    viewer->mClose->SetActive(false);
+	if (!gui->Get("worldviewer"))
+    	new WorldViewer();
+    	
+	//WorldViewer* viewer = new WorldViewer();
+    //viewer->mClose->SetActive(false);
 }
 	
 /*	************************************

@@ -33,10 +33,12 @@ class Frame : public Widget
 	Button* mClose;
 	Label* mCaption;
 
-	color mResizingBorderColor;
+	color mSavedGuiBaseColor;
   protected:
 	point2d mDrag;
 	bool mResizing;
+	
+	void _readjustBaseColor();
 };
 
 #endif //_FRAME_H_

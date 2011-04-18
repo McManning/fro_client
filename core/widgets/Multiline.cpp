@@ -19,7 +19,6 @@ const char* g_sSupportedUrls[] =
 Multiline* makeList(Widget* parent, string id, rect position)
 {
 	Multiline* m = new Multiline(parent, id, position);
-	m->mHighlightBackground = HIGHLIGHT_COLOR;
 	m->mHighlightSelected = true;
 	m->mWrap = false;
 	return m;
@@ -109,7 +108,7 @@ void Multiline::Render()
 			if (mSelected == topLine - 1 && mHighlightSelected)
 				scr->DrawRect( rect(r.x + MULTILINE_LEFT_BUFFER, renderTop,
 										r.w, mFont->GetHeight()),
-								mHighlightBackground );
+								gui->mBaseColor );
 
 			mFont->Render( scr, r.x + MULTILINE_LEFT_BUFFER,
 							renderTop,
@@ -123,14 +122,24 @@ void Multiline::Render()
 			if (mLines.size() - 1 < i) break; //invalid line
 
 			if (mSelected == i && mHighlightSelected)
+			{
 				scr->DrawRect( rect(r.x + MULTILINE_LEFT_BUFFER, renderTop + (mFont->GetHeight() * z),
 									r.w, mFont->GetHeight()),
-								mHighlightBackground );
-
-			mFont->Render( scr, r.x + MULTILINE_LEFT_BUFFER,
-							renderTop + (mFont->GetHeight() * z),
-							mLines.at(i),
-							mFontColor );
+								gui->mBaseColor );
+								
+				mFont->Render( scr, r.x + MULTILINE_LEFT_BUFFER,
+								renderTop + (mFont->GetHeight() * z),
+								mLines.at(i),
+								(isDark(gui->mBaseColor) ? invertColor(mFontColor) : mFontColor) );
+			}
+			else
+			{					
+				mFont->Render( scr, r.x + MULTILINE_LEFT_BUFFER,
+								renderTop + (mFont->GetHeight() * z),
+								mLines.at(i),
+								mFontColor );
+			}
+			
 			z++;
 		}
     }

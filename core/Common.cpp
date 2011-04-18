@@ -342,6 +342,16 @@ bool isGreyscale(color c)
 	return (c.r == c.g && c.g == c.b);	
 }
 
+color invertColor(color c)
+{
+	return color(255-c.r, 255-c.g, 255-c.b);	
+}
+
+bool isDark(color c)
+{
+	return sqrt(c.r * c.r + c.g * c.g + c.b * c.b) < 130;
+}
+
 //Return RGB value of a 3 letter string. (0->9 for each part)
 color slashCtoColor(string msg)
 {

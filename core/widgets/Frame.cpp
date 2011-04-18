@@ -23,11 +23,11 @@ Frame::Frame(Widget* wParent, string sId, rect rPosition, string sCaption,
 	mId = sId;
 	mType = WIDGET_FRAME;
 	mBoxRender = true;
+	mSavedGuiBaseColor = gui->mBaseColor;
 	
 	//Mouse may move outside our frame while dragging. TODO: Find a way to fix that issue!
 	gui->AddGlobalEventHandler(this);
 	mMoveable = bMoveable;
-	mResizingBorderColor = color(0,64,200);
 
 	if (bBackground)
 		SetImage("assets/gui/frame_bg.png");
@@ -40,7 +40,11 @@ Frame::Frame(Widget* wParent, string sId, rect rPosition, string sCaption,
 
 	mCaption = NULL;
 	if (!sCaption.empty())
-		mCaption = new Label(this, "", rect(10,4,0,0), sCaption);
+	{
+		mCaption = new Label(this, "", rect(), "");
+		//mCaption->mFont = fonts->Get("", 0, TTF_STYLE_BOLD);
+		SetCaption(sCaption);
+	}
 
 	mClose = NULL;
 	if (bCloseButton)
@@ -73,13 +77,13 @@ void Frame::Render()
 		//draw dashed line at the top & bottom
 		for (uShort x = r.x; x < r.x+r.w; x += 6)
 		{
-			scr->DrawLine( x, r.y, x+4, r.y, mResizingBorderColor, 3 );
-			scr->DrawLine( x, r.y+r.h-3, x+4, r.y+r.h-3, mResizingBorderColor, 3 );
+			scr->DrawLine( x, r.y, x+4, r.y, gui->mBaseColor, 3 );
+			scr->DrawLine( x, r.y+r.h-3, x+4, r.y+r.h-3, gui->mBaseColor, 3 );
 		}
 		for (uShort y = r.y; y < r.y+r.h; y += 6)
 		{
-			scr->DrawLine( r.x, y, r.x, y+4, mResizingBorderColor, 3 );
-			scr->DrawLine( r.x+r.w-3, y, r.x+r.w-3, y+4, mResizingBorderColor, 3 );
+			scr->DrawLine( r.x, y, r.x, y+4, gui->mBaseColor, 3 );
+			scr->DrawLine( r.x+r.w-3, y, r.x+r.w-3, y+4, gui->mBaseColor, 3 );
 		}
 	
 		scr->PopClip();
@@ -106,8 +110,23 @@ void Frame::Render()
 	}
 }
 
+void Frame::_readjustBaseColor()
+{
+	mSavedGuiBaseColor = gui->mBaseColor;
+
+	if (mCaption)
+		SetCaption(mCaption->GetCaption());
+}
+
 void Frame::Event(SDL_Event* event)
 {
+	if (mSavedGuiBaseColor.r != gui->mBaseColor.r 
+		|| mSavedGuiBaseColor.g != gui->mBaseColor.g
+		|| mSavedGuiBaseColor.b != gui->mBaseColor.b)
+	{
+		_readjustBaseColor();	
+	}
+	
 	switch (event->type)
 	{
 		case SDL_MOUSEBUTTONDOWN: {
@@ -156,9 +175,10 @@ void Frame::Event(SDL_Event* event)
 void Frame::ResizeChildren() //so that children don't size themselves while resizing (would lag like hell)
 {
 	if (mClose)
-	{
 		mClose->SetPosition( rect(Width() - mClose->Width() - 4, 2, mClose->Width(), mClose->Height()) );
-	}
+	
+	if (mCaption)
+		mCaption->SetPosition( rect(10,6,0,0) );
 	
 	for (int i = 0; i < mChildren.size(); i++)
 	{
@@ -183,7 +203,13 @@ void Frame::SetSizeable(bool val)
 void Frame::SetCaption(string caption)
 {
 	if (mCaption)
-		mCaption->SetCaption(caption);	
+	{
+		// if it's too dark, invert the color of our caption
+		if (isDark(mSavedGuiBaseColor))
+			mCaption->SetCaption("\\c999" + stripCodes(caption));
+		else
+			mCaption->SetCaption(stripCodes(caption));
+	}
 }
 
 

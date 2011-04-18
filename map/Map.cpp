@@ -112,8 +112,8 @@ Map::Map()
 	mChat = NULL;
 	mHud = NULL;
 	mEditorMode = false;
-	mOldCameraPosition.x = mOldCameraPosition.y = -1;
-	
+	mShowDebug = false;
+
 	CreateChatbox();
 	CreateHud();
 
@@ -135,6 +135,7 @@ Map::Map()
 	else
 		mWorkingDir = DIR_CACHE;
 		
+	// TODO: Why is this here???
 	gui->RemoveGlobalEventHandler(this);
 }
 
@@ -206,7 +207,7 @@ void Map::Event(SDL_Event* event)
 
 void Map::CreateChatbox()
 {
-    mChat = new Console("chat", "", "assets/gui/chat/", "chat_", true, true);
+    mChat = new Console("chat", "", "chat_", color(255,0,0), true, true, true);
 		mChat->mExit->onClickCallback = callback_hideChatbox;
 		mChat->mExit->mHoverText = "Hide Chat";
 		Add(mChat);
@@ -352,6 +353,7 @@ void Map::ClickRemoteActor(RemoteActor* ra)
 	// Remote Player RCM 
 	RightClickMenu* m = new RightClickMenu();
 		//m->AddOption("Beat", callback_playerMenuBeat, ra);
+		m->AddOption(ra->mName, NULL, NULL);
 		m->AddOption("Whisper", callback_playerMenuPrivmsg, ra);
 		//m->AddOption("Send Trade", callback_playerMenuTrade, ra);
 		m->AddOption((ra->IsBlocked()) ? "Unblock" : "Block", callback_playerMenuToggleBlock, ra);
@@ -529,13 +531,21 @@ void Map::OffsetCamera(sShort offsetX, sShort offsetY)
 
 void Map::AddCameraRectForUpdate()
 {
-	if (mCameraPosition.x != mOldCameraPosition.x 
-		|| mCameraPosition.y != mOldCameraPosition.y)
+	rect r = GetCameraPosition();
+	
+	//do offsets for camera shaking
+	r.x += mCameraFollowOffset.x;
+	r.y += mCameraFollowOffset.y;
+
+	if (mOldCameraRect.x != r.x 
+		|| mOldCameraRect.y != r.y
+		|| mOldCameraRect.w != r.w
+		|| mOldCameraRect.h != r.h)
 	{
         DEBUGOUT("Map::AddCameraRectForUpdate()");
         
 		g_screen->AddRect(GetScreenPosition());
-		mOldCameraPosition = mCameraPosition;
+		mOldCameraRect = r;
 	}
 }	
 

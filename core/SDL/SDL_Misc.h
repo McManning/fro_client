@@ -49,4 +49,6 @@ SDL_Surface* SDL_NewSurface(Uint32 width, Uint32 height, color colorKey, bool al
 /*	Creates an exact duplication of the given rect as a new SDL_Surface */
 SDL_Surface* SDL_CopySurface(SDL_Surface* src, SDL_Rect r);
 
+void SDL_Colorize(SDL_Surface* src, Uint8 r, Uint8 g, Uint8 b);
+
 #endif //_SDL_MISC_H_

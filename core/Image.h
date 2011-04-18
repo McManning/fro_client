@@ -58,6 +58,7 @@ class SDL_Image
 		
   private:
 	void _copyFramesets(SDL_Image* dst, rect clip) const;
+	void _unloadFramesets();
 };
 
 /*	Images are unique instances (Not maintained by the image manager) 

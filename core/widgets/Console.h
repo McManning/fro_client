@@ -50,8 +50,8 @@ class Console : public Frame
 {
   public:
 	//("assets/console.png", "log_", false, onInput);
-	Console(string id, string title, string imageFile, string savePrefix, 
-				bool hasExit, bool hasInput);
+	Console(string id, string title, string savePrefix, color c,
+				bool hasExit, bool hasInput, bool hasExtraControls);
 	~Console();
 
 	void Render(); 
@@ -80,7 +80,9 @@ class Console : public Frame
 	Multiline* mOutput;
 	Label* mTitle;
 	Button* mExit;
-	
+	Button* mBackgroundToggle;
+//	Button* mFontSizeChange;
+
 	Image* mBackground; //background of the output
 	Image* mBackgroundImage; //will be sliced up for the main background
 
@@ -89,6 +91,7 @@ class Console : public Frame
 	string mSavePrefix; //when saving log files
 	
 	bool mShowTimestamps;
+	bool mDrawBackground;
 	
   private:
 	void _runHookedCommand(consoleCommand& c, string s);

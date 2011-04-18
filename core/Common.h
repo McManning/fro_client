@@ -6,7 +6,7 @@
 #include <vector>
 #include <math.h>
 
-#define APP_VERSION "1.4.1"
+#define APP_VERSION "1.5.0"
 
 /*	In case the compiler doesn't define it for us */
 #ifndef WIN32
@@ -231,6 +231,10 @@ void replace(string* src, string a, string b);
 color slashCtoColor(string msg);
 
 bool isGreyscale(color c);
+
+bool isDark(color c);
+
+color invertColor(color c);
 
 string colorToHex(color c); //color(255,0,0) -> FF0000
 color hexToColor(string hex); //FF0000 -> color(255,0,0)

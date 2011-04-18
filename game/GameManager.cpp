@@ -147,6 +147,12 @@ void callback_consoleDrawRects(Console* c, string s) //drawrects
 	Screen::Instance()->mDrawOptimizedRects = !Screen::Instance()->mDrawOptimizedRects;
 }
 
+void callback_consoleMapDebug(Console* c, string s)
+{
+	if (game->mMap)
+		game->mMap->mShowDebug = !game->mMap->mShowDebug;	
+}
+
 void callback_consoleMakeCol(Console* c, string s) // makecol filename
 {
 	vString v;
@@ -255,6 +261,7 @@ GameManager::GameManager()
 	console->HookCommand("test", callback_consoleTestMap);
 	console->HookCommand("screendraw", callback_consoleScreenDraw);
 	console->HookCommand("drawrects", callback_consoleDrawRects);
+	console->HookCommand("debugmap", callback_consoleMapDebug);
 	console->HookCommand("makecol", callback_consoleMakeCol);
 	console->HookCommand("player_flags", callback_consolePlayerFlags);
 }
@@ -470,12 +477,8 @@ Console* GameManager::GetPrivateChat(string nick)
 	Console* c = (Console*)Get("priv" + nick);
 	if (!c)
 	{
-		c = new Console("priv" + nick, "Private: " + nick, "assets/gui/privmsg/",
-						stripCodes(nick) + "_", true, true);
-		
-		//Change some defaults
-		//c->mBackgroundColor = color(0, 25, 0, config.GetParamInt("console", "alpha"));
-		//c->mOutput->mHighlightBackground = color(0, 120, 0);
+		c = new Console("priv" + nick, "Private: " + nick,
+						stripCodes(nick) + "_", color(217,245,213), true, true, true);
 
 		Add(c);
 		

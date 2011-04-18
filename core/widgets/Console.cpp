@@ -56,19 +56,28 @@ void callback_consoleExit(Button* b)
 		b->GetParent()->Die();
 }
 
-Console::Console(string id, string title, string imageFile, string savePrefix, 
-				bool hasExit, bool hasInput)
+void callback_consoleToggleBackground(Button* b)
+{
+	Console* c = (Console*)b->GetParent();
+	if (c)
+	{
+		c->mDrawBackground = !c->mDrawBackground;
+		c->FlagRender();
+	}
+}
+
+Console::Console(string id, string title, string savePrefix, color c,
+				bool hasExit, bool hasInput, bool hasExtraControls)
 	: Frame(NULL, "", rect(), "", true, false, false, false)
 {
 	mFont = fonts->Get();
 	mId = id;
 	mType = WIDGET_FRAME;
 
-	//mResizingBackgroundColor = color(0,64,128,100);
-	mResizingBorderColor = color(0,64,200);
 	mBackgroundColor = color(0,0,0,config.GetParamInt("console", "alpha"));
 	mBackground = NULL;
 	mShowTimestamps = true;
+	mDrawBackground = true;
 	mSizeable = true; //will not create mSizer, and instead create a custom one
 	mOutput = NULL;
 	mSavePrefix = savePrefix;
@@ -78,8 +87,7 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 	if (hasInput)
 	{			
 		mInput = new Input(this, "input", rect(26,0,0,20), "", MAX_CONSOLE_INPUT_LENGTH, true, callback_consoleInput);
-		mInput->SetImage(imageFile + "input.png");
-		mInput->mHighlightBackground = HIGHLIGHT_COLOR;
+		mInput->SetImage("assets/gui/console/input.png");
 		mInput->mFontColor = color(255,255,255);
 	}
 	else
@@ -88,8 +96,15 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 	}
 	
 	mOutput = new Multiline(this, "output", rect(0, 16, mPosition.w, mPosition.h - 42));
-		mOutput->mScrollbar->SetImageBase(imageFile + "vscroller");
+		mOutput->mScrollbar->SetImageBase("assets/gui/console/vscroller");
 		
+		// Colorize to match
+	//	mOutput->mScrollbar->mTabImage->ColorizeGreyscale(c);
+	//	mOutput->mScrollbar->mValueUp->mImage->ColorizeGreyscale(c);
+	//	mOutput->mScrollbar->mValueDown->mImage->ColorizeGreyscale(c);
+	//	mOutput->mScrollbar->mImage->ColorizeGreyscale(c);
+	
+	// We have our own background drawn
 	resman->Unload(mOutput->mImage);
 	mOutput->mImage = NULL;
 	
@@ -100,7 +115,24 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 	if (hasExit)
 	{
 		mExit = new Button(this, "exit", rect(0, 2, 12, 12), "", callback_consoleExit);
-		mExit->SetImage(imageFile + "exit.png");
+		mExit->SetImage("assets/gui/console/exit.png");
+		mExit->mHoverText = "Close";
+		
+	//	mExit->mImage->ColorizeGreyscale(c);
+	}
+	
+	mBackgroundToggle = NULL;
+	if (hasExtraControls)
+	{
+		mBackgroundToggle = new Button(this, "", rect(0, 2, 12, 12), "", callback_consoleToggleBackground);
+		mBackgroundToggle->SetImage("assets/gui/console/toggle.png");
+		mBackgroundToggle->mHoverText = "Toggle Background";	
+		
+	//	mBackgroundToggle->mImage->ColorizeGreyscale(c);
+		
+//		mFontSizeChange = new Button(this, "", rect(0, 2, 12, 12), "", callback_consoleChangeFontSize);
+//		mBackgroundToggle->SetImage(imageFile + "font.png");
+//		mBackgroundToggle->mHoverText = "Change Font Size";
 	}
 	
 	mTitle = NULL;
@@ -110,7 +142,8 @@ Console::Console(string id, string title, string imageFile, string savePrefix,
 	}
 
 	//don't use mImage b/c Frame will try to render it. Use a custom.
-	mBackgroundImage = resman->LoadImg(imageFile + "bg.png");
+	mBackgroundImage = resman->LoadImg("assets/gui/console/bg.png");
+	//mBackgroundImage->ColorizeGreyscale(c);
 	
 	ResizeChildren();
 
@@ -127,9 +160,9 @@ void Console::Render()
 	Image* scr = Screen::Instance();
 	
 	rect r = GetScreenPosition();
-	
+
 	//draw translucent background
-	if (mBackground && !mResizing && mOutput)
+	if (mDrawBackground && mBackground && !mResizing && mOutput)
 	{
 		rect rr = mOutput->GetScreenPosition();
 		mBackground->Render(scr, rr.x, rr.y, 
@@ -183,6 +216,14 @@ void Console::ResizeChildren()
 	
 	if (mExit)
 		mExit->SetPosition( rect(mPosition.w - 16, 2, mExit->Width(), mExit->Height()) );
+	
+	if (mBackgroundToggle)
+		mBackgroundToggle->SetPosition( 
+								rect(mPosition.w - 16 - ((mExit) ? 16 : 0), 2, 
+									mBackgroundToggle->Width(), 
+									mBackgroundToggle->Height()) 
+								);
+
 
 	resman->Unload(mBackground);
 	
@@ -289,7 +330,7 @@ void Console::DoCommand(string s)
 	if (c)
 		_runHookedCommand(*c, s);
 	else
-		AddMessage("\\c400* Command " + stripCodes(cmd) + " not recognized");
+		AddMessage("\\c700* Command " + stripCodes(cmd) + " not recognized");
 }
 
 void Console::_runHookedCommand(consoleCommand& c, string s)

@@ -220,3 +220,12 @@ SDL_Image* ResourceManager::SDLImgFromSurface(SDL_Surface* surf)
 	
 	return img;
 }
+
+void ResourceManager::ReloadFromDisk(SDL_Image* img)
+{
+	if ( !img->Load(img->filename, img->password) )
+	{
+		WARNING("[ResourceManager::ReloadFromDisk] Could not reload " + img->filename);
+	}
+}
+

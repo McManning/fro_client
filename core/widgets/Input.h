@@ -65,8 +65,6 @@ class Input: public Widget {
 	bool mAllowSpecialKeys; //arrow keys, end, home, etc keys.
 	bool mReadOnly;
 	uShort mMaxLength; //max input length
-	
-	color mHighlightBackground;
 
 	Image* mTextImage;
 	
@@ -85,6 +83,7 @@ class Input: public Widget {
 	bool mDrawCaret; //caret blinking shit.
 	string mText; //the input itself
 	uLong mLastBlink;
+	bool mHasFocusCheck;
 
 	bool mMenuEnabled;
 

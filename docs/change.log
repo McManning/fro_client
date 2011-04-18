@@ -1439,11 +1439,60 @@ without either compatibility mode enabled, or security warnings, as seen with th
 
 110405
 - Added Screen::IsRectDrawable() and implemented in Multiline
-- 
 
+110407
+- Removed connections.cfg references and hardcoded the urls temporarily until I finally decide how to deal with things.
 
+110414
+- Temporarily removed explosion effect when entities leave a map, until I decide to make it work with the new renderer
+- Added default background image to WidgetList 
+- Properly hooked the app input focus event from SDL using the event queue, rather than checking SDL_GetAppState().
+- Fixed issue with the title flashing. FlashWindow() + constant SDL_WM_SetCaption() = bad
+- Removed unused properties from GuiManager
+- Fixed bug where Label::SetCaption would not redraw the old position before the new one (That is, if the text is now shorter)
+- Changed RightClickMenu behavior to allow NULL callbacks for options. Items with NULL callbacks will not close the menu 
+	when clicked, and will not be highlighted when hovered over.
+- Removed coloring from Button captions and used clipping around buttons for rendering
 
+110416
+- Changed dimensions of the collision rectangle for Actors, to avoid certain errors in calculations (no longer is 16x16)
+- Added "Recommended World" to WorldViewer. The first item the server sends will be displayed as the recommendation
+- Made a change to how widgets get mouse focus. A widget can only get mouse focus if it's within the rect of that widgets
+	parent. This means that if a parent doesn't contain children within its rect, and a widget is hanging out of the parents
+	rect, it won't be able to receive events on the outer part. 
+- Added an override for WorldViewer's close button. If the game doesn't have a map loaded, the WorldViewer will not allow
+	itself to be closed
+- Added confirmation popup for when the user tries to delete an avatar from AvatarFavorites
+- Redesigned several interface buttons
+- Increased ChatBubble display velocity for longer messages
+- Fixed screenshot saving. GuiManager will now store a pending Screenshot request to be handled the next process loop 
+	directly after a full screen redraw, so that we don't save a partially-updated surface to disk
+- WorldViewer filter will now also search world descriptions for a matching pattern (This way people can stick their name 
+	or something into the description for friends to search for, and have a decent world name)
+- Added debugmap console command to see collision/bounding information for map entities
+	
+110417
+- Added ResourceManager::ReloadFromDisk()
+- Added SDL_Colorize() to SDL_Misc.cpp/h and implemented in Image::ColorizeGreyscale
+- Added GuiManager::ColorizeGui to reload a list of assets and recolor them, in order to create an interface that can 
+	change colors on the fly
+- Removed internal highlight colors from Multiline/Input and replaced with GuiManager's mBaseColor
+- Added System.SetGuiColor(r,g,b) to Lua
+- Fixed camera shaking (offset) calculations not forcing a camera redraw
+- Added color invert to Frame titles and selected lines in Multiline when gui->mBaseColor is considered dark
+	Need to add when highlighting lines in Input, however it's a lot more difficult...
+- Fixed Cut/Copy menu items for Input right click. (When the input lost focus, it SetSelection(0,0) on itself)
+- Added animations to password input boxes
+- Fixed bug that would cause an overload to RectManager if a lot of entities moved while the window was minimized
+	(Since the rectangles were purged only on GuiManager::Render()). Solved by skipping Screen::AddRect() if minimized
+- Fixed rect not updating if calling Entity::SetVisible(false), or Entity::SetLayer(), or Entity::SetShadow()
+
+----- PUBLIC RELEASE AS 1.5.0 -----
+	
 WORKING ON:
+
+- Privmsg consoles with people with invalid characters in their names will not save properly
+	ex: Chase\, @Chase, chase^. Idk, whatever Windows doesn't allow in filenames
 
 - CLIPPING OPTIMIZATION TODO: Check if the shit we're going to render is within the clip rect of the screen.
 	If it's not, skip it. Things like multilines will benefit from this, so we can skip rendering strings early-on
@@ -1457,12 +1506,6 @@ WORKING ON:
 
 - Improve fucking lua errors. Instead of top-level function name, give the function the error
 	actually happens in, and try to give line number. God damn, real errors please. 
-
-- Added WidgetList widget (Inherited from Frame). Deals with children positioning differently and
-	lists them in order (with no re-sorting) with a scrollbar set to scroll through widgets if 
-	they do not all fit on the screen at once. 
-	
-- Add a way to see entity collision rects, for testing purposes!
 
 
 	

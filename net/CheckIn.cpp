@@ -67,25 +67,10 @@ uShort timer_CheckInWithServer(timer* t, uLong ms)
 	// if we're not on a server, don't check in
 	if (!game->mNet->IsConnected())
 		return TIMER_CONTINUE;
-		
-	if (!xf.LoadFromFile("assets/connections.cfg"))
-	{
-		FATAL(xf.GetError());	
-	}
-	
-	e = xf.mDoc.FirstChildElement();
-	if (e)
-		e = e->FirstChildElement("login");
-	
-	if (e)
-		query = xf.GetText(e);
-	
-	if (query.empty() || query.find("http://", 0) != 0)
-	{
-		FATAL("Invalid login address");
-	}
 
-	query += "?act=checkin";
+	query = "http://sybolt.com/drm-svr/";
+	query += "checkin.php?ver=";
+	query += APP_VERSION;
 
 	query += "&id=" + htmlSafe(game->mUsername);
 	query += "&pass=" + htmlSafe(game->mPassword);

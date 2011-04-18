@@ -65,7 +65,6 @@ class Multiline: public Widget
 	bool mSelectOnHover;
 	bool mHideScrollbar;
 	int mSelected;
-	color mHighlightBackground;
 
 	void ReflowLines(int w);
 

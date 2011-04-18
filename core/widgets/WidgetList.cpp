@@ -14,7 +14,9 @@ WidgetList::WidgetList(Widget* wParent, rect rPosition)
 	mCanSortChildren = false;
 	mConstrainChildrenToRect = false;
 	
-	mScroller = new Scrollbar(NULL, "", rect(Width() - 20, 0, 20, Height()), 
+	SetImage("assets/gui/widgetlist_bg.png");
+	
+	mScroller = new Scrollbar(NULL, "", rect(Width() - 15, 0, 15, Height()), 
 								VERTICAL, 1, 0, 0, callback_WidgetListScroller);
 	Add(mScroller);
 }

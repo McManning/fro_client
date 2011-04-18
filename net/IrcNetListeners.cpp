@@ -81,13 +81,14 @@ void _removeRemoteActor(RemoteActor* a)
 {
 	if (!a) return;
 
-	Image* img;
+	/*Image* img;
 	img = a->GetImage();
 	if (img)
 	{
 		rect r = a->GetBoundingRect();
 		new ExplodingEntity(a->mMap, img, point2d(r.x, r.y));
 	}
+	*/
 	
 	if (userlist)
 		userlist->RemoveNick(a->mName);

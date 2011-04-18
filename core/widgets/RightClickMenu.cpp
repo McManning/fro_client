@@ -21,12 +21,12 @@ void callback_rightClickMenu(Button* b)
 		if (m->mCallbacks.size() > index && m->mCallbacks.at(index).func != NULL)
 		{
 			m->mCallbacks.at(index).func(m, m->mCallbacks.at(index).userdata);
+			m->Die();
 		}
-		else
+		/*else
 		{
 			WARNING("Invalid RightClickMenu Index " + b->mId + " Caption: " + b->GetCaption());
-		}
-		m->Die();
+		}*/
 	}
 }
 
@@ -69,7 +69,11 @@ void RightClickMenu::AddOption(string text, void (*callback)(RightClickMenu*, vo
 	
 	Button* b = new Button(this, its(mCallbacks.size()), rect(0, mCallbacks.size() * 20, RCM_WIDTH, 20), 
 							text, callback_rightClickMenu);
-			b->SetImage("assets/gui/rcm_button.png");
+			if (callback)
+				b->SetImage("assets/gui/rcm_button.png");
+			else
+				b->SetImage("assets/gui/rcm_spacer.png");
+				
 			b->mCenterAlign = false;
 		
 	sCallback c;
