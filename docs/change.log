@@ -1489,11 +1489,45 @@ without either compatibility mode enabled, or security warnings, as seen with th
 
 ----- PUBLIC RELEASE AS 1.5.0 -----
 	
+110419
+- Fixed bug in lua Map.SetColor() would not trigger a redraw of the map
+- Fixed Actor.LoadAvatar forcing 8 parameters minimum, instead of 7
+- Entity.Exists() in lua returns a 1 or 0, NOT boolean true/false. Should be reversed
+- No GetProp for zheight
+- Get/SetProp movespeed to just speed
+ 
+110424
+- Fixed bug where buttons could be clicked while !IsActive()
+
+110425
+- Fixed recursive mkdir() bug where it would fail on occasion when trying to make multiple layered directories
+
+
+
+Issues on the upgrade:
+	- Changed the way avatars are stored. So you will lose your old avatars. Sucks, but.. there it is.
+		If you want the urls, look for profile/avatars.xml and open it up in a text editor. 
+		Could make a php page that converts it to the new format.. but idc enough. lullululul
+	- Some things may not play well with the new renderer. I'm still working on it. 
+	- No exploding players effect anymore. It will be back, promise
+	- 
+	
+
+/mini doesn't update the old rect
+
+
+	
+
+
 WORKING ON:
 
 - Privmsg consoles with people with invalid characters in their names will not save properly
 	ex: Chase\, @Chase, chase^. Idk, whatever Windows doesn't allow in filenames
-
+- Add something that lets us use avy:// for NPCs
+	Actor.SetGeneratedAvatar("head", r, g, b, "body", r, g, b, ... ) idk
+- Entity.SetPosition() isn't triggering a move event for listeners. It should!
+- Map.SetFlag isn't persistent!
+	
 - CLIPPING OPTIMIZATION TODO: Check if the shit we're going to render is within the clip rect of the screen.
 	If it's not, skip it. Things like multilines will benefit from this, so we can skip rendering strings early-on
 	FURTHERMORE, we don't know if our text is in the RENDER RECT anyways. Even though it may fall within the clip

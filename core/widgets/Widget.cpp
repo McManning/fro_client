@@ -307,7 +307,7 @@ bool Widget::IsActive()
 	if (GetParent())
 		return GetParent()->IsActive();
 	else
-		return mActive;
+		return true;
 }
 
 bool Widget::HasKeyFocusInTree()

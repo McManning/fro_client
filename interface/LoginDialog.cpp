@@ -1,5 +1,6 @@
 
 #include "LoginDialog.h"
+#include "AutoUpdater.h"
 
 #include "../game/GameManager.h"
 #include "../net/CheckIn.h"
@@ -243,6 +244,9 @@ LoginDialog::LoginDialog() :
 	
 	// match the first pixel in our background image
 	gui->ColorizeGui( mBackgroundImage->GetPixel(0, 0) );
+	
+	AutoUpdater* au = new AutoUpdater();
+	au->SendRequestForManifest();
 }
 
 LoginDialog::~LoginDialog()

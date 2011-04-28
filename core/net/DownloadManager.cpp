@@ -316,7 +316,14 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 		WARNING("Queue Locked! Attempting: " + url);
 		return false;
 	}
-
+	
+	//build directory structure if it's not there already
+	if (!buildDirectoryTree(file))
+	{
+		WARNING("Could not create path for " + file);
+		return false;	
+	}
+	
 	downloadData* data = new downloadData();
 	data->url = url;
 	data->filename = file;
@@ -326,7 +333,7 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 	data->onFailure = onFailure;
 	data->errorCode = DEC_LOADING;
 	data->md5hash = md5hash;
-	
+
 	if (overwrite)
 	{
 		//only erase the old file if it isn't a match
@@ -334,9 +341,6 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 			removeFile(file);
 	}
 
-	//build directory structure if it's not there already
-	buildDirectoryTree(file);
-	
 	// if we're already downloading this file, store elsewhere
 	if (IsUrlQueued(data->url))
 	{

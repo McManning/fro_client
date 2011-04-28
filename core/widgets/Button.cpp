@@ -104,7 +104,7 @@ void Button::SetCaption(string text)
 
 void Button::Event(SDL_Event* event)
 {
-	if (event->type == SDL_MOUSEBUTTONUP)
+	if (event->type == SDL_MOUSEBUTTONUP && IsActive())
 	{
 		if (event->button.button == SDL_BUTTON_LEFT && onClickCallback)
 			onClickCallback(this);

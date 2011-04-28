@@ -167,6 +167,7 @@ int map_SetColor(lua_State* ls)
 	game->mMap->mBackground.r = (int)lua_tonumber(ls, 1);
 	game->mMap->mBackground.g = (int)lua_tonumber(ls, 2);
 	game->mMap->mBackground.b = (int)lua_tonumber(ls, 3);
+	game->mMap->AddCameraRectForUpdate();
 	
 	return 0;
 }

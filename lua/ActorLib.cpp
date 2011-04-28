@@ -183,7 +183,7 @@ int actor_AddToBuffer(lua_State* ls)
 int actor_LoadAvatar(lua_State* ls)
 {
 	PRINT("actor_LoadAvatar");
-	luaCountArgs(ls, 8);
+	luaCountArgs(ls, 7);
 
 	Actor* a = getReferencedActor(ls);
 

@@ -1,12 +1,11 @@
 
 #include <zlib.h>
 #include <fstream>
+#include <sys/stat.h> //mkdir
 
 #ifdef WIN32
 #  include <windows.h>
 #  include <io.h> //_findfirsti64, _findnexti64, _findclose, _finddatai64, _mkdir
-#else
-#  include <sys/stat.h> //mkdir
 #endif
 
 #include "FileIO.h"
@@ -616,6 +615,29 @@ bool vStringToFile(vString& v, string file, string delimiter)
 	stringToFile(s, file);
 }
 
+static void recursive_mkdir(const char *path)
+{
+	char opath[256];
+	char *p;
+	size_t len;
+
+	strncpy(opath, path, sizeof(opath));
+	len = strlen(opath);
+	if(opath[len - 1] == '/')
+			opath[len - 1] = '\0';
+	for (p = opath; *p; p++)
+			if(*p == '/') 
+			{
+					*p = '\0';
+					if(access(opath, F_OK))
+							mkdir(opath); //, S_IRWXU);
+					*p = '/';
+			}
+	if(access(opath, F_OK))         /* if path is not terminated with / */
+			mkdir(opath); //, S_IRWXU);
+}
+
+
 /*
 	path = a/b/c/file.ext
 	Will construct directory tree a/b/c/ in root if it does not exist
@@ -628,32 +650,7 @@ bool vStringToFile(vString& v, string file, string delimiter)
 */
 bool buildDirectoryTree(string path)
 {
-	path = getFileDirectory(path);
-	if (path.empty())
-		return true;
-
-	//Convert backslashes to forward
-	replace(&path, "\\", "/");
-	
-	//Traverse the path and construct directories
-	vString v;
-	explode(&v, &path, "/");
-
-	string cwd;
-	for (int i = 0; i < v.size(); ++i)
-	{
-		cwd += v.at(i);
-
-#ifdef WIN32
-		cwd += "\\";
-		if (mkdir(cwd.c_str()) != -1)
-			return false;
-#else
-		cwd += "/";
-		if (mkdir(cwd.c_str(), 0777) != -1)
-			return false;
-#endif
-	}
+	recursive_mkdir( getFileDirectory(path).c_str() );
 	return true;
 }
 
