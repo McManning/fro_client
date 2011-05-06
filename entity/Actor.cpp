@@ -707,8 +707,8 @@ bool Actor::SwapAvatars()
     			
     		//Carry the modifier over to the new avatar
     		if (mod != Avatar::MOD_NONE)
-    			mAvatar->Modify(mod);
-    
+    			SetAvatarModifier(mod);
+
     		_syncAvatarFrameset();
     		UpdateCollisionAndOrigin();
     		PlayAnimation();
@@ -1074,7 +1074,7 @@ int Actor::LuaSetProp(lua_State* ls, string& prop, int index)
 	else if (prop == "movespeed") SetSpeed( (byte)lua_tonumber(ls, index) );
 	else if (prop == "action") SetAction( (byte)lua_tonumber(ls, index) );
 	else if (prop == "noclip") SetIgnoreSolids( lua_toboolean(ls, index) );
-	else if (prop == "mod" && GetAvatar()) GetAvatar()->Modify( (byte)lua_tonumber(ls, index) );
+	else if (prop == "mod" && GetAvatar()) SetAvatarModifier( (int)lua_tonumber(ls, index) );
 	else if (prop == "zheight") //forces them to fall from a certain height
 	{
 		mJumpHeight = (int)lua_tonumber(ls, index);
@@ -1104,4 +1104,12 @@ void Actor::Emote(int num)
 	ChatBubble* cb = new ChatBubble(this, num);
 	cb->mMap = mMap;
 	mMap->AddEntity(cb);
+}
+
+void Actor::SetAvatarModifier(int mod)
+{
+	UpdateCollisionAndOrigin();
+	if (GetAvatar())
+		GetAvatar()->Modify(mod);
+	UpdateCollisionAndOrigin();
 }

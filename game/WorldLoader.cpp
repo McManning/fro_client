@@ -271,14 +271,14 @@ int WorldLoader::_queueResources(string items)
 	for (int i = 0; i < v.size(); ++i)
 	{
 		//cleanup all whitespace
-		for (pos = 0; pos < v.at(i).length(); ++pos)
+		/*for (pos = 0; pos < v.at(i).length(); ++pos)
 		{
 			if (isWhitespace(v.at(i).at(pos)))
 			{
 				v.at(i).erase(v.at(i).begin() + pos);
 				--pos;
 			}
-		}
+		}*/
 
 		if (v.at(i).find("channel:", 0) == 0)
 		{

@@ -67,7 +67,6 @@ class GameManager : public Frame
 
 	bool mShowJoinParts;
 	bool mShowAddresses;
-	string mStartingWorldId;
 	
 	string mWarpDestinationObject;
 	point2d mWarpDestinationPoint;

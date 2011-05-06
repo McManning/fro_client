@@ -1,9 +1,4 @@
 
-#ifdef WIN32xx
-//#	include <windows.h>
-#	include <process.h>
-#endif
-
 #include "AutoUpdater.h"
 #include "../core/GuiManager.h"
 #include "../core/net/DownloadManager.h"
@@ -11,6 +6,11 @@
 #include "../core/widgets/Console.h"
 #include "../core/widgets/Multiline.h"
 #include "../core/widgets/Label.h"
+
+#ifdef WIN32
+#	include <windows.h>
+#	include <process.h>
+#endif
 
 void callback_manifestResponse_Success(downloadData* data)
 {
@@ -52,7 +52,7 @@ void callback_FileDownload_Failure(downloadData* data)
 }
 
 AutoUpdater::AutoUpdater()
-	: Frame(gui, "", rect(0,0,300,200), "Auto Updater", true, false, false, true)
+	: Frame(gui, "", rect(0,0,400,300), "Auto Updater", true, false, false, true)
 {
 	//DemandFocus();
 	
@@ -61,6 +61,8 @@ AutoUpdater::AutoUpdater()
 		mLog->mWrap = false;
 		
 	mProgress = new Label(this, "", rect(5, 30), "Starting...");
+	
+	Center();
 }
 
 AutoUpdater::~AutoUpdater()
@@ -76,7 +78,7 @@ void AutoUpdater::SendRequestForManifest()
 
 	DEBUGOUT(url);
 
-	string file = DIR_CACHE + string("manifest.res");
+	string file = DIR_CACHE "manifest.res";
 
 	SetState(AUTOUPDATER_GETTING_MANIFEST);
 	
@@ -99,7 +101,7 @@ void AutoUpdater::ManifestDownloadFailure(string& reason)
 void AutoUpdater::ParseManifest()
 {
 	string text;
-	if (!fileToString(text, DIR_CACHE + string("manifest.res")))
+	if (!fileToString(text, DIR_CACHE "manifest.res"))
 	{
 		SetError("Failed to load manifest file");
 		return;	
@@ -141,14 +143,14 @@ void AutoUpdater::QueueFiles(string& items)
 	for (int i = 0; i < v.size(); ++i)
 	{
 		//cleanup all whitespace
-		for (pos = 0; pos < v.at(i).length(); ++pos)
+		/*for (pos = 0; pos < v.at(i).length(); ++pos)
 		{
 			if (isWhitespace(v.at(i).at(pos)))
 			{
 				v.at(i).erase(v.at(i).begin() + pos);
 				--pos;
 			}
-		}
+		}*/
 
 		if (v.at(i).find("master:", 0) == 0)
 		{
@@ -239,7 +241,7 @@ void AutoUpdater::FileDownloadSuccess(string& url, string& filename)
 
 	if (ExtractFile(filename))
 	{
-		mLog->AddMessage("\\c009* " + filename);
+		mLog->AddMessage("\\c050* Finished " + filename);
 		mProgress->SetCaption("Progress " + its(mCompletedFiles) + "/" + its(mTotalFiles));	
 		
 		if (mCompletedFiles == mTotalFiles)
@@ -283,18 +285,18 @@ void AutoUpdater::Finished()
 	
 	// Just do it regardless
 
-	//appState = APPSTATE_CLOSING;
-	
-	DEBUGOUT("Shelling");
-	
-#ifdef WIN32zz
+	appState = APPSTATE_CLOSING;
+
+#ifdef WIN32
+
+	// send it our process ID to let merger wait for us to close (or terminate if need be)
 	char buffer[64];
-	sprintf(buffer, "%d", _getpid());
+	sprintf(buffer, "%d", GetCurrentProcessId());
 	
-	int result = (int)ShellExecute(NULL, "open", "fro.exe", buffer, NULL, SW_SHOWNORMAL);
+	int result = (int)ShellExecute(NULL, "open", "merger.exe", buffer, NULL, SW_SHOWNORMAL);
 	if (result <= 32)
 	{
-		sprintf(buffer, "Encountered error code %d while trying to execute fro.exe", result);
+		sprintf(buffer, "Encountered error code %d while trying to execute merger.exe", result);
 		
 		MessageBox(NULL, buffer, "Error",
 					MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
@@ -328,7 +330,9 @@ void AutoUpdater::SetState(int state)
 			Finished();
 			break;
 		case AUTOUPDATER_ERROR:
-			//idk
+			
+			// so next time it'll try again
+			removeFile(DIR_CACHE "manifest.res");
 			break;
 		default: break;
 	}
@@ -338,6 +342,7 @@ void AutoUpdater::SetError(string error)
 {
 	// something
 	mLog->AddMessage("\\c500<!> " + error);
+	console->AddMessage("\\c500[AutoUpdater] " + error);
 
 	// messagepopup?
 	

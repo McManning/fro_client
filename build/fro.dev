@@ -1,7 +1,7 @@
 [Project]
 Folder=../entity
 Name=fro
-UnitCount=173
+UnitCount=175
 Type=0
 Ver=1
 ObjFiles=
@@ -472,9 +472,9 @@ BuildCmd=
 
 [VersionInfo]
 Major=1
-Minor=4
+Minor=5
 Release=1
-Build=2725
+Build=2769
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1349,9 +1349,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit175]
-FileName=..\entity\ChatBubble.h
+FileName=..\core\io\KeyValueMap.h
 CompileCpp=1
-Folder=../entity
+Folder=../core/io
 Compile=1
 Link=1
 Priority=1000
@@ -1639,9 +1639,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit174]
-FileName=..\entity\ChatBubble.cpp
+FileName=..\core\io\KeyValueMap.cpp
 CompileCpp=1
-Folder=../entity
+Folder=../core/io
 Compile=1
 Link=1
 Priority=1000

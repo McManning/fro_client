@@ -139,6 +139,8 @@ class Actor : public Entity /*, public Combatant */
 	*/
 	void Emote(int num);
 	
+	void SetAvatarModifier(int mod);
+	
 	void RenderEmote();
 	
 	/*	Change direction to face the other entity */

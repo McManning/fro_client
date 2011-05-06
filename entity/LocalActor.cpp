@@ -370,10 +370,8 @@ int LocalActor::LuaSetProp(lua_State* ls, string& prop, int index)
 	else if (prop == "bufferdelay") mActionBufferSendDelayMs = (int)lua_tonumber(ls, index);
 	else if (prop == "mod" && GetAvatar()) // override the mod prop to send to the network when changed
 	{
-		if ( GetAvatar()->Modify( (byte)lua_tonumber(ls, index) ) )
-		{
-			netSendAvatarMod();
-		}
+		SetAvatarModifier( (int)lua_tonumber(ls, index) );
+		netSendAvatarMod();
 	}
 	else return Actor::LuaSetProp(ls, prop, index);
 	

@@ -117,9 +117,10 @@ void OptionsDialog::_buildFrameUser()
 	mFrameUser->mSortable = false;
 
 	new Label(mFrameUser, "", rect(0,y), "Nickname");
-	i = new Input(mFrameUser, "nick", rect(95, y, 150, 20), "", 32, true, NULL);
+	i = new Input(mFrameUser, "nick", rect(95, y, 150, 20), 
+					"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\\_-^`[]{}|", 
+					32, true, NULL);
 		i->SetText( game->mPlayer->mName );
-		//i->mHoverText = "No spaces.";
 	y += 25;
 	
 	new Label(mFrameUser, "", rect(0,y), "Alerts");
@@ -239,17 +240,19 @@ void OptionsDialog::Save()
 		if (!stripCodes(s).empty())
 		{
 			if (game->mNet->IsConnected())
+			{
 				game->mNet->ChangeNick(s);
+			}
 			else
 			{
 				if (userlist)
 					userlist->ChangeNick(game->mPlayer->mName, s);
 				game->mPlayer->mName = s;
-			}
 				
-			TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
-			game->mPlayerData.SetParamString(e, "nick", s);
-			game->SavePlayerData();
+				TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
+				game->mPlayerData.SetParamString(e, "nick", s);
+				game->SavePlayerData();
+			}
 		}
 		else
 		{

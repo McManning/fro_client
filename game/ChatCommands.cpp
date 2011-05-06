@@ -14,40 +14,24 @@ void callback_chatNoCommand(Console* c, string s)
 {
 	if (s == "/mini")
 	{
-		if (game->mPlayer->GetAvatar())
-		{
-			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_MINI);
-			netSendAvatarMod();
-			game->mPlayer->UpdateCollisionAndOrigin();
-		}
+		game->mPlayer->SetAvatarModifier(Avatar::MOD_MINI);
+		netSendAvatarMod();
 	}
 	else if (s == "/normal")
 	{
-		if (game->mPlayer->GetAvatar())
-		{
-			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_NONE);
-			netSendAvatarMod();
-			game->mPlayer->UpdateCollisionAndOrigin();
-		}
+		game->mPlayer->SetAvatarModifier(Avatar::MOD_NONE);
+		netSendAvatarMod();
 	}
 	else if (s == "/ghost")
 	{
-		if (game->mPlayer->GetAvatar())
-		{
-			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_GHOST);
-			netSendAvatarMod();
-			game->mPlayer->UpdateCollisionAndOrigin();
-		}
+		game->mPlayer->SetAvatarModifier(Avatar::MOD_GHOST);
+		netSendAvatarMod();
 	}
 #ifdef DEBUG
 	else if (s == "/giant")
 	{
-		if (game->mPlayer->GetAvatar())
-		{
-			game->mPlayer->GetAvatar()->Modify(Avatar::MOD_GIANT);
-			netSendAvatarMod();
-			game->mPlayer->UpdateCollisionAndOrigin();
-		}
+		game->mPlayer->SetAvatarModifier(Avatar::MOD_GIANT);
+		netSendAvatarMod();
 	}
 #endif
 	else

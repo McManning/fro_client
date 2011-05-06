@@ -247,6 +247,7 @@ void DownloadManager::Process()
 					&& md5file(mCompleted.at(i)->filename) != mCompleted.at(i)->md5hash)
 				{
 					mCompleted.at(i)->errorCode = DEC_BADHASH;
+					removeFile(mCompleted.at(i)->filename);
 				}
 			}
 			
@@ -326,6 +327,8 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 	
 	downloadData* data = new downloadData();
 	data->url = url;
+	
+	//replace(&file, " ", "+");
 	data->filename = file;
 	data->userData = userData;
 	data->byteCap = GetByteCap();

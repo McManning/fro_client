@@ -540,7 +540,9 @@ bool IrcNet::Process()
 			else if (cmd == "nick") //:Noel!~noel@Rizon-B5D29C05.hsd1.ca.comcast.net NICK :test...
 			{
 				s1 = line.substr(1, line.find ('!',0) - 1); //old nick
-				s2 = line.substr(line.find (':',1)+1); //new nick
+				s2 = line.substr(line.find("NICK ")+5); //new nick
+				if (s2.at(0) == ':')
+					s2.erase(0, 1);
 		
 				if (s1 == mNickname)
 					mNickname = s2;

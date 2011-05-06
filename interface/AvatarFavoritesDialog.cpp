@@ -489,9 +489,13 @@ bool AvatarFavorites::Load()
 
 /*
     Avatars = {
-        { ["url"] = "url", ["w"] = w, ["h"] = h, ["delay"] = delay, ["pass"] = "pass", ["flags"] = flags },
-        { ... },
-        ...   
+		["FF00FF"] = 
+			{
+		        { ["url"] = "url", ["w"] = w, ["h"] = h, ["delay"] = delay, ["pass"] = "pass", ["flags"] = flags },
+		        { ... },
+		        ...  
+			},
+		... 
     }
 */
 bool AvatarFavorites::Save()

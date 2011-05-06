@@ -420,9 +420,8 @@ void _handleNetMessage_Mod(string& nick, DataPacket& data) // mod #type
 	}
 
 	char type = data.ReadChar();
-	
-	if (ra->GetAvatar())
-		ra->GetAvatar()->Modify( type );
+
+	ra->SetAvatarModifier( type );
 }
 
 void _handleNetMessage_Private(string& nick, string& msg)
@@ -772,9 +771,17 @@ void listener_NetNick(MessageListener* ml, MessageData& md, void* sender)
 
 	Entity* e;
 	if (newn == net->GetNick()) //we've changed our nick
+	{
 		e = game->mPlayer;
+		
+		TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
+		game->mPlayerData.SetParamString(e, "nick", newn);
+		game->SavePlayerData();
+	}
 	else
+	{	
 		e = game->mMap->FindEntityByName(oldn, ENTITY_REMOTEACTOR);
+	}
 	
 	if (!e)
 		return;
@@ -853,22 +860,8 @@ void listener_NetNickInUse(MessageListener* ml, MessageData& md, void* sender)
 {
 	IrcNet* net = (IrcNet*)sender;
 	
-	string msg = "\\c900" + md.ReadString("message");
+	string msg = "\\c900 * Could not change nickname: " + md.ReadString("message");
 	printMessage(msg);
-	
-	string newnick;
-	newnick = "fro_" + generateWord(6);
-	
-	if (userlist)
-		userlist->ChangeNick(game->mPlayer->mName, newnick);
-
-	game->mPlayer->mName = newnick;
-	
-	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
-	game->mPlayerData.SetParamString(e, "nick", newnick);
-	game->SavePlayerData();
-	
-	net->ChangeNick(newnick);
 }
 
 // Nothing in message
@@ -886,7 +879,7 @@ void listener_NetVerified(MessageListener* ml, MessageData& md, void* sender)
 	//game->LoadOnlineWorld(game->mStartingWorldId);
 
 	WorldViewer* viewer = new WorldViewer();
-    viewer->mClose->SetActive(false);
+    viewer->mClose->SetVisible(false);
 }
 
 void listener_NetWhois(MessageListener* ml, MessageData& md, void* sender)

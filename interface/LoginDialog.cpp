@@ -30,124 +30,89 @@ void callback_doUpdate(MessagePopup* m)
 	appState = APPSTATE_CLOSING;
 }
 
-/* Welcome, sent after login
-<welcome>
-	<msg title="News">
-		Message
-	</msg>
-	<server>addr:port</server>
-	<server>addr:port</server>
-	<server>addr:port</server>
-	<start>mapid</start>
-</welcome>
-*/
-int callback_welcomeXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
+void dlCallback_welcomeDataSuccess(downloadData* data)
 {
-	string id = e->Value();
-	Console* c;
-
-	DEBUGOUT("callback_welcomeXmlParser: " + id);
+	vString lines;
+	string hash;
+	bool isDone = false;
 	
-	if (id == "msg")
+	if (loginDialog)
 	{
-		new MessagePopup("", xf->GetParamString(e, "title"), xf->GetText(e), xf->GetParamInt(e, "long"));	
-	}
-	else if (id == "error") // <error title="blah" long="1">TEXT</error>
-	{
-		new MessagePopup("", xf->GetParamString(e, "title"), xf->GetText(e), xf->GetParamInt(e, "long"));	
-		//game->syboltId.clear();
-		//game->syboltPass.clear();
-		game->mUsername.clear();
-		game->mPassword.clear();
+		fileTovString(lines, data->filename, "\n");
 		
-		if (loginDialog)
+		for (int i = 0; i < lines.size(); ++i)
+		{
+			replace(&lines.at(i), "\r", "");
+			if (lines.at(i).find("error:", 0) == 0)
+			{
+				new MessagePopup("", "Login Error", lines.at(i).substr(6), false);	
+				game->mUsername.clear();
+				game->mPassword.clear();
+
+				loginDialog->SetControlState(true);
+			}
+			else if (lines.at(i).find("manifest:", 0) == 0)
+			{
+				hash = md5file(DIR_CACHE "manifest.res");
+				// if our hashes don't match, trigger an update
+				if (hash != lines.at(i).substr(9))
+				{
+					printf("Hash %s doesn't match\n", hash.c_str());
+					loginDialog->SetControlState(false);
+					AutoUpdater* au = new AutoUpdater();
+					//au->SendRequestForManifest();
+					isDone = true;
+				}
+			}
+			else if (lines.at(i).find("server:", 0) == 0)
+			{
+				game->mNet->mServerList.push_back(lines.at(i).substr(7));
+			}
+			else if (lines.at(i) == "OK" && !isDone) // good to go!
+			{				
+				game->mUsername = loginDialog->mUsername;
+				game->mPassword = loginDialog->mPassword;
+		
+				if (!game->mUsername.empty())
+					game->mNet->mRealname = game->mUsername;
+					
+				game->mNet->TryNextServer();
+				
+				startCheckInTimer();
+				isDone = true;	
+			}
+		}
+		
+		if (!isDone)
+		{
+			new MessagePopup("", "Connection Error", "Server sent invalid login data.", false);	
 			loginDialog->SetControlState(true);
+		}	
 	}
-	else if (id == "update") // <update title="??">TEXT</update>
-	{
-		MessagePopup* m = new MessagePopup("", xf->GetParamString(e, "title"), xf->GetText(e), true);	
-			m->onCloseCallback = callback_doUpdate;
-			m->DemandFocus();
-	}
-	else if (id == "server")
-	{
-		game->mNet->mServerList.push_back(xf->GetText(e));	
-	}
-	else if (id == "start")
-	{
-		//loginDialog->Die();
-
-		game->mUsername = loginDialog->mUsername;
-		game->mPassword = loginDialog->mPassword;
-
-		if (!game->mUsername.empty())
-			game->mNet->mRealname = game->mUsername;
-			
-		game->mStartingWorldId = xf->GetText(e);
-		game->mNet->TryNextServer();
-		
-		startCheckInTimer();
-		
-		//loginDialog = NULL;
-	}
-	
-	return XMLPARSE_SUCCESS;
 }
 
-void dlCallback_welcomeXmlSuccess(downloadData* data)
+void dlCallback_welcomeDataFailure(downloadData* data)
 {
 	string error;
 	
-	XmlFile xf;
-	xf.SetParser(callback_welcomeXmlParser);
-
-	if (!xf.LoadFromFile(data->filename))
-	{
-		error = "Invalid welcome xml file.";
-	}
-	else
-	{
-		xf.SetEntryPoint("welcome");
-		if (xf.Parse(NULL) != XMLPARSE_SUCCESS)
-			error = "Error while parsing welcome Xml.";
-	}
-
-	removeFile(data->filename);
-	
-	if (!error.empty())
-	{
-		console->AddMessage(error);
-		new MessagePopup("loginerror", "Login Error", error);
-		
-		if (loginDialog)
-			loginDialog->SetControlState(true);
-	}
-}
-
-void dlCallback_welcomeXmlFailure(downloadData* data)
-{
-	string error = "Could not retrieve login information. Error was that the ";
-
 	switch (data->errorCode)
 	{
 		case DEC_BADHOST:
-			error += "server address was invalid.";
+			error = "Server address is invalid.";
 			break;
 		case DEC_CONNECTFAIL:
-			error += "network could not connect to the server.";
+			error = "Could not connect to login server.";
 			break;
 		case DEC_FILENOTFOUND:
-			error += "xml could not be located.";
+			error = "Could not cache login data.";
 			break;
 		default:
-			error += "downloader experienced an unknown error.";
+			error = "The gnomes broke something.";
 			break;
 	}
-	
-	//error += " We suggest connecting to a world manually.";
 
 	console->AddMessage(error);
-	new MessagePopup("loginerror", "Login Error", error);
+	new MessagePopup("", "Connection Error", error);
 	
 	if (loginDialog)
 		loginDialog->SetControlState(true);
@@ -244,9 +209,6 @@ LoginDialog::LoginDialog() :
 	
 	// match the first pixel in our background image
 	gui->ColorizeGui( mBackgroundImage->GetPixel(0, 0) );
-	
-	AutoUpdater* au = new AutoUpdater();
-	au->SendRequestForManifest();
 }
 
 LoginDialog::~LoginDialog()
@@ -346,8 +308,8 @@ void LoginDialog::SendLoginQuery(bool skip)
 	//query += "&lm=" + game->mPlayerData.GetParamString(e, "lastid");
 	
 	downloader->QueueDownload(query, getTemporaryCacheFilename(),
-									NULL, dlCallback_welcomeXmlSuccess,
-									dlCallback_welcomeXmlFailure, true);
+									NULL, dlCallback_welcomeDataSuccess,
+									dlCallback_welcomeDataFailure, true);
 	SetControlState(false);
 }
 

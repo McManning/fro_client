@@ -1502,6 +1502,25 @@ without either compatibility mode enabled, or security warnings, as seen with th
 110425
 - Fixed recursive mkdir() bug where it would fail on occasion when trying to make multiple layered directories
 
+(Commit to r79)
+
+110427
+- Added Actor::SetAvatarModifier() wrapper and fixed redraw issues when someone used an avatar modifier
+- Updated merger.c to wait for fro process to terminate itself (before forcing it to), to update files.
+- Fixed fro.exe reporting invalid version number in Windows
+- Removed XML formatting from login data. Is now plaintext key/value pairs. 
+- Added cache/manifest.res hash checking to login. If the local manifest doesn't match remote, will
+	start up AutoUpdater
+- Improved error handling in AutoUpdater a bit
+- Added uploader system to the server. Will only require the client to be zipped up and uploaded through
+	the browser, and it will extract, hash, and generate everything necessary for an update. 
+	(No longer have to screw around with getting updateBuilder to work properly)
+
+110429
+- DownloadManager will now automatically delete any downloaded files that do not pass the hash check
+
+110504
+- Fixed issue where NICK messages weren't correctly tokenized for certain IRCd's (such as InspIRCd)
 
 
 Issues on the upgrade:
@@ -1513,14 +1532,15 @@ Issues on the upgrade:
 	- 
 	
 
-/mini doesn't update the old rect
-
-
 	
-
+	KNOWN BUG:
+		- Spaces in the filenames in DownloadManager, if not replaced by %20, will fail.
+		- IS there any other character we need to do this to?
+		
 
 WORKING ON:
 
+- Should implement the AWAY irc command rather than our own.
 - Privmsg consoles with people with invalid characters in their names will not save properly
 	ex: Chase\, @Chase, chase^. Idk, whatever Windows doesn't allow in filenames
 - Add something that lets us use avy:// for NPCs
