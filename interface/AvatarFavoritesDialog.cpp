@@ -11,7 +11,7 @@
 #include "../core/widgets/YesNoPopup.h"
 
 #include "../entity/LocalActor.h"
-#include "../entity/Avatar.h"
+#include "../avatar/Avatar.h"
 #include "../game/GameManager.h"
 //#include "../game/Achievements.h"
 
@@ -82,8 +82,8 @@ void callback_avatarEditSave(Button* b)
 	avatarFavorites->Save();
 }
 
-AvatarEdit::AvatarEdit(avatarProperties* prop) :
-	Frame(NULL, "editavy", rect(),
+AvatarEdit::AvatarEdit(avatarProperties* prop)
+	: Frame(NULL, "AvatarEdit_" + string((prop->url.empty()) ? "Add" : "Edit"), rect(),
 			(prop->url.empty()) ? "Add Avatar" : "Edit Avatar", true, false, true, true)
 {
 	mClose->onClickCallback = callback_avatarEditClose; //so we can run some custom code while it closes
@@ -204,8 +204,8 @@ void callback_createAvatar(Button* b)
 	new AvatarCreator();	
 }
 
-AvatarFavorites::AvatarFavorites() :
-	Frame(gui, "avyfavs", rect(0, 0, 250,250),
+AvatarFavorites::AvatarFavorites()
+	: Frame(gui, "AvatarFavorites", rect(0, 0, 250,250),
 			"My Avatars", true, true, true, true)
 {
 	mList = makeList(this, "list", rect(0,0,0,0));
@@ -500,13 +500,6 @@ bool AvatarFavorites::Load()
 */
 bool AvatarFavorites::Save()
 {
-	//open new XML Doc
-	XmlFile xf;
-
-	//Write master element
-	TiXmlElement* top = new TiXmlElement("avatars");
-	xf.mDoc.LinkEndChild(top);
-
     string filename = DIR_PROFILE;
 	filename += AVATAR_FAVORITES_FILENAME;
 

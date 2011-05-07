@@ -10,7 +10,7 @@
 #include "../map/Map.h"
 #include "../entity/LocalActor.h"
 #include "../entity/ExplodingEntity.h"
-#include "../entity/Avatar.h"
+#include "../avatar/Avatar.h"
 #include "../core/widgets/Console.h"
 #include "../core/widgets/Button.h"
 #include "../core/widgets/Multiline.h"
@@ -735,10 +735,10 @@ void GameManager::ToggleHud(bool visible) // TODO: Eliminate this function?
 	
 	//kill any dialogs that may exist
 	Widget* w;
-	w = gui->Get("avyfavs");
+	w = gui->Get("AvatarFavorites");
 	if (w) w->Die();
 	
-	w = gui->Get("userlist");
+	w = gui->Get("UserList");
 	if (w) w->Die();
 }
 

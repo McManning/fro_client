@@ -16,7 +16,7 @@
 #include "../core/io/FileIO.h"
 #include "../core/net/DataPacket.h"
 #include "../entity/RemoteActor.h"
-#include "../entity/Avatar.h"
+#include "../avatar/Avatar.h"
 
 /*	Utility */
 
@@ -429,7 +429,7 @@ void _handleNetMessage_Private(string& nick, string& msg)
 	//if we don't accept private messages, send an auto respond
 	if ( game->mPlayerData.GetParamInt("map", "privmsg") == 0 )
 	{
-		game->mNet->Privmsg( nick, "* I have private messages blocked *" );
+		game->mNet->Privmsg( nick, "\\c900* I have whispers disabled *" );
 	}
 	else
 	{
@@ -438,7 +438,7 @@ void _handleNetMessage_Private(string& nick, string& msg)
 		RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 		if (ra && ra->IsBlocked())
 		{
-			game->mNet->Privmsg( nick, "* You are blocked *");
+			game->mNet->Privmsg( nick, "\\c900* You are blocked *");
 		}
 		else
 		{
@@ -521,12 +521,12 @@ void listener_NetCmdError(MessageListener* ml, MessageData& md, void* sender)
 		case 473: //+i invite only
 		case 474: //+b you're banned
 		case 475: //+k channel has key
-			msg = "\\c900" + md.ReadString("message");
+			msg = "\\c900" + stripCodes(md.ReadString("message"));
 			printMessage(msg);
 			game->UnloadMap();
 			break;
 		default:
-			msg = "\\c900 * [" + md.ReadString("command") + "] " + md.ReadString("message");
+			msg = "\\c900 * [" + md.ReadString("command") + "] " + stripCodes(md.ReadString("message"));
 			printMessage(msg);
 			break;	
 	}
@@ -534,7 +534,7 @@ void listener_NetCmdError(MessageListener* ml, MessageData& md, void* sender)
 
 void listener_NetError(MessageListener* ml, MessageData& md, void* sender)
 {
-	string msg = "\\c900 * " + md.ReadString("message");
+	string msg = "\\c900 * " + stripCodes(md.ReadString("message"));
 	printMessage(msg);
 }
 
@@ -705,7 +705,7 @@ void listener_NetCouldNotConnect(MessageListener* ml, MessageData& md, void* sen
 void listener_NetNotice(MessageListener* ml, MessageData& md, void* sender)
 {
 	string msg;
-	msg = "\\c900-" + md.ReadString("nick") + "\\c900- " + md.ReadString("message");
+	msg = "\\c900-" + md.ReadString("nick") + "\\c900- " + stripCodes(md.ReadString("message"));
 	
 	printMessage(msg);
 }
@@ -732,7 +732,7 @@ void listener_NetUnknown(MessageListener* ml, MessageData& md, void* sender)
 	}*/
 	
 	string msg;
-	msg = "\\c900 * (" + md.ReadString("command") + ") " + md.ReadString("line");
+	msg = "\\c900 * (" + md.ReadString("command") + ") " + stripCodes(md.ReadString("line"));
 	
 	printMessage(msg);	
 }
@@ -833,7 +833,7 @@ void listener_NetNewState(MessageListener* ml, MessageData& md, void* sender)
 			// if we have a default nick still, bring up a request to change it
 			if (net->GetNick().find("fro_", 0) == 0)
 			{
-				if (!gui->Get("optionsdialog"))
+				if (!gui->Get("OptionsDialog"))
 				{
 					OptionsDialog* o = new OptionsDialog();
 					o->DemandFocus(true);
@@ -860,7 +860,7 @@ void listener_NetNickInUse(MessageListener* ml, MessageData& md, void* sender)
 {
 	IrcNet* net = (IrcNet*)sender;
 	
-	string msg = "\\c900 * Could not change nickname: " + md.ReadString("message");
+	string msg = "\\c900 * Could not change nickname: " + stripCodes(md.ReadString("message"));
 	printMessage(msg);
 }
 

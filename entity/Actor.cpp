@@ -5,7 +5,7 @@
 #include "LocalActor.h"
 #include "ChatBubble.h"
 #include "../map/Map.h"
-#include "../entity/Avatar.h"
+#include "../avatar/Avatar.h"
 
 uShort timer_processMovement(timer* t, uLong ms)
 {
@@ -793,15 +793,8 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 	mLoadingAvatar->mHeight = h;
 	mLoadingAvatar->mDelay = delay;
 	mLoadingAvatar->mFlags = flags;
-	
-	int oldcap = downloader->GetByteCap();
-
-	//	rig it so that there's a tighter limit on avatar filesizes for this particular actor
-	if (mLimitedAvatarSize)
-		downloader->SetByteCap(MAX_AVATAR_FILESIZE);
 
 	mLoadingAvatar->Load();
-	downloader->SetByteCap(oldcap);
 
     if (!mCheckLoadingAvatarTimer)
         mCheckLoadingAvatarTimer = timers->Add("avacheck", 

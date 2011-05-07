@@ -76,8 +76,8 @@ void callback_AvatarCreatorSavePNG(Button* b)
 
 
 
-AvatarCreator::AvatarCreator() :
-	Frame(gui, "AvatarCreator", rect(), "Avatar Designer (BETA)", true, false, true, true)
+AvatarCreator::AvatarCreator()
+	: Frame(gui, "AvatarCreator", rect(), "Avatar Designer (BETA)", true, false, true, true)
 {
 	SetSize(230, 225);
 	Center();

@@ -19,7 +19,7 @@
 #define ONLINE_ENABLED
 
 WorldLoader::WorldLoader()
-	: Frame(game, "worldloader", rect(0,0,game->Width(),game->Height()), "", 
+	: Frame(game, "WorldLoader", rect(0,0,game->Width(),game->Height()), "", 
 		false, false, false, false)
 {
 	PRINT("Creating WorldLoader");
@@ -534,7 +534,7 @@ void WorldLoader::_error(string msg)
 							"some existing world."
 							);
 */
-	if (!gui->Get("worldviewer"))
+	if (!gui->Get("WorldViewer"))
     	new WorldViewer();
     	
 	//WorldViewer* viewer = new WorldViewer();

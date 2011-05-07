@@ -9,7 +9,7 @@ KeyValueMap::KeyValueMap()
 {
 	mLuaState = luaL_newstate();
 
-	if ( luaL_dofile( mLuaState, "assets/KeyValueMap.lua" ) != 0 )
+	if ( luaL_dofile( mLuaState, "assets/lua/KeyValueMap.lua" ) != 0 )
 	{
 		string err = lua_tostring(mLuaState, -1);
 		FATAL("Failed to create KeyValueMap: " + err);

@@ -6,6 +6,9 @@
 #include "../core/widgets/Console.h"
 #include "../core/widgets/Multiline.h"
 #include "../core/widgets/Label.h"
+#include "../core/widgets/Button.h"
+#include "../game/GameManager.h"
+#include "../core/net/IrcNet2.h"
 
 #ifdef WIN32
 #	include <windows.h>
@@ -26,7 +29,7 @@ void callback_manifestResponse_Failure(downloadData* data)
 	AutoUpdater* au = (AutoUpdater*)data->userData;
 	if (au)
 	{
-		string reason = its(data->errorCode); // + ":" + its(data->httpError);
+		string reason = its(data->errorCode) + ":" + its(data->httpError);
 		au->ManifestDownloadFailure(reason);
 	}
 }
@@ -45,23 +48,50 @@ void callback_FileDownload_Failure(downloadData* data)
 	AutoUpdater* au = (AutoUpdater*)data->userData;
 	if (au)
 	{
-		string reason = its(data->errorCode); // + ":" + its(data->httpError);
+		string reason = its(data->errorCode) + ":" + its(data->httpError);
 		
 		au->FileDownloadFailure(data->url, data->filename, reason);
 	}
 }
 
+void callback_saveUpdaterLog(Button* b)
+{
+	AutoUpdater* au = (AutoUpdater*)b->GetParent();
+	if (au)
+	{
+		au->SaveLog();	
+	}
+}
+
+void callback_retryUpdate(Button* b)
+{
+	AutoUpdater* au = (AutoUpdater*)b->GetParent();
+	if (au)
+	{
+		au->Retry();	
+	}
+}
+
 AutoUpdater::AutoUpdater()
-	: Frame(gui, "", rect(0,0,400,300), "Auto Updater", true, false, false, true)
+	: Frame(gui, "AutoUpdater", rect(0,0,400,300), "Auto Updater (LOLBETA)", true, false, false, true)
 {
 	//DemandFocus();
 	
-	mLog = new Multiline(this, "", rect(5, 55, Width() - 10, Height() - 60));
+	mLog = new Multiline(this, "", rect(5, 55, Width() - 10, Height() - 85));
 		//mLog->mHighlightSelected = true;
 		mLog->mWrap = false;
 		
 	mProgress = new Label(this, "", rect(5, 30), "Starting...");
 	
+	Button* b;
+	b = new Button(this, "", rect(Width()-25, Height()-25, 20, 20), "", callback_saveUpdaterLog);
+		b->SetImage("assets/buttons/clipboard.png");
+		b->mHoverText = "Save Log";
+	
+	mRetry = new Button(this, "", rect(5, Height()-25, 20, 20), "", callback_retryUpdate);
+		mRetry->SetImage("assets/buttons/reload_worlds.png");
+		mRetry->mHoverText = "Retry Update";
+
 	Center();
 }
 
@@ -70,8 +100,19 @@ AutoUpdater::~AutoUpdater()
 
 }
 
+void AutoUpdater::Retry()
+{
+	mCompletedFiles = 0;
+	mTotalFiles = 0;
+	
+	mLog->AddMessage("\\c900<!> Retrying Update");
+	SendRequestForManifest();
+}
+
 void AutoUpdater::SendRequestForManifest()
 {
+	mRetry->SetActive(false);
+	
 	//generate the request url
 	string url = "http://sybolt.com/drm-svr/update.php";
 	url += "?ver=" APP_VERSION;
@@ -81,7 +122,7 @@ void AutoUpdater::SendRequestForManifest()
 	string file = DIR_CACHE "manifest.res";
 
 	SetState(AUTOUPDATER_GETTING_MANIFEST);
-	
+
 	if (!downloader->QueueDownload(url, file, 
 									this, 
 									callback_manifestResponse_Success, 
@@ -130,6 +171,7 @@ void AutoUpdater::QueueFiles(string& items)
 {
 	string master, path, hash, localFile, localHash, url;
 	bool download;
+	bool isMergable;
 	vString v;
 	vString v2;
 	size_t pos, pos2;
@@ -155,7 +197,7 @@ void AutoUpdater::QueueFiles(string& items)
 		if (v.at(i).find("master:", 0) == 0)
 		{
 			master = v.at(i).substr(7);
-			printf("\tMaster set to %s\n", master.c_str());
+			mLog->AddMessage("\\c005 * Getting from " + master);
 		}
 		else if (!v.at(i).empty())
 		{
@@ -171,18 +213,31 @@ void AutoUpdater::QueueFiles(string& items)
 			path = v2.at(0);
 			url = master + path;
 			download = true;
+			
+			// @todo This is hacky. Improve it.
+			if (path.find(".~", 0) == 0)
+			{
+				isMergable = true;
+				path.erase(0, 2);
+			}
+			else
+			{
+				isMergable = false;
+			}
 
 			switch (v2.size())
 			{
 				case 1: // case of path/to/file.ext
 					// if it's just on disk, don't download
-					if (fileExists(path))
+					if (fileExists(path)
+						|| (isMergable && fileExists(".~" + path)))
 						download = false;
 					
 					break;
 				case 2: // path/to/file.ext:UNCOMPRESSED_HASH
 					// if files match, don't download
-					if (md5file(path) == v2.at(1))
+					if (md5file(path) == v2.at(1) 
+						|| (isMergable && md5file(".~" + path) == v2.at(1)))
 					{
 						download = false;
 					}
@@ -196,7 +251,8 @@ void AutoUpdater::QueueFiles(string& items)
 					path.erase(path.length()-3); // erase .gz extension
 					
 					// if our local hash matches the uncompressed one, don't download
-					if (md5file(path) == v2.at(1))
+					if (md5file(path) == v2.at(1)
+						|| (isMergable && md5file(".~" + path) == v2.at(1)))
 					{
 						download = false;
 					}
@@ -209,6 +265,9 @@ void AutoUpdater::QueueFiles(string& items)
 				default: break;
 			}
 
+			if (isMergable)
+				path = ".~" + path;
+
 			if (download)
 				GetFile(url, path, hash);
 				
@@ -216,8 +275,9 @@ void AutoUpdater::QueueFiles(string& items)
 	} // for all in v
 	
 	//if the manifest is empty, or we got everything, we're done!
-	if (mTotalFiles == 0 || mTotalFiles == mCompletedFiles)
+	if (mTotalFiles == 0)
 	{
+		mLog->AddMessage("\\c050 * All files up to date");
 		SetState(AUTOUPDATER_NO_UPDATES);
 	}
 }
@@ -226,6 +286,7 @@ void AutoUpdater::GetFile(string& url, string& file, string& hash)
 {
 	++mTotalFiles;
 	
+	mLog->AddMessage(file);
 	if (!downloader->QueueDownload(url, file, this,
 								callback_FileDownload_Success,
 								callback_FileDownload_Failure,
@@ -314,7 +375,7 @@ void AutoUpdater::SetState(int state)
 	switch (state)
 	{
 		case AUTOUPDATER_GETTING_MANIFEST:
-			mLog->AddMessage("Downloading Manifest...");
+			mLog->AddMessage("\\c005 * Getting Manifest...");
 			break;
 		case AUTOUPDATER_GETTING_FILES:
 			mProgress->SetCaption("Progress 0/" + its(mTotalFiles));
@@ -322,8 +383,8 @@ void AutoUpdater::SetState(int state)
 			break;
 		case AUTOUPDATER_NO_UPDATES:
 			mLog->AddMessage("\\c030No update necessary");
-		//	Die();
-			// start world selector?
+			Die();
+			game->mNet->TryNextServer();
 			break;
 		case AUTOUPDATER_COMPLETE:
 			mLog->AddMessage("\\c030Finished");
@@ -333,6 +394,7 @@ void AutoUpdater::SetState(int state)
 			
 			// so next time it'll try again
 			removeFile(DIR_CACHE "manifest.res");
+			mRetry->SetActive(true);
 			break;
 		default: break;
 	}
@@ -348,3 +410,51 @@ void AutoUpdater::SetError(string error)
 	
 	SetState(AUTOUPDATER_ERROR);
 }
+
+void AutoUpdater::SaveLog()
+{
+	// @todo All this code is from Console::SaveText(). Need to merge it somewhere common!
+	// Ex: Multiline::SaveText(filename)
+
+	string s;
+	s = "saved/updatelog_" + timestamp(true) + ".html";
+	buildDirectoryTree(s);
+	
+	FILE* f = fopen(s.c_str(), "w");
+	if (!f)
+	{
+		mLog->AddMessage("\\c500* Could not open output file");
+		return;
+	}
+	
+	fprintf(f, "<html>\n<head>\n"
+				"<title>Saved %s</title>\n"
+				"</head>\n<body bgcolor=\"#FFFFFF\">\n", timestamp(true).c_str());
+	vString v;
+	string c;
+	for (int i = 0; i < mLog->mRawText.size(); i++)
+	{
+		//Split up the line via \cRGB 
+		explode(&v, &mLog->mRawText.at(i), "\\c");
+		for (int ii = 0; ii < v.size(); ii++)
+		{
+			if (ii == 0 && mLog->mRawText.at(i).find("\\c", 0) != 0) 
+			{
+				//if we don't have a font color defined, use default
+				c = "000000";
+			}
+			else
+			{
+				c = colorToHex( slashCtoColor( v.at(ii).substr(0, 3) ) );
+				v.at(ii).erase(0, 3); //erase RGB
+			}
+			fprintf(f, "<font color=\"#%s\">%s</font>", c.c_str(), v.at(ii).c_str());
+		}
+		v.clear();
+		fprintf(f, "<br/>\n");
+	}
+	fprintf(f, "</body>\n</html>\n");
+	fclose(f);
+	mLog->AddMessage("\\c050* Log saved to: " + s);
+}
+

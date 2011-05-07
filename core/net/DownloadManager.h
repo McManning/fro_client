@@ -4,8 +4,6 @@
 
 #include "../Common.h"
 
-const int MAX_DOWNLOAD_FILESIZE = (3 * 1024 * 1024); //3 MB
-
 typedef enum
 {
 	DEC_LOADING = 0,
@@ -17,6 +15,18 @@ typedef enum
 	DEC_BADHASH
 } downloadErrorCode;
 
+// download error codes
+// sendHttpGet can return any of these. 
+enum {
+	HTTP_OKAY = 0, 
+	HTTP_MALFORMED_REQUEST,
+	HTTP_FILESIZE_CAPPED, // hit max file len
+	// returned by open socket:
+	HTTP_BAD_SOCKET,
+	HTTP_UNRESOLVEABLE_HOST,
+	HTTP_CANNOT_CONNECT
+};
+
 struct downloadData
 {
 	string url;
@@ -26,6 +36,7 @@ struct downloadData
 	void* userData;
 	int byteCap; //maximum file size before cutoff
 	downloadErrorCode errorCode;
+	int httpError; // detailed error
 	string md5hash;
 };
 
@@ -86,7 +97,7 @@ class DownloadManager
 	*/
 	bool QueueDownload(string url, string file, void* userData,
 						void (*onSuccess)(downloadData*), void (*onFailure)(downloadData*),
-						bool overwrite, bool overrideQueueLock = false, string md5hash = "");
+						bool overwrite, bool overrideQueueLock = false, string md5hash = "", int byteCap = 0);
 
 	/** Will NULL out the userData of all downloadData* in both lists if it matches
 		the passed userData. This won't actually delete the downloadData due to the fact
@@ -112,9 +123,6 @@ class DownloadManager
 	{
 		mCanQueue = true;
 	};
-	
-	int GetByteCap() const { return mByteCap; };
-	void SetByteCap(int cap) { mByteCap = cap; };
 
 	std::vector<downloadThread*> mThreads;
 	std::vector<downloadData*> mQueued; // Downloads before being picked up by the threads
@@ -133,6 +141,6 @@ class DownloadManager
 
 extern DownloadManager* downloader;
 
-bool sendHttpGet(string url, string file, int cap = 0);
+int sendHttpGet(string url, string file, int cap = 0);
 
 #endif //_DOWNLOADMANAGER_H_

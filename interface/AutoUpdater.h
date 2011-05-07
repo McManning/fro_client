@@ -6,6 +6,7 @@
 
 class Multiline;
 class Label;
+class Button;
 class AutoUpdater : public Frame
 {
   public:
@@ -32,12 +33,15 @@ class AutoUpdater : public Frame
 	void Finished();
 	void SetState(int state);
 	void SetError(string error);
+	void SaveLog();
+	void Retry();
 	
 	int mCompletedFiles;
 	int mTotalFiles;
 	
 	Multiline* mLog;
 	Label* mProgress;
+	Button* mRetry;
 };
 
 #endif //_AUTOUPDATER_H_

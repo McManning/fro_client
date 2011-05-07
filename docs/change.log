@@ -1522,6 +1522,23 @@ without either compatibility mode enabled, or security warnings, as seen with th
 110504
 - Fixed issue where NICK messages weren't correctly tokenized for certain IRCd's (such as InspIRCd)
 
+(Commit to r80)
+
+110505
+- Stripped color codes from multiple network messages
+- Fixed a few bugs in the auto updater
+- Rewrote DownloadManager to do a better job at reporting connection errors
+- Removed global byte cap from DownloadManager, and made it per-download settable
+
+110506
+- Added NET_DOWNLOAD_SUCCESS/NET_DOWNLOAD_FAILURE messenger events to DownloadManager when downloads finish
+- Added NET_DOWNLOAD_QUEUED messenger event to DownloadManager::QueueDownload()
+- Added CREATE_FRAME/DESTROY_FRAME messenger events to Frame::Frame() and Frame::~Frame() respectively. 
+	Will be used to detect when avatar favorites, editor, options, etc open/close
+- Removed the piece of crap SoundManager, because it doesn't work when the window has no focus
+	and audio alerts is the whole point of it atm. Will be replaced by a real sound engine when appropriate.
+- Commented out audio settings tab in OptionsDialog, since it no longer has any use. 
+- 
 
 Issues on the upgrade:
 	- Changed the way avatars are stored. So you will lose your old avatars. Sucks, but.. there it is.
@@ -1547,6 +1564,7 @@ WORKING ON:
 	Actor.SetGeneratedAvatar("head", r, g, b, "body", r, g, b, ... ) idk
 - Entity.SetPosition() isn't triggering a move event for listeners. It should!
 - Map.SetFlag isn't persistent!
+	- Waiting to use a new persistant data storage for user settings
 	
 - CLIPPING OPTIMIZATION TODO: Check if the shit we're going to render is within the clip rect of the screen.
 	If it's not, skip it. Things like multilines will benefit from this, so we can skip rendering strings early-on

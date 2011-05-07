@@ -5,7 +5,7 @@
 
 #include "GameManager.h"
 #include "../core/net/IrcNet2.h"
-#include "../entity/Avatar.h"
+#include "../avatar/Avatar.h"
 #include "../entity/LocalActor.h"
 #include "../net/IrcNetSenders.h"
 #include "../map/Map.h"
@@ -135,6 +135,7 @@ void callback_chatCommandPedo(Console* c, string s) { netSendEmote(15); }
 void callback_chatCommandDatAss(Console* c, string s) { netSendEmote(16); }
 void callback_chatCommandRage(Console* c, string s) { netSendEmote(17); }
 
+/*
 void callback_chatCommandJoin(Console* c, string s)
 {
 	if (s.length() < 7)
@@ -179,6 +180,7 @@ void callback_chatCommandJoin(Console* c, string s)
 #endif
 }
 
+
 void callback_chatCommandNick(Console* c, string s) // /nick nickname
 {	
 	if (s.length() < 7)
@@ -203,10 +205,10 @@ void callback_chatCommandNick(Console* c, string s) // /nick nickname
 
 void callback_chatCommandWorldsViewer(Console* c, string s)
 {	
-	//if (!gui->Get("worldsviewer"))
+	//if (!gui->Get("WorldViewer"))
 	//	new WorldsViewer();
 }
-
+*/
 void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 {
 	vString v;
@@ -231,7 +233,7 @@ void callback_chatCommandListCommands(Console* c, string s)
 	c->AddMessage("\\c990Commands:\\n  /emotes - Display emotes list\\n  /save - Save chat log to an html file\\n"
 							"  /clear - Clear the chatbox\\n  /exit - Close the program\\n  /ss - Save a screenshot (same as PRTSCRN)\\n"
 							"  /stamp <text> - Stamp the text onto the map\\n  /nick <name> - Change your nickname\\n"
-							"  /music <text> - Tell everyone the song you're listening to\\n  /join <world> - Try to join specified world\\n"
+							"  /music <text> - Tell everyone the song you're listening to\\n"
 							"  /me <text> - Tell everyone what you're currently doing");
 }
 
@@ -241,9 +243,9 @@ void hookChatCommands(Console* c)
 	c->HookCommand("/me", callback_chatCommandMe);
 	c->HookCommand("/stamp", callback_chatCommandStamp);
 	c->HookCommand("/music", callback_chatCommandListeningTo);
-	c->HookCommand("/join", callback_chatCommandJoin);
-	c->HookCommand("/nick", callback_chatCommandNick);
-	c->HookCommand("/worlds", callback_chatCommandWorldsViewer);
+//	c->HookCommand("/join", callback_chatCommandJoin);
+//	c->HookCommand("/nick", callback_chatCommandNick);
+//	c->HookCommand("/worlds", callback_chatCommandWorldsViewer);
 	c->HookCommand("/msg", callback_chatCommandMsg);
 	c->HookCommand("/emo", callback_chatCommandEmote);
 	c->HookCommand("/pos", callback_chatCommandPos);

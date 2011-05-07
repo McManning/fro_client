@@ -9,7 +9,6 @@
 #include "../core/widgets/SmallSelect.h"
 
 #include "../core/net/IrcNet2.h"
-#include "../core/sound/SoundManager.h"
 #include "../game/GameManager.h"
 #include "../entity/LocalActor.h"
 #include "../map/Map.h"
@@ -29,8 +28,8 @@ void callback_optionsDialogTab(Button* b)
 	o->Toggle(b->mId);
 }
 
-OptionsDialog::OptionsDialog() :
-	Frame(gui, "optionsdialog", rect(), "Options", true, false, true, true)
+OptionsDialog::OptionsDialog()
+	: Frame(gui, "OptionsDialog", rect(), "Options", true, false, true, true)
 {	
 	Button* b;
 	int x;
@@ -68,11 +67,11 @@ OptionsDialog::OptionsDialog() :
 		b->SetImage("assets/buttons/options_network.png");
 	x += 25;
 	
-	b = new Button(this, "Audio",rect(x,30,20,20), "", callback_optionsDialogTab);
+/*	b = new Button(this, "Audio",rect(x,30,20,20), "", callback_optionsDialogTab);
 		b->mHoverText = "Audio";
 		b->SetImage("assets/buttons/options_audio.png");
 	x += 25;
-	
+*/	
 	b = new Button(this, "Graphics",rect(x,30,20,20), "", callback_optionsDialogTab);
 		b->mHoverText = "Graphics";
 		b->SetImage("assets/buttons/options_video.png");
@@ -178,6 +177,7 @@ void OptionsDialog::_buildFrameNetwork()
 
 void OptionsDialog::_buildFrameAudio()
 {
+#ifdef _SOUNDMANAGER_H_
 	Scrollbar* sc;
 	Checkbox* c;
 	int y = 0;
@@ -193,7 +193,7 @@ void OptionsDialog::_buildFrameAudio()
 		c->SetState( 0 );
 		c->mHoverText = "Haha, you wish";
 	y += 25;
-
+#endif
 }
 
 void OptionsDialog::_buildFrameGraphics()
@@ -316,8 +316,10 @@ void OptionsDialog::Save()
 	if (sc) 
 	{
 		config.SetParamInt("sound", "volume", sc->GetValue());
+#ifdef _SOUNDMANAGER_H_
 		if (sound)
 			sound->SetVolume( sc->GetValue() );
+#endif
 	}
 	
 	c = (Checkbox*)mFrameGraphics->Get("nolimit");

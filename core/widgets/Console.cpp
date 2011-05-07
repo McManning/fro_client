@@ -410,5 +410,5 @@ void Console::SaveText()
 	}
 	fprintf(f, "</body>\n</html>\n");
 	fclose(f);
-	AddMessage("\\c090* Chat saved to: " + s);
+	AddMessage("\\c090* Log saved to: " + s);
 }

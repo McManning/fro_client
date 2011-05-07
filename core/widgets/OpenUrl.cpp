@@ -31,7 +31,7 @@ void callback_OpenUrlCopy(Button* b)
 }
 
 OpenUrl::OpenUrl(string url)
-	: Frame(gui, "openurl", rect(0,0,300,100), "Open Url", true, false, true, true)
+	: Frame(gui, "OpenUrl", rect(0,0,300,100), "Open Url", true, false, true, true)
 {
 	mUrl = url;
 	

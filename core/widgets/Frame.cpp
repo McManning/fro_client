@@ -2,6 +2,7 @@
 #include "Frame.h"
 #include "Label.h"
 #include "Button.h"
+#include "../MessageManager.h"
 #include "../Screen.h"
 #include "../Image.h"
 #include "../GuiManager.h"
@@ -58,11 +59,19 @@ Frame::Frame(Widget* wParent, string sId, rect rPosition, string sCaption,
 
 	if (wParent)
 		wParent->Add(this);
+		
+	MessageData md("CREATE_FRAME");
+	md.WriteString("id", mId);
+	messenger.Dispatch(md);
 }
 
 Frame::~Frame()
 {
 	resman->Unload(mSizer);
+	
+	MessageData md("DESTROY_FRAME");
+	md.WriteString("id", mId);
+	messenger.Dispatch(md);
 }
 
 void Frame::Render()

@@ -6,6 +6,7 @@
 //#include "widgets/Console.h"
 #include "../io/FileIO.h"
 #include "../TimerManager.h"
+#include "../MessageManager.h"
 
 #ifdef WIN32
 	#include <winsock2.h>
@@ -29,7 +30,8 @@ DownloadManager* downloader;
 int thread_downloader(void* param)
 {
 	downloadThread* dt = (downloadThread*)param;
-
+	int result;
+	
 	//while (!downloader->mFlushing)
 	while (!isAppClosing())
 	{
@@ -50,10 +52,12 @@ int thread_downloader(void* param)
 				//SDL_Delay(3000);
 				if (!fileExists(dt->currentData->filename))
 				{
-					if (!sendHttpGet(dt->currentData->url, dt->currentData->filename, dt->currentData->byteCap))
+					result = sendHttpGet(dt->currentData->url, dt->currentData->filename, dt->currentData->byteCap);
+					if (result != HTTP_OKAY)
 					{
 						//WARNING("CONNECT FAIL " + dt->currentData->url);
 						dt->currentData->errorCode = DEC_CONNECTFAIL;
+						dt->currentData->httpError = result;
 					}
 					else
 					{
@@ -105,8 +109,7 @@ DownloadManager::DownloadManager()
 	mQueuedMutex = NULL;
 	mCompletedMutex = NULL;
 	mCanQueue = true;
-	SetByteCap(MAX_DOWNLOAD_FILESIZE);
-	
+
 	//Start up winsocks
 	//TODO: Check if WSA has been initialized earlier, elsewhere
 #ifdef WIN32
@@ -177,7 +180,7 @@ void DownloadManager::Flush()
 		//PRINT("Waiting for thread " + its(i) + ": " + pts(mThreads.at(i)->thread));
 		//SDL_WaitThread(mThreads.at(i)->thread, NULL);
 		
-		if (mThreads.at(i)->thread)
+		if (mThreads.at(i) && mThreads.at(i)->thread)
 		{
 			WARNING("Forcing a kill on thread " + pts(mThreads.at(i)->thread));
 			SDL_KillThread(mThreads.at(i)->thread);
@@ -235,6 +238,8 @@ void DownloadManager::Process()
 {	
 	SDL_LockMutex(mCompletedMutex);
 
+	MessageData md;
+
 	int w;
 	for (int i = 0; i < mCompleted.size(); ++i)
 	{
@@ -247,7 +252,6 @@ void DownloadManager::Process()
 					&& md5file(mCompleted.at(i)->filename) != mCompleted.at(i)->md5hash)
 				{
 					mCompleted.at(i)->errorCode = DEC_BADHASH;
-					removeFile(mCompleted.at(i)->filename);
 				}
 			}
 			
@@ -256,17 +260,28 @@ void DownloadManager::Process()
 			{
 				if (mCompleted.at(i)->onSuccess)
 					mCompleted.at(i)->onSuccess(mCompleted.at(i));
+					
+				md.SetId("NET_DOWNLOAD_SUCCESS");
 			}
 			else
 			{
 				if (mCompleted.at(i)->onFailure)
 					mCompleted.at(i)->onFailure(mCompleted.at(i));
+					
+				md.SetId("NET_DOWNLOAD_FAILURE");
 			}
+			
+			// Send a global event notice
+			md.WriteString("url", mCompleted.at(i)->url);
+			md.WriteString("local", mCompleted.at(i)->filename);
+			md.WriteUserdata("userdata", mCompleted.at(i)->userData);
+			md.WriteInt("errorcode", mCompleted.at(i)->errorCode);
+			md.WriteInt("httperror", mCompleted.at(i)->httpError);
+			messenger.Dispatch(md);
 
 			ProcessMatchingWaitingDownloads(mCompleted.at(i));
 	
 			delete mCompleted.at(i);
-			mCompleted.at(i) = NULL;
 		}
 	}
 	mCompleted.clear(); //Clear all completed downloads
@@ -310,33 +325,24 @@ void DownloadManager::ProcessMatchingWaitingDownloads(downloadData* completed)
 
 bool DownloadManager::QueueDownload(string url, string file, void* userData,
 							void (*onSuccess)(downloadData*), void (*onFailure)(downloadData*),
-							bool overwrite, bool overrideQueueLock, string md5hash)
+							bool overwrite, bool overrideQueueLock, string md5hash, int byteCap)
 {
 	if (!mCanQueue && !overrideQueueLock) //can't queue and can't override, cancel.
 	{
 		WARNING("Queue Locked! Attempting: " + url);
 		return false;
 	}
-	
-	//build directory structure if it's not there already
-	if (!buildDirectoryTree(file))
-	{
-		WARNING("Could not create path for " + file);
-		return false;	
-	}
-	
+
 	downloadData* data = new downloadData();
 	data->url = url;
-	
-	//replace(&file, " ", "+");
 	data->filename = file;
 	data->userData = userData;
-	data->byteCap = GetByteCap();
 	data->onSuccess = onSuccess;
 	data->onFailure = onFailure;
 	data->errorCode = DEC_LOADING;
 	data->md5hash = md5hash;
-
+	data->byteCap = byteCap;
+	
 	if (overwrite)
 	{
 		//only erase the old file if it isn't a match
@@ -344,8 +350,11 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 			removeFile(file);
 	}
 
+	//build directory structure if it's not there already
+	buildDirectoryTree(file);
+	
 	// if we're already downloading this file, store elsewhere
-	if (IsUrlQueued(data->url))
+	if (IsUrlQueued(url))
 	{
 		mWaiting.push_back(data);
 	}
@@ -355,6 +364,12 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 		mQueued.push_back(data);
 		SDL_UnlockMutex(mQueuedMutex);
 	}
+	
+	MessageData md("NET_DOWNLOAD_QUEUED");
+	md.WriteString("url", url);
+	md.WriteString("local", file);
+	md.WriteUserdata("userdata", userData);
+	messenger.Dispatch(md);
 
 	return true;
 }
@@ -369,7 +384,7 @@ bool DownloadManager::IsUrlQueued(const string& url)
 	
 	for (i = 0; i < mCompleted.size(); i++)
 	{
-		if (mCompleted.at(i) && mCompleted.at(i)->url == url)
+		if (mCompleted.at(i)->url == url)
 		{
 			result = true;
 			break;
@@ -380,7 +395,7 @@ bool DownloadManager::IsUrlQueued(const string& url)
 	{
 		for (i = 0; i < mQueued.size(); i++)
 		{
-			if (mQueued.at(i) && mQueued.at(i)->url == url)
+			if (mQueued.at(i)->url == url)
 			{
 				result = true;
 				break;
@@ -526,7 +541,7 @@ bool DownloadManager::IsIdle()
 }
 
 //Connects sock to the host~
-bool openSocket(SOCKET* sock, const char* host)
+int openSocket(SOCKET* sock, const char* host)
 {
 	*sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (*sock == INVALID_SOCKET)
@@ -536,7 +551,7 @@ bool openSocket(SOCKET* sock, const char* host)
 #else
         WARNING("SOCKET INVALID: TODO: port");
 #endif
-		return false;
+		return HTTP_BAD_SOCKET;
 	}
 
     //TODO: inet_addr obsolete, replace with inet_pton or inet_aton
@@ -564,27 +579,13 @@ bool openSocket(SOCKET* sock, const char* host)
         WARNING("SOCKET Unresolveable " + string(host)
 							+ " CODE: TODO: port code");
 #endif
-		return false;
+		return HTTP_UNRESOLVEABLE_HOST;
 	}
 
 	struct sockaddr_in server;
 	server.sin_addr.s_addr = *((unsigned long*)hp->h_addr);
 	server.sin_family = AF_INET;
 	server.sin_port = htons(80);
-
-#ifdef COMMENTED_OUT
-    struct sockaddr_in server;
-    server.sin_family = AF_INET;
-    server.sin_port = htons(80);
-
-    int status = inet_pton(AF_INET, host, &server.sin_addr);
-    if (status == 0)
-    {
-        close(*sock);
-        DEBUGOUT("inet_aton Error " + string(host) + " CODE: " + its(status));
-        return false;
-    }
-#endif
 
 	if ( ::connect(*sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
@@ -597,10 +598,10 @@ bool openSocket(SOCKET* sock, const char* host)
         WARNING("SOCKET Cannot Connect " + string(host)
 							+ " CODE: TODO: port code");
 #endif
-		return false;
+		return HTTP_CANNOT_CONNECT;
 	}
 
-	return true; //all's good
+	return HTTP_OKAY; //all's good
 }
 
 //Splits a url up into a host name and a file path~
@@ -629,29 +630,28 @@ bool breakUrl(string url, string* host, string* file)
 
 //Rip off the header and download raw contents into file.
 //(ASSUMING the header properly ends with \r\n\r\n)
-bool sendHttpGet(string url, string file, int cap)
+int sendHttpGet(string url, string file, int cap)
 {
 	char buff[1024*8];
 	string host, path;
 	SOCKET conn;
 	int y, p;
-	uLong size;
+	long size;
 	std::fstream f;
     int headerEnd;
-    bool failure = false;
+    int result = HTTP_OKAY;
 
 	if (!breakUrl(url, &host, &path))
 	{
-	//	console->AddMessage("HTTP Malformed Url!");
-		return false;
+		return HTTP_MALFORMED_REQUEST;
 	}
 
 	//console->AddMessage("HTTP Opening Socket");
 
-	if (!openSocket(&conn, host.c_str()))
+	y = openSocket(&conn, host.c_str());
+	if (y != HTTP_OKAY)
 	{
-	//	console->AddMessage("HTTP Could not open connection with host!");
-		return false;
+		return y;
 	}
 
 	//send our request~
@@ -698,10 +698,10 @@ bool sendHttpGet(string url, string file, int cap)
 		while (p < size || size == 0)
 		{
 			//check for files that are too large. If they are, cancel download and delete file
-			if ( (cap > 0 && p > cap) || (cap == 0 && p > MAX_DOWNLOAD_FILESIZE) )
+			if ( cap > 0 && p > cap )
 			{
 				f.close();
-				failure = true;
+				result = HTTP_FILESIZE_CAPPED;
 				break;	
 			}
 
@@ -730,10 +730,10 @@ bool sendHttpGet(string url, string file, int cap)
     close(conn);
 #endif
 
-	if (failure)
+	if (result != HTTP_OKAY) // incomplete file
 	{
 		removeFile(file);
 	}
 	
-	return !failure;
+	return result;
 }

@@ -23,7 +23,7 @@ void callback_joinWorld(Button* b)
 	// b->mId = world ID to join
 	game->LoadOnlineWorld(b->mId);
 	
-	Widget* wv = gui->Get("worldviewer");
+	Widget* wv = gui->Get("WorldViewer");
 	if (wv)
 		wv->Die();
 }
@@ -89,7 +89,7 @@ void dlCallback_worldDataFailure(downloadData* data)
 }
 
 WorldViewer::WorldViewer()
-	: Frame(gui, "worldviewer", rect(0, 0, 400, 400), "Pick A World, Any World...", true, false, true, true)
+	: Frame(gui, "WorldViewer", rect(0, 0, 400, 400), "Pick A World, Any World...", true, false, true, true)
 {
 	Label* l;
 	Button* b;

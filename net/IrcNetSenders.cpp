@@ -6,7 +6,7 @@
 #include "../core/io/FileIO.h"
 #include "../game/GameManager.h"
 #include "../entity/LocalActor.h"
-#include "../entity/Avatar.h"
+#include "../avatar/Avatar.h"
 
 const int MAX_STAMP_TEXT_LENGTH = 30;
 

@@ -4,6 +4,7 @@
 
 #include "../core/Core.h"
 
+/*
 // Table management shorthand
 #define LUAT_ADD_STRING(_key, _string) {\
 		lua_pushstring(ls, _key); \
@@ -17,6 +18,7 @@
 		lua_pushnumber(ls, _int); \
 		lua_settable(ls, top); \
 	}
+*/
 
 class lua_State;
 

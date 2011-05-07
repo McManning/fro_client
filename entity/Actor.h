@@ -10,8 +10,6 @@
 
 #define PROCESS_MOVE_INTERVAL 40
 
-const int MAX_AVATAR_FILESIZE = (200 * 1024); //200 KB
-
 /*	Actor is a base class for "living" entities. Basically entities that can act, move, 
 	have avatars that change based on their actions, etc. 
  */

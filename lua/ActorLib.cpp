@@ -4,7 +4,7 @@
 #include "EntityLib.h"
 #include "LuaCommon.h"
 #include "../entity/Actor.h"
-#include "../entity/Avatar.h"
+#include "../avatar/Avatar.h"
 #include "../entity/LocalActor.h"
 #include "../game/GameManager.h"
 #include "../map/Map.h"

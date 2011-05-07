@@ -60,7 +60,7 @@ void dlCallback_welcomeDataSuccess(downloadData* data)
 					printf("Hash %s doesn't match\n", hash.c_str());
 					loginDialog->SetControlState(false);
 					AutoUpdater* au = new AutoUpdater();
-					//au->SendRequestForManifest();
+					au->SendRequestForManifest();
 					isDone = true;
 				}
 			}
@@ -76,10 +76,13 @@ void dlCallback_welcomeDataSuccess(downloadData* data)
 				if (!game->mUsername.empty())
 					game->mNet->mRealname = game->mUsername;
 					
-				game->mNet->TryNextServer();
-				
 				startCheckInTimer();
-				isDone = true;	
+					
+				if (!isDone)
+				{
+					game->mNet->TryNextServer();
+					isDone = true;	
+				}
 			}
 		}
 		
@@ -139,7 +142,7 @@ void callback_LoginDialogRegister(Button* b)
 }
 
 LoginDialog::LoginDialog() :
-	Frame(gui, "login", rect(50,50), "Login to Sybolt", true, false, false, true)
+	Frame(gui, "LoginDialog", rect(50,50), "Login to Sybolt", true, false, false, true)
 {
 	mSortable = false;
 	

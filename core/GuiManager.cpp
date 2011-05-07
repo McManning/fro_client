@@ -10,7 +10,7 @@
 #include "TimerManager.h"
 #include "ResourceManager.h"
 #include "FontManager.h"
-#include "sound/SoundManager.h"
+//#include "sound/SoundManager.h"
 #include "Screen.h"
 #include "net/DownloadManager.h"
 #include "MessageManager.h"
@@ -73,6 +73,7 @@ GuiManager::GuiManager()
 		FATAL("FontMan Init Fail");
 
 //SoundManager
+#ifdef _SOUNDMANAGER_H_
 	PRINT("Loading SoundMan");
 	sound = new SoundManager();
 	if (!sound->Initialize())
@@ -81,6 +82,7 @@ GuiManager::GuiManager()
 	sound->SetVolume( config.GetParamInt("sound", "volume") );
 
 	sound->Load("blip", "assets/sfx/chat.wav");
+#endif
 
 //DownloadManager
 	PRINT("Loading DlMan");
@@ -184,9 +186,11 @@ GuiManager::~GuiManager()
 	PRINT("Deleting DlMan");
 	SAFEDELETE(downloader);
 	
+#ifdef _SOUNDMANAGER_H_
 	PRINT("Deleting Sound");
 	SAFEDELETE(sound);
-	
+#endif
+
 	PRINT("Deleting FontMan");
 	SAFEDELETE(fonts);
 	
@@ -601,8 +605,10 @@ void GuiManager::GetUserAttention()
 	int i = config.GetParamInt("system", "alerts");
 	if ( i == 1 || (i == 2 && !mAppInputFocus) )
 	{
+#ifdef _SOUNDMANAGER_H_
 		if (sound)
 			sound->Play("blip");
+#endif
 
 		if (!mAppInputFocus)
 		{

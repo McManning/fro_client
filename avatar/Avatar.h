@@ -6,7 +6,9 @@
  
 const int AVATAR_FLAG_LOOPSTAND = 1;
 const int AVATAR_FLAG_LOOPSIT = 2;
- 
+
+const int MAX_AVATAR_FILESIZE = (200 * 1024); //200 KB
+
 class DataPacket;
 class Avatar
 {

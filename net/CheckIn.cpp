@@ -13,41 +13,68 @@ const int CHECK_IN_TIMER_INTERVAL_MS = 15*60*1000; //15min
 	we can do several things, including event notification, forum news/update/private message
 	notification, random item drops, additional data requests, etc. 
 <checkin>
-	<msg type="#">text</msg>
+	blahblahblah
 </checkin>
 */
-int callback_CheckInXmlParser(XmlFile* xf, TiXmlElement* e, void* userData)
-{
-	string id = e->Value();
-	
-	if (id == "msg")
-	{	
-		// TODO: type.. blah blah
-		if (game && game->GetChat())
-			game->GetChat()->AddMessage( xf->GetText(e) );
-	}
-	else if (id == "alert") // <alert title="error">TEXT</alert>
-	{
-		new MessagePopup("", xf->GetParamString(e, "title"), xf->GetText(e));
-	}
-	
-	return XMLPARSE_SUCCESS;
-}
-
 void dlCallback_CheckInXmlSuccess(downloadData* data)
 {
-	string error;
+	TiXmlDocument doc;
+	TiXmlElement* e;
+	TiXmlElement* e2;
+	const char* c;
+	string id;
 	
-	XmlFile xf;
-	xf.SetParser(callback_CheckInXmlParser);
-
-	if (xf.LoadFromFile(data->filename))
+	if (doc.LoadFile(data->filename.c_str()) == false)
 	{
-		xf.SetEntryPoint("checkin");
-		xf.Parse(NULL);
+		WARNING(doc.ErrorDesc());
+		return;
+	}
+	
+	removeFile(data->filename);
+	
+	e = doc.FirstChildElement("checkin");
+	
+	for (e; e; e = e->NextSiblingElement())
+	{
+		id = e->Value();
+	
+		if (id == "msg") // <msg>Stuff to add to chatbox</msg>
+		{
+			if (game && game->GetChat() && !e->NoChildren())
+				game->GetChat()->AddMessage( e->FirstChild()->Value() );
+		}
+		else if (id == "alert") // <alert title="error">Alert message</alert>
+		{
+			c = e->Attribute("title");
+			new MessagePopup("", (c) ? c : "Alert", e->FirstChild()->Value());
+		}
+		else if (id == "event")
+		{
+			/*
+				<event id="SOME_EVENT">
+					<key id="some key">data</key>
+					<key ...></key>
+				</event>
+			*/
+			c = e->Attribute("id");
+			if (c)
+			{
+				MessageData md(c);
+				
+				e2 = e->FirstChildElement();
+				for (e2; e2; e2 = e2->NextSiblingElement())
+				{
+					c = e2->Attribute("id");
+					if (c && !e2->NoChildren())
+					{
+						md.WriteString(c, e2->FirstChild()->Value());
+					}
+				}
+				messenger.Dispatch(md, NULL);
+			}
+		}
 	}
 
-	removeFile(data->filename);
 }
 
 void dlCallback_CheckInXmlFailure(downloadData* data)
@@ -59,11 +86,8 @@ void dlCallback_CheckInXmlFailure(downloadData* data)
 uShort timer_CheckInWithServer(timer* t, uLong ms)
 {
 	//send http get: login.php?act=ping&nick=test&id=test&pass=test&map=library
-	
-	XmlFile xf;
 	string query;
-	TiXmlElement* e;
-	
+
 	// if we're not on a server, don't check in
 	if (!game->mNet->IsConnected())
 		return TIMER_CONTINUE;

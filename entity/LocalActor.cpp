@@ -8,7 +8,7 @@
 #include "../core/net/DataPacket.h"
 #include "../core/io/Crypt.h"
 #include "../net/IrcNetSenders.h"
-#include "../entity/Avatar.h"
+#include "../avatar/Avatar.h"
 
 uShort timer_playerActionBufferSend(timer* t, uLong ms)
 {

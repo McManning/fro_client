@@ -1,6 +1,53 @@
 
 #include <lua.hpp>
+#include <stdarg.h>
 #include "LuaCommon.h"
+
+/**
+	Simple wrapper over lua_pcall. Allows us to send in a list of parameters, and specify number of return values.
+	Currently only supports char*, int, and double as input parameters. 
+	
+	@param func Global name of the function we want to call
+	@param returncount Number of return values expected on the stack
+	@param params Format string of the parameters we want to pass to the lua function
+	
+	@return result from lua_pcall (Nonzero if an error occured)
+*/
+/*
+	Example:
+		result = luaPCall(myLuaState, "HelloWorld", 1, "ssif", "Some string", "Another string", 14, 15.2);
+*/
+int luaCall(lua_State* ls, const char* func, int returncount, char* params, ...)
+{
+	int total = 0;
+    va_list args;
+    va_start(args, params);
+	
+	while (*params != '\0')
+	{
+		if (*params == 's')
+		{
+			lua_pushstring(ls, va_arg(args, char*));
+			++total;
+		}
+		else if (*params == 'd' || *params == 'i')
+		{
+			lua_pushnumber(ls, va_arg(args, int));
+			++total;
+		}
+		else if (*params == 'f')
+		{
+			lua_pushnumber(ls, va_arg(args, double));
+			++total;
+		}
+		
+		++params;
+	}
+	
+	va_end(args);
+	
+	return lua_pcall(ls, total, returncount, 0);
+}
 
 bool luaCountArgs(lua_State* ls, int desired)
 {

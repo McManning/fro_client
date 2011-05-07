@@ -1,7 +1,7 @@
 
 #include <lua.hpp>
 #include "RemoteActor.h"
-#include "Avatar.h"
+#include "../avatar/Avatar.h"
 #include "../core/net/DataPacket.h"
 #include "../map/Map.h"
 #include "../game/GameManager.h"

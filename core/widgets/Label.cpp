@@ -56,6 +56,8 @@ void Label::SetCaption(string text)
     	}
     	
     	SetPosition(r);
+    	FlagRender(); //force a redraw, even if it doesn't change in size (content changed)
+    	
     }
 }
 

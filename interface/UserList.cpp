@@ -18,7 +18,7 @@ void callback_UserListDoubleClick(Multiline* m)
 }
 
 UserList::UserList() :
-	Console("userlist", "Characters: 0", "", color(178,204,237), true, false, false)
+	Console("UserList", "Characters: 0", "", color(178,204,237), true, false, false)
 {
 	//convert our output to list format
 	mOutput->mWrap = false;

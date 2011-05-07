@@ -236,11 +236,11 @@ void callback_hudSubButton(Button* b)
 	switch (b->mId.at(0))
 	{
 		case 'a': //avatar favorites
-			if (!gui->Get("avyfavs"))
+			if (!gui->Get("AvatarFavorites"))
 				new AvatarFavorites();
 			break;
 		case 'o': 
-			if (!gui->Get("optionsdialog"))
+			if (!gui->Get("OptionsDialog"))
 			{
 				OptionsDialog* o = new OptionsDialog();
 				o->DemandFocus(true);
@@ -256,11 +256,11 @@ void callback_hudSubButton(Button* b)
 				new MyAchievements();
 			break;*/
 		case 'u': //userlist
-			if (!gui->Get("userlist"))
+			if (!gui->Get("UserList"))
 				new UserList();
 			break;
 		case 'w': //world viewer
-			if (!gui->Get("worldviewer"))
+			if (!gui->Get("WorldViewer"))
 				new WorldViewer();
 			break;
 		default: break;
@@ -339,7 +339,7 @@ void Map::HandleRightClick()
 
 	if (e == (Entity*)game->mPlayer)
 	{
-		if (!gui->Get("avyfavs"))
+		if (!gui->Get("AvatarFavorites"))
 			new AvatarFavorites();
 	}
 	else if (e) //remote player
