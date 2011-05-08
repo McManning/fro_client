@@ -18,7 +18,6 @@ enum { //copying SDL_BUTTON masks for easy conversion
 };
 
 class Font;
-class XmlFile;
 class HintBalloon;
 class Label;
 class GuiManager : public Widget
@@ -139,6 +138,8 @@ class GuiManager : public Widget
 	bool mPendingScreenshot;
 	
 	color mBaseColor; // for use with colorization of assets
+	
+	int mSystemAlertType;
 	
   private:
 	rect mMousePosition;

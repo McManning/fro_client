@@ -204,6 +204,31 @@ int player_SetProp(lua_State* ls)
 	return 0;
 }
 
+//	string = .GetFlag("flag") Returns string of value. Empty string if it doesn't exist
+int player_GetFlag(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+
+	ASSERT(game && game->mPlayer);
+
+	string s = game->mPlayer->GetFlag( lua_tostring(ls, 1) );
+	lua_pushstring(ls, s.c_str());
+	
+	return 1;	
+}
+
+//	.SetFlag("flag", "value")
+int player_SetFlag(lua_State* ls)
+{
+	luaCountArgs(ls, 2);
+
+	ASSERT(game && game->mPlayer);
+
+	game->mPlayer->SetFlag(lua_tostring(ls, 1), lua_tostring(ls, 2));
+
+	return 0;
+}
+
 /*
 //	.EarnAchievement(title, desc<can only be set once>, max<can only be set once>)
 //		Will +1 the total for the achievement. If total == max, display to the player
@@ -400,6 +425,8 @@ static const luaL_Reg functions[] = {
 	{"AddCash", player_AddCash}, */
 	{"GetProp", player_GetProp},
 	{"SetProp", player_SetProp},
+	{"GetFlag", player_GetFlag},
+	{"SetFlag", player_SetFlag},
 /*	{"EarnAchievement", player_EarnAchievement},
 	{"GetAchievement", player_GetAchievement},
 	{"RequestDuelAction", player_RequestDuelAction},

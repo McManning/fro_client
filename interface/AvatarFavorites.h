@@ -1,38 +1,13 @@
 
-#ifndef _AVATARFAVORITESDIALOG_H_
-#define _AVATARFAVORITESDIALOG_H_
+#ifndef _AVATARFAVORITES_H_
+#define _AVATARFAVORITES_H_
 
-#include "../core/Core.h"
 #include "../core/widgets/Frame.h"
+#include "../avatar/AvatarProperties.h"
 
 const char* const AVATAR_FAVORITES_FILENAME = "avatars.lua";
  
 const int AVYCHANGE_INTERVAL_MS = 5000;
-
-//TODO: Just use Avatar class!
-struct avatarProperties
-{
-	string id;
-	string url;
-	string pass;
-	uShort w;
-	uShort h;
-	uShort delay;
-    uShort flags;
-};
-
-class Label;
-struct avatarProperties;
-class AvatarEdit : public Frame 
-{
-  public:
-	AvatarEdit(avatarProperties* prop);
-	~AvatarEdit();
-	
-	Label* mAlertLabel;
-	
-	avatarProperties* mCurrentProperties;
-};
 
 /*
 	In the future, it'd be nice if this held Avatar classes instead of
@@ -42,7 +17,9 @@ class AvatarEdit : public Frame
 class Button;
 class Multiline;
 class AvatarCreator;
-class lua_State;
+class AvatarEdit;
+
+struct lua_State;
 class AvatarFavorites : public Frame 
 {
   public:
@@ -55,18 +32,16 @@ class AvatarFavorites : public Frame
 	void EditSelected();
 	void UseSelected();
 	void AddNew();
-	avatarProperties* Add(avatarProperties* prop);
-	
-	avatarProperties* Add(string url, uShort w, uShort h, string pass, 
-							uShort delay, uShort flags);
-	
-	avatarProperties* Find(string url);
-	
-	bool AvatarPropertiesFromLuaTable(lua_State* ls, avatarProperties* props);
-	
 	void EraseSelected();
-	bool Load();
-	bool Save();
+
+	void LoadAvatarManager();
+	int GetTotalFolders();
+	int GetTotalAvatars(int iFolder);
+	void GetAvatarProperties(int iFolder, int iIndex, AvatarProperties& result);
+	void RemoveAvatar(int iFolder, int iIndex);
+	void AddAvatar(int iFolder, AvatarProperties& props);
+	void UpdateAvatar(int iFolder, int iIndex, AvatarProperties& props);
+	bool SetWorkingFolder(int iFolder);
 	
 	Button* mNew;
 	Button* mUse;
@@ -75,12 +50,13 @@ class AvatarFavorites : public Frame
 	Button* mDesign;
 	Multiline* mList;
 
-	std::vector<avatarProperties*> mAvatars;
-
 	AvatarEdit* mAvatarEdit;
 	AvatarCreator* mAvatarCreator;
+	
+	int mWorkingFolder;
+	lua_State* mLuaState;
 };
 
 extern AvatarFavorites* avatarFavorites; //<-- todo: GetInstance()
 
-#endif //_AVATARFAVORITESDIALOG_H_
+#endif //_AVATARFAVORITES_H_

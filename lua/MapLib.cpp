@@ -120,11 +120,7 @@ lua_State* mapLib_OpenLuaState()
 //	.NewBasic() - Sets Game::mMap to a new initialized BasicMap class.
 int map_NewBasic(lua_State* ls)
 {
-	PRINT("map_NewBasic");
-	
-	ASSERT(!game->mMap);
-	
-	game->mMap = new Map();
+	console->AddMessage("\\c900DEPRECIATED Map.NewBasic()");
 	return 0;
 }
 

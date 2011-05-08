@@ -11,14 +11,6 @@
 #include <map>
 #include "../core/Core.h"
 
-#ifdef DEBUG
-const int MAX_AVATAR_WIDTH = 64*10;
-const int MAX_AVATAR_HEIGHT = 96*10;
-#else
-const int MAX_AVATAR_WIDTH = 64;
-const int MAX_AVATAR_HEIGHT = 96;
-#endif
-
 typedef enum
 {
 	ENTITY_ANY = 0,

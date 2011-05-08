@@ -12,6 +12,5 @@
 #include "TimerManager.h"
 #include "net/DownloadManager.h"
 #include "widgets/Console.h"
-#include "io/XmlFile.h"
 
 #endif //_CORE_INCLUDE_H_

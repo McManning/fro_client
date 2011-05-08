@@ -110,6 +110,4 @@ private:
 	int (*mParseCallback)(XmlFile*, TiXmlElement*, void* userData);
 };
 
-extern XmlFile config;
-
 #endif //_XMLFILE_H_

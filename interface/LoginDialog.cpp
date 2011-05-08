@@ -50,6 +50,7 @@ void dlCallback_welcomeDataSuccess(downloadData* data)
 				game->mPassword.clear();
 
 				loginDialog->SetControlState(true);
+				isDone = true;
 			}
 			else if (lines.at(i).find("manifest:", 0) == 0)
 			{
@@ -155,25 +156,25 @@ LoginDialog::LoginDialog() :
 	Checkbox* c;
 	Label* l;
 
-	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("login");
-	
+	// TODO: Pull login creds out somewhere else, locally. That WON'T get uploaded to sybolt
+
 	new Label(this, "", rect(10,y), "ID");
 	i = new Input(this, "id", rect(60, y, 150, 20), "", 32, true, NULL);
-		i->SetText( game->mPlayerData.GetParamString(e, "id") );
+		//i->SetText( game->mPlayerData.GetParamString(e, "id") );
 		i->SetKeyFocus();
 	y += 25;	
 	
 	new Label(this, "", rect(10,y), "Pass");
 	i = new Input(this, "pass", rect(60, y, 150, 20), "", 32, true, NULL);
-		i->SetText( game->mPlayerData.GetParamString(e, "pass") );
+		//i->SetText( game->mPlayerData.GetParamString(e, "pass") );
 		i->mIsPassword = true;
 	y += 25;
 
 	//checkboxes to the left
-	c = new Checkbox(this, "remember", rect(10,y), "Remember Me", 0);
+/*	c = new Checkbox(this, "remember", rect(10,y), "Remember Me", 0);
 		c->SetState( game->mPlayerData.GetParamInt(e, "remember") );
 	y += 25;
-	
+*/
 	
 	//bottom button set
 	b = new Button(this, "register",rect(10,y,20,20), "", callback_LoginDialogRegister);
@@ -254,7 +255,7 @@ void LoginDialog::SendLogin()
 		return;
 	}
 
-	c = (Checkbox*)Get("remember");
+/*	c = (Checkbox*)Get("remember");
 	if (c)
 	{
 		TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("login");
@@ -271,7 +272,7 @@ void LoginDialog::SendLogin()
 				game->mPlayerData.SetParamString(e, "pass", i->GetText());
 		}
 	}
-
+*/
 	SendLoginQuery(false);
 }
 
@@ -321,7 +322,12 @@ void LoginDialog::SetControlState(bool enabled)
 	Get("login")->SetVisible(enabled);
 	Get("skip")->SetVisible(enabled);
 	Get("register")->SetVisible(enabled);
-	Get("remember")->SetVisible(enabled);
+	
+	Widget* w;
+	
+	w = Get("remember");
+	if (w)
+		w->SetVisible(enabled);
 	//Get("id")->SetActive(enabled);
 	//Get("pass")->SetActive(enabled);
 	

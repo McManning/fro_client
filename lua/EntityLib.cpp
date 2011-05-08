@@ -190,6 +190,30 @@ int entity_SetPosition(lua_State* ls)
 	return 0;	
 }
 
+int entity_GetOrigin(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+
+	Entity* e = _getReferencedEntity(ls);
+
+	lua_pushnumber(ls, e->mOrigin.x);
+	lua_pushnumber(ls, e->mOrigin.y);
+	
+	return 2;
+}
+
+int entity_SetOrigin(lua_State* ls)
+{
+	luaCountArgs(ls, 3);
+	
+	Entity* e = _getReferencedEntity(ls);
+
+	point2d p((sShort)lua_tonumber(ls, 2), (sShort)lua_tonumber(ls, 3));
+	e->mOrigin = p;
+
+	return 0;		
+}
+
 // x, y, w, h = .GetRect(entity) - Where x, y are coordinates of the top left our our avatar on the map. w, h are avatar dimensions.
 int entity_GetRect(lua_State* ls) 
 {
@@ -855,6 +879,8 @@ static const luaL_Reg functions[] = {
 	{"FindAllByName", entity_FindAllByName},
 	{"GetPosition", entity_GetPosition},
 	{"SetPosition", entity_SetPosition},
+	{"GetOrigin", entity_GetOrigin},
+	{"SetOrigin", entity_SetOrigin},
 	{"GetRect", entity_GetRect},
 	{"GetProp", entity_GetProp},
 	{"SetProp", entity_SetProp},

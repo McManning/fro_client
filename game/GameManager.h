@@ -4,6 +4,7 @@
 
 #include "../core/Core.h"
 #include "../core/widgets/Frame.h"
+#include "../core/io/KeyValueMap.h"
 #include "WorldLoader.h"
 
 const int JOIN_INTERVAL_MS = (10*1000);
@@ -11,9 +12,6 @@ const int JOIN_INTERVAL_MS = (10*1000);
 const char* const DIR_DEV = "dev/";
 const char* const DIR_AVA = "assets/ava/";
 const char* const DIR_PROFILE = "profile/";
-
-const char* const PLAYERDATA_ENCRYPTION_KEY = "JV4872JP64BJHD4X2JX";
-const char* const PLAYERDATA_FILE = "profile.save";
 
 class Map;
 class LocalActor;
@@ -40,9 +38,7 @@ class GameManager : public Frame
 	void Render();
 	void Event(SDL_Event* event);
 
-	void GenerateDefaultPlayerData();
-	void LoadPlayerData();
-	void SavePlayerData();
+	void LoadUserData();
 
 	void ToggleHud(bool visible);
 	
@@ -71,8 +67,7 @@ class GameManager : public Frame
 	string mWarpDestinationObject;
 	point2d mWarpDestinationPoint;
 
-	XmlFile mConfig; //global config file for game-related material
-	XmlFile mPlayerData; //our game-specific data. Including inventory, stats, etc. 
+	KeyValueMap mUserData; // holds our map keys, game config, etc. 
 
 	//login credentials. mPassword is an md5 value.
 	string mUsername;

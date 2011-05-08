@@ -9,7 +9,6 @@
 #include "../GuiManager.h"
 #include "../ResourceManager.h"
 #include "../FontManager.h"
-#include "../io/XmlFile.h"
 #include "../io/FileIO.h"
 
 Console* console;
@@ -74,7 +73,7 @@ Console::Console(string id, string title, string savePrefix, color c,
 	mId = id;
 	mType = WIDGET_FRAME;
 
-	mBackgroundColor = color(0,0,0,config.GetParamInt("console", "alpha"));
+	mBackgroundColor = color(0,0,0,230);
 	mBackground = NULL;
 	mShowTimestamps = true;
 	mDrawBackground = true;
@@ -257,7 +256,7 @@ void Console::AddMessage(string msg)
 {
 	if (msg.empty()) return;
 	
-	if (mShowTimestamps && config.GetParamInt("console", "timestamps") == 1)
+	if (mShowTimestamps)
 		msg = shortTimestamp() + " " + msg;
 	
 	PRINT("[Console] " + msg);

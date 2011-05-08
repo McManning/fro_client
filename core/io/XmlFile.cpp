@@ -1,8 +1,6 @@
 
 #include "XmlFile.h"
 
-XmlFile config;
-
 XmlFile::XmlFile()
 {
 	mParseCallback = NULL;

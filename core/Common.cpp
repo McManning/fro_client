@@ -2,7 +2,6 @@
 #include <SDL/SDL_syswm.h>
 #include "Common.h"
 #include "io/FileIO.h"
-#include "io/XmlFile.h"
 
 applicationState appState;
 
@@ -839,23 +838,6 @@ bool fileExists(string filename)
 		fclose(f);
 		return true;
 	}
-}
-
-void loadGlobalConfig()
-{	
-	if (!config.LoadFromFile(CONFIG_FILENAME))
-	{
-		FATAL("config load error: " + config.GetError());
-	}
-	
-	config.mXmlPos = config.mDoc.FirstChildElement("configuration");
-	
-	if (!config.mXmlPos)
-	{
-		FATAL("Invalid config");
-	}
-	
-	config.mAutoSave = true;
 }
 
 bool isWhitespace(char c)

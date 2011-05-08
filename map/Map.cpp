@@ -12,7 +12,7 @@
 #include "../game/WorldLoader.h"
 #include "../lua/MapLib.h"
 
-#include "../interface/AvatarFavoritesDialog.h"
+#include "../interface/AvatarFavorites.h"
 #include "../interface/UserList.h"
 #include "../interface/OptionsDialog.h"
 #include "../interface/AvatarCreator.h"
@@ -117,15 +117,7 @@ Map::Map()
 	CreateChatbox();
 	CreateHud();
 
-	TiXmlElement* top = game->mPlayerData.mDoc.FirstChildElement();
-	TiXmlElement* e;
-	ASSERT(top);
-
-	e = top->FirstChildElement("map");
-	if (e)
-		mShowPlayerNames = game->mPlayerData.GetParamInt(e, "shownames");
-	else
-		mShowPlayerNames = false;
+	mShowPlayerNames = sti(game->mUserData.GetValue("MapSettings", "ShowNames"));
 		
 	mGravity = 1;
 	mCameraSpeed = 4;
@@ -211,9 +203,9 @@ void Map::CreateChatbox()
 		mChat->mExit->onClickCallback = callback_hideChatbox;
 		mChat->mExit->mHoverText = "Hide Chat";
 		Add(mChat);
-	
-	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
-	rect r = game->mPlayerData.GetParamRect(e, "position");
+
+	rect r = deserializeRect( game->mUserData.GetValue("MapSettings", "ChatPosition") );
+
 	if (isDefaultRect(r))
 	{
 		mChat->SetPosition( rect(mPosition.w - mChat->Width(), 
@@ -467,13 +459,10 @@ void Map::Die()
 	mLuaState = NULL;
 	
 	FlushEntities();
-	
-	SaveFlags();
-	
+
 	if (mChat)
 	{
-	   TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("chat");
-	   game->mPlayerData.SetParamRect(e, "position", mChat->GetPosition());
+	   game->mUserData.SetValue("MapSettings", "ChatPosition", serializeRect(mChat->GetPosition()));
     }
     
 	Widget::Die();
@@ -712,6 +701,7 @@ void Map::SetFlag(string flag, string value)
 	flag = base64_encode(flag.c_str(), flag.length());
 	value = base64_encode(value.c_str(), value.length());
 	mFlags[flag] = value;
+	SaveFlags();
 }
 
 string Map::GetFlag(string flag)
@@ -731,20 +721,7 @@ void Map::LoadFlags()
 	if (!game)
 		return;
 		
-	string flags;
-	TiXmlElement* top = game->mPlayerData.mDoc.FirstChildElement();
-	TiXmlElement* e;
-
-	string elementId = "flags:" + mId;
-
-	e = top->FirstChildElement(elementId.c_str());
-	
-	// no flags to load
-	if (!e) 
-		return; 
-	
-	flags = game->mPlayerData.GetText(e);
-	
+	string flags = game->mUserData.GetValue("Map:" + mId, "Flags");
 	vString v;
 	explode(&v, &flags, ",");
 	
@@ -763,21 +740,7 @@ void Map::SaveFlags()
 {
 	if (!game)
 		return;
-		
-	TiXmlElement* top = game->mPlayerData.mDoc.FirstChildElement();
-	TiXmlElement* e;
 
-	string elementId = "flags:" + mId;
-
-	e = top->FirstChildElement(elementId.c_str());
-	
-	if (mFlags.empty()) //trash the element, don't add
-	{
-		if (e)
-			top->RemoveChild(e);
-		return;	
-	}
-	
 	string flags;
 	
 	//Convert our map to a string
@@ -787,13 +750,7 @@ void Map::SaveFlags()
 		flags += it->second + ',';
 	}	
 
-	if (!e) // Add one
-	{
-		e = new TiXmlElement(elementId.c_str());
-		top->LinkEndChild(e);
-	}
-	
-	game->mPlayerData.SetText(e, flags);
+	game->mUserData.SetValue("Map:" + mId, "Flags", flags);
 }
 
 void Map::HideChat()

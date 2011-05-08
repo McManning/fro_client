@@ -1,6 +1,6 @@
 
 #include "AvatarCreator.h"
-#include "AvatarFavoritesDialog.h"
+#include "AvatarFavorites.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/widgets/Label.h"
 #include "../core/widgets/Button.h"
@@ -76,7 +76,7 @@ void callback_AvatarCreatorSavePNG(Button* b)
 
 
 
-AvatarCreator::AvatarCreator()
+AvatarCreator::AvatarCreator(int workingIndex, string url)
 	: Frame(gui, "AvatarCreator", rect(), "Avatar Designer (BETA)", true, false, true, true)
 {
 	SetSize(230, 225);
@@ -85,6 +85,7 @@ AvatarCreator::AvatarCreator()
 	mHeadColor = mBodyColor = mHairColor = color(255,255,255);
 	mHead = mBody = mHair = mFullComposite = mCompositePreview = NULL;
 	mRedraw = false;
+	mWorkingIndex = workingIndex;
 
 	CreateControls();
 	ResizeChildren();
@@ -111,8 +112,8 @@ AvatarCreator::AvatarCreator()
 	
 	Update();
 	
-	if (avatarFavorites)
-		avatarFavorites->SetActive(false);
+	if (!url.empty())
+		ImportUrl(url);
 }
 
 AvatarCreator::~AvatarCreator()
@@ -493,36 +494,31 @@ void AvatarCreator::AddDesignToFavorites()
 {
 	//Construct the url in the form avy://Base.HeadId.HeadHex.BodyId.BodyHex.HairId.HairHex
 	
-	string url = "avy://";
-	url += mBase + ".";
+	AvatarProperties props;
+	
+	props.url = "avy://";
+	props.url += mBase + ".";
 
 	string s;
 	s = mHeadFile.substr(0, mHeadFile.length() - 4); //get rid of .png
 	s.erase(0, s.find_last_of(".")+1); //erase everything before the id
-	url += s + "." + colorToHex(mHeadColor) + ".";
+	props.url += s + "." + colorToHex(mHeadColor) + ".";
 	
 	s = mBodyFile.substr(0, mBodyFile.length() - 4); //get rid of .png
 	s.erase(0, s.find_last_of(".")+1); //erase everything before the id
-	url += s + "." + colorToHex(mBodyColor) + ".";
+	props.url += s + "." + colorToHex(mBodyColor) + ".";
 	
 	s = mHairFile.substr(0, mHairFile.length() - 4); //get rid of .png
 	s.erase(0, s.find_last_of(".")+1); //erase everything before the id
-	url += s + "." + colorToHex(mHairColor);
+	props.url += s + "." + colorToHex(mHairColor);
+
+	props.w = mCompositePreview->Width();
+	props.h = mCompositePreview->Height();
+	props.delay = 1000;
+	props.flags = 0;
+	props.pass = "";
 	
-	ASSERT(avatarFavorites);
-		
-	// add it as a new one
-	if (mOriginalUrl.empty())
-	{	
-		avatarFavorites->Add(url, mCompositePreview->Width(), mCompositePreview->Height(), 
-							"", 1000, 0);
-	}
-	else //Otherwise, we need to replace the old one with this new data
-	{
-		avatarProperties* props = avatarFavorites->Find(mOriginalUrl);
-		props->url = url;
-		avatarFavorites->Add(props); // Have to call Add() in order to change the displayed ID
-	}
+	avatarFavorites->UpdateAvatar(avatarFavorites->mWorkingFolder, mWorkingIndex, props);
 
 	Die();
 }
@@ -545,8 +541,6 @@ void AvatarCreator::SaveToFile()
 */
 void AvatarCreator::ImportUrl(string url)
 {
-	mOriginalUrl = url; //save it for find->replace in AvyFavs later
-	
 	url = url.substr(6); //cut off avy://
 	
 	vString v;

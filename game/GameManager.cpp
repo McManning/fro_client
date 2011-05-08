@@ -222,11 +222,11 @@ GameManager::GameManager()
 
 	PRINT("[GM] Loading Player Data");
 		
-	LoadPlayerData();
+	LoadUserData();
 
 	mMap = NULL;
-	mShowJoinParts = mPlayerData.GetParamInt("map", "joinparts");
-	mShowAddresses = mPlayerData.GetParamInt("map", "addresses");
+	mShowJoinParts = sti(mUserData.GetValue("MapSettings", "JoinParts"));
+	mShowAddresses = sti(mUserData.GetValue("MapSettings", "ShowAddresses"));
 
 	PRINT("[GM] Loading Network");
 	mNet = new IrcNet();
@@ -237,7 +237,7 @@ GameManager::GameManager()
 
 	PRINT("[GM] Loading Local Actor");
 	mPlayer = new LocalActor();
-	mPlayer->mName = mPlayerData.GetParamString("user", "nick");
+	mPlayer->mName = mUserData.GetValue("MapSettings", "Nick");
 	if (mPlayer->mName.empty())
 		mPlayer->mName = "fro_user";
 
@@ -287,8 +287,6 @@ GameManager::~GameManager()
 	}
 	
 	PRINT("~GameManager 5");
-
-	SavePlayerData();
 
 	unhookNetListeners();
 	SAFEDELETE(mNet);
@@ -496,130 +494,29 @@ Console* GameManager::GetPrivateChat(string nick)
 	return c;
 }
 
-/*	<data>
-		<cash amount="100" />
-		<login id="" pass="" remember="0" />
-		<avatar url="" pass="" w="" h="" delay="" loopsit="" loopstand="" />
-		<map trading="1" shownames="0" privmsg="1" joinparts="1" addresses="0" />
-		<chat position=""/>
-		<flags/>
-		<achievements/>
-		<inventory/>
-	</data>
-*/
-void GameManager::GenerateDefaultPlayerData()
+void GameManager::LoadUserData()
 {
-	TiXmlElement* e;
-	TiXmlElement* root;
-	
-	root = new TiXmlElement("data");
-	mPlayerData.mDoc.LinkEndChild(root);
-
-	e = mPlayerData.AddChildElement(root, "user");
-	mPlayerData.SetParamString(e, "nick", "fro_user");
-
-	e = mPlayerData.AddChildElement(root, "cash");
-	mPlayerData.SetParamInt(e, "amount", 100);
-
-	mPlayerData.AddChildElement(root, "flags");
-	//mPlayerData.AddChildElement(root, "inventory");
-	//mPlayerData.AddChildElement(root, "achievements");
-
-	// <chat position=""/>
-	e = mPlayerData.AddChildElement(root, "chat");
-	mPlayerData.SetParamString(e, "position", "");
-
-	// <login id="" pass="" remember="0" />
-	e = mPlayerData.AddChildElement(root, "login");
-	mPlayerData.SetParamString(e, "id", "");
-	mPlayerData.SetParamString(e, "pass", "");
-	mPlayerData.SetParamInt(e, "remember", 0);
-	
-	// <avatar url="" pass="" w="" h="" delay="" loopsit="" loopstand="" />
-	e = mPlayerData.AddChildElement(root, "avatar");
-	mPlayerData.SetParamString(e, "url", "");
-	mPlayerData.SetParamString(e, "pass", "");
-	mPlayerData.SetParamInt(e, "delay", 0);
-	mPlayerData.SetParamInt(e, "loopsit", 0);
-	mPlayerData.SetParamInt(e, "loopstand", 0);
-	
-	//user set game configurations
-	e = mPlayerData.AddChildElement(root, "map");
-	mPlayerData.SetParamInt(e, "trading", 1);
-	mPlayerData.SetParamInt(e, "shownames", 0);
-	mPlayerData.SetParamInt(e, "privmsg", 1);
-	mPlayerData.SetParamInt(e, "joinparts", 1);
-	mPlayerData.SetParamInt(e, "addresses", 0);
-	mPlayerData.SetParamString(e, "lastid", "");
-	mPlayerData.SetParamInt(e, "lastx", 0);
-	mPlayerData.SetParamInt(e, "lasty", 0);
-	
-}
-
-void GameManager::LoadPlayerData()
-{
-	string file = DIR_PROFILE;
-	file += PLAYERDATA_FILE;
-	
-	if (!fileExists(file))
+	if (mUserData.Load("profile/settings", false) == 2)
 	{
-		GenerateDefaultPlayerData();
-		mPlayerData.mXmlPos = mPlayerData.mDoc.FirstChildElement("data");
-		return;	
+		// a new settings file has been generated. Write defaults
+		mUserData.SetValue("MapSettings", "Timestamps", "1");
+		mUserData.SetValue("MapSettings", "PrivMsg", "1");
+		mUserData.SetValue("MapSettings", "ShowNames", "0");
+		mUserData.SetValue("MapSettings", "ShowAddresses", "0");
+		mUserData.SetValue("MapSettings", "JoinParts", "1");	
+		
+		mUserData.SetValue("System", "LowCpu", its(gui->mUseLowCpu));
+		mUserData.SetValue("System", "NoLimit", its(gui->mNoFpsLimit));
+		mUserData.SetValue("System", "FPS", its(gui->mFpsCap));
+		mUserData.SetValue("System", "Alerts", its(gui->mSystemAlertType));
 	}
-	
-	BoltFile bf;
-	bf.mPassword = PLAYERDATA_ENCRYPTION_KEY;
-	bf.mEncryptLength = 0;
-	
-	bf.Load(file);
-
-	/*if (bf.Decrypt() == 0)
+	else // configure things based on settings values
 	{
-		FATAL("Could not decrypt Player Data");
-	}*/
-
-	//Load file contents into XML elements
-	if ( !mPlayerData.LoadFromMemory(bf.mData, bf.mLength) )
-	{
-		FATAL(mPlayerData.GetError());
-	}
-
-	mPlayerData.mAutoSave = true;
-	
-	mPlayerData.mXmlPos = mPlayerData.mDoc.FirstChildElement("data");
-
-}
-
-void GameManager::SavePlayerData()
-{
-	mPlayerData.mXmlPos = mPlayerData.mDoc.FirstChildElement("data");
-
-	if (mPlayer)
-		mPlayer->SaveFlagsToXml();
-
-	string file = DIR_PROFILE;
-	file += PLAYERDATA_FILE;
-
-	if (mPlayerData.SaveToFile(file)) 
-	{
-		/*BoltFile bf;
-		bf.mPassword = PLAYERDATA_ENCRYPTION_KEY;
-		bf.mEncryptLength = 0;
-		bf.Load(PLAYERDATA_FILE);
-		if (bf.Encrypt() == 0)
-		{
-			FATAL("Could not encrypt Player Data");
-		}
-		else
-		{
-			bf.Save(PLAYERDATA_FILE);
-		}
-		*/
-	}
-	else
-	{
-		FATAL("Failed to save Player Data");
+		// Override gui defaults with our configs
+		gui->mUseLowCpu = sti(mUserData.GetValue("System", "LowCpu"));
+		gui->mNoFpsLimit = sti(mUserData.GetValue("System", "NoLimit"));
+		gui->mFpsCap = sti(mUserData.GetValue("System", "FPS"));
+		gui->mSystemAlertType = sti(mUserData.GetValue("System", "Alerts"));
 	}
 }
 

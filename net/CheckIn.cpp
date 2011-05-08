@@ -6,6 +6,7 @@
 #include "../map/Map.h"
 #include "../entity/LocalActor.h"
 #include "../core/net/IrcNet2.h"
+#include "../core/io/tinyxml/tinyxml.h"
 
 const int CHECK_IN_TIMER_INTERVAL_MS = 15*60*1000; //15min
 

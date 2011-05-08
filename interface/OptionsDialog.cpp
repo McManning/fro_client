@@ -44,10 +44,7 @@ OptionsDialog::OptionsDialog()
 	mFrameNetwork = new Frame(this, "Network", r);
 	mFrameAudio = new Frame(this, "Audio", r);
 	mFrameGraphics = new Frame(this, "Graphics", r);
-	
-	//in case something else screwed with it
-	game->mPlayerData.mXmlPos = game->mPlayerData.mDoc.FirstChildElement("data");
-	
+
 	_buildFrameUser();
 	_buildFrameNetwork();
 	_buildFrameAudio();
@@ -127,7 +124,7 @@ void OptionsDialog::_buildFrameUser()
 		ss->AddItem("Off");
 		ss->AddItem("Always");
 		ss->AddItem("Only When Inactive");
-		ss->mSelectedIndex = config.GetParamInt("system", "alerts");
+		ss->mSelectedIndex = gui->mSystemAlertType;
 		ss->mHoverText = "Controls when to flash the title bar for a new message";
 	y += 25;
 	
@@ -141,7 +138,7 @@ void OptionsDialog::_buildFrameUser()
 */
 
 	c = new Checkbox(mFrameUser, "stamps", rect(0,y), "Show Timestamps", 0);
-		c->SetState( config.GetParamInt("console", "timestamps") );
+		c->SetState( sti(game->mUserData.GetValue("MapSettings", "Timestamps")) );
 	y += 25;
 }
 
@@ -170,7 +167,7 @@ void OptionsDialog::_buildFrameNetwork()
 	y += 25;
 	
 	c = new Checkbox(mFrameNetwork, "privmsg", rect(0,y), "Accept Private Messages", 0);
-		c->SetState( game->mPlayerData.GetParamInt("map", "privmsg") );
+		c->SetState( sti(game->mUserData.GetValue("MapSettings", "PrivMsg")) );
 	y += 25;
 
 }
@@ -206,15 +203,15 @@ void OptionsDialog::_buildFrameGraphics()
 	
 	new Label(mFrameGraphics, "", rect(0,y), "FPS Cap");
 	i = new Input(mFrameGraphics, "fps", rect(95, y, 150, 20), "0123456789", 0, true, NULL);
-		i->SetText( config.GetParamString("system", "fps") );
+		i->SetText( its(gui->mFpsCap) );
 	y += 25;
 
 	c = new Checkbox(mFrameGraphics, "lowcpu", rect(0,y), "Use Lower Cpu When Inactive", 0);
-		c->SetState( config.GetParamInt("system", "lowcpu") );
+		c->SetState( gui->mUseLowCpu );
 	y += 25;
 		
 	c = new Checkbox(mFrameGraphics, "nolimit", rect(0,y), "Max Speed (Not Recommended)", 0);
-		c->SetState( config.GetParamInt("system", "nolimit") );
+		c->SetState( gui->mNoFpsLimit );
 		c->mHoverText = "Seriously, this is a 2D chat room. Why have 4000 FPS?";
 	y += 25;	
 }
@@ -248,10 +245,8 @@ void OptionsDialog::Save()
 				if (userlist)
 					userlist->ChangeNick(game->mPlayer->mName, s);
 				game->mPlayer->mName = s;
-				
-				TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
-				game->mPlayerData.SetParamString(e, "nick", s);
-				game->SavePlayerData();
+
+				game->mUserData.SetValue("MapSettings", "Nick", s);
 			}
 		}
 		else
@@ -263,38 +258,43 @@ void OptionsDialog::Save()
 	c = (Checkbox*)mFrameUser->Get("stamps");
 	if (c)
 	{
-		config.SetParamInt("console", "timestamps", c->GetState());
+		game->mUserData.SetValue("MapSettings", "Timestamps", its(c->GetState()));
+		if (game->GetChat())
+			game->GetChat()->mShowTimestamps = c->GetState();
 	}
 			
 	c = (Checkbox*)mFrameUser->Get("names");
 	if (c) 
 	{
-		game->mPlayerData.SetParamInt("map", "shownames", c->GetState());
+		game->mUserData.SetValue("MapSettings", "ShowNames", its(c->GetState()));
 		if (game->mMap)
 			game->mMap->mShowPlayerNames = c->GetState();
 	}
-		
+/*
 	c = (Checkbox*)mFrameUser->Get("trading");
 	if (c) 
 	{
 		game->mPlayerData.SetParamInt("map", "trading", c->GetState());
 	}	
-	
+*/
 	ss = (SmallSelect*)mFrameUser->Get("alerts");
 	if (ss) 
-		config.SetParamInt("system", "alerts", ss->mSelectedIndex);
-
+	{
+		game->mUserData.SetValue("System", "Alerts", its(ss->mSelectedIndex));
+		gui->mSystemAlertType = ss->mSelectedIndex;
+	}
+	
 	c = (Checkbox*)mFrameNetwork->Get("joinparts");
 	if (c)
 	{
-		game->mPlayerData.SetParamInt("map", "joinparts", c->GetState());
+		game->mUserData.SetValue("MapSettings", "JoinParts", its(c->GetState()));
 		game->mShowJoinParts = c->GetState();
 	}
 	
 	c = (Checkbox*)mFrameNetwork->Get("addr");
 	if (c)
 	{
-		game->mPlayerData.SetParamInt("map", "addresses", c->GetState());
+		game->mUserData.SetValue("MapSettings", "ShowAddresses", its(c->GetState()));
 		game->mShowAddresses = c->GetState();
 	}
 
@@ -309,30 +309,31 @@ void OptionsDialog::Save()
 	c = (Checkbox*)mFrameNetwork->Get("privmsg");
 	if (c)
 	{
-		game->mPlayerData.SetParamInt("map", "privmsg", c->GetState());
+		game->mUserData.SetValue("MapSettings", "PrivMsg", its(c->GetState()));
 	}
-		
+	
+#ifdef _SOUNDMANAGER_H_		
 	sc = (Scrollbar*)mFrameAudio->Get("vol");
 	if (sc) 
 	{
 		config.SetParamInt("sound", "volume", sc->GetValue());
-#ifdef _SOUNDMANAGER_H_
+
 		if (sound)
 			sound->SetVolume( sc->GetValue() );
-#endif
+
 	}
-	
+#endif	
 	c = (Checkbox*)mFrameGraphics->Get("nolimit");
 	if (c)
 	{
-		config.SetParamInt("system", "nolimit", c->GetState());
+		game->mUserData.SetValue("System", "NoLimit", its(c->GetState()));
 		gui->mNoFpsLimit = c->GetState();
 	}
 	
 	c = (Checkbox*)mFrameGraphics->Get("lowcpu");
 	if (c)
 	{
-		config.SetParamInt("system", "lowcpu", c->GetState());
+		game->mUserData.SetValue("System", "LowCpu", its(c->GetState()));
 		gui->mUseLowCpu = c->GetState();
 	}
 
@@ -342,12 +343,9 @@ void OptionsDialog::Save()
 		u = sti(i->GetText());
 		if (u < 5)
 			u = 5;
-		config.SetParamInt("system", "fps", u);
+		game->mUserData.SetValue("System", "FPS", its(u));
 		gui->mFpsCap = u;
 	}
-
-	game->SavePlayerData();
-	config.SaveToFile(CONFIG_FILENAME);
 }
 
 

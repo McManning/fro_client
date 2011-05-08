@@ -350,8 +350,13 @@ void WorldLoader::_resourceDownloadFailure(string url, string file)
 	to actually construct the map. 
 */
 void WorldLoader::_buildWorld()
-{
+{	
+	game->mMap = new Map();
+	
+	game->mMap->mId = m_sWorldName;
+
 	lua_State* ls = mapLib_OpenLuaState();
+	game->mMap->mLuaState = ls;
 
 	string mainFile;
 	
@@ -385,17 +390,7 @@ void WorldLoader::_buildWorld()
 		_error("Failed to build world (see console output for details)");
 		return;
 	}
-	
-	if (!game->mMap)
-	{
-		mapLib_CloseLuaState(ls);
-		_error("Map instance never created");
-		return;
-	}
-	
-	game->mMap->mLuaState = ls;
-	game->mMap->mId = m_sWorldName;
-	
+
 	//All parsing went well we assume, finalize it!
 	_finalize();
 }
@@ -484,17 +479,6 @@ void WorldLoader::_syncPlayerWithWorld()
 
 	if (userlist)
 		userlist->AddNick(p->mName);
-
-	// Memorize player position (If we're playing normally)
-	if (!m_bTestMode)
-	{
-		TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("map");
-		game->mPlayerData.SetParamString(e, "lastid", p->mMap->mId);
-		game->mPlayerData.SetParamInt(e, "lastx", p->GetPosition().x);
-		game->mPlayerData.SetParamInt(e, "lasty", p->GetPosition().y);
-		game->SavePlayerData();
-	}
-	
 }
 
 	

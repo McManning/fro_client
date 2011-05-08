@@ -427,7 +427,7 @@ void _handleNetMessage_Mod(string& nick, DataPacket& data) // mod #type
 void _handleNetMessage_Private(string& nick, string& msg)
 {
 	//if we don't accept private messages, send an auto respond
-	if ( game->mPlayerData.GetParamInt("map", "privmsg") == 0 )
+	if ( sti(game->mUserData.GetValue("MapSettings", "PrivMsg")) == 0 )
 	{
 		game->mNet->Privmsg( nick, "\\c900* I have whispers disabled *" );
 	}
@@ -773,10 +773,8 @@ void listener_NetNick(MessageListener* ml, MessageData& md, void* sender)
 	if (newn == net->GetNick()) //we've changed our nick
 	{
 		e = game->mPlayer;
-		
-		TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
-		game->mPlayerData.SetParamString(e, "nick", newn);
-		game->SavePlayerData();
+
+		game->mUserData.SetValue("MapSettings", "Nick", newn);
 	}
 	else
 	{	

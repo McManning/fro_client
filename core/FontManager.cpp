@@ -1,7 +1,6 @@
 
 #include "FontManager.h"
 #include "ResourceManager.h"
-#include "io/XmlFile.h"
 #include "SDL/SDL_gfxBlitFunc.h"
 
 FontManager* fonts;
@@ -332,9 +331,9 @@ bool FontManager::Initialize()
 Font* FontManager::Get(string filename, int size, int style) 
 {
 	if (filename.empty())
-		filename = config.GetParamString("font", "face");	
+		filename = "assets/font.ttf"; //config.GetParamString("font", "face");	
 	if (size == 0)
-		size = config.GetParamInt("font", "size");
+		size = 12; //config.GetParamInt("font", "size");
 
 	Font* f = Find(filename, size, style);
 	if (f) return f; //Already loaded, Hooray the works done!

@@ -1538,7 +1538,25 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Removed the piece of crap SoundManager, because it doesn't work when the window has no focus
 	and audio alerts is the whole point of it atm. Will be replaced by a real sound engine when appropriate.
 - Commented out audio settings tab in OptionsDialog, since it no longer has any use. 
-- 
+- Added custom event sending to CheckIn, to allow the server to tell lua to do whatever, at whatever time.
+
+(Commit to r81)
+
+110506
+- Added minimum dimensions of an avatar to be 20x20 (Only implemented in AvatarEdit)
+- Moved AvatarEdit to its own source files. Idk why it's been merged so long with AvatarFavorites
+- Rewrote AvatarFavorites to utilize AvatarManager.lua (Without folder and sorting support for now)
+
+110507
+- Added Entity.GetOrigin/SetOrigin to Lua
+- Phased out the XmlFile class wrapper
+- Removed global config, and game->mPlayerData
+- Implemented KeyValueMap as game->mUserSettings, saved to profile/settings
+- Added persistant map flag and user flag saving
+- Added Player.SetFlag/Player.GetFlag to lua to maintain cross-world flags for our player
+- No longer rely on the user to do Map.NewBasic() in lua Build(). The map will automatically instance itself,
+	since there is no expectation to overload the map with other options in the future.
+	
 
 Issues on the upgrade:
 	- Changed the way avatars are stored. So you will lose your old avatars. Sucks, but.. there it is.
@@ -1557,6 +1575,8 @@ Issues on the upgrade:
 
 WORKING ON:
 
+- LocalActor has no getflag/setflag interface
+
 - Should implement the AWAY irc command rather than our own.
 - Privmsg consoles with people with invalid characters in their names will not save properly
 	ex: Chase\, @Chase, chase^. Idk, whatever Windows doesn't allow in filenames
@@ -1565,6 +1585,10 @@ WORKING ON:
 - Entity.SetPosition() isn't triggering a move event for listeners. It should!
 - Map.SetFlag isn't persistent!
 	- Waiting to use a new persistant data storage for user settings
+	
+- An awesome ability would be to upload avatars directly to Sybolt in some user folder,
+	directly from the fro client. (So upload pngs, mngs, whatever)
+	Then again, people would wreck my disk space. D:
 	
 - CLIPPING OPTIMIZATION TODO: Check if the shit we're going to render is within the clip rect of the screen.
 	If it's not, skip it. Things like multilines will benefit from this, so we can skip rendering strings early-on

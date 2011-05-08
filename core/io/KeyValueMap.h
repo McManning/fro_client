@@ -7,10 +7,11 @@
 struct lua_State;
 class KeyValueMap
 {
+  public:
 	KeyValueMap();
 	~KeyValueMap();
 
-	int Load(string file);
+	int Load(string file, bool useEncryption);
 	int Save();
 
 	string GetValue(string section, string key);
@@ -18,6 +19,7 @@ class KeyValueMap
 	
 	string mFilename;
 	lua_State* mLuaState;
+	bool mUseEncryption;
 };
 
 #endif //_KEYVALUEMAP_H_

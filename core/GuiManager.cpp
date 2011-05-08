@@ -15,7 +15,6 @@
 #include "net/DownloadManager.h"
 #include "MessageManager.h"
 #include "io/FileIO.h"
-#include "io/XmlFile.h"
 
 GuiManager* gui;
 
@@ -54,7 +53,6 @@ GuiManager::GuiManager()
 	SDL_ShowCursor(SDL_DISABLE); //We have our own cursor
 
 	seedRnd();
-	loadGlobalConfig();
 	SetAppTitle(mAppTitle);
 
 //ResourceManager
@@ -97,9 +95,9 @@ GuiManager::GuiManager()
 	hasMouseFocus 
 		= hasKeyFocus 
 		= previousMouseFocus = NULL;
-	mNoFpsLimit = config.GetParamInt("system", "nolimit");
-	mUseLowCpu = config.GetParamInt("system", "lowcpu");
-	mFpsCap = config.GetParamInt("system", "fps");
+	mNoFpsLimit = false;
+	mUseLowCpu = true;
+	mFpsCap = 20;
 	mTick = 0;
 	mNextRenderTick = 0;
 	mBeatCounter = 0;
@@ -110,6 +108,7 @@ GuiManager::GuiManager()
 	mPosition = scr->GetClip();
 	mFont = fonts->Get();
 	mAppInputFocus = true;
+	mSystemAlertType = 1;
 	
 	mDarkOverlay = resman->NewImage(scr->Width(), scr->Height(), color(255,255,255), true);
 	mDarkOverlay->DrawRect(mDarkOverlay->GetClip(), color(0,0,0,200));
@@ -119,19 +118,10 @@ GuiManager::GuiManager()
 	console = new Console("console", "Console @ Build " + string(APP_VERSION), "log_", color(85,90,100), false, true, true);
 	
 	PRINT("Configuring Console");
-	
-	TiXmlElement* e = config.GetChild(config.mXmlPos, "console");
-	rect r = config.GetParamRect(e, "position");
-	if (isDefaultRect(r))
-	{
-		console->SetSize(SCREEN_WIDTH - 160, SCREEN_HEIGHT - 120);
-		console->Center();
-	}
-	else
-	{
-		console->SetPosition(r);
-	}
-	
+
+	console->SetSize(SCREEN_WIDTH - 160, SCREEN_HEIGHT - 120);
+	console->Center();
+
 	console->HookCommand("messenger_debug", callback_ToggleMessengerDebug);
 
 	//console->mBackgroundColor = color(0,0,0,50);
@@ -156,10 +146,7 @@ GuiManager::~GuiManager()
 
 	mGlobalEventHandlers.clear();
 	_cleanDeletionStack();
-	
-	TiXmlElement* e = config.GetChild(config.mXmlPos, "console");
-	config.SetParamRect(e, "position", console->GetPosition());
-	
+
 	PRINT("Burning Widget Tree");
 	
 	//Delete all children widgets before deleting any managers they may require
@@ -602,8 +589,7 @@ void GuiManager::SetHasMouseFocus(Widget* w)
 
 void GuiManager::GetUserAttention()
 {
-	int i = config.GetParamInt("system", "alerts");
-	if ( i == 1 || (i == 2 && !mAppInputFocus) )
+	if ( mSystemAlertType == 1 || (mSystemAlertType == 2 && !mAppInputFocus) )
 	{
 #ifdef _SOUNDMANAGER_H_
 		if (sound)
@@ -614,7 +600,6 @@ void GuiManager::GetUserAttention()
 		{
 	   		flashWindowState(true);
 			mInputFlashStateOn = true;
-			DEBUGOUT("State flash true");
 		}
 	}
 }

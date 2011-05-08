@@ -7,8 +7,10 @@
 // Create a lua_State and load our helper interface functions into it
 KeyValueMap::KeyValueMap()
 {
+	mUseEncryption = false;
 	mLuaState = luaL_newstate();
-
+	luaL_openlibs( mLuaState ); 
+	
 	if ( luaL_dofile( mLuaState, "assets/lua/KeyValueMap.lua" ) != 0 )
 	{
 		string err = lua_tostring(mLuaState, -1);
@@ -23,9 +25,10 @@ KeyValueMap::~KeyValueMap()
 }
 
 // Call LoadDataMap() in lua
-int KeyValueMap::Load(string file)
+int KeyValueMap::Load(string file, bool useEncryption)
 {
 	mFilename = file;
+	mUseEncryption = useEncryption;
 		
 	lua_getglobal(mLuaState, "LoadDataMap");
 
@@ -79,9 +82,12 @@ int KeyValueMap::Save()
 // Call GetValue() in lua
 string KeyValueMap::GetValue(string section, string key)
 {
-	section = base64_encode(section.c_str(), section.length());
-	key = base64_encode(key.c_str(), key.length());
-
+	if (mUseEncryption)
+	{
+		section = base64_encode(section.c_str(), section.length());
+		key = base64_encode(key.c_str(), key.length());
+	}
+	
 	lua_getglobal(mLuaState, "GetValue");
 
 	//if there isn't a function at the top of the stack, we failed to find it
@@ -102,17 +108,22 @@ string KeyValueMap::GetValue(string section, string key)
 	result = lua_tostring(mLuaState, -1);
 	lua_pop(mLuaState, 1);
 	
-	result = base64_decode(result.c_str(), result.length());
+	if (mUseEncryption)
+		result = base64_decode(result.c_str(), result.length());
+		
 	return result;
 }
 
 // Call SetValue() in lua
 int KeyValueMap::SetValue(string section, string key, string value)
 {
-	section = base64_encode(section.c_str(), section.length());
-	key = base64_encode(key.c_str(), key.length());
-	if (!value.empty())
-		value = base64_encode(value.c_str(), value.length());
+	if (mUseEncryption)
+	{
+		section = base64_encode(section.c_str(), section.length());
+		key = base64_encode(key.c_str(), key.length());
+		if (!value.empty())
+			value = base64_encode(value.c_str(), value.length());
+	}
 	
 	lua_getglobal(mLuaState, "SetValue");
 

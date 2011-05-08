@@ -32,8 +32,10 @@ class LocalActor : public Actor
 	int LuaSetProp(lua_State* ls, string& prop, int index);
 	int LuaGetProp(lua_State* ls, string& prop);
 					
-	void LoadFlagsFromXml();
-	void SaveFlagsToXml();
+	void SetFlag(string flag, string value);
+	string GetFlag(string flag);
+	void LoadFlags();
+	void SaveFlags();
 	void PrintFlags();
 	
 	void Warp(string id, point2d position, string targetObjectName);

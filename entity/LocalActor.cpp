@@ -39,19 +39,19 @@ LocalActor::LocalActor()
 									NULL,
 									this);
 
-	string url = game->mPlayerData.GetParamString("avatar", "url");
+	string url = game->mUserData.GetValue("Avatar", "Url");
 
 	LoadAvatar("assets/default.png", "", 32, 64, 1000, 0);
 	SwapAvatars();
 
 	if (!url.empty())
-		LoadAvatar( url, game->mPlayerData.GetParamString("avatar", "pass"),
-						game->mPlayerData.GetParamInt("avatar", "w"),
-						game->mPlayerData.GetParamInt("avatar", "h"),
-						game->mPlayerData.GetParamInt("avatar", "delay"),
-						game->mPlayerData.GetParamInt("avatar", "flags") );
+		LoadAvatar( url, game->mUserData.GetValue("Avatar", "Pass"),
+						sti(game->mUserData.GetValue("Avatar", "Width")),
+						sti(game->mUserData.GetValue("Avatar", "Height")),
+						sti(game->mUserData.GetValue("Avatar", "Delay")),
+						sti(game->mUserData.GetValue("Avatar", "Flags")) );
 
-	LoadFlagsFromXml();
+	LoadFlags();
 
 }
 
@@ -59,8 +59,6 @@ LocalActor::~LocalActor()
 {
 	if (timers)
 		timers->Remove(mActionBufferTimer);
-		
-	SaveFlagsToXml();
 }
 
 bool LocalActor::ProcessMovement()
@@ -232,13 +230,12 @@ bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort
 	//only save remote files
 	if (result && (file.find("http://", 0) == 0 || file.find("avy://", 0) == 0) )
 	{	
-		game->mPlayerData.SetParamString("avatar", "url", file);
-		game->mPlayerData.SetParamString("avatar", "pass", pass);
-		game->mPlayerData.SetParamInt("avatar", "w", w);
-		game->mPlayerData.SetParamInt("avatar", "h", h);
-		game->mPlayerData.SetParamInt("avatar", "delay", delay);
-		game->mPlayerData.SetParamInt("avatar", "flags", flags);
-		game->SavePlayerData();
+		game->mUserData.SetValue("Avatar", "Url", file);
+		game->mUserData.SetValue("Avatar", "Pass", pass);
+		game->mUserData.SetValue("Avatar", "Width", its(w));
+		game->mUserData.SetValue("Avatar", "Height", its(h));
+		game->mUserData.SetValue("Avatar", "Delay", its(delay));
+		game->mUserData.SetValue("Avatar", "Flags", its(flags));
 
 		netSendAvatar(mLoadingAvatar);
 	}
@@ -294,16 +291,32 @@ void LocalActor::AddToActionBuffer(string data)
 	mOutputActionBuffer += data;
 }
 
+void LocalActor::SetFlag(string flag, string value)
+{
+	flag = base64_encode(flag.c_str(), flag.length());
+	value = base64_encode(value.c_str(), value.length());
+	mFlags[flag] = value;
+	SaveFlags();
+}
+
+string LocalActor::GetFlag(string flag)
+{
+	flag = base64_encode(flag.c_str(), flag.length());
+	string value = mFlags[flag];
+	
+	if (value.empty())
+		return value;
+	
+	return base64_decode(value.c_str(), value.length());
+}
+
 // Load our entity flags from our main save file
-void LocalActor::LoadFlagsFromXml()
+void LocalActor::LoadFlags()
 {
 	string flags;
-	TiXmlElement* top = game->mPlayerData.mDoc.FirstChildElement();
-	TiXmlElement* e;
 
-	e = top->FirstChildElement("flags");
-	flags = game->mPlayerData.GetText(e);
-	
+	flags = game->mUserData.GetValue("MapSettings", "Flags");
+
 	vString v;
 	explode(&v, &flags, ",");
 	
@@ -318,7 +331,7 @@ void LocalActor::LoadFlagsFromXml()
 }
 
 // Save our entity flags to our main save file
-void LocalActor::SaveFlagsToXml()
+void LocalActor::SaveFlags()
 {
 	string flags;
 	//Convert our map to a string
@@ -328,12 +341,7 @@ void LocalActor::SaveFlagsToXml()
 		flags += it->second + ',';
 	}	
 
-	TiXmlElement* top = game->mPlayerData.mDoc.FirstChildElement();
-	TiXmlElement* e;
-
-	e = top->FirstChildElement("flags");
-	game->mPlayerData.SetText(e, flags);
-
+	game->mUserData.SetValue("MapSettings", "Flags", flags);
 }
 
 void LocalActor::PrintFlags()

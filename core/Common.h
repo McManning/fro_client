@@ -259,8 +259,6 @@ char getVowel();
 string timestamp(bool clock);
 string shortTimestamp();
 
-void loadGlobalConfig();
-
 bool isWhitespace(char c);
 
 void flashWindowState(bool bInvert);

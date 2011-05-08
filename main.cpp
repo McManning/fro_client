@@ -5,7 +5,6 @@
 #include "core/widgets/Checkbox.h"
 #include "core/widgets/Frame.h"
 #include "core/io/FileIO.h"
-#include "core/io/XmlFile.h"
 //#include "objecteditor/ObjectEditor.h"
 //#include "mapeditor/MapEditorDialog.h"
 

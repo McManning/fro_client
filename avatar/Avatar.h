@@ -9,6 +9,14 @@ const int AVATAR_FLAG_LOOPSIT = 2;
 
 const int MAX_AVATAR_FILESIZE = (200 * 1024); //200 KB
 
+#ifdef DEBUG
+const int MAX_AVATAR_WIDTH = 64*10;
+const int MAX_AVATAR_HEIGHT = 96*10;
+#else
+const int MAX_AVATAR_WIDTH = 64;
+const int MAX_AVATAR_HEIGHT = 96;
+#endif
+
 class DataPacket;
 class Avatar
 {

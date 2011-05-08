@@ -43,7 +43,7 @@ class Label;
 class AvatarCreator : public Frame
 {
   public:
-	AvatarCreator();
+	AvatarCreator(int workingIndex = 0, string url = "");
 	~AvatarCreator();
 	
 	void CreateControls();
@@ -93,8 +93,8 @@ class AvatarCreator : public Frame
 	Image* mFullComposite; //the avatar before being split into pieces
 	
 	Label* mErrorLabel;
-	
-	string mOriginalUrl; // avy:// url if we're editing an existing item in AvyFavs, blank otherwise.
+
+	int mWorkingIndex;
 	
   private:
 	void _redraw();
