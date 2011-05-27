@@ -10,6 +10,8 @@
 #include "../net/IrcNetSenders.h"
 #include "../map/Map.h"
 
+#include "../interface/UserList.h"
+
 void callback_chatNoCommand(Console* c, string s)
 {
 	if (s == "/mini")
@@ -179,7 +181,7 @@ void callback_chatCommandJoin(Console* c, string s)
 	timers->Add("joinwait", JOIN_INTERVAL_MS, false, NULL, NULL, NULL);
 #endif
 }
-
+*/
 
 void callback_chatCommandNick(Console* c, string s) // /nick nickname
 {	
@@ -187,22 +189,33 @@ void callback_chatCommandNick(Console* c, string s) // /nick nickname
 		return;
 		
 	s = s.substr(6);
-	
+
+	if (s.find(" ", 0) != string::npos)
+		s.erase(s.find(" ", 0));
+
 	replace(&s, "\\n", ""); //filter out \n 
-	
-	if (stripCodes(s).empty())
-		return;
-	
-	if (game->mNet->IsConnected())
-		game->mNet->ChangeNick(s);
+	if (!stripCodes(s).empty())
+	{
+		if (game->mNet->IsConnected())
+		{
+			game->mNet->ChangeNick(s);
+		}
+		else
+		{
+			if (userlist)
+				userlist->ChangeNick(game->mPlayer->GetName(), s);
+			game->mPlayer->SetName(s);
+
+			game->mUserData.SetValue("MapSettings", "Nick", s);
+		}
+	}
 	else
-		game->mPlayer->mName = s;
-	
-	TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("user");
-	game->mPlayerData.SetParamString(e, "nick", s);
-	game->SavePlayerData();
+	{
+		game->GetChat()->AddMessage("\\c900 * Invalid nickname, ignoring.");
+	}
 }
 
+/*
 void callback_chatCommandWorldsViewer(Console* c, string s)
 {	
 	//if (!gui->Get("WorldViewer"))
@@ -244,7 +257,7 @@ void hookChatCommands(Console* c)
 	c->HookCommand("/stamp", callback_chatCommandStamp);
 	c->HookCommand("/music", callback_chatCommandListeningTo);
 //	c->HookCommand("/join", callback_chatCommandJoin);
-//	c->HookCommand("/nick", callback_chatCommandNick);
+	c->HookCommand("/nick", callback_chatCommandNick);
 //	c->HookCommand("/worlds", callback_chatCommandWorldsViewer);
 	c->HookCommand("/msg", callback_chatCommandMsg);
 	c->HookCommand("/emo", callback_chatCommandEmote);

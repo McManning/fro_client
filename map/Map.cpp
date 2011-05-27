@@ -68,7 +68,7 @@ void callback_playerMenuPrivmsg(RightClickMenu* m, void* userdata)
 	RemoteActor* ra = (RemoteActor*)userdata;
 	
 	if (ra)
-		game->GetPrivateChat(ra->mName);
+		game->GetPrivateChat(ra->GetName());
 }
 
 /*
@@ -345,7 +345,7 @@ void Map::ClickRemoteActor(RemoteActor* ra)
 	// Remote Player RCM 
 	RightClickMenu* m = new RightClickMenu();
 		//m->AddOption("Beat", callback_playerMenuBeat, ra);
-		m->AddOption(ra->mName, NULL, NULL);
+		m->AddOption(ra->GetName(), NULL, NULL);
 		m->AddOption("Whisper", callback_playerMenuPrivmsg, ra);
 		//m->AddOption("Send Trade", callback_playerMenuTrade, ra);
 		m->AddOption((ra->IsBlocked()) ? "Unblock" : "Block", callback_playerMenuToggleBlock, ra);
@@ -518,7 +518,7 @@ void Map::OffsetCamera(sShort offsetX, sShort offsetY)
 	mCameraPosition.y += offsetY;
 }
 
-void Map::AddCameraRectForUpdate()
+void Map::AddCameraRectForUpdate(bool force)
 {
 	rect r = GetCameraPosition();
 	
@@ -526,13 +526,12 @@ void Map::AddCameraRectForUpdate()
 	r.x += mCameraFollowOffset.x;
 	r.y += mCameraFollowOffset.y;
 
-	if (mOldCameraRect.x != r.x 
+	if (force
+		|| mOldCameraRect.x != r.x 
 		|| mOldCameraRect.y != r.y
 		|| mOldCameraRect.w != r.w
 		|| mOldCameraRect.h != r.h)
 	{
-        DEBUGOUT("Map::AddCameraRectForUpdate()");
-        
 		g_screen->AddRect(GetScreenPosition());
 		mOldCameraRect = r;
 	}
@@ -602,7 +601,7 @@ void Map::UpdateCamera()
 			_constrainCameraToMap();
 	}
 	
-	AddCameraRectForUpdate();
+	AddCameraRectForUpdate(false);
 }
 
 bool Map::IsRectInCamera(rect mapRect)

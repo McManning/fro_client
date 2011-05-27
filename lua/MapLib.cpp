@@ -68,7 +68,10 @@ void mapLib_CallDisplay(lua_State* ls)
 	lua_getglobal(ls, "__MAIN_DISPLAY");
 	
 	if (lua_isfunction(ls, -1) && lua_pcall(ls, 0, 0, 0) != 0)
-		console->AddMessage("\\c900 * LUA [__MAIN_DISPLAY] " + string(lua_tostring(ls, -1)));
+	{
+		console->AddMessage("\\c900 * LUA [__MAIN_DISPLAY] " 
+							+ string(lua_tostring(ls, -1)));
+	}
 }
 
 /*	Calls Destroy() in the lua script when the script is being unloaded. */
@@ -77,7 +80,10 @@ void mapLib_CallDestroy(lua_State* ls)
 	lua_getglobal(ls, "__MAIN_DESTROY");
 	
 	if (lua_isfunction(ls, -1) && lua_pcall(ls, 0, 0, 0) != 0)
-		console->AddMessage("\\c900 * LUA [__MAIN_DESTROY] " + string(lua_tostring(ls, -1)));
+	{
+		console->AddMessage("\\c900 * LUA [__MAIN_DESTROY] " 
+							+ string(lua_tostring(ls, -1)));	
+	}
 }
 
 /*	Called in WorldLoader if the load fails, or ~Map when the map is destroyed */
@@ -163,7 +169,7 @@ int map_SetColor(lua_State* ls)
 	game->mMap->mBackground.r = (int)lua_tonumber(ls, 1);
 	game->mMap->mBackground.g = (int)lua_tonumber(ls, 2);
 	game->mMap->mBackground.b = (int)lua_tonumber(ls, 3);
-	game->mMap->AddCameraRectForUpdate();
+	game->mMap->AddCameraRectForUpdate(true);
 	
 	return 0;
 }
@@ -291,6 +297,20 @@ int map_IsRectBlocked(lua_State* ls)
 	return 1;
 }
 
+int map_GetGravity(lua_State* ls)
+{
+	lua_pushnumber(ls, game->mMap->GetGravity());
+	return 1;	
+}
+
+int map_SetGravity(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	
+	game->mMap->SetGravity((int)lua_tonumber(ls, 1));
+	return 0;	
+}
+
 static const luaL_Reg functions[] = {
 	{"NewBasic", map_NewBasic},
 	{"SetSpawn", map_SetSpawn},
@@ -303,6 +323,8 @@ static const luaL_Reg functions[] = {
 	{"SetEditorMode", map_SetEditorMode},
 	{"GetNextEntityUnderMouse", map_GetNextEntityUnderMouse},
 	{"IsRectBlocked", map_IsRectBlocked},
+	{"SetGravity", map_SetGravity},
+	{"GetGravity", map_GetGravity},
 	{NULL, NULL}
 };
 

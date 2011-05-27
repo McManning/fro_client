@@ -1557,7 +1557,25 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - No longer rely on the user to do Map.NewBasic() in lua Build(). The map will automatically instance itself,
 	since there is no expectation to overload the map with other options in the future.
 	
+110519
+- Fixed repeat calls to mapLib_CloseLuaState() while using an invalid pointer for the lua_State
+- Fixed map camera rect not being forcefully updated via lua Map.SetColor() 
+	(It felt like there was no reason to update, since the camera never moved)
+- Added Map.SetGravity()/GetGravity() to lua
 
+110520
+- Added incomplete code for drawing actor names to the map. But.. it's gross. And I don't like it.
+
+110526
+- Made some adjustments to AvatarManager.lua. Now maintains version numbers to prevent having to
+	wipe avatar lists again
+- Fixed Remember option in the login
+
+----- PUBLIC RELEASE AS 1.5.1 -----
+
+
+
+	
 Issues on the upgrade:
 	- Changed the way avatars are stored. So you will lose your old avatars. Sucks, but.. there it is.
 		If you want the urls, look for profile/avatars.xml and open it up in a text editor. 
@@ -1575,20 +1593,28 @@ Issues on the upgrade:
 
 WORKING ON:
 
-- LocalActor has no getflag/setflag interface
 
+- Make lua handle player says, and do the bubble shit. This way we can filter messages through lua ;D
+-  Let lua generate RCMs
+- Figure out why that crap isn't autodeleting itself in the cache
+
+- Need to change Player.GetFlag/SetFlag to Game.GetFlag/SetFlag in order to not interfere 
+	with the lua version of Entity.GetFlag/SetFlag. (Because otherwise, player himself won't 
+	be able to store lua tables, and it'll be oddly ambiguous to other users)
+	Because technically Player.GetActor() has a set of flags in Entity.GetProp, AND in Player.GetProp
+	Herp. Idk!
+	
 - Should implement the AWAY irc command rather than our own.
 - Privmsg consoles with people with invalid characters in their names will not save properly
 	ex: Chase\, @Chase, chase^. Idk, whatever Windows doesn't allow in filenames
 - Add something that lets us use avy:// for NPCs
 	Actor.SetGeneratedAvatar("head", r, g, b, "body", r, g, b, ... ) idk
 - Entity.SetPosition() isn't triggering a move event for listeners. It should!
-- Map.SetFlag isn't persistent!
-	- Waiting to use a new persistant data storage for user settings
-	
+
 - An awesome ability would be to upload avatars directly to Sybolt in some user folder,
 	directly from the fro client. (So upload pngs, mngs, whatever)
 	Then again, people would wreck my disk space. D:
+	NOT AS BAD AS TF2 FAGS, LOLOL
 	
 - CLIPPING OPTIMIZATION TODO: Check if the shit we're going to render is within the clip rect of the screen.
 	If it's not, skip it. Things like multilines will benefit from this, so we can skip rendering strings early-on

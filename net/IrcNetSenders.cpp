@@ -110,7 +110,7 @@ void netSendMe(string text) //act #mode $text
 	text = stripCodes(text);
 	replace(&text, "\\n", "");
 	
-	game->GetChat()->AddMessage("\\c909* " + stripCodes(game->mPlayer->mName) 
+	game->GetChat()->AddMessage("\\c909* " + stripCodes(game->mPlayer->GetName()) 
 							+ " " + text + " *");
 
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
@@ -133,7 +133,7 @@ void netSendMusic(string song) //act 1 song
 	replace(&song, "\\n", "");
 	
 	game->GetChat()->AddMessage(
-					"\\c099* " + stripCodes(game->mPlayer->mName)
+					"\\c099* " + stripCodes(game->mPlayer->GetName())
 					+ " is listening to \\c059" 
 					+ song + " \\c099*" 
 			);
@@ -154,12 +154,12 @@ void netSendBeat(Entity* target, string item) //act 2 target item
 {
 	if (!game->mMap || !target) return;
 
-	string targetName = stripCodes(target->mName);
+	string targetName = stripCodes(target->GetName());
 	item = stripCodes(item);
 	replace(&item, "\\n", "");
 	
 	game->GetChat()->AddMessage(
-					"\\c484 * " + stripCodes(game->mPlayer->mName) + " beats "
+					"\\c484 * " + stripCodes(game->mPlayer->GetName()) + " beats "
 					+ stripCodes(targetName) + " with a \\c784"
 					+ item + "\\c484 *"
 				);
@@ -252,7 +252,7 @@ void netSendState(string targetNick, string header) //header VERSION $id #x #y #
     	data.SetKey( game->mNet->GetEncryptionKey() );
     	
     	data.WriteString(game->mNet->GetChannel()->mId);
-    	data.WriteString(a->mName);
+    	data.WriteString(a->GetName());
     	data.WriteInt(a->mPosition.x);
     	data.WriteInt(a->mPosition.y);
     	data.WriteChar(a->mDirection);

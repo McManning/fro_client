@@ -160,21 +160,21 @@ LoginDialog::LoginDialog() :
 
 	new Label(this, "", rect(10,y), "ID");
 	i = new Input(this, "id", rect(60, y, 150, 20), "", 32, true, NULL);
-		//i->SetText( game->mPlayerData.GetParamString(e, "id") );
+		i->SetText( game->mUserData.GetValue("Login", "ID") );
 		i->SetKeyFocus();
 	y += 25;	
 	
 	new Label(this, "", rect(10,y), "Pass");
 	i = new Input(this, "pass", rect(60, y, 150, 20), "", 32, true, NULL);
-		//i->SetText( game->mPlayerData.GetParamString(e, "pass") );
+		i->SetText( game->mUserData.GetValue("Login", "Password") );
 		i->mIsPassword = true;
 	y += 25;
 
 	//checkboxes to the left
-/*	c = new Checkbox(this, "remember", rect(10,y), "Remember Me", 0);
-		c->SetState( game->mPlayerData.GetParamInt(e, "remember") );
+	c = new Checkbox(this, "remember", rect(10,y), "Remember Me", 0);
+		c->SetState( sti(game->mUserData.GetValue("Login", "Remember")) );
 	y += 25;
-*/
+
 	
 	//bottom button set
 	b = new Button(this, "register",rect(10,y,20,20), "", callback_LoginDialogRegister);
@@ -255,24 +255,26 @@ void LoginDialog::SendLogin()
 		return;
 	}
 
-/*	c = (Checkbox*)Get("remember");
+	c = (Checkbox*)Get("remember");
 	if (c)
 	{
-		TiXmlElement* e = game->mPlayerData.mDoc.FirstChildElement("data")->FirstChildElement("login");
-		
-		game->mPlayerData.SetParamInt(e, "remember", c->GetState());
-		
 		if (c->GetState() == 1)
 		{
-			if (i)
-				game->mPlayerData.SetParamString(e, "id", i->GetText());
+			
+			game->mUserData.SetValue("Login", "Remember", "1");
+			game->mUserData.SetValue("Login", "ID", i->GetText());
 			
 			i = (Input*)Get("pass");
-			if (i)
-				game->mPlayerData.SetParamString(e, "pass", i->GetText());
+			game->mUserData.SetValue("Login", "Password", i->GetText());
+		}
+		else
+		{
+			game->mUserData.SetValue("Login", "Remember", "0");
+			game->mUserData.SetValue("Login", "ID", "");
+			game->mUserData.SetValue("Login", "Password", "");
 		}
 	}
-*/
+
 	SendLoginQuery(false);
 }
 

@@ -148,8 +148,8 @@ int entity_FindAllByName(lua_State* ls)
 		e = game->mMap->mEntities.at(i);
 		
 		//if it matches the search, add to table
-		if ( (useWildmatch && wildmatch(name.c_str(), e->mName.c_str())) 
-			|| (!useWildmatch && e->mName == name) )
+		if ( (useWildmatch && wildmatch(name.c_str(), e->GetName().c_str())) 
+			|| (!useWildmatch && e->GetName() == name) )
 		{
 			lua_pushnumber(ls, index);
 			lua_pushlightuserdata(ls, e);
@@ -565,7 +565,7 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 	}
 	else if (key == "Name")
 	{
-		e->mName = lua_tostring(ls, -1);
+		e->SetName( lua_tostring(ls, -1) );
 	}
 	/*else if (key == "Species" && e->mType == ENTITY_LUNEM)
 	{	

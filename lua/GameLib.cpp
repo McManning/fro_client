@@ -59,7 +59,7 @@ int game_NetSendToPlayer(lua_State* ls)
 		data.WriteString( lua_tostring(ls, 2) );
 		data.WriteString( lua_tostring(ls, 3) );
 		
-		game->mNet->Privmsg( ra->mName, data.ToString() );
+		game->mNet->Privmsg( ra->GetName(), data.ToString() );
 	}
 }
 

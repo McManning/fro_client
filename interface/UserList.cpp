@@ -44,7 +44,7 @@ UserList::UserList() :
 			e = game->mMap->mEntities.at(i);
 			if (e && (e->mType == ENTITY_REMOTEACTOR || e->mType == ENTITY_LOCALACTOR))
 			{
-				AddNick(e->mName);
+				AddNick(e->GetName());
 			}
 		}
 	}

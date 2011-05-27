@@ -42,7 +42,7 @@ void RemoteActor::SetBlocked(bool b)
 	}
 	else
 	{
-		netSendRequestAvatar(mName);
+		netSendRequestAvatar(GetName());
 	}
 }
 

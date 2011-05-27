@@ -59,7 +59,7 @@ class Map : public Frame, public EntityManager
 	/*	Return the rect that contains all renderable area in a map */
 	rect GetCameraPosition();
 	
-	void AddCameraRectForUpdate();
+	void AddCameraRectForUpdate(bool force);
 		
 	void OffsetCamera(sShort offsetX, sShort offsetY);
 	void OffsetCamera(point2d p);

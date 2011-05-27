@@ -54,7 +54,7 @@ RemoteActor* _addRemoteActor(string& nick, DataPacket& data)
 	RemoteActor* ra = new RemoteActor();
 	ra->mMap = game->mMap;
 	ra->SetLayer(EntityManager::LAYER_USER);
-	ra->mName = nick;
+	ra->SetName(nick);
 	if (userlist)
 		userlist->AddNick(nick);
 	
@@ -91,7 +91,7 @@ void _removeRemoteActor(RemoteActor* a)
 	*/
 	
 	if (userlist)
-		userlist->RemoveNick(a->mName);
+		userlist->RemoveNick(a->GetName());
 		
 	a->mMap->RemoveEntity(a);
 }
@@ -135,7 +135,7 @@ void _handleUnknownUser(string& nick)
 	if ( timers->Find("pushNm") )
 		return;
 			
-	if (game->mPlayer->mName != nick)
+	if (game->mPlayer->GetName() != nick)
 		netSendState(nick, "sup");
 
 	//make sure we don't send this TOO often. Only once every couple seconds
@@ -282,7 +282,7 @@ void _handleNetMessage_Sup(string& nick, DataPacket& data)
 	if (ra)
 	{
 		netSendState("", "nm");
-		DEBUGOUT("\\c090" + ra->mName + " has been added to the map");
+		DEBUGOUT("\\c090" + ra->GetName() + " has been added to the map");
 	}
 	else
 	{
@@ -320,7 +320,7 @@ void _handleNetMessage_Nm(string& nick, DataPacket& data)
 	ra = _addRemoteActor(nick, data);
 	if (ra)
 	{
-		DEBUGOUT("\\c090" + ra->mName + " has been added to the map");
+		DEBUGOUT("\\c090" + ra->GetName() + " has been added to the map");
 	}
 	else
 	{
@@ -415,7 +415,7 @@ void _handleNetMessage_Mod(string& nick, DataPacket& data) // mod #type
 
 	if (!ra->GetAvatar())
 	{
-		console->AddMessage("'mod' without Avatar from " + ra->mName);
+		console->AddMessage("'mod' without Avatar from " + ra->GetName());
 		return;
 	}
 
@@ -469,7 +469,7 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 	data.SetKey( game->mNet->GetEncryptionKey() );
 	
 	//Couldn't decrypt. Assume plaintext and privmsg to us
-	if (!data.FromString(msg) && target == game->mPlayer->mName)
+	if (!data.FromString(msg) && target == game->mPlayer->GetName())
 	{
 		_handleNetMessage_Private(nick, msg);
 		return;
@@ -504,7 +504,7 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 		_handleNetMessage_Back(nick, data);
 	else if (id == "reqAvy")
 		_handleNetMessage_RequestAvatar(nick, data);
-	else if (target == game->mPlayer->mName)
+	else if (target == game->mPlayer->GetName())
 		_handleNetMessage_Private(nick, msg);
 		
 	return;
@@ -567,7 +567,7 @@ void listener_NetChannelJoin(MessageListener* ml, MessageData& md, void* sender)
 	}
 	
 	//If it's not us, send our data to them
-	if (game->mPlayer->mName != nick)
+	if (game->mPlayer->GetName() != nick)
 	{
 		netSendState(nick, "sup");
 	}
@@ -592,7 +592,7 @@ void listener_NetChannelKick(MessageListener* ml, MessageData& md, void* sender)
 		printMessage(msg);
 	}
 	
-	if (nick == game->mPlayer->mName) //I was kicked. Will rejoin immediately
+	if (nick == game->mPlayer->GetName()) //I was kicked. Will rejoin immediately
 	{
 		//console->AddMessage("\\c900 * That son of a bitch. Rejoining");
 		//SAFEDELETE( ((IrcNet*)sender)->mChannel );
@@ -659,7 +659,7 @@ void listener_NetChannelQuit(MessageListener* ml, MessageData& md, void* sender)
 		printMessage(msg);
 	}
 	
-	if (nick == game->mPlayer->mName)
+	if (nick == game->mPlayer->GetName())
 	{
 		msg = "User Quit";
 		printMessage(msg);
@@ -784,7 +784,7 @@ void listener_NetNick(MessageListener* ml, MessageData& md, void* sender)
 	if (!e)
 		return;
 		
-	e->mName = newn;
+	e->SetName(newn);
 	if (userlist)
 		userlist->ChangeNick(oldn, newn);
 
@@ -818,7 +818,7 @@ void listener_NetNewState(MessageListener* ml, MessageData& md, void* sender)
 		case AWAITINGSERVERVERIFY: //Connected, awaiting verify. Send nick.
 			s = "\\c139 * Waiting for verification";
 			printMessage(s);
-			net->ChangeNick(game->mPlayer->mName);
+			net->ChangeNick(game->mPlayer->GetName());
 			break;
 		case VERIFYING:
 		case ONSERVER:
@@ -872,7 +872,7 @@ void listener_NetVerified(MessageListener* ml, MessageData& md, void* sender)
 	
 	// Bug fix, the server could have changed our nick on join (if it was too long, etc)
 	// Without giving an Erronous Nickname message.
-	game->mPlayer->mName = net->GetNick();
+	game->mPlayer->SetName(net->GetNick());
 	
 	//game->LoadOnlineWorld(game->mStartingWorldId);
 

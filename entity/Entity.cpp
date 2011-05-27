@@ -311,7 +311,7 @@ int Entity::LoadCollisionFile(string file)
 int Entity::LuaSetProp(lua_State* ls, string& prop, int index)
 {
 	if (prop == "id") mId = lua_tostring(ls, index);
-	else if (prop == "name") mName = lua_tostring(ls, index);
+	else if (prop == "name") SetName( lua_tostring(ls, index) );
 	else if (prop == "visible") SetVisible( lua_toboolean(ls, index) );
 	else if (prop == "solid") SetSolid( lua_toboolean(ls, index) );
 	else if (prop == "shadow") SetShadow( lua_toboolean(ls, index) );
@@ -325,7 +325,7 @@ int Entity::LuaSetProp(lua_State* ls, string& prop, int index)
 int Entity::LuaGetProp(lua_State* ls, string& prop)
 {
 	if (prop == "id") lua_pushstring( ls, mId.c_str() );
-	else if (prop == "name") lua_pushstring( ls,mName.c_str() );
+	else if (prop == "name") lua_pushstring( ls, GetName().c_str() );
 	else if (prop == "visible") lua_pushboolean( ls, IsVisible() );
 	else if (prop == "solid") lua_pushboolean( ls, IsSolid() );
 	else if (prop == "shadow") lua_pushboolean( ls, mShadow );
@@ -357,6 +357,6 @@ void Entity::Say(string msg, bool bubble)
 	}
 
     if (mMap && mMap->mChat)
-	   mMap->mChat->AddMessage(mName + ": " + msg);	
+	   mMap->mChat->AddMessage(GetName() + ": " + msg);	
 }
 

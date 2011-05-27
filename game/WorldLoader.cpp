@@ -126,7 +126,7 @@ void WorldLoader::_sendRequestForConfig()
 	url += "worlds/master.php?ver=";
 	url += APP_VERSION;
 	url += "&id=" + htmlSafe(m_sWorldName);
-	url += "&nick=" + htmlSafe(game->mPlayer->mName);
+	url += "&nick=" + htmlSafe(game->mPlayer->GetName());
 	
 	if (!game->mUsername.empty())
 		url += "&user=" + htmlSafe(game->mUsername) + "&pass=" + htmlSafe(game->mPassword);
@@ -386,7 +386,6 @@ void WorldLoader::_buildWorld()
 	// Parsed right, now let's run our BuildWorld()!
 	if ( !mapLib_luaCallBuildWorld(ls, m_bTestMode, m_sWorldName, m_vsResources) )
 	{
-		mapLib_CloseLuaState(ls);
 		_error("Failed to build world (see console output for details)");
 		return;
 	}
@@ -450,6 +449,7 @@ void WorldLoader::_syncPlayerWithWorld()
 	p->mMap->AddEntity(p);
 	p->mMap->SetCameraFollow(p);
 	p->SetVisible(true);
+	p->SetName(p->GetName()); // generates the name entity
 	
 	p->mIsLocked = false;
 	p->mCanChangeAvatar = true;
@@ -478,7 +478,7 @@ void WorldLoader::_syncPlayerWithWorld()
 	}
 
 	if (userlist)
-		userlist->AddNick(p->mName);
+		userlist->AddNick(p->GetName());
 }
 
 	
@@ -492,7 +492,6 @@ void WorldLoader::_error(string msg)
 	//if we got to a point where the loader set game->mMap, need to nuke it
 	if (game->mMap)
 	{
-		mapLib_CloseLuaState(game->mMap->mLuaState);
 		SAFEDELETE(game->mMap); 
 		game->mPlayer->mMap = NULL;
 	}

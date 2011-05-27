@@ -95,7 +95,7 @@ void callback_privmsgNoCommand(Console* c, string s)
 	string nick = c->mId.substr(4); //strip out 'priv' from beginning
 
 	game->mNet->Privmsg(nick, s);
-	c->AddMessage(game->mPlayer->mName + ": " + s);
+	c->AddMessage(game->mPlayer->GetName() + ": " + s);
 }
 
 void callback_privmsgCommandWhois(Console* c, string s)
@@ -237,9 +237,9 @@ GameManager::GameManager()
 
 	PRINT("[GM] Loading Local Actor");
 	mPlayer = new LocalActor();
-	mPlayer->mName = mUserData.GetValue("MapSettings", "Nick");
-	if (mPlayer->mName.empty())
-		mPlayer->mName = "fro_user";
+	mPlayer->SetName(mUserData.GetValue("MapSettings", "Nick"));
+	if (mPlayer->GetName().empty())
+		mPlayer->SetName("fro_user");
 
 	timers->AddProcess("gameproc", 
 						timer_gameManagerProcess, 
@@ -509,6 +509,10 @@ void GameManager::LoadUserData()
 		mUserData.SetValue("System", "NoLimit", its(gui->mNoFpsLimit));
 		mUserData.SetValue("System", "FPS", its(gui->mFpsCap));
 		mUserData.SetValue("System", "Alerts", its(gui->mSystemAlertType));
+		
+		mUserData.SetValue("Login", "Remember", "0");
+		mUserData.SetValue("Login", "ID", "");
+		mUserData.SetValue("Login", "Password", "");
 	}
 	else // configure things based on settings values
 	{

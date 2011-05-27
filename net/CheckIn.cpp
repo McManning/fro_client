@@ -101,7 +101,7 @@ uShort timer_CheckInWithServer(timer* t, uLong ms)
 	query += "&pass=" + htmlSafe(game->mPassword);
 		
 	if (game->mPlayer)
-		query += "&nick=" + htmlSafe(game->mPlayer->mName);
+		query += "&nick=" + htmlSafe(game->mPlayer->GetName());
 	
 	if (game->mMap)
 		query += "&map=" + htmlSafe(game->mMap->mId);

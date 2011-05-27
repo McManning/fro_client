@@ -116,7 +116,7 @@ void OptionsDialog::_buildFrameUser()
 	i = new Input(mFrameUser, "nick", rect(95, y, 150, 20), 
 					"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\\_-^`[]{}|", 
 					32, true, NULL);
-		i->SetText( game->mPlayer->mName );
+		i->SetText( game->mPlayer->GetName() );
 	y += 25;
 	
 	new Label(mFrameUser, "", rect(0,y), "Alerts");
@@ -243,8 +243,8 @@ void OptionsDialog::Save()
 			else
 			{
 				if (userlist)
-					userlist->ChangeNick(game->mPlayer->mName, s);
-				game->mPlayer->mName = s;
+					userlist->ChangeNick(game->mPlayer->GetName(), s);
+				game->mPlayer->SetName(s);
 
 				game->mUserData.SetValue("MapSettings", "Nick", s);
 			}

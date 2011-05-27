@@ -72,6 +72,9 @@ class Entity
 	void SetVisible(bool v);
 	bool IsVisible() { return mVisible; };
 	
+	virtual void SetName(string name) { mName = name; };
+	string GetName() const { return mName; };
+	
 	void SetShadow(bool b);
 	
 	bool IsPositionRelativeToScreen();

@@ -47,7 +47,7 @@ bool EntityManager::RemoveEntityByName(string name, entityType type)
 {
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
-		if (mEntities.at(i) && mEntities.at(i)->mName == name
+		if (mEntities.at(i) && mEntities.at(i)->GetName() == name
 			&& (mEntities.at(i)->mType == type || type == ENTITY_ANY))
 		{
 			_delete(mEntities.at(i));
@@ -81,7 +81,7 @@ bool EntityManager::RemoveAllEntitiesByName(string name, entityType type)
 	bool found = false;
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
-		if (mEntities.at(i) && mEntities.at(i)->mName == name 
+		if (mEntities.at(i) && mEntities.at(i)->GetName() == name 
 			&& (mEntities.at(i)->mType == type || type == ENTITY_ANY))
 		{
 			_delete(mEntities.at(i));
@@ -119,7 +119,7 @@ Entity* EntityManager::FindEntityByName(string name, entityType type)
 {
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
-		if (mEntities.at(i) && mEntities.at(i)->mName == name)
+		if (mEntities.at(i) && mEntities.at(i)->GetName() == name)
 		{
 			if (mEntities.at(i)->mType == type || type == ENTITY_ANY)
 			{
