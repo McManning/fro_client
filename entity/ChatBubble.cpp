@@ -168,13 +168,6 @@ void ChatBubble::CreateText(string& msg)
 	
 	timers->Add("", (strippedMsg.length() * 30) + 4000, false, timer_destroyChatBubble, NULL, this);
 	timers->Add("", CHAT_BUBBLE_UPDATE_MS, true, timer_updateChatBubbleText, NULL, this);
-	
-	
-	//Dispatch a say message
-	MessageData md("ENTITY_SAY");
-	md.WriteUserdata("entity", mOwner);
-	md.WriteString("message", msg);
-	messenger.Dispatch(md, NULL);
 }
 
 void ChatBubble::CreateEmote(int id)

@@ -28,6 +28,7 @@ class RemoteActor : public Actor
 	
 	bool mBlocked; //can we hear/see this player?
 	bool mAfk;
+	string mHostmask; // IRC server unique identifier
 };
 
 #endif //_REMOTEACTOR_H_

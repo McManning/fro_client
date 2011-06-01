@@ -22,7 +22,7 @@ class LocalActor : public Actor
 	/* Overloaded to duplicate the data into mOutputActionBuffer */
 	void AddToActionBuffer(string data);
 	void ClearActionBuffer() { mActionBuffer.clear(); mOutputActionBuffer.clear(); };
-	
+
 	/*	Overloaded to save our avatar to GameManager's xml config */
 	bool LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags);
 

@@ -51,14 +51,17 @@ string Entity::GetTypeName()
 
 void Entity::SetVisible(bool v)
 {	
-	// if we're trying to hide them, add the rect before toggling visibility
-	if (mVisible && !v)
+	if (v != mVisible)
+	{	
+		// if we're trying to hide them, add the rect before toggling visibility
+		if (mVisible && !v)
+			AddPositionRectForUpdate();	
+		
+		mVisible = v;
+		
+		// write anyway, in case it went from invis->vis
 		AddPositionRectForUpdate();	
-	
-	mVisible = v;
-	
-	// write anyway, in case it went from invis->vis
-	AddPositionRectForUpdate();	
+	}
 }
 
 void Entity::SetShadow(bool b)

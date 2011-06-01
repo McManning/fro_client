@@ -66,7 +66,7 @@ int game_NetSendToPlayer(lua_State* ls)
 //	.Version() - Return version number of the client as a string (ex: "1.2.1")
 int game_Version(lua_State* ls)
 {
-	lua_pushstring(ls, APP_VERSION);
+	lua_pushstring(ls, VER_STRING);
 	return 1;	
 }
 

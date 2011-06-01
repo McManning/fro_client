@@ -44,7 +44,7 @@ string decompressActionBuffer(string buffer)
 }
 
 //TODO: Move to Map?
-RemoteActor* _addRemoteActor(string& nick, DataPacket& data)
+RemoteActor* _addRemoteActor(string& nick, string& address, DataPacket& data)
 {	
 	char c;
 	point2d p;
@@ -52,6 +52,7 @@ RemoteActor* _addRemoteActor(string& nick, DataPacket& data)
 	ASSERT(game->mMap);
 
 	RemoteActor* ra = new RemoteActor();
+	ra->mHostmask = address;
 	ra->mMap = game->mMap;
 	ra->SetLayer(EntityManager::LAYER_USER);
 	ra->SetName(nick);
@@ -156,24 +157,24 @@ void _handleNetMessage_Say(string& nick, DataPacket& data) // say msg
 	if (!ra) { _handleUnknownUser(nick); return; }
 
 	//if they're too far, or blocked, ignore
-	if ( ra->IsBlocked() || !ra->IsVisibleInCamera() )
-		return;
-		
-	string msg = data.ReadString();
+	//if ( ra->IsBlocked() || !ra->IsVisibleInCamera() )
+	//	return;
 	
-	if (msg.at(0) != '/') //Ignore slash commands 
+	string msg = data.ReadString();
+	MessageData md;
+	
+	if (msg.at(0) != '/')
 	{
-		ra->Say(msg, true);
-		gui->GetUserAttention();
+		md.SetId("NET_SAY");
 	}
 	else
 	{	
-		//Dispatch a command message
-		MessageData md("ENTITY_CMD");
-		md.WriteUserdata("entity", ra);
-		md.WriteString("message", msg);
-		messenger.Dispatch(md, ra);
+		md.SetId("NET_CMD");
 	}
+	
+	md.WriteUserdata("entity", ra);
+	md.WriteString("message", msg);
+	messenger.Dispatch(md, ra);
 }
 
 void _handleNetMessage_Stamp(string& nick, DataPacket& data) // stamp x y angle msg
@@ -249,7 +250,7 @@ void _handleNetMessage_Avy(string& nick, DataPacket& data)
 	ra->ReadAvatarFromPacket(data);
 }
 
-void _handleNetMessage_Sup(string& nick, DataPacket& data)
+void _handleNetMessage_Sup(string& nick, string& address, DataPacket& data)
 {
 	if (!game->mMap) return;
 	
@@ -278,7 +279,7 @@ void _handleNetMessage_Sup(string& nick, DataPacket& data)
 	/*	Add them to our map w/ their state data. Then reply
 		with a "nothing much" edition of our state
 	*/
-	ra = _addRemoteActor(nick, data);
+	ra = _addRemoteActor(nick, address, data);
 	if (ra)
 	{
 		netSendState("", "nm");
@@ -290,7 +291,7 @@ void _handleNetMessage_Sup(string& nick, DataPacket& data)
 	}
 }
 
-void _handleNetMessage_Nm(string& nick, DataPacket& data)
+void _handleNetMessage_Nm(string& nick, string& address, DataPacket& data)
 {
 	if (!game->mMap) return;
 	
@@ -317,7 +318,7 @@ void _handleNetMessage_Nm(string& nick, DataPacket& data)
 	/*	Add them to our map w/ their state data.
 		Don't reply.
 	*/
-	ra = _addRemoteActor(nick, data);
+	ra = _addRemoteActor(nick, address, data);
 	if (ra)
 	{
 		DEBUGOUT("\\c090" + ra->GetName() + " has been added to the map");
@@ -485,9 +486,9 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 	else if (id == "avy")
 		_handleNetMessage_Avy(nick, data);
 	else if (id == "sup")
-		_handleNetMessage_Sup(nick, data);
+		_handleNetMessage_Sup(nick, address, data);
 	else if (id == "nm")
-		_handleNetMessage_Nm(nick, data);
+		_handleNetMessage_Nm(nick, address, data);
 	else if (id == "mov")
 		_handleNetMessage_Mov(nick, data);
 	else if (id == "emo")

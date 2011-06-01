@@ -1573,6 +1573,25 @@ without either compatibility mode enabled, or security warnings, as seen with th
 
 ----- PUBLIC RELEASE AS 1.5.1 -----
 
+110529
+- Added support for avy:// avatars to lua .LoadAvatar and entity creation
+- Fixed login data cache file not being deleted after use
+- Added System.GetUserAttention() to Lua (Calls GuiManager::GetUserAttention())
+- ENTITY_SAY messenger event will now trigger only after an Entity.Say() in Lua
+- Replaced ENTITY_CMD with NET_CMD msg event. 
+- Added NET_SAY msg event. (Triggered both by the local player and remote actors)
+- Removed internal handling of displaying chat messages, will now be fully offloaded onto Lua
+- Added System.NewRightClickMenu() and System.AddToRightClickMenu() to Lua to create menus at the cursor
+	whenever desired (good for entity menus)
+- Disabled auto updater when compiled in debug mode
+- Added CLICK_REMOTE_ACTOR event and replaced the internal RCM/Userlist handling of the event
+- Right clicking a name in the Userlist will now produce the same effect as right clicking the remote actor on the map
+- Added PING event from the client to the server, in order to better detect disconnects. 
+	It should now know it was disconnected within 2 minutes of losing a connection
+- Added mHostmask to RemoteActor and .GetProp(ent, "hostmask"). (Cannot be SetProp'd)
+- [LUA: main.lua] Added persistent player block list, based off Hostmasks
+- Added /cry as a synonym to /sad, and /love as a synonym to /heart
+- 
 
 
 	
@@ -1584,6 +1603,17 @@ Issues on the upgrade:
 	- No exploding players effect anymore. It will be back, promise
 	- 
 	
+	
+con = System.CreateConsole()
+System.SetConsoleTitle(con, "title")
+System.SendToConsole(con, "message")
+System.CloseConsole(con)
+
+Consoles created through this system send out CONSOLE_INPUT with the message
+
+(Should we just hook the chat console the same way?)
+
+
 
 	
 	KNOWN BUG:
@@ -1594,8 +1624,6 @@ Issues on the upgrade:
 WORKING ON:
 
 
-- Make lua handle player says, and do the bubble shit. This way we can filter messages through lua ;D
--  Let lua generate RCMs
 - Figure out why that crap isn't autodeleting itself in the cache
 
 - Need to change Player.GetFlag/SetFlag to Game.GetFlag/SetFlag in order to not interfere 

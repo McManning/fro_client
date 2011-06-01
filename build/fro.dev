@@ -443,8 +443,8 @@ BuildCmd=
 [VersionInfo]
 Major=1
 Minor=5
-Release=1
-Build=2892
+Release=2
+Build=2922
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios
@@ -1279,26 +1279,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit175]
-FileName=..\interface\AvatarEdit.h
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit176]
-FileName=..\interface\AvatarFavorites.h
-CompileCpp=1
-Folder=../interface
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit177]
 FileName=..\interface\AvatarEdit.h
 CompileCpp=1
 Folder=../interface

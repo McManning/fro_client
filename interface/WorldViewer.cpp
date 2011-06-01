@@ -284,7 +284,7 @@ void WorldViewer::RequestWorldList(listType type)
 	
 	query = "http://sybolt.com/drm-svr/"; // TODO: less hardcoding
 	query += "worldlist.php?ver=";
-	query += APP_VERSION;
+	query += VER_STRING;
 	query += "&user=" + htmlSafe(game->mUsername);
 	query += "&pass=" + htmlSafe(game->mPassword);
 	query += "&type=" + its(mCurrentListType);

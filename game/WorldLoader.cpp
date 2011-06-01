@@ -124,7 +124,7 @@ void WorldLoader::_sendRequestForConfig()
 	
 	url = "http://sybolt.com/drm-svr/";
 	url += "worlds/master.php?ver=";
-	url += APP_VERSION;
+	url += VER_STRING;
 	url += "&id=" + htmlSafe(m_sWorldName);
 	url += "&nick=" + htmlSafe(game->mPlayer->GetName());
 	
@@ -375,8 +375,7 @@ void WorldLoader::_buildWorld()
 	if ( luaL_dofile( ls, mainFile.c_str() ) != 0 )
 	{
 		string err = lua_tostring(ls, -1);
-		lua_close(ls);
-		
+
 		console->AddMessage(mainFile + " parse error: " + err);
 
 		_error( "Lua parse error (see console output for details)" );

@@ -41,7 +41,7 @@ const char* const SEPERATOR = "\x01";
 const char* const SECONDARY_PACKET_PASS = "DivineRightToRule";
 
 const int NET_TIMEOUT_SECONDS = 60;
-const int PING_INTERVAL_MINUTES = 1;
+const int PING_INTERVAL_SECONDS = 60;
 
 /* Channels were initially a container that held lists of members
 	and all those fancy user control functions. However,

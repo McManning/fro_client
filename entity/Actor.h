@@ -14,7 +14,6 @@
 	have avatars that change based on their actions, etc. 
  */
 class Avatar;
-class TextObject;
 class Actor : public Entity /*, public Combatant */
 {
   public:
@@ -50,9 +49,7 @@ class Actor : public Entity /*, public Combatant */
 	Image* GetImage();
 	
 	void SetName(string name);
-	
-	void UpdateNameEntity();
-	
+
 	/*	Load an avatar, convert to avatar format, etc
 		if MNG/GIF/other animated format: delay, w, and h are ignored. Otherwise it's a constant
 		frame delay used when splitting single image avatars into frames.
@@ -211,8 +208,6 @@ class Actor : public Entity /*, public Combatant */
 	Avatar* mLoadingAvatar; //avatar loading in the background
 	
 	timer* mMovementTimer;
-	TextObject* mNameEntity;
-
 };
 
 #endif //_ACTOR_H_

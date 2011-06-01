@@ -35,20 +35,19 @@ void netSendSay(string text) //say $message
 	if (text.find_last_of(">") == 0 && text.find("<", 0) == string::npos)
 		text.insert(0, "\\c561");
 
-	if (text.at(0) != '/') //Ignore slash commands 
+	MessageData md;
+	if (text.at(0) != '/')
 	{
-		game->mPlayer->Say(text, true);
-		
-		gui->GetUserAttention(); //in case they still want sound while they send a msg
+		md.SetId("NET_SAY");
 	}
 	else
 	{	
-		//Dispatch a command message
-		MessageData md("ENTITY_CMD");
-		md.WriteUserdata("entity", game->mPlayer);
-		md.WriteString("message", text);
-		messenger.Dispatch(md, game->mPlayer);
+		md.SetId("NET_CMD");
 	}
+	
+	md.WriteUserdata("entity", game->mPlayer);
+	md.WriteString("message", text);
+	messenger.Dispatch(md, game->mPlayer);
 	
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{

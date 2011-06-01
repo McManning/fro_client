@@ -115,7 +115,7 @@ void AutoUpdater::SendRequestForManifest()
 	
 	//generate the request url
 	string url = "http://sybolt.com/drm-svr/update.php";
-	url += "?ver=" APP_VERSION;
+	url += "?ver=" VER_STRING;
 
 	DEBUGOUT(url);
 

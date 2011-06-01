@@ -59,7 +59,6 @@ Actor::Actor()
 {
 	mAvatar = NULL;
 	mLoadingAvatar = NULL;
-	mNameEntity = NULL;
 	mAnimationTimer = NULL;
 	mCheckLoadingAvatarTimer = NULL;
 	mStep = 0;
@@ -120,52 +119,6 @@ Image* Actor::GetImage()
 void Actor::SetName(string name)
 {
 	mName = name;
-	
-	/*if (mMap)
-	{
-		if (!mNameEntity)
-		{
-			mNameEntity = new TextObject();
-			mNameEntity->mId = "EntityName";
-			mNameEntity->mMap = mMap;
-			mNameEntity->SetLayer(EntityManager::LAYER_SKY+1);
-			mNameEntity->mMap->AddEntity(mNameEntity);
-			
-			mNameEntity->SetAA(true);
-			mNameEntity->SetFont("", 12, TTF_STYLE_BOLD);
-			//mNameEntity->Rotozoom(rotation, 1.0);	
-		}
-		
-		mNameEntity->SetText(mName, color(255,255,255));
-		UpdateNameEntity();
-	}*/
-}
-
-void Actor::UpdateNameEntity()
-{
-	// sync position
-	if (mNameEntity)
-	{
-		rect r;
-		rect rr = mNameEntity->GetBoundingRect();
-		
-		// Doesn't move with the bubble (we don't know when the bubble is moving, 
-		// unless we dump a call into the bubble to move this. But.. then this would all have
-		// to go into Entity base class, yadda yadda. Grossness)
-		/*if (mActiveChatBubble) // stick in the top left corner of the bubble
-		{
-			r = mActiveChatBubble->GetBoundingRect();
-			r.y -= rr.h + 2;
-		}
-		else
-		{*/
-			r = GetBoundingRect();
-			r.y -= rr.h + 2;
-			r.x = mPosition.x - (rr.w / 2);
-	//	}
-
-		mNameEntity->SetPosition(point2d(r.x, r.y));
-	}
 }
 
 void Actor::Move(direction dir, sShort distance, byte speed)
@@ -323,8 +276,6 @@ bool Actor::ProcessMovement()
 	{
 		PostMovement();
 	}
-	
-	UpdateNameEntity();
 
 	return true;
 }
@@ -804,8 +755,7 @@ void Actor::UpdateCollisionAndOrigin()
 	mCollisionRects.push_back(r);	
 	
 	AddPositionRectForUpdate();
-	UpdateNameEntity();
-	
+
 	// OPTIMIZETODO: Reload shadow image if we got one
 }
 

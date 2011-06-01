@@ -85,7 +85,6 @@ bool RemoteActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShor
 int RemoteActor::LuaSetProp(lua_State* ls, string& prop, int index)
 {
 	if (prop == "blocked") SetBlocked( lua_toboolean(ls, index) );
-
 	else return Actor::LuaSetProp(ls, prop, index);
 
 	return 1;
@@ -94,7 +93,7 @@ int RemoteActor::LuaSetProp(lua_State* ls, string& prop, int index)
 int RemoteActor::LuaGetProp(lua_State* ls, string& prop)
 {
 	if (prop == "blocked") lua_pushboolean( ls, IsBlocked() );
-
+	else if (prop == "hostmask") lua_pushstring( ls, mHostmask.c_str() );
 	else return Actor::LuaGetProp(ls, prop);
 
 	return 1;

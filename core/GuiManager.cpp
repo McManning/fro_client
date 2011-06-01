@@ -115,7 +115,7 @@ GuiManager::GuiManager()
 
 //Consoles
 	PRINT("Loading Console");
-	console = new Console("console", "Console @ Build " + string(APP_VERSION), "log_", color(85,90,100), false, true, true);
+	console = new Console("console", "Console @ Build " + string(VER_STRING), "log_", color(85,90,100), false, true, true);
 	
 	PRINT("Configuring Console");
 

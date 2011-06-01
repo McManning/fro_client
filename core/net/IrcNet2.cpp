@@ -75,7 +75,7 @@ IrcNet::IrcNet()
 	mWaitingForPong = false;
 	
 	timers->AddProcess("netProcess", timer_netProcess, NULL, this);
-//	timers->Add("netPing", PING_INTERVAL_MINUTES*60*1000, false, timer_netPing, NULL, this);
+	timers->Add("netPing", PING_INTERVAL_SECONDS*1000, false, timer_netPing, NULL, this);
 }
 
 IrcNet::~IrcNet() 
@@ -204,6 +204,7 @@ void IrcNet::PingServer()
 	{
 		if (mWaitingForPong) //the previous ping timed out
 		{
+			Quit();
 			Disconnect();
 		}
 		else
@@ -324,6 +325,8 @@ void IrcNet::Quit(string text)
 		SDL_KillThread(mConnectThread);
 		mConnectThread = NULL;
 	}
+	
+	mWaitingForPong = false;
 }
 
 void IrcNet::MessageToChannel(string msg) 
@@ -377,6 +380,8 @@ void IrcNet::_setState(connectionState newState)
 	}
 	
 	mState = newState;
+	
+	mWaitingForPong = false;
 
 	MessageData md("NET_NEWSTATE");
 	md.WriteInt("state", newState);

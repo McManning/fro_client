@@ -95,7 +95,7 @@ uShort timer_CheckInWithServer(timer* t, uLong ms)
 
 	query = "http://sybolt.com/drm-svr/";
 	query += "checkin.php?ver=";
-	query += APP_VERSION;
+	query += VER_STRING;
 
 	query += "&id=" + htmlSafe(game->mUsername);
 	query += "&pass=" + htmlSafe(game->mPassword);

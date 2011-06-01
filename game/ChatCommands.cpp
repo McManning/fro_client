@@ -238,7 +238,7 @@ void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 
 void callback_chatCommandListEmotes(Console* c, string s)
 {
-	c->AddMessage("\\c990Emotes:\\n  /facepalm, /datass, /rage, /troll, /coolface, /brofist, /spoilereyes, /sad, /derp, /happy, /omg, /fff, /heart, /awesome, /wtf, /pedo");
+	c->AddMessage("\\c990Emotes:\\n  /facepalm, /datass, /rage, /troll, /coolface, /brofist, /spoilereyes, /sad, /cry, /derp, /happy, /omg, /fff, /heart, /love, /awesome, /wtf, /pedo");
 }
 
 void callback_chatCommandListCommands(Console* c, string s)
@@ -269,12 +269,14 @@ void hookChatCommands(Console* c)
 	c->HookCommand("/brofist", callback_chatCommandBrofist);
 	c->HookCommand("/spoilereyes", callback_chatCommandSpoilereyes);
 	c->HookCommand("/sad", callback_chatCommandBaww);
+	c->HookCommand("/cry", callback_chatCommandBaww);
 	c->HookCommand("/derp", callback_chatCommandDerp);
 	c->HookCommand("/happy", callback_chatCommandHappy);
 	c->HookCommand("/omg", callback_chatCommandOmg);
 	c->HookCommand("/wtf", callback_chatCommandWtf);
 	c->HookCommand("/fff", callback_chatCommandFFFUUU);
 	c->HookCommand("/heart", callback_chatCommandHeart);
+	c->HookCommand("/love", callback_chatCommandHeart);
 	c->HookCommand("/awesome", callback_chatCommandAwesome);
 	c->HookCommand("/facepalm", callback_chatCommandFacepalm);
 	c->HookCommand("/pedo", callback_chatCommandPedo);

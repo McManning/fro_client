@@ -315,6 +315,12 @@ int entity_Say(lua_State* ls)
 	bool showbubble = (numArgs > 2) ? lua_toboolean(ls, 3) : 1;
 
 	e->Say(msg, showbubble);
+	
+	//Dispatch a say message
+	MessageData md("ENTITY_SAY");
+	md.WriteUserdata("entity", e);
+	md.WriteString("message", msg);
+	messenger.Dispatch(md, NULL);
 		
 	return 0;	
 }
@@ -486,8 +492,12 @@ int _parseEntityAvatar(lua_State* ls, Actor* a, int virtualIndex = -1)
 	}
 	
 	if (!file.empty())
-	{
-		a->LoadAvatar(game->mMap->mWorkingDir + file, "", width, height, delay, flags);
+	{	
+		// don't allow them out of our cache unless they're using an avy:// construct
+		if (file.find("avy://") == string::npos)
+			file = game->mMap->mWorkingDir + file;
+
+		a->LoadAvatar(file, "", width, height, delay, flags);
 	}
 	return 1;
 }

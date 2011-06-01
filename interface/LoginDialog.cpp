@@ -54,6 +54,7 @@ void dlCallback_welcomeDataSuccess(downloadData* data)
 			}
 			else if (lines.at(i).find("manifest:", 0) == 0)
 			{
+#ifndef DEBUG
 				hash = md5file(DIR_CACHE "manifest.res");
 				// if our hashes don't match, trigger an update
 				if (hash != lines.at(i).substr(9))
@@ -64,6 +65,7 @@ void dlCallback_welcomeDataSuccess(downloadData* data)
 					au->SendRequestForManifest();
 					isDone = true;
 				}
+#endif
 			}
 			else if (lines.at(i).find("server:", 0) == 0)
 			{
@@ -93,6 +95,8 @@ void dlCallback_welcomeDataSuccess(downloadData* data)
 			loginDialog->SetControlState(true);
 		}	
 	}
+	
+	removeFile(data->filename);
 }
 
 void dlCallback_welcomeDataFailure(downloadData* data)
@@ -288,7 +292,7 @@ void LoginDialog::SendLoginQuery(bool skip)
 
 	query = "http://sybolt.com/drm-svr/";
 	query += "login.php?ver=";
-	query += APP_VERSION;
+	query += VER_STRING;
 
 	if (!skip)
 	{

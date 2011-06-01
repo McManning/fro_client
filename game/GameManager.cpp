@@ -527,7 +527,7 @@ void GameManager::LoadUserData()
 void GameManager::UpdateAppTitle()
 {
 	string title = "fro [Build ";
-	title += APP_VERSION;
+	title += VER_STRING;
 	title += "]";
 	
 	if (mNet && mNet->IsConnected())

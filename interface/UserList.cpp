@@ -10,7 +10,7 @@
 
 UserList* userlist;
 
-void callback_UserListDoubleClick(Multiline* m)
+void callback_UserListRightClick(Multiline* m)
 {
 	UserList* u = (UserList*)m->GetParent();
 	if (u)
@@ -23,7 +23,7 @@ UserList::UserList() :
 	//convert our output to list format
 	mOutput->mWrap = false;
 	mOutput->mHighlightSelected = true;
-	mOutput->onLeftDoubleClickCallback = callback_UserListDoubleClick;
+	mOutput->onRightSingleClickCallback = callback_UserListRightClick;
 	
 	mShowTimestamps = false;
 	
@@ -61,8 +61,15 @@ void UserList::ClickSelected()
 {
 	if (mOutput->mSelected < 0 || mOutput->mSelected >= mOutput->mLines.size()) return;
 
-	//open up a private 1 on 1 convo
-	game->GetPrivateChat(mOutput->mLines.at(mOutput->mSelected));
+	Entity* e = game->mMap->FindEntityByName(mOutput->mLines.at(mOutput->mSelected), ENTITY_REMOTEACTOR);
+	
+	if (e)
+	{
+		MessageData md("CLICK_REMOTE_ACTOR");
+		md.WriteUserdata("entity", e);
+		md.WriteInt("userlist", 1); // selected from the userlist
+		messenger.Dispatch(md, e);
+	}
 }
 
 void UserList::AddNick(string nick)

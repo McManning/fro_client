@@ -6,7 +6,8 @@
 #include <vector>
 #include <math.h>
 
-#define APP_VERSION "1.5.1"
+// TODO: Include the vars here somehow without actually referencing fro_private.h!
+#include "../build/fro_private.h"
 
 /*	In case the compiler doesn't define it for us */
 #ifndef WIN32

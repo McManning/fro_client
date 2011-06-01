@@ -187,7 +187,13 @@ int actor_LoadAvatar(lua_State* ls)
 
 	Actor* a = getReferencedActor(ls);
 
-	bool result = a->LoadAvatar( game->mMap->mWorkingDir + lua_tostring(ls, 2), lua_tostring(ls, 3),
+	string url = lua_tostring(ls, 2);
+	
+	// don't allow them out of our cache unless they're using an avy:// construct
+	if (url.find("avy://") == string::npos)
+		url = game->mMap->mWorkingDir + url;
+
+	bool result = a->LoadAvatar( url, lua_tostring(ls, 3),
 							(uShort)lua_tonumber(ls, 4), (uShort)lua_tonumber(ls, 5),
 							(uShort)lua_tonumber(ls, 6), (uShort)lua_tonumber(ls, 7)
 						);
