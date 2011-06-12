@@ -116,6 +116,7 @@ GuiManager::GuiManager()
 //Consoles
 	PRINT("Loading Console");
 	console = new Console("console", "Console @ Build " + string(VER_STRING), "log_", color(85,90,100), false, true, true);
+	console->mShowTimestamps = true;
 	
 	PRINT("Configuring Console");
 
@@ -390,7 +391,8 @@ void GuiManager::Render()
 
 	scr->PreRender();
 	
-	if (g_RectMan.m_RectSet)
+	if (scr->mOptimizationMethod == Screen::NO_OPTIMIZATION 
+		|| g_RectMan.m_RectSet != NULL)
 	{
 		//Render widget tree
 		Widget::Render();
@@ -761,7 +763,7 @@ void GuiManager::Screenshot()
 	
 	IMG_SavePNG(s.c_str(), Screen::Instance()->Surface());
 
-	SetAlert("\\c090* Screenshot saved to: " + s);
+	SetAlert("\\c090* Screenshot saved to \\c239" + s);
 	*/
 }
 

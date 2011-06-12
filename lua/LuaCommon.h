@@ -25,6 +25,8 @@ class lua_State;
 // If we don't have the desired amount of arguments, return an error 
 bool luaCountArgs(lua_State* ls, int desired);
 
+int luaCall(lua_State* ls, int a, int b);
+
 int luaError(lua_State* ls, string func, string msg);
 
 void luaStackdump(lua_State* l);

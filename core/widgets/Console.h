@@ -76,6 +76,8 @@ class Console : public Frame
 
 	void SaveText();
 	
+	void SetTitle(string s);
+	
 	Input* mInput;
 	Multiline* mOutput;
 	Label* mTitle;

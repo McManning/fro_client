@@ -17,7 +17,7 @@
 	Example:
 		result = luaPCall(myLuaState, "HelloWorld", 1, "ssif", "Some string", "Another string", 14, 15.2);
 */
-int luaCall(lua_State* ls, const char* func, int returncount, char* params, ...)
+int luaCallWith(lua_State* ls, const char* func, int returncount, char* params, ...)
 {
 	int total = 0;
     va_list args;
@@ -67,12 +67,37 @@ bool luaCountArgs(lua_State* ls, int desired)
 		}
 
 		string error = func + ": Invalid Parameter Count (Minimum: " + its(desired) + ")";
-
-		lua_pushstring( ls, error.c_str() );
-		lua_error( ls ); //This function does a longjmp and never returns.
+		luaError(ls, "", error);
+		
 		return false;
 	}
 	return true;
+}
+
+static int luaTraceback(lua_State *L) 
+{
+	lua_getfield(L, LUA_GLOBALSINDEX, "debug");
+	if (!lua_istable(L, -1)) {
+	lua_pop(L, 1);
+	return 1;
+	}
+	lua_getfield(L, -1, "traceback");
+	if (!lua_isfunction(L, -1)) {
+	lua_pop(L, 2);
+	return 1;
+	}
+	// lua_pushvalue(L, 1);  /* pass error message */
+	// lua_pushinteger(L, 2);  /* skip this function and traceback */
+	lua_call(L, 0, 1);  /* call debug.traceback */
+	
+	if (lua_isstring(L, -1))
+	{
+		string s = lua_tostring(L, -1);
+		console->AddMessage("\\c099" + s);
+	}
+	lua_pop(L, 1);
+
+	return 1;
 }
 
 int luaError(lua_State* ls, string func, string msg)
@@ -97,6 +122,11 @@ int luaError(lua_State* ls, string func, string msg)
 
 	string error = "[" + func + "] " + msg;
 
+	console->AddMessage("\\c900Internal Lua Error: " + error);
+
+	luaStackdump(ls);
+	luaTraceback(ls);
+
 	lua_pushstring( ls, error.c_str() );
 	lua_error( ls ); //This function does a longjmp and never returns.
 	
@@ -108,26 +138,44 @@ void luaStackdump(lua_State* l)
     int i;
     int top = lua_gettop(l);
 
-    printf("total in stack %d\n",top);
+	string s = "\\c990stack dump\n";
 
     for (i = 1; i <= top; i++)
     {  /* repeat for each level */
         int t = lua_type(l, i);
         switch (t) {
             case LUA_TSTRING:  /* strings */
-                printf("string: '%s'\n", lua_tostring(l, i));
+                s += "\t[" + its(i) + "] string: " + string(lua_tostring(l, i)) + "\n";
                 break;
             case LUA_TBOOLEAN:  /* booleans */
-                printf("boolean %s\n",lua_toboolean(l, i) ? "true" : "false");
+                s += "\t[" + its(i) + "] boolean: " + string(lua_toboolean(l, i) ? "true\n" : "false\n");
                 break;
             case LUA_TNUMBER:  /* numbers */
-                printf("number: %g\n", lua_tonumber(l, i));
+                s += "\t[" + its(i) + "] number: " + string(lua_tostring(l, i)) + "\n";
                 break;
             default:  /* other values */
-                printf("%s\n", lua_typename(l, t));
+                s += "\t[" + its(i) + "] " + string(lua_typename(l, t)) + "\n";
                 break;
         }
-        printf("  ");  /* put a separator */
     }
-    printf("\n");  /* end the listing */
+    
+    console->AddMessage(s);
 }
+
+int luaCall(lua_State* ls, int a, int b)
+{
+	int result = lua_pcall(ls, a, b, 0);
+	
+	if (result != 0) //something went wrong, dump it
+	{
+		console->AddMessage("\\c900Caught Lua Error: " + string(lua_tostring(ls, -1)));
+
+		luaStackdump(ls);
+		luaTraceback(ls);
+	}
+	
+	return result;	
+}
+
+
+

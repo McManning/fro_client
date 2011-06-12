@@ -44,8 +44,8 @@ class EntityManager
 	*/
 	Entity* FindEntityByName(string name, entityType type = ENTITY_ANY);
 	
-	//	Returns the index number of the selected entity. Or -1 if it isn't found
-	int FindEntity(Entity* e);
+	//	Returns false if the entity isn't found, true otherwise
+	bool FindEntity(Entity* e);
 	
 	/*	Will add the specified entity to the manager. If it already exists, this will do nothing. 
 		Dispatches ENTITY_CREATE if successful
@@ -70,6 +70,8 @@ class EntityManager
 	
 	bool mNeedToResort;
 	void _delete(Entity* e);
+	void _addToDeleteQueue(Entity* e);
+	void _deleteQueuedEntities();
 };
 
 #endif //_ENTITYMANAGER_H_

@@ -861,6 +861,14 @@ void listener_NetNickInUse(MessageListener* ml, MessageData& md, void* sender)
 	
 	string msg = "\\c900 * Could not change nickname: " + stripCodes(md.ReadString("message"));
 	printMessage(msg);
+	
+	if (net->GetState() != ONCHANNEL) // not on a world yet, force change
+	{
+		net->ChangeNick(net->GetNick() + "_");
+
+		game->mPlayer->SetName(game->mPlayer->GetName() + "_");
+		net->ChangeNick(game->mPlayer->GetName());
+	}
 }
 
 // Nothing in message

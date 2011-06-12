@@ -141,9 +141,9 @@ int ConvoDialog::DoOption(sShort index)
 	lua_rawgeti(luaState, LUA_REGISTRYINDEX, luaReference);
 
 	int result = 0;
-	if (lua_pcall(luaState, 3, 1, 0) != 0)
+	if (luaCall(luaState, 3, 1) != 0)
 	{
-		console->AddMessage("\\c900 * LUACONVO [" + luaFunction + "] " + string(lua_tostring(luaState, -1)));
+		console->AddMessage("\\c900 * LUACONVO [" + luaFunction + "] Fail");
         result = 0;
 	}
 	else
@@ -182,9 +182,7 @@ void _checkConvo(lua_State* ls)
 {
 	if (!convo)
 	{
-		string err = "No current Convo";
-		lua_pushstring( ls, err.c_str() );
-		lua_error( ls );
+		luaError(ls, "", "No current convo");
 	}
 }
 

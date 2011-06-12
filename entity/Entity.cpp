@@ -22,6 +22,7 @@ Entity::Entity()
 	mLocked = false;
 	mShadow = false;
 	mManagerCanDeleteMe = true;
+	mDead = false;
 	mClickRange = 0;
 	mActiveChatBubble = NULL;
 }
@@ -335,6 +336,7 @@ int Entity::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "layer") lua_pushnumber( ls, GetLayer() );
 	else if (prop == "ctype") lua_pushstring( ls, GetTypeName().c_str() );
 	else if (prop == "clickable") lua_pushnumber( ls, mClickRange );
+	else if (prop == "dead") lua_pushboolean(ls, mDead );
 	else return 0;
 	
 	return 1;
@@ -350,7 +352,7 @@ void Entity::ClearActiveChatBubble()
 	}
 }
 
-void Entity::Say(string msg, bool bubble)
+void Entity::Say(string msg, bool bubble, bool inChat)
 {
 	if (bubble)
 	{
@@ -359,7 +361,7 @@ void Entity::Say(string msg, bool bubble)
 		mMap->AddEntity(cb);
 	}
 
-    if (mMap && mMap->mChat)
+    if (inChat && mMap && mMap->mChat)
 	   mMap->mChat->AddMessage(GetName() + ": " + msg);	
 }
 

@@ -47,8 +47,7 @@ void Label::SetCaption(string text)
 	
     	if (!text.empty())
     	{
-    		text = stripCodes(text); //clean it for calculating size
-    		r.w = mFont->GetWidth(text);
+    		r.w = mFont->GetWidth(text, true);
     		if (mMaxWidth != 0 && r.w > mMaxWidth)
     			r.w = mMaxWidth;
     			

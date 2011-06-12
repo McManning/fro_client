@@ -377,6 +377,10 @@ void GameManager::UnloadMap()
 	
 	if (userlist)
 		userlist->mOutput->Clear();
+		
+	// TODO: Somewhere better for resetting this!
+	Screen* scr = Screen::Instance();
+	scr->mOptimizationMethod = Screen::FULL_OPTIMIZATION;
 }
 
 void GameManager::Render()
@@ -484,6 +488,7 @@ Console* GameManager::GetPrivateChat(string nick)
 		c->Center();
 		c->ResizeChildren(); //reloads background to proper color
 		c->mInput->SetKeyFocus();
+		c->mShowTimestamps = true;
 		
 		//Hook our input functions
 		c->HookCommand("", callback_privmsgNoCommand);

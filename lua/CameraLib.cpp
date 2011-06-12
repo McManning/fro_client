@@ -168,7 +168,7 @@ int camera_IsEntityVisible(lua_State* ls)
 	Entity* e = (Entity*)lua_touserdata(ls, 1);
 
 	bool visible = false;
-	if ( m->FindEntity(e) != -1 )
+	if ( m->FindEntity(e) )
 		visible = e->IsVisibleInCamera();
 
 	lua_pushboolean(ls, visible);

@@ -532,7 +532,7 @@ void AvatarCreator::SaveToFile()
 	
 	string file = "saved/creation_" + timestamp(true) + ".png";
 	mFullComposite->SavePNG(file);
-	new MessagePopup("", "Avatar Saved", "Saved to " + file);
+	new MessagePopup("", "Avatar Saved", "Saved to \\c239" + file);
 }
 
 /*

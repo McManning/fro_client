@@ -44,9 +44,9 @@ int mapLib_luaCallBuildWorld(lua_State* ls, bool testMode, string& worldName, st
 	}
 
 	int result = 1;
-	if (lua_pcall(ls, 3, 1, 0) != 0) // return of 0 indicates error.
+	if (luaCall(ls, 3, 1) != 0) // return of 0 indicates error.
 	{
-		console->AddMessage("\\c900 * LUA [__MAIN_BUILD] " + string(lua_tostring(ls, -1)));
+		console->AddMessage("\\c900 * LUA [__MAIN_BUILD] Fail");
 		result = 0;
 	}
 	else
@@ -67,10 +67,9 @@ void mapLib_CallDisplay(lua_State* ls)
 {
 	lua_getglobal(ls, "__MAIN_DISPLAY");
 	
-	if (lua_isfunction(ls, -1) && lua_pcall(ls, 0, 0, 0) != 0)
+	if (lua_isfunction(ls, -1) && luaCall(ls, 0, 0) != 0)
 	{
-		console->AddMessage("\\c900 * LUA [__MAIN_DISPLAY] " 
-							+ string(lua_tostring(ls, -1)));
+		console->AddMessage("\\c900 * LUA [__MAIN_DISPLAY] Fail");
 	}
 }
 
@@ -79,10 +78,9 @@ void mapLib_CallDestroy(lua_State* ls)
 {
 	lua_getglobal(ls, "__MAIN_DESTROY");
 	
-	if (lua_isfunction(ls, -1) && lua_pcall(ls, 0, 0, 0) != 0)
+	if (lua_isfunction(ls, -1) && luaCall(ls, 0, 0) != 0)
 	{
-		console->AddMessage("\\c900 * LUA [__MAIN_DESTROY] " 
-							+ string(lua_tostring(ls, -1)));	
+		console->AddMessage("\\c900 * LUA [__MAIN_DESTROY] Fail");	
 	}
 }
 

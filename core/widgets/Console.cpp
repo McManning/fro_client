@@ -75,7 +75,7 @@ Console::Console(string id, string title, string savePrefix, color c,
 
 	mBackgroundColor = color(0,0,0,230);
 	mBackground = NULL;
-	mShowTimestamps = true;
+	mShowTimestamps = false;
 	mDrawBackground = true;
 	mSizeable = true; //will not create mSizer, and instead create a custom one
 	mOutput = NULL;
@@ -133,12 +133,8 @@ Console::Console(string id, string title, string savePrefix, color c,
 //		mBackgroundToggle->SetImage(imageFile + "font.png");
 //		mBackgroundToggle->mHoverText = "Change Font Size";
 	}
-	
-	mTitle = NULL;
-	if (!title.empty())
-	{
-		mTitle = new Label(this, "title", rect(5, 1), title);
-	}
+
+	mTitle = new Label(this, "title", rect(5, 1), title);
 
 	//don't use mImage b/c Frame will try to render it. Use a custom.
 	mBackgroundImage = resman->LoadImg("assets/gui/console/bg.png");
@@ -368,8 +364,8 @@ void Console::_runHookedCommand(consoleCommand& c, string s)
 //logs text to file
 void Console::SaveText()
 {
-	if (!mOutput) return;
-	
+	if (!mOutput || mSavePrefix.empty()) return;
+
 	string s;
 	s = "saved/" + mSavePrefix + timestamp(true) + ".html";
 	buildDirectoryTree(s);
@@ -411,3 +407,15 @@ void Console::SaveText()
 	fclose(f);
 	AddMessage("\\c090* Log saved to: " + s);
 }
+
+void Console::SetTitle(string s)
+{
+	mTitle->SetCaption(s);
+}
+
+
+
+
+
+
+

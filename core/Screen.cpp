@@ -22,6 +22,7 @@ Screen::Screen()
 	SDL_Surface* image2;
 	
 	mNoDraw = false;
+	mOptimizationMethod = FULL_OPTIMIZATION;
 	
 #ifdef DEBUG
 	mDrawOptimizedRects = true;
@@ -68,10 +69,20 @@ Screen::~Screen()
 
 void Screen::PreRender()
 {
-    if (mDrawOptimizedRects)
-	   g_rects.clear();
-
-	g_RectMan.generate_clips(Surface());
+	// add the lazy rect to the optimizer
+	if (mOptimizationMethod == LAZY_OPTIMIZATION)
+	{
+		g_RectMan.add_rect(mLazyRect);
+		mLazyRect.w = mLazyRect.h = 0;
+	}
+	
+	if (mOptimizationMethod != NO_OPTIMIZATION)
+	{
+	    if (mDrawOptimizedRects)
+		   g_rects.clear();
+	
+		g_RectMan.generate_clips(Surface());
+	}
 }
 
 void Screen::PostRender()
@@ -82,36 +93,39 @@ void Screen::PostRender()
 
 	//g_RectMan.rects_print(g_RectMan.m_RectSet);
 	
-	if (g_RectMan.m_Clips)
+	if (mOptimizationMethod != NO_OPTIMIZATION)
 	{
-        if (mDrawOptimizedRects)
-        {
-    		SDL_Rect* r;
-    		for (int i = 0; i < g_RectMan.m_Clips->length; ++i)
-    		{
-    			r = &g_RectMan.m_Clips->rects + i;
-    			DrawRound(rect(r->x, r->y, r->w, r->h), 0, color(0,255,0,100));	
-    		}
-        }
-
-		g_RectMan.update_rects(Surface());
-		
-		// Now that we've done that, black out the old rects so we know they were
-		// still there, but don't get confused with new rects added each frame
-		/*for (int i = 0; i < g_RectMan.m_Clips->length; ++i)
+		if (g_RectMan.m_Clips)
 		{
-			r = &g_RectMan.m_Clips->rects + i;
-			DrawRound(rect(r->x, r->y, r->w, r->h), 0, color());	
-		}*/
-		
-		g_RectMan.purge();
+	        if (mDrawOptimizedRects)
+	        {
+	    		SDL_Rect* r;
+	    		for (int i = 0; i < g_RectMan.m_Clips->length; ++i)
+	    		{
+	    			r = &g_RectMan.m_Clips->rects + i;
+	    			DrawRound(rect(r->x, r->y, r->w, r->h), 0, color(0,255,0,100));	
+	    		}
+	        }
+	
+			g_RectMan.update_rects(Surface());
+			
+			// Now that we've done that, black out the old rects so we know they were
+			// still there, but don't get confused with new rects added each frame
+			/*for (int i = 0; i < g_RectMan.m_Clips->length; ++i)
+			{
+				r = &g_RectMan.m_Clips->rects + i;
+				DrawRound(rect(r->x, r->y, r->w, r->h), 0, color());	
+			}*/
+			
+			g_RectMan.purge();
+		}
+	}
+	else if (mNeedUpdate)
+	{
+		SDL_Flip(Surface());
 	}
 
-	//SDL_Flip(Surface());
-
-#ifdef OPTIMIZED
 	mNeedUpdate = false;
-#endif
 }
 
 void Screen::Resize(uShort w, uShort h)
@@ -151,17 +165,48 @@ void Screen::AddRect(rect r)
 	//sdfUpdate();
 	
 	if (SDL_GetAppState() & SDL_APPACTIVE)
-	{	
-	    if (mDrawOptimizedRects)
-		   g_rects.push_back(r);
-	
-		SDL_Rect sr = { r.x, r.y, r.w, r.h };
-		g_RectMan.add_rect(sr);
+	{
+		if (mOptimizationMethod == FULL_OPTIMIZATION)
+		{
+			if (mDrawOptimizedRects)
+				g_rects.push_back(r);
+			
+			SDL_Rect sr = { r.x, r.y, r.w, r.h };
+			g_RectMan.add_rect(sr);
+		}
+		else if (mOptimizationMethod == LAZY_OPTIMIZATION) 
+		{
+			// first added
+			if (mLazyRect.w == 0 && mLazyRect.h == 0)
+			{
+				mLazyRect.x = r.x;
+				mLazyRect.y = r.y;
+				mLazyRect.w = r.w;
+				mLazyRect.h = r.h;
+			}
+			else // union the lazy one with the new one
+			{
+				int i = MIN(r.x, mLazyRect.x);
+				mLazyRect.w = MAX(r.x + r.w, mLazyRect.x + mLazyRect.w) - i;
+				mLazyRect.x = i;
+				
+				i = MIN(r.y, mLazyRect.y);
+				mLazyRect.h = MAX(r.y + r.h, mLazyRect.y + mLazyRect.h) - i;
+				mLazyRect.y = i;
+			}
+		}
+		else
+		{
+			mNeedUpdate = true;
+		}
 	}
 }
 
 bool Screen::IsRectDrawable(rect r)
 {
-	return (g_RectMan.m_RectSet && g_RectMan.rects_intersects(g_RectMan.m_RectSet, r.x, r.y, r.w, r.h) == _NO_ERR);
+	return ((mOptimizationMethod == NO_OPTIMIZATION && mNeedUpdate)
+			|| (g_RectMan.m_RectSet && 
+				g_RectMan.rects_intersects(g_RectMan.m_RectSet, r.x, r.y, r.w, r.h) == _NO_ERR)
+			);
 }
 

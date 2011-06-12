@@ -645,35 +645,50 @@ bool Image::_renderToScreen(sShort x, sShort y, rect& clip)
     SDL_Rect rSrc;
     SDL_Rect* prDstClip;
 
-    if (!g_RectMan.m_RectSet)
-    {
-        FATAL("No rect set");
-        return false;   
-    }
-    
-    Rect_Clips* rc = g_RectMan.rects_clip(g_RectMan.m_RectSet, &rDst);
-    if (rc->length > 0) // if we have anything drawable
-    {
-        // render each rect individually
-        for (int i = 0; i < rc->length; ++i)
-        {
-            prDstClip = &rc->rects + i;
-            
-            // construct a new source rect, related to the new destination
-            rSrc.x = clip.x + (prDstClip->x - rDst.x);
-            rSrc.y = clip.y + (prDstClip->y - rDst.y);
-            rSrc.w = prDstClip->w;
-            rSrc.h = prDstClip->h; 
-            
-            if ( SDL_BlitSurface(src, &rSrc, dst, prDstClip) < 0 )
-    		{
-    		    WARNING(SDL_GetError());
-    		    return false;
-    		}
-        }
-    }
-    
-    free(rc);
+	if (scr->mOptimizationMethod != Screen::NO_OPTIMIZATION)
+	{
+	    if (!g_RectMan.m_RectSet)
+	    {
+	        FATAL("No rect set");
+	        return false;   
+	    }
+	    
+	    Rect_Clips* rc = g_RectMan.rects_clip(g_RectMan.m_RectSet, &rDst);
+	    if (rc->length > 0) // if we have anything drawable
+	    {
+	        // render each rect individually
+	        for (int i = 0; i < rc->length; ++i)
+	        {
+	            prDstClip = &rc->rects + i;
+	            
+	            // construct a new source rect, related to the new destination
+	            rSrc.x = clip.x + (prDstClip->x - rDst.x);
+	            rSrc.y = clip.y + (prDstClip->y - rDst.y);
+	            rSrc.w = prDstClip->w;
+	            rSrc.h = prDstClip->h; 
+	            
+	            if ( SDL_BlitSurface(src, &rSrc, dst, prDstClip) < 0 )
+	    		{
+	    		    WARNING(SDL_GetError());
+	    		    return false;
+	    		}
+	        }
+	    }
+	    
+	    free(rc);
+	}
+	else
+	{
+		rSrc.x = clip.x;
+		rSrc.y = clip.y;
+		rSrc.w = clip.w;
+		rSrc.h = clip.h;
+		if ( SDL_BlitSurface(src, &rSrc, dst, &rDst) < 0 )
+		{
+		    WARNING(SDL_GetError());
+		    return false;
+		}
+	}
 
 	return true;
 }

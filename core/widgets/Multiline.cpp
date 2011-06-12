@@ -574,7 +574,7 @@ string Multiline::GetUrl(int line)
 			}
 		}
 		
-		url = stripCodes(url); //erase any \c that may have been inserted
+		url = stripColorCodes(url); //erase any \c that may have been inserted
 		
 		//now we have a url, however it may have some shit tagged on (from the next line)
 		//soooo, compare it to the collected url list. TODO: A better method?

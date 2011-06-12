@@ -52,16 +52,56 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 	i = 0;
 	while (i < words.size())
 	{	
-		if (words.at(i) != "\\n")
+		if (words.at(i) != "\n" && words.at(i) != "\t")
 		{
 			// split at \n
 			c = words.at(i).find("\\n", 0);
 			if (c != string::npos)
 			{
 				// We found enough characters to fill one line, split and quit
-				words.insert(words.begin() + i + 1, words.at(i).substr(c+2)); //everything after \n
-				words.insert(words.begin() + i + 1, "\\n"); // the \n itself
+				if (words.at(i).length() > c+2)
+					words.insert(words.begin() + i + 1, words.at(i).substr(c+2)); //everything after \n
+					
+				words.insert(words.begin() + i + 1, "\n"); // the \n itself
 				words.at(i) = words.at(i).substr(0, c); // everything before \n
+				i -= 1;
+			}
+			
+			// split at \t too
+			c = words.at(i).find("\\t", 0);
+			if (c != string::npos)
+			{
+				// We found enough characters to fill one line, split and quit
+				
+				if (words.at(i).length() > c+2)
+					words.insert(words.begin() + i + 1, words.at(i).substr(c+2)); //everything after \t
+				
+				words.insert(words.begin() + i + 1, "\t"); // the \t itself
+				words.at(i) = words.at(i).substr(0, c); // everything before \t
+				i -= 1;
+			}
+			
+			c = words.at(i).find('\n', 0);
+			if (c != string::npos)
+			{
+				// We found enough characters to fill one line, split and quit
+				if (words.at(i).length() > c+1)
+					words.insert(words.begin() + i + 1, words.at(i).substr(c+1)); //everything after \n
+				
+				words.insert(words.begin() + i + 1, "\n"); // the \n itself
+				words.at(i) = words.at(i).substr(0, c); // everything before \n
+				i -= 1;
+			}
+			
+			c = words.at(i).find('\t', 0);
+			if (c != string::npos)
+			{
+				// We found enough characters to fill one line, split and quit
+				if (words.at(i).length() > c+1)
+					words.insert(words.begin() + i + 1, words.at(i).substr(c+1)); //everything after \t
+				words.insert(words.begin() + i + 1, "\t"); // the \t itself
+				words.at(i) = words.at(i).substr(0, c); // everything before \t
+				i -= 1;
 			}
 			
 			if (GetWidth(words.at(i), true) > maxWidth)
@@ -86,14 +126,15 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 	/*	Go through all words and try to fit them together on lines no longer than maxWidth */
 	for (i = 0; i < words.size(); ++i)
 	{
-		if (words.at(i) == "\\n")
+		if (words.at(i) == "\\n" || words.at(i) == "\n")
 		{
 			// If there's a newline marker, dump what we got and start a new line
-			if (!s.empty())
-			{
-				v.push_back(s);
-				s.clear();
-			}
+			v.push_back(s);
+			s.clear();
+		}
+		else if (words.at(i) == "\\t" || words.at(i) == "\t") 
+		{
+			s += "  ";	
 		}
 		else
 		{
@@ -126,7 +167,7 @@ rect Font::GetTextRect(string text, bool ignoreCodes, int maxWidth)
 	vString v;
 
 	if (ignoreCodes)
-		text = stripCodes(text);
+		text = stripColorCodes(text);
 			
 	if (maxWidth > 0)
 	{
@@ -271,7 +312,7 @@ int Font::GetWidth(string text, bool ignoreCodes)
 {
 	int w, h;
 	if (ignoreCodes)
-		GetTextSize(stripCodes(text), &w, &h);
+		GetTextSize(stripColorCodes(text), &w, &h);
 	else
 		GetTextSize(text, &w, &h);
 		

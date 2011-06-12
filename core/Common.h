@@ -242,6 +242,8 @@ color hexToColor(string hex); //FF0000 -> color(255,0,0)
 int hexToDec(string hex);
 
 string htmlSafe(string s);
+
+string stripColorCodes(const string& msg);
 string stripCodes(const string& msg);
 
 /*

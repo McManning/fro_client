@@ -140,7 +140,7 @@ void callback_LoginDialogRegister(Button* b)
 {
 	string msg = "Registration is \\c300optional\\c000. If you choose not to use an account, "
 				" you can still access the worlds by hitting the \\c300Skip Login\\c000 button.\\n\\n"
-				"To register, or read about the benefits of registration, right click the following link: \\n\\n" 		
+				"\tTo register, or read about the benefits of registration, right click the following link: \n\n" 		
 				"\\c008http://sybolt.com/drm/register.php";
 
 	new MessagePopup("register", "Register", msg, true);	

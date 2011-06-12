@@ -7,6 +7,7 @@ TimerManager* timers;
 TimerManager::TimerManager()
 {
 	mCurrentHandle = 1; //handle 0 is invalid.
+	mResortTimers = false;
 }
 
 TimerManager::~TimerManager()
@@ -32,8 +33,14 @@ void TimerManager::FlushTimers()
 	mTimers.clear();
 }
 
+bool timerSort( timer* a, timer* b )
+{
+	return ( (a->interval < b->interval) );
+}
+
 void TimerManager::Process(uLong ms)
 {
+
 	for (int i = 0; i < mTimers.size(); i++)
 	{
 		if ( !mTimers.at(i) ) //Erase any nulled timers
@@ -48,6 +55,12 @@ void TimerManager::Process(uLong ms)
 			i--;
 		}
 	}
+	
+/*	if (mResortTimers)
+	{
+		mResortTimers = false;
+		stable_sort(mTimers.begin(), mTimers.end(), timerSort);
+	}*/
 }
 
 timer* TimerManager::Add(string id, uLong interval, bool runImmediately,
@@ -67,6 +80,7 @@ timer* TimerManager::Add(string id, uLong interval, bool runImmediately,
 	t->handle = ++mCurrentHandle;
 
 	mTimers.push_back(t);
+	mResortTimers = true;
 	return t;
 }
 
@@ -86,6 +100,7 @@ timer* TimerManager::AddProcess(string id,
 	t->handle = ++mCurrentHandle;
 
 	mTimers.push_back(t);
+	mResortTimers = true;
 	return t;
 }	
 
@@ -165,8 +180,8 @@ uShort TimerManager::_doTimer(uLong ms, timer* t)
 		t->lastMs = ms;
 		if (t->onActivate)
 			return t->onActivate(t, t->lastMs);
-		else
-			return TIMER_DESTROY;
+
+		return TIMER_DESTROY;
 	}
 	
 	//make sure the timer was never given an invalid interval
@@ -179,7 +194,8 @@ uShort TimerManager::_doTimer(uLong ms, timer* t)
 	}
 	else if (ms > t->lastMs + t->interval)
 	{
-		uShort counter = 0;
+		int counter = 0;
+		int lastInterval = t->interval;
 		while (ms >= t->lastMs + t->interval)
 		{
 			//PRINT("Timer " + t->id + " (Interval: " + its(t->interval) + ") Running. Count: " + its(counter));
@@ -200,6 +216,10 @@ uShort TimerManager::_doTimer(uLong ms, timer* t)
 				return TIMER_CONTINUE;
 			}
 		}
+		
+		// timer changed itself, trigger a resort. 
+		if (t->interval != lastInterval)
+			mResortTimers = true;
 	}
 
 	return TIMER_CONTINUE;
@@ -213,6 +233,8 @@ void TimerManager::_delete(uShort index)
 		mTimers.at(index)->onDestroy( mTimers.at(index) );
 
 	SAFEDELETE(mTimers.at(index));
+	
+	mResortTimers = true;
 }
 
 timer* TimerManager::Find(string id)

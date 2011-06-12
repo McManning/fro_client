@@ -455,6 +455,6 @@ void AutoUpdater::SaveLog()
 	}
 	fprintf(f, "</body>\n</html>\n");
 	fclose(f);
-	mLog->AddMessage("\\c050* Log saved to: " + s);
+	mLog->AddMessage("\\c050* Log saved to \\c239" + s);
 }
 

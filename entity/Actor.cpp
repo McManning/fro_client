@@ -915,6 +915,10 @@ void Actor::Jump(byte type)
 	mFalling = false;
 	
 	mPreviousPosition = mPosition;
+	
+	MessageData md("ENTITY_JUMP");
+	md.WriteUserdata("entity", this);
+	messenger.Dispatch(md);
 }
 
 void Actor::Fall(int height, int velocity)
@@ -974,26 +978,27 @@ void Actor::_processJump()
 	int yVelocity;
 	int maxHeight;
 
-	if (mMap->GetGravity() == 0) //not 0g. Just.. don't jump.
+	/*if (mMap->GetGravity() == 0) //not 0g. Just.. don't jump.
 	{
 		mFalling = true;
 		mJumpHeight = 0;
 		return; 
 	}
+	*/
 	
 	switch (mJumpType)
 	{
 		case STANDING_JUMP:
 			yVelocity = STANDING_JUMP_VELOCITY;
-			maxHeight = STANDING_JUMP_HEIGHT * mMap->GetGravity();
+			maxHeight = STANDING_JUMP_HEIGHT; // * mMap->GetGravity();
 			break;
 		case WALKING_JUMP:
 			yVelocity = WALKING_JUMP_VELOCITY;
-			maxHeight = WALKING_JUMP_HEIGHT * mMap->GetGravity();
+			maxHeight = WALKING_JUMP_HEIGHT; // * mMap->GetGravity();
 			break;
 		case RUNNING_JUMP: 
 			yVelocity = RUNNING_JUMP_VELOCITY;
-			maxHeight = RUNNING_JUMP_HEIGHT * mMap->GetGravity();
+			maxHeight = RUNNING_JUMP_HEIGHT; // * mMap->GetGravity();
 			break;
 		case CUSTOM_JUMP:
 			maxHeight = 1000;

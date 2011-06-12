@@ -30,13 +30,11 @@ class Map : public Frame, public EntityManager
 
 	void HandleLeftClick();
 	void HandleRightClick();
-	
-	void ClickRemoteActor(RemoteActor* ra);
-	
+
 	/*	Will attempt to return the entity directly under the mouse, if it is clickable. */
-	Entity* GetEntityUnderMouse(bool mustBeClickable, bool playersOnly);
+	Entity* GetEntityUnderMouse(bool mustBeClickable, bool actorsOnly);
 	
-	Entity* GetNextEntityUnderMouse(Entity* start, bool mustBeClickable, bool playersOnly);
+	Entity* GetNextEntityUnderMouse(Entity* start, bool mustBeClickable, bool actorsOnly);
 	
 	void CheckForClickableEntity();
 		

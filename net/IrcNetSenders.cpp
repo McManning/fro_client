@@ -26,8 +26,11 @@ string compressActionBuffer(string buffer)
 
 void netSendSay(string text) //say $message
 {
-	// disable the usage of \n in say
+	// disable the usage of special shit in say
 	replace(&text, "\\n", "");
+	replace(&text, "\\t", "");
+	replace(&text, "\n", "");
+	replace(&text, "\t", "");
 	
 	if (game->IsMapLoading() || text.empty()) return;
 
@@ -78,6 +81,9 @@ void netSendStamp(string text) //stp x y rotation color $text
 	if (!game->mMap) return;
 	
 	replace(&text, "\\n", "");
+	replace(&text, "\\t", "");
+	replace(&text, "\n", "");
+	replace(&text, "\t", "");
 
 	//text = stripCodes(text);
 	point2d p = game->mPlayer->GetPosition();
@@ -107,8 +113,7 @@ void netSendMe(string text) //act #mode $text
 	if (!game->mMap) return;
 
 	text = stripCodes(text);
-	replace(&text, "\\n", "");
-	
+
 	game->GetChat()->AddMessage("\\c909* " + stripCodes(game->mPlayer->GetName()) 
 							+ " " + text + " *");
 
@@ -129,7 +134,6 @@ void netSendMusic(string song) //act 1 song
 	if (!game->mMap) return;
 	
 	song = stripCodes(song);
-	replace(&song, "\\n", "");
 	
 	game->GetChat()->AddMessage(
 					"\\c099* " + stripCodes(game->mPlayer->GetName())
@@ -155,8 +159,7 @@ void netSendBeat(Entity* target, string item) //act 2 target item
 
 	string targetName = stripCodes(target->GetName());
 	item = stripCodes(item);
-	replace(&item, "\\n", "");
-	
+
 	game->GetChat()->AddMessage(
 					"\\c484 * " + stripCodes(game->mPlayer->GetName()) + " beats "
 					+ stripCodes(targetName) + " with a \\c784"

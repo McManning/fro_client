@@ -44,8 +44,7 @@ void HintBalloon::SetCaption(string text)
     
     	if (mFont && !text.empty())
     	{
-    		text = stripCodes(text); //clean it for calculating size
-    		mPosition.w = mFont->GetWidth(text) + 10;
+    		mPosition.w = mFont->GetWidth(text, true) + 10;
     		if (mMaxWidth != 0 && mPosition.w > mMaxWidth)
     			mPosition.w = mMaxWidth + 10;
     		

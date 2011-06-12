@@ -44,7 +44,49 @@ bool RectManager::update_rects(SDL_Surface * surf) {
 
 void RectManager::add_rect(SDL_Rect r) {
     if (m_RectSet == NULL)
+    {
         m_RectSet = new_rects(0);
+	}
+    
+	/* 110610 Chase - If we have too many rectangles, this will rape CPU.
+	 	In order to hack-solve this (since I don't have the patience to go through
+	 	and figure out an optimal solution with this man's code) we're going to 
+	 	have a set threshold of rectangles. If the total rectangles passes that
+	 	threshold, it'll wipe the list and generate a larger bounding one 
+	 	that contains all of them.
+	 	
+	 	Still doesn't work. The following tests were applied:
+			- Created a screen-containing rect before adding any other objects
+				Still lagged at 200 NPCs moving in unison -> 20 to 10/5 FPS
+			- And More!
+			
+		I think it's just really dependent on how many rects we're trying to push in 
+		all in one frame. 
+	*/ 
+	
+/*	fprintf(stderr, "%i,%i,%i\n", m_RectSet->xs.length, m_RectSet->ys.length, m_RectSet->ms.length);
+	fflush(stderr);
+	
+	if (m_RectSet->ms.length > 100) //m_RectSet->xs.length > 30 || m_RectSet->ys.length > 30)
+	{
+		ASSERT(m_RectSet->xs.points != NULL && m_RectSet->ys.points != NULL)
+
+		// find absolute corners
+		int x = m_RectSet->xs.points[0];
+		int y = m_RectSet->ys.points[0];
+		int w = m_RectSet->xs.points[m_RectSet->xs.length-1] - x;
+		int h = m_RectSet->ys.points[m_RectSet->ys.length-1] - y;
+		
+		// reset rect set
+		clear_rects(m_RectSet);
+		free_rects(m_RectSet);
+		m_RectSet = new_rects(0);
+		
+		// add corners
+		rects_union(m_RectSet, x, y, w, h);
+
+	}*/
+	
 
     rects_union(m_RectSet, r.x, r.y, r.w, r.h);
 }

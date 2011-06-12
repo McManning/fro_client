@@ -193,7 +193,11 @@ void callback_chatCommandNick(Console* c, string s) // /nick nickname
 	if (s.find(" ", 0) != string::npos)
 		s.erase(s.find(" ", 0));
 
-	replace(&s, "\\n", ""); //filter out \n 
+	replace(&s, "\\n", "");
+	replace(&s, "\\t", "");
+	replace(&s, "\n", "");
+	replace(&s, "\t", "");
+	
 	if (!stripCodes(s).empty())
 	{
 		if (game->mNet->IsConnected())

@@ -42,11 +42,21 @@ class Screen : public Image
 	bool mNoDraw;
 	bool mDrawOptimizedRects;
 
+	enum optimizationMethod
+	{
+		NO_OPTIMIZATION = 1,
+		LAZY_OPTIMIZATION,
+		FULL_OPTIMIZATION	
+	};
+	
+	optimizationMethod mOptimizationMethod;
+
   private:
   	Screen();
 	~Screen();
 
 	bool mNeedUpdate;
+	SDL_Rect mLazyRect;
 };
 
 extern Screen* g_screen;

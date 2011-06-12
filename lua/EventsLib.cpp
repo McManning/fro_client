@@ -104,9 +104,9 @@ int LuaMessageListener::DoFunction(MessageListener* ml, MessageData& data)
 
 	int result;
 
-	if (lua_pcall(luaState, 4, 1, 0) != 0)
+	if (luaCall(luaState, 4, 1) != 0)
 	{
-		console->AddMessage("\\c900 * LUAEVENT [" + luaFunction + "] " + string(lua_tostring(luaState, -1)));
+		console->AddMessage("\\c900 * LUAEVENT [" + luaFunction + "] Fail");
 		//result = luaError( luaState, luaFunction, lua_tostring(luaState, -1) )
         result = 0;
 	}

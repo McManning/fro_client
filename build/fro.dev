@@ -443,8 +443,8 @@ BuildCmd=
 [VersionInfo]
 Major=1
 Minor=5
-Release=2
-Build=2922
+Release=3
+Build=3068
 LanguageID=1033
 CharsetID=1252
 CompanyName=Sybolt Studios

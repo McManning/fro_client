@@ -65,7 +65,7 @@ void UserList::ClickSelected()
 	
 	if (e)
 	{
-		MessageData md("CLICK_REMOTE_ACTOR");
+		MessageData md("CLICK_ACTOR");
 		md.WriteUserdata("entity", e);
 		md.WriteInt("userlist", 1); // selected from the userlist
 		messenger.Dispatch(md, e);

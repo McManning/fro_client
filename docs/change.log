@@ -1591,7 +1591,57 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Added mHostmask to RemoteActor and .GetProp(ent, "hostmask"). (Cannot be SetProp'd)
 - [LUA: main.lua] Added persistent player block list, based off Hostmasks
 - Added /cry as a synonym to /sad, and /love as a synonym to /heart
-- 
+
+----- PUBLIC RELEASE AS 1.5.2 -----
+
+110531
+- Changed Entity.Exists() lua return type to a boolean
+- Fixed bug where the client would refuse to set a new nickname when the chosen one is in use during connecting phase.
+
+110608
+- Most lua Entity lib functions that take in an entity c pointer as the first parameter (excluding ones like
+	Entity.Exists) can now also take in a table, that has a member t.__centity with the same c pointer
+- Added ENTITY_JUMP event
+- Changed Lua Entity.IsTouching() return to boolean 
+- Overloaded lua Entity.IsTouching() with the form Entity.IsTouching(ent, x, y) to also check for a point
+
+110610
+- Due to the render optimizer not working kindly with large amounts of rects (Say, 80 NPCs dancing), added a switch
+	that can enable the old render method for the screen (Draw everything, always)
+- Added System.SetRenderOptimizationMethod() to adjust the above mentioned method from within Lua
+	(If the map developer knows there's going to be a lot of onscreen movement, or too many players join, should
+	force a switch to the less-optimized method, in a (poor) attempt to solve lag)
+- Improved entity deletion management. Entity.Remove will now set a bool in the entity (accessed via GetProp("dead"))
+	and all entities with this flag will be cleaned out of the EntityManager. This should solve the issue of the
+	client crashing when Entity.Remove() is called within a Timer, or event callback, or anything that has following
+	timer/callbacks that try to access the same dead entity.
+- Rewrote EntityManager::FindEntity() to use binary search for a mild speed boost, also to return a boolean
+	rather than the index
+- Added RIGHT_CLICK_ACTOR event that triggers when ANY actor is right clicked, and removed CLICK_REMOTE_ACTOR
+- Fixed issue with RightClickMenu widgets not resizing based on the length of option text
+
+110611
+- Lua Entity.Add() will now fail (and return false) if the entity has already been added to the map
+- If a Console widget does not have a save prefix, it will ignore /save 
+- Fixed timestamps option not being reloaded on map load
+- Turned off timestamps by default for Console
+- Added to lua:
+	con = System.CreateConsole("id"<nil>)
+	System.SetConsoleTitle(con, "title")
+	System.SendToConsole(con, "message")
+	System.CloseConsole(con)
+	System.HasConsole(con)
+- Added LUA_CONSOLE{console,id,message} event, triggered when the user sends a message to a console created
+	with lua System.CreateConsole()
+- Added support for \n and \t characters in strings, along with literal "\t", to add non-condensed spaces to
+	strings since the FontManager tries to condense multiple space characters
+- Fixed multiple newlines being ignored while rendering multilined text
+- Fixed the ability to add newlines or tabs to nicknames (By removing!)
+- FINALLY improved lua error handling by outputting a stack dump and traceback on errors thrown by C functions
+	(This, of course, still doesn't mean it won't crash on strings that can't be converted, or invalid c pointers)
+- RightClickMenu's will now resize to fit the lengthiest option
+
+----- PUBLIC RELEASE AS 1.5.3 -----
 
 
 	
@@ -1620,11 +1670,10 @@ Consoles created through this system send out CONSOLE_INPUT with the message
 		- Spaces in the filenames in DownloadManager, if not replaced by %20, will fail.
 		- IS there any other character we need to do this to?
 		
+		- MNGs can change size while animating. The new renderer doesn't know this and can trip out. 
 
 WORKING ON:
 
-
-- Figure out why that crap isn't autodeleting itself in the cache
 
 - Need to change Player.GetFlag/SetFlag to Game.GetFlag/SetFlag in order to not interfere 
 	with the lua version of Entity.GetFlag/SetFlag. (Because otherwise, player himself won't 
@@ -1635,8 +1684,6 @@ WORKING ON:
 - Should implement the AWAY irc command rather than our own.
 - Privmsg consoles with people with invalid characters in their names will not save properly
 	ex: Chase\, @Chase, chase^. Idk, whatever Windows doesn't allow in filenames
-- Add something that lets us use avy:// for NPCs
-	Actor.SetGeneratedAvatar("head", r, g, b, "body", r, g, b, ... ) idk
 - Entity.SetPosition() isn't triggering a move event for listeners. It should!
 
 - An awesome ability would be to upload avatars directly to Sybolt in some user folder,

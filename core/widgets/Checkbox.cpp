@@ -118,8 +118,7 @@ void Checkbox::SetCaption(string text)
     
     	if (!text.empty())
     	{
-    		text = stripCodes(text); //clean it for calculating size
-    		mPosition.w += mFont->GetWidth(text);
+    		mPosition.w += mFont->GetWidth(text, true);
     		mPosition.h = mFont->GetHeight(text);
     		
     		if (mPosition.h < CHECKBOX_SIZE)

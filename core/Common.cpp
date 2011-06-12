@@ -606,7 +606,7 @@ string htmlSafe(string s)
 	return result;
 }
 
-string stripCodes(const string& msg)
+string stripColorCodes(const string& msg)
 {
 	string stripped;
 	for (size_t i = 0; i < msg.length(); i++)
@@ -623,6 +623,37 @@ string stripCodes(const string& msg)
 			}
 		}
 		stripped += msg.at(i); //another renderable character~
+	}
+	return stripped;
+}
+
+string stripCodes(const string& msg)
+{
+	string stripped;
+	for (size_t i = 0; i < msg.length(); i++)
+	{
+		if (msg.at(i) == '\\')
+		{
+			if (msg.length() > i + 1) //enough room for \cRGB
+			{
+				if (msg.at(i + 1) == 'c')
+				{
+					i += 4; //skip \cRGB
+				}
+				else if (msg.at(i+1) == 'n' || msg.at(i+1) == 't') // skip \n and \t
+				{
+					++i;
+				}
+				else
+				{
+					stripped += msg.at(i); //another renderable character	
+				}
+			}
+		}
+		else if (msg.at(i) != '\n' && msg.at(i) != '\t') // skip REAL \n and \t
+		{
+			stripped += msg.at(i); //another renderable character
+		}
 	}
 	return stripped;
 }

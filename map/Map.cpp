@@ -202,6 +202,7 @@ void Map::CreateChatbox()
     mChat = new Console("chat", "", "chat_", color(255,0,0), true, true, true);
 		mChat->mExit->onClickCallback = callback_hideChatbox;
 		mChat->mExit->mHoverText = "Hide Chat";
+		mChat->mShowTimestamps = sti(game->mUserData.GetValue("MapSettings", "Timestamps"));
 		Add(mChat);
 
 	rect r = deserializeRect( game->mUserData.GetValue("MapSettings", "ChatPosition") );
@@ -329,34 +330,24 @@ void Map::HandleRightClick()
 		
 	Entity* e = GetEntityUnderMouse(false, true);
 
-	if (e == (Entity*)game->mPlayer)
+	if (e)
 	{
-		if (!gui->Get("AvatarFavorites"))
-			new AvatarFavorites();
+		MessageData md("RIGHT_CLICK_ACTOR");
+		md.WriteUserdata("entity", e);
+		md.WriteInt("userlist", 0);
+		messenger.Dispatch(md, e);	
 	}
-	else if (e) //remote player
-	{
-		ClickRemoteActor((RemoteActor*)e);
-	}
-}
-
-void Map::ClickRemoteActor(RemoteActor* ra)
-{
-	MessageData md("CLICK_REMOTE_ACTOR");
-	md.WriteUserdata("entity", ra);
-	md.WriteInt("userlist", 0);
-	messenger.Dispatch(md, ra);
 }
 
 /*	Will attempt to return the entity directly under the mouse, if it is clickable. */
-Entity* Map::GetEntityUnderMouse(bool mustBeClickable, bool playersOnly)
+Entity* Map::GetEntityUnderMouse(bool mustBeClickable, bool actorsOnly)
 {
-	return GetNextEntityUnderMouse(NULL, mustBeClickable, playersOnly);
+	return GetNextEntityUnderMouse(NULL, mustBeClickable, actorsOnly);
 }
 
 // Will return an entity intersecting the screen point, that is lower in the list than the specified entity
 // Or NULL, if there are none.
-Entity* Map::GetNextEntityUnderMouse(Entity* start, bool mustBeClickable, bool playersOnly)
+Entity* Map::GetNextEntityUnderMouse(Entity* start, bool mustBeClickable, bool actorsOnly)
 {
 	int x, y;
 	rect r;
@@ -381,7 +372,7 @@ Entity* Map::GetNextEntityUnderMouse(Entity* start, bool mustBeClickable, bool p
 			if (mustBeClickable && e->mClickRange < 1)
 				continue;
 				
-			if (playersOnly && e->mType != ENTITY_LOCALACTOR && e->mType != ENTITY_REMOTEACTOR)
+			if (actorsOnly && !(e->mType >= ENTITY_ACTOR && e->mType < ENTITY_END_ACTORS))
 				continue;
 			
 			r = e->GetBoundingRect();

@@ -73,7 +73,7 @@ class Entity
 	bool IsVisible() { return mVisible; };
 	
 	virtual void SetName(string name) { mName = name; };
-	string GetName() const { return mName; };
+	const string GetName() const { return mName; };
 	
 	void SetShadow(bool b);
 	
@@ -88,7 +88,7 @@ class Entity
 
 	rect GetShadowRect();
 	
-	void Say(string msg, bool bubble);
+	void Say(string msg, bool bubble = true, bool inChat = true);
 	
 	entityType mType;
 
@@ -138,6 +138,7 @@ class Entity
 	bool mVisible;
 	int mLayer;
 	bool mManagerCanDeleteMe; //Can the EntityManager delete this entity?
+	bool mDead; // should this be deleted by the manager?
 	int mClickRange;
 
 	ChatBubble* mActiveChatBubble;

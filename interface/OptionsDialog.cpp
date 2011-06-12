@@ -232,8 +232,13 @@ void OptionsDialog::Save()
 		s = i->GetText();
 		if (s.find(" ", 0) != string::npos)
 			s.erase(s.find(" ", 0));
+	
+		// nope!
+		replace(&s, "\\n", "");
+		replace(&s, "\\t", "");
+		replace(&s, "\n", "");
+		replace(&s, "\t", "");
 
-		replace(&s, "\\n", ""); //filter out \n 
 		if (!stripCodes(s).empty())
 		{
 			if (game->mNet->IsConnected())

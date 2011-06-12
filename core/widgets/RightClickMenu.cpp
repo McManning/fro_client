@@ -7,8 +7,9 @@
 #include "../FontManager.h"
 #include "../ResourceManager.h"
 #include "../TimerManager.h"
+#include "Console.h"
 
-const int RCM_EDGE_BUFFER_SIZE = 3;
+const int RCM_EDGE_BUFFER_SIZE = 5;
 const int RCM_WIDTH = 100;
 
 void callback_rightClickMenu(Button* b)
@@ -65,8 +66,6 @@ RightClickMenu::~RightClickMenu()
 
 void RightClickMenu::AddOption(string text, void (*callback)(RightClickMenu*, void*), void* userdata)
 {
-	SetSize(RCM_WIDTH, (mCallbacks.size() + 1) * 20);
-	
 	Button* b = new Button(this, its(mCallbacks.size()), rect(0, mCallbacks.size() * 20, RCM_WIDTH, 20), 
 							text, callback_rightClickMenu);
 			if (callback)
@@ -83,19 +82,29 @@ void RightClickMenu::AddOption(string text, void (*callback)(RightClickMenu*, vo
 	mCallbacks.push_back(c);
 	
 	rect r = GetScreenPosition();
+	r.h = mCallbacks.size() * 20;
 	
 	//if the button caption is wider than our shit, resize our shit
-//	if (b->mCaptionImage->Width() > r.w + RCM_EDGE_BUFFER_SIZE * 2)
-//		r.w = b->mCaptionImage->Width() + RCM_EDGE_BUFFER_SIZE * 2;
+	if (b->mCaptionImage->Width() + RCM_EDGE_BUFFER_SIZE * 2 > r.w)
+		r.w = b->mCaptionImage->Width() + RCM_EDGE_BUFFER_SIZE * 2;
 	
-//	b->SetSize(b->mCaptionImage->Width() + RCM_EDGE_BUFFER_SIZE * 2, 20);
-	
+	if (r.w < RCM_WIDTH) 
+		r.w = RCM_WIDTH;
+
+	DEBUGOUT("Adding " + text + " with width: " + its(b->mCaptionImage->Width()) + " to width " + its(r.w));
+
 	// constrain to screen 
 	if (r.x + r.w > SCREEN_WIDTH)
 		r.x = SCREEN_WIDTH - r.w;
 	if (r.y + r.h > SCREEN_HEIGHT)
 		r.y = SCREEN_HEIGHT - r.h;
 	SetPosition(r);
+	
+	// resize all buttons
+	for (int i = 0; i < mChildren.size(); ++i)
+	{
+		mChildren.at(i)->SetSize(r.w, 20);
+	}
 	
 	DemandFocus();
 }

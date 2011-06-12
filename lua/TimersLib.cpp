@@ -79,10 +79,10 @@ int LuaTimer::DoFunction(timer* t, uLong ms)
 	lua_rawgeti(luaState, LUA_REGISTRYINDEX, luaReference);
 
 	int result = 0;
-	if (lua_pcall(luaState, 3, 1, 0) != 0)
+	if (luaCall(luaState, 3, 1) != 0)
 	{
-		console->AddMessage("\\c900 * LUATIMER [" + luaFunction + "] " + string(lua_tostring(luaState, -1)));
-        result = 0; //luaError( luaState, luaFunction, lua_tostring(luaState, -1) );
+		console->AddMessage("\\c900 * LUATIMER [" + luaFunction + "] Fail");
+        result = 0;
 	}
 	else
 	{

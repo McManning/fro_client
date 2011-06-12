@@ -5,7 +5,7 @@
 #include "Common.h"
 
 /*	Interval to identify processor-type timers */
-#define PROCESSOR_INTERVAL (ULONG_MAX - 1)
+#define PROCESSOR_INTERVAL (0) /*(ULONG_MAX - 1)*/
 #define INVALID_TIMER_HANDLE (0)
 
 //Values returned by a timers onActivate
@@ -75,6 +75,7 @@ class TimerManager
   
 	uShort _doTimer(uLong ms, timer* t);
 	void _delete(uShort index);
+	bool mResortTimers;
 };
 
 extern TimerManager* timers;

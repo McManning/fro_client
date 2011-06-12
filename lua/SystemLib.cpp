@@ -6,6 +6,7 @@
 #include "../core/widgets/OpenUrl.h"
 #include "../core/widgets/YesNoPopup.h"
 #include "../core/widgets/RightClickMenu.h"
+#include "../core/widgets/Input.h"
 #include "../core/io/FileIO.h"
 #include "../game/GameManager.h"
 #include "../map/Map.h"
@@ -58,8 +59,8 @@ void _doYesNoCallback(luaCallback* data, int result)
 
 	lua_pushboolean(data->state, result);
 
-	if (lua_pcall(data->state, 1, 0, 0) != 0)
-		console->AddMessage("\\c900 * LUAYESNO [" + data->func + "] " + string(lua_tostring(data->state, -1)));
+	if (luaCall(data->state, 1, 0) != 0)
+		console->AddMessage("\\c900 * LUAYESNO [" + data->func + "] Fail");
 }
 
 void callback_luaYesNo_Yes(YesNoPopup* yn)
@@ -146,10 +147,9 @@ void callback_LuaRCM_Select(RightClickMenu* rcm, void* userdata)
 			else
 				lua_pushnil(lc->state);
 				
-			if (lua_pcall(lc->state, 1, 0, 0) != 0)
+			if (luaCall(lc->state, 1, 0) != 0)
 			{
-				console->AddMessage("\\c900 * LUARCM [" + lc->func + "] " 
-									+ string(lua_tostring(lc->state, -1)));
+				console->AddMessage("\\c900 * LUARCM [" + lc->func + "] Fail");
 			}
 		}
 	}
@@ -223,8 +223,8 @@ void _doMessagePopupCallback(luaCallback* data)
 		return;
 	}
 
-	if (lua_pcall(data->state, 0, 0, 0) != 0)
-		console->AddMessage("\\c900 * LUAMSGPOPUP [" + data->func + "] " + string(lua_tostring(data->state, -1)));
+	if (luaCall(data->state, 0, 0) != 0)
+		console->AddMessage("\\c900 * LUAMSGPOPUP [" + data->func + "] Fail");
 }
 
 void callback_luaMessagePopup(MessagePopup* mp)
@@ -439,6 +439,106 @@ int system_StripCodes(lua_State* ls)
 	return 1;
 }
 
+int system_SetRenderOptimizationMethod(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	
+	Screen* scr = Screen::Instance();
+	scr->mOptimizationMethod = (Screen::optimizationMethod)lua_tonumber(ls, 1);
+	return 0;	
+}
+
+void callback_luaConsole(Console* c, string s)
+{
+	MessageData md("LUA_CONSOLE");
+	md.WriteUserdata("console", c);
+	md.WriteString("id", c->mId);
+	md.WriteString("message", s);
+	messenger.Dispatch(md, c);
+}
+
+//	con = .CreateConsole("id"<nil>)
+int system_CreateConsole(lua_State* ls)
+{
+	string id;
+	if (lua_gettop(ls) > 0)
+		id = lua_tostring(ls, 1);
+		
+	Console* c = new Console(id, "", "", color(), true, true, true);
+	game->mMap->Add(c);
+	
+	//Position and focus
+	c->Center();
+	c->ResizeChildren();
+	c->mInput->SetKeyFocus();
+
+	c->HookCommand("", callback_luaConsole);
+	
+	lua_pushlightuserdata(ls, c);
+
+	return 1;
+}
+
+//	.SetConsoleTitle(con, "title")
+int system_SetConsoleTitle(lua_State* ls)
+{
+	luaCountArgs(ls, 2);
+	
+	Console* c = (Console*)lua_touserdata(ls, 1);
+	
+	// sanity check
+	if (game->mMap->Get(c) < 0)
+		return luaError(ls, "System.SetConsoleTitle", "Console does not exist");
+
+	c->SetTitle(lua_tostring(ls, 2));
+	
+	return 0;
+}
+
+//	.SendToConsole(con, "message")
+int system_SendToConsole(lua_State* ls)
+{
+	luaCountArgs(ls, 2);
+	
+	Console* c = (Console*)lua_touserdata(ls, 1);
+	
+	// sanity check
+	if (game->mMap->Get(c) < 0)
+		return luaError(ls, "System.SendToConsole", "Console does not exist");
+
+	c->AddMessage(lua_tostring(ls, 2));
+	
+	return 0;
+}
+
+//	.CloseConsole(con) - Closes console and invalidates the pointer
+int system_CloseConsole(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	
+	Console* c = (Console*)lua_touserdata(ls, 1);
+	
+	// sanity check
+	if (game->mMap->Get(c) < 0)
+		return luaError(ls, "System.CloseConsole", "Console does not exist");
+
+	c->Die();
+
+	return 0;
+}
+
+//	.HasConsole(con) - Returns false if the pointer is invalid
+int system_HasConsole(lua_State* ls)
+{
+	luaCountArgs(ls, 1);
+	
+	Console* c = (Console*)lua_touserdata(ls, 1);
+
+	lua_pushboolean(ls, game->mMap->Get(c) > -1);
+
+	return 1;
+}
+
 static const luaL_Reg functions[] = {
 	{"Print", system_Print},
 	{"Fatal", system_Fatal},
@@ -459,6 +559,14 @@ static const luaL_Reg functions[] = {
 	{"Decrypt", system_Decrypt},
 	{"SetGuiColor", system_SetGuiColor},
 	{"StripCodes", system_StripCodes},
+	{"SetRenderOptimizationMethod", system_SetRenderOptimizationMethod},
+	
+	{"CreateConsole", system_CreateConsole},
+	{"SetConsoleTitle", system_SetConsoleTitle},
+	{"SendToConsole", system_SendToConsole},
+	{"CloseConsole", system_CloseConsole},
+	{"HasConsole", system_HasConsole},
+		
 	{NULL, NULL}
 };
 

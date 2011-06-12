@@ -11,7 +11,7 @@
 #include "../game/GameManager.h"
 #include "../map/Map.h"
 
-// Returns true if the entity is valid. (TODO: Make sure it's on the map) 
+// Returns true if the entity is valid. (TODO: Make sure it's on the map?) 
 bool _verifyEntity(Entity* e)
 {
 	return (e != NULL);
@@ -21,18 +21,31 @@ bool _verifyEntity(Entity* e)
 // This should always return a valid entity pointer. If it's invalid, there will be a longjmp from within lua.
 Entity* _getReferencedEntity(lua_State* ls, int index = 1)
 {
-	Entity* e = (Entity*)(lua_touserdata(ls, index));
-	if (!_verifyEntity(e))
+
+	Entity* e = NULL;
+
+	if (lua_istable(ls, index))
 	{
-		string err = "index " + its(index) + " not a valid entity pointer.";
-		lua_pushstring( ls, err.c_str() );
-		lua_error( ls );
+		// try to pull the pointer from the table
+		lua_pushstring(ls, "__centity");
+		lua_gettable(ls, index);
+		e = (Entity*)(lua_touserdata(ls, -1));
+		lua_pop(ls, 1);
+	}
+	else // assume userdata
+	{
+		e = (Entity*)(lua_touserdata(ls, index));
+		if (!_verifyEntity(e))
+		{
+			string err = "index " + its(index) + " not a valid entity pointer.";
+			luaError(ls, "", err);
+		}
 	}
 	
 	return e;
 }
 
-// .Exists(entity) - Returns 1 if the entity pointer is valid and on the map, 0 otherwise. 
+// .Exists(entity) - Returns true if the entity pointer is valid and on the map, false otherwise. 
 // This is preferred over the checking-for-valid-entity-every-time-it's-accessed approach due to it being MUCH faster.
 int entity_Exists(lua_State* ls)
 {
@@ -41,9 +54,13 @@ int entity_Exists(lua_State* ls)
 	
 	Entity* e = (Entity*)lua_touserdata(ls, 1);
 	
-	int result = (game->mMap->FindEntity(e) == -1) ? 0 : 1;
+	bool result = game->mMap->FindEntity(e);
 
-	lua_pushnumber( ls, result );
+	// also check whether or not they're dead
+	if (result)
+		result = !e->mDead;
+
+	lua_pushboolean( ls, result );
 	return 1;
 }
 
@@ -267,22 +284,30 @@ int entity_SetProp(lua_State* ls)
 	return 0;
 }
 
-// .IsTouching(ent, ent) - Returns 1 if the two entities are intersecting collision rects, 0 otherwise. 
-//Also note, if the second ent is a bad pointer, it'll return 0 also.
+// .IsTouching(ent, ent) - Returns true if the two entities are intersecting collision rects, false otherwise. 
+//Also note, if the second ent is a bad pointer, it'll return false also.
+// ALSO ALSO, can do .IsTouching(ent, x, y) for a point test!
 int entity_IsTouching(lua_State* ls)
 {
 	PRINT("entity_IsTouching");
 	luaCountArgs(ls, 2);
+	int numArgs = lua_gettop(ls);
 	
 	Entity* e = _getReferencedEntity(ls);
-
-	Entity* e2 = (Entity*)lua_touserdata(ls, 2);
 	
-	//Return 0 if e2 is invalid, or they're not touching
-	if ( !_verifyEntity(e2) || !e->IsCollidingWithEntity(e2) )
-		lua_pushnumber(ls, 0);
-	else
-		lua_pushnumber(ls, 1);
+	if (numArgs > 2 && lua_isnumber(ls, 2))
+	{
+		// test for point
+		lua_pushboolean(ls, e->CollidesWith(
+						rect((int)lua_tonumber(ls, 2), (int)lua_tonumber(ls, 3), 
+							1, 1))
+						);
+	}
+	else // test for entity
+	{
+		Entity* e2 = (Entity*)lua_touserdata(ls, 2);
+		lua_pushboolean(ls, _verifyEntity(e2) && e->IsCollidingWithEntity(e2));
+	}
 
 	return 1;
 }
@@ -301,7 +326,7 @@ int entity_GetDistance(lua_State* ls)
 	return 1;
 }
 
-// .Say(entity, "msg", showbubble) - Say the message. Last two parameters are optional, and default to 1.
+// .Say(entity, "msg", showbubble<true>, showinchat<true>) - Say the message. Last two parameters are optional, and default to 1.
 int entity_Say(lua_State* ls)
 {
 	PRINT("entity_Say");
@@ -312,9 +337,10 @@ int entity_Say(lua_State* ls)
 	int numArgs = lua_gettop(ls);
 
 	string msg = lua_tostring(ls, 2);
-	bool showbubble = (numArgs > 2) ? lua_toboolean(ls, 3) : 1;
+	bool showbubble = (numArgs > 2) ? lua_toboolean(ls, 3) : true;
+	bool showinchat = (numArgs > 3) ? lua_toboolean(ls, 4) : true;
 
-	e->Say(msg, showbubble);
+	e->Say(msg, showbubble, showinchat);
 	
 	//Dispatch a say message
 	MessageData md("ENTITY_SAY");
@@ -341,11 +367,11 @@ int entity_Remove(lua_State* ls)
 		result = game->mMap->RemoveEntity(e);
 	}
 	
-	lua_pushnumber(ls, result);
+	lua_pushboolean(ls, result);
 	return 1;
 }
 
-//	.RemoveAllById("id") - Removes all entities with the specified ID. Returns 1 if at least one was removed, 0 otherwise
+//	.RemoveAllById("id") - Removes all entities with the specified ID. Returns true if at least one was removed, false otherwise
 int entity_RemoveAllById(lua_State* ls)
 {
 	PRINT("entity_Remove");
@@ -354,7 +380,7 @@ int entity_RemoveAllById(lua_State* ls)
 	string id = lua_tostring(ls, 1);
 	bool result = game->mMap->RemoveAllEntitiesById(id);
 	
-	lua_pushnumber(ls, result);
+	lua_pushboolean(ls, result);
 	return 1;
 }
 
@@ -754,7 +780,7 @@ int entity_Add(lua_State* ls)
 	point2d p;
 	Entity* e = (Entity*)(lua_touserdata(ls, 1));
 	
-	if (e)
+	if (e && e->mMap == NULL)
 	{
 		e->mMap = game->mMap;
 		game->mMap->AddEntity(e);
@@ -868,13 +894,13 @@ int entity_SetFont(lua_State* ls)
 		return luaError(ls, "Entity.SetFont", "Invalid Entity type");
 	}
 	
-	if (args > 1)
+	if (args > 1 && lua_isstring(ls, 2))
 		face = lua_tostring(ls, 2);
 
-	if (args > 2)
+	if (args > 2 && lua_isnumber(ls, 3))
 		size = (int)lua_tonumber(ls, 3);
 		
-	if (args > 3)
+	if (args > 3 && lua_isnumber(ls, 4))
 		style = (int)lua_tonumber(ls, 4);
 
 	o->SetFont(face, size, style);
