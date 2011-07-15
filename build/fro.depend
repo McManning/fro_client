@@ -14,7 +14,7 @@
 	<math.h>
 	"../build/fro_private.h"
 
-1310690126 e:\fro\trunk\build\fro_private.h
+1310704096 e:\fro\trunk\build\fro_private.h
 
 1307762770 e:\fro\trunk\core\screen.h
 	"Common.h"
@@ -1201,7 +1201,7 @@
 	"../core/io/FileIO.h"
 	"../core/SDL/SDL_gfxPrimitives.h"
 
-1307769426 source:e:\fro\trunk\entity\entitymanager.cpp
+1310703523 source:e:\fro\trunk\entity\entitymanager.cpp
 	"EntityManager.h"
 	<algorithm>
 
@@ -1640,7 +1640,7 @@
 	"../entity/LocalActor.h"
 	"../avatar/Avatar.h"
 
-1310690080 source:e:\fro\trunk\build\fro_private.rc
+1310704097 source:e:\fro\trunk\build\fro_private.rc
 	<windows.h>
 
 1310701213 source:e:\fro\trunk\core\io\md5.cpp

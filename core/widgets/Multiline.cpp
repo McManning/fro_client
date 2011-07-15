@@ -7,7 +7,7 @@
 #include "../FontManager.h"
 
 //supported clickable urls
-const char* g_sSupportedUrls[] = 
+const char* g_sSupportedUrls[] =
 {
 	"http://",
 	"ftp://",
@@ -49,7 +49,7 @@ Multiline::Multiline(Widget* wParent, string sId, rect rPosition)
 	mId = sId;
 
 	SetImage("assets/gui/multi_bg.png");
-		
+
 	mScrollbar = new Scrollbar(this, "", rect(0,0,15,rPosition.h), VERTICAL, 1, 1, 0,
 								callback_multilineScrollbar);
 
@@ -76,7 +76,7 @@ void Multiline::Render()
 
 	if (mImage)
 		mImage->RenderBox(scr, rect(0, 0, 5, 5), r);
-	
+
 	//set target clipping here so it doesn't overflow lines
 	r.w -= mScrollbar->Width();
 	r.h -= 4;
@@ -116,7 +116,7 @@ void Multiline::Render()
 							mFontColor );
 
 		}
-		
+
     	for (int i = topLine; i < mBottomLine; i++)
 		{
 			if (mLines.size() - 1 < i) break; //invalid line
@@ -126,20 +126,20 @@ void Multiline::Render()
 				scr->DrawRect( rect(r.x + MULTILINE_LEFT_BUFFER, renderTop + (mFont->GetHeight() * z),
 									r.w, mFont->GetHeight()),
 								gui->mBaseColor );
-								
+
 				mFont->Render( scr, r.x + MULTILINE_LEFT_BUFFER,
 								renderTop + (mFont->GetHeight() * z),
 								mLines.at(i),
 								(isDark(gui->mBaseColor) ? invertColor(mFontColor) : mFontColor) );
 			}
 			else
-			{					
+			{
 				mFont->Render( scr, r.x + MULTILINE_LEFT_BUFFER,
 								renderTop + (mFont->GetHeight() * z),
 								mLines.at(i),
 								mFontColor );
 			}
-			
+
 			z++;
 		}
     }
@@ -175,7 +175,7 @@ void Multiline::Event(SDL_Event* event)
 			if (s != -1)
 			{
 				SetSelected(s);
-				
+
 				if (mClickedOnce)
 				{
 					if (event->button.button == SDL_BUTTON_LEFT)
@@ -273,7 +273,7 @@ void Multiline::SetLine(int line, string msg) //unwrapped multilines only
 		mRawText.at(line) = msg;
 		mLines.at(line) = msg;
 	}
-	
+
 	FlagRender();
 }
 
@@ -283,7 +283,7 @@ void Multiline::RecalculateScrollbarMax()
 	if (s > 0)
 	{
 		mScrollbar->SetMax(s);
-		
+
 		if (!mHideScrollbar)
 			mScrollbar->SetVisible(true);
 	}
@@ -309,7 +309,7 @@ void Multiline::_setWidth(int w) //move scrollbar and resplit all lines
 	ReflowLines(w - mScrollbar->Width() - MULTILINE_LEFT_BUFFER - MULTILINE_RIGHT_BUFFER);
 }
 
-void Multiline::_setHeight(int h) 
+void Multiline::_setHeight(int h)
 {
 	if (!mScrollbar) return; //TODO: idk what to do here.
 
@@ -353,7 +353,7 @@ void Multiline::SplitLines(string line, int maxWidth)
 	vString v;
 	string lastColor;
 	int i, index;
-	
+
 	if (!mWrap || maxWidth == 0) //just clone (TODO: SHOULD just use the original list, but we need to add that check everywhere
 	{
 		_addLine(line);
@@ -366,7 +366,7 @@ void Multiline::SplitLines(string line, int maxWidth)
 	for (i = 0; i < v.size(); ++i)
 	{
 		_addLine( lastColor + v.at(i) );
-			
+
 		index = v.at(i).rfind("\\c");
 		if (index != string::npos && v.at(i).length() > index + 4)
 			lastColor = v.at(i).substr(index, 5);
@@ -441,7 +441,7 @@ void Multiline::Clear()
 	mBottomLine = 0;
 
 	RecalculateScrollbarMax();
-	
+
 	FlagRender();
 }
 
@@ -495,23 +495,24 @@ int Multiline::GetLineUnderXY(int x, int y) //TODO: FUCKING CLEAN THIS SHIT UP
 
 /**	From the provided line index, it will attempt to search both up and down for the beginning and end of a url,
 	compare that collected url with the list of collected ones when messages were added, find a match, and return.
-	
+
 	@todo Something less complicated :(
 */
 string Multiline::GetUrl(int line)
 {
 	int t, i, index;
-	bool found, forwardSearch;
+	bool found, forwardSearch, stopSearching;
 	string url;
-	
-	if (line >= mLines.size() || mUrls.empty()) 
+
+	if (line >= mLines.size() || mUrls.empty())
 		return "";
-	
+
 	// search up until we find a supported URL prefix
 	t = line;
 	found = false;
 	forwardSearch = false;
-	while (!found && t > -1)
+	stopSearching = false;
+	while (!found && t > -1 && !stopSearching)
 	{
 		i = 0;
 		while (g_sSupportedUrls[i] && !found) // search for valid prefix
@@ -538,14 +539,16 @@ string Multiline::GetUrl(int line)
 			}
 			++i;
 		}
-		
+
 		// To speed up searching, if this line has any whitespace, then it's safe to assume the url matching the line
 		// we are trying to access does not exist.
 		if (!found)
 		{
-			if (mLines.at(t).find(" ", index) != string::npos)
-				break;
-			
+			if (mLines.at(t).find(" ", 0) != string::npos)
+			{
+				stopSearching = true;
+			}
+
 			--t;
 		}
 	}
@@ -553,7 +556,7 @@ string Multiline::GetUrl(int line)
 	if (found)
 	{
 		++t; // skip ahead a line as the above search ends too far back
-		
+
 		// search down until we find whitespace
 		if (forwardSearch)
 		{
@@ -573,23 +576,25 @@ string Multiline::GetUrl(int line)
 				++t;
 			}
 		}
-		
-		url = stripColorCodes(url); //erase any \c that may have been inserted
-		
-		//now we have a url, however it may have some shit tagged on (from the next line)
-		//soooo, compare it to the collected url list. TODO: A better method?
-		found = false;
-		for (t = mUrls.size() - 1; t > -1 && !found; --t) //reverse cuz most recent are @ the bottom
-		{
-			if (mUrls.at(t) == url.substr(0, mUrls.at(t).length())) //compares length along with contents
-			{
-				url = mUrls.at(t);
-				found = true;
-			}
-		}
+
+        if (found)
+        {
+            url = stripCodes(url); //erase any \c that may have been inserted
+
+            //now we have a url, however it may have some shit tagged on (from the next line)
+            //soooo, compare it to the collected url list. TODO: A better method?
+            found = false;
+            for (t = mUrls.size() - 1; t > -1 && !found; --t) //reverse cuz most recent are @ the bottom
+            {
+                if (mUrls.at(t) == url.substr(0, mUrls.at(t).length())) //compares length along with contents
+                {
+                    return mUrls.at(t);
+                }
+            }
+        }
 	}
 
-	return url;
+	return "";
 }
 
 //TODO: eraseable while wrapping?
@@ -603,7 +608,7 @@ void Multiline::EraseLine(int line)
 	RecalculateScrollbarMax();
 
 	SetSelected(mSelected); //shift if mSelected was the deleted down
-	
+
 //	mScrollbar->SetVisible(GetNumberOfLinesVisible() >= mLines.size());
 
 	FlagRender();
@@ -623,7 +628,7 @@ void Multiline::_setTopLine(int val)
 
 	if (mBottomLine > mLines.size())
 		mBottomLine = mLines.size(); //make sure it's not set to an invalid line
-		
+
 	FlagRender();
 }
 
@@ -644,7 +649,7 @@ void Multiline::SetSelected(int line)
 	mSelected = line;
 	if (mSelected >= mLines.size())
 		mSelected = mLines.size() - 1;
-		
+
 	FlagRender();
 }
 

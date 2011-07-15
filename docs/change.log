@@ -1658,7 +1658,11 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Added lua exception when someone tries to Entity.Remove() a player
 - Replaced MD5 algorithm with an object oriented form (After the MinGW update, the old one wasn't giving proper
 	hashes for some reason)
+- Fixed long URLs being clickable in Multilines from lines that are below the URL itself
+	
+----- PUBLIC RELEASE AS 1.5.3 -----
 
+(Commit to r92)
 
 	
 Issues on the upgrade:
