@@ -1652,6 +1652,12 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Fixed issue where players would not sync properly if one user thought another was on the map, but the
 	other user didn't. (Other user tried to resend a 'sup' message, was ignored by the receiver as doubling)
 
+110714
+- Moved project into Code::Blocks for the main IDE
+- Fixed remote players sometimes not being added to the map
+- Added lua exception when someone tries to Entity.Remove() a player
+- Replaced MD5 algorithm with an object oriented form (After the MinGW update, the old one wasn't giving proper
+	hashes for some reason)
 
 
 	
