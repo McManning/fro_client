@@ -13,7 +13,6 @@
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-ansi" />
 					<Add option="-g" />
 					<Add option="-D__DEBUG__" />
 				</Compiler>
@@ -27,9 +26,13 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add directory="C:\Dev-Cpp\include\freetype2" />
+			<Add option="-ansi" />
+			<Add directory="E:\MinGW\include\freetype2" />
 		</Compiler>
 		<Linker>
+			<Add option="-s" />
+			<Add option="-static-libgcc" />
+			<Add option="-static-libstdc++" />
 			<Add library="mingw32" />
 			<Add library="SDLmain" />
 			<Add library="SDL" />

@@ -1061,7 +1061,7 @@
 1300784490 e:\fro\trunk\core\widgets\messagepopup.h
 	"Frame.h"
 
-1307805708 source:e:\fro\trunk\core\widgets\multiline.cpp
+1310719220 source:e:\fro\trunk\core\widgets\multiline.cpp
 	"Multiline.h"
 	"Scrollbar.h"
 	"OpenUrl.h"
@@ -1648,4 +1648,12 @@
 	<assert.h>
 	<strings.h>
 	<iostream>
+
+1170114516 e:\mingw\include\freetype2\freetype\ftoutln.h
+	<ft2build.h>
+
+1170349792 e:\mingw\include\freetype2\freetype\ttnameid.h
+	<ft2build.h>
+
+1169566372 e:\mingw\include\freetype2\freetype\fterrors.h
 
