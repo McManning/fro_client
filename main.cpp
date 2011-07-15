@@ -34,7 +34,7 @@ void checkLastRun()
 	{
 		f = fopen("logs/marker", "w");
 		fprintf(f, ":P");
-		fclose(f);	
+		fclose(f);
 	}
 }
 
@@ -44,11 +44,11 @@ void checkForUpdaterUpdate()
 	if (fileExists("updater_update.exe"))
 	{
 		copyFile("updater_update.exe", "updater.exe");
-		removeFile("updater_update.exe");	
+		removeFile("updater_update.exe");
 	}
 }
 
-//TODO: A main that doesn't look SO FUCKING BAD. 
+//TODO: A main that doesn't look SO FUCKING BAD.
 int main (int argc, char *argv[])
 {
 	buildDirectoryTree("logs/");
@@ -62,7 +62,7 @@ int main (int argc, char *argv[])
 
 	checkLastRun();
 	checkForUpdaterUpdate();
-	
+
 	appState = APPSTATE_STARTING;
 
 	printf("[main] Starting app at %s.\n", timestamp(true).c_str());
@@ -79,7 +79,7 @@ int main (int argc, char *argv[])
 #else
 		new Checkbox(gui, "", rect(20, 20), "OMFG CHECKBOX", 0);
 		new Frame(gui, "", rect(20, 20, 200, 200), "This is a dialog", true, true, true, true);
-#endif		
+#endif
 
 	//	console->HookCommand("create_actor", callback_CreateActor);
 		gui->MainLoop();

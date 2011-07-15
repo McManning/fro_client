@@ -1,94 +1,109 @@
-/*
-  Copyright (C) 1999 Aladdin Enterprises.  All rights reserved.
+// MD5.CC - source code for the C++/object oriented translation and
+//          modification of MD5.
 
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
+// Translation and modification (c) 1995 by Mordechai T. Abzug
 
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
+// This translation/ modification is provided "as is," without express or
+// implied warranty of any kind.
 
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
+// The translator/ modifier does not claim (1) that MD5 will do what you think
+// it does; (2) that this translation/ modification is accurate; or (3) that
+// this software is "merchantible."  (Language for this disclaimer partially
+// copied from the disclaimer below).
 
-  L. Peter Deutsch
-  ghost@aladdin.com
+/* based on:
 
- */
-/*$Id: md5.h $ */
-/*
-  Independent implementation of MD5 (RFC 1321).
+   MD5.H - header file for MD5C.C
+   MDDRIVER.C - test driver for MD2, MD4 and MD5
 
-  This code implements the MD5 Algorithm defined in RFC 1321.
-  It is derived directly from the text of the RFC and not from the
-  reference implementation.
+   Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All
+rights reserved.
 
-  The original and principal author of md5.h is L. Peter Deutsch
-  <ghost@aladdin.com>.  Other authors are noted in the change history
-  that follows (in reverse chronological order):
+License to copy and use this software is granted provided that it
+is identified as the "RSA Data Security, Inc. MD5 Message-Digest
+Algorithm" in all material mentioning or referencing this software
+or this function.
 
-  1999-11-04 lpd Edited comments slightly for automatic TOC extraction.
-  1999-10-18 lpd Fixed typo in header comment (ansi2knr rather than md5);
-	added conditionalization for C++ compilation from Martin
-	Purschke <purschke@bnl.gov>.
-  1999-05-03 lpd Original version.
- */
+License is also granted to make and use derivative works provided
+that such works are identified as "derived from the RSA Data
+Security, Inc. MD5 Message-Digest Algorithm" in all material
+mentioning or referencing the derived work.
 
-#ifndef md5_INCLUDED
-#  define md5_INCLUDED
+RSA Data Security, Inc. makes no representations concerning either
+the merchantability of this software or the suitability of this
+software for any particular purpose. It is provided "as is"
+without express or implied warranty of any kind.
 
-/*
- * This code has some adaptations for the Ghostscript environment, but it
- * will compile and run correctly in any environment with 8-bit chars and
- * 32-bit ints.  Specifically, it assumes that if the following are
- * defined, they have the same meaning as in Ghostscript: P1, P2, P3,
- * ARCH_IS_BIG_ENDIAN.
- */
+These notices must be retained in any copies of any part of this
+documentation and/or software.
 
-typedef unsigned char md5_byte_t; /* 8-bit byte */
-typedef unsigned int md5_word_t; /* 32-bit word */
+*/
 
-/* Define the state of the MD5 Algorithm. */
-typedef struct md5_state_s {
-    md5_word_t count[2];	/* message length in bits, lsw first */
-    md5_word_t abcd[4];		/* digest buffer */
-    md5_byte_t buf[64];		/* accumulate block */
-} md5_state_t;
+#include <stdio.h>
+#include <fstream>
+#include <iostream>
 
-#ifdef __cplusplus
-extern "C" 
-{
-#endif
+class MD5 {
 
-/* Initialize the algorithm. */
-#ifdef P1
-void md5_init(P1(md5_state_t *pms));
-#else
-void md5_init(md5_state_t *pms);
-#endif
+public:
+// methods for controlled operation:
+  MD5              ();  // simple initializer
+  void  update     (const char *input, unsigned int input_length);
+  void  update     (std::istream& stream);
+  void  update     (FILE *file);
+  void  update     (std::ifstream& stream);
+  void  finalize   ();
 
-/* Append a string to the message. */
-#ifdef P3
-void md5_append(P3(md5_state_t *pms, const md5_byte_t *data, int nbytes));
-#else
-void md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes);
-#endif
+// constructors for special circumstances.  All these constructors finalize
+// the MD5 context.
+  MD5              (unsigned char *string); // digest string, finalize
+  MD5              (std::istream& stream);       // digest stream, finalize
+  MD5              (FILE *file);            // digest file, close, finalize
+  MD5              (std::ifstream& stream);      // digest stream, close, finalize
 
-/* Finish the message and return the digest. */
-#ifdef P2
-void md5_finish(P2(md5_state_t *pms, md5_byte_t digest[16]));
-#else
-void md5_finish(md5_state_t *pms, md5_byte_t digest[16]);
-#endif
+// methods to acquire finalized result
+  unsigned char    *raw_digest ();  // digest as a 16-byte binary array
+  char *            hex_digest ();  // digest as a 33-byte ascii-hex string
+  friend std::ostream&   operator<< (std::ostream&, MD5 context);
 
-#ifdef __cplusplus
-}  /* end extern "C" */
-#endif
 
-#endif /* md5_INCLUDED */
+
+private:
+
+// first, some types:
+  typedef unsigned       int uint4; // assumes integer is 4 words long
+  typedef unsigned short int uint2; // assumes short integer is 2 words long
+  typedef unsigned      char uint1; // assumes char is 1 word long
+
+// next, the private data:
+  uint4 state[4];
+  uint4 count[2];     // number of *bits*, mod 2^64
+  uint1 buffer[64];   // input buffer
+  uint1 digest[16];
+  uint1 finalized;
+
+// last, the private methods, mostly static:
+  void init             ();               // called by all constructors
+  void transform        (uint1 *buffer);  // does the real update work.  Note
+                                          // that length is implied to be 64.
+
+  static void encode    (uint1 *dest, uint4 *src, uint4 length);
+  static void decode    (uint4 *dest, uint1 *src, uint4 length);
+  static void memcpy    (uint1 *dest, uint1 *src, uint4 length);
+  static void memset    (uint1 *start, uint1 val, uint4 length);
+
+  static inline uint4  rotate_left (uint4 x, uint4 n);
+  static inline uint4  F           (uint4 x, uint4 y, uint4 z);
+  static inline uint4  G           (uint4 x, uint4 y, uint4 z);
+  static inline uint4  H           (uint4 x, uint4 y, uint4 z);
+  static inline uint4  I           (uint4 x, uint4 y, uint4 z);
+  static inline void   FF  (uint4& a, uint4 b, uint4 c, uint4 d, uint4 x,
+			    uint4 s, uint4 ac);
+  static inline void   GG  (uint4& a, uint4 b, uint4 c, uint4 d, uint4 x,
+			    uint4 s, uint4 ac);
+  static inline void   HH  (uint4& a, uint4 b, uint4 c, uint4 d, uint4 x,
+			    uint4 s, uint4 ac);
+  static inline void   II  (uint4& a, uint4 b, uint4 c, uint4 d, uint4 x,
+			    uint4 s, uint4 ac);
+
+};

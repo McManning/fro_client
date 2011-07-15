@@ -16,9 +16,9 @@ bool EntityManager::RemoveEntity(Entity* e)
 {
 	_addToDeleteQueue(e);
 	return true;
-	
+
 	/*if (!e) return true;
-	
+
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
 		if (mEntities.at(i) == e)
@@ -35,7 +35,7 @@ bool EntityManager::RemoveEntityById(string id, entityType type)
 {
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
-		if (mEntities.at(i) && mEntities.at(i)->mId == id 
+		if (mEntities.at(i) && mEntities.at(i)->mId == id
 			&& (mEntities.at(i)->mType == type || type == ENTITY_ANY))
 		{
 			_addToDeleteQueue(mEntities.at(i));
@@ -64,7 +64,7 @@ bool EntityManager::RemoveAllEntitiesById(string id, entityType type)
 	bool found = false;
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
-		if (mEntities.at(i) && mEntities.at(i)->mId == id 
+		if (mEntities.at(i) && mEntities.at(i)->mId == id
 			&& (mEntities.at(i)->mType == type || type == ENTITY_ANY))
 		{
 			_addToDeleteQueue(mEntities.at(i));
@@ -80,7 +80,7 @@ bool EntityManager::RemoveAllEntitiesByName(string name, entityType type)
 	bool found = false;
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
-		if (mEntities.at(i) && mEntities.at(i)->GetName() == name 
+		if (mEntities.at(i) && mEntities.at(i)->GetName() == name
 			&& (mEntities.at(i)->mType == type || type == ENTITY_ANY))
 		{
 			_addToDeleteQueue(mEntities.at(i));
@@ -103,7 +103,7 @@ Entity* EntityManager::FindEntityById(string id, entityType type)
 {
 	for (int i = 0; i < mEntities.size(); ++i)
 	{
-		if (mEntities.at(i) && mEntities.at(i)->mId == id 
+		if (mEntities.at(i) && mEntities.at(i)->mId == id
 			&& (mEntities.at(i)->mType == type || type == ENTITY_ANY))
 		{
 			return mEntities.at(i);
@@ -127,13 +127,13 @@ Entity* EntityManager::FindEntityByName(string name, entityType type)
 	return NULL;
 }
 
-// Sort based on both entity layer and position, 
+// Sort based on both entity layer and position,
 // keeping the lowest level entities at the bottom of the list
 bool entitySort( Entity* a, Entity* b )
 {
 	if ( a->GetLayer() < b->GetLayer())
 		return true;
-	
+
 	if ( a->GetLayer() > b->GetLayer())
 		return false;
 
@@ -143,7 +143,7 @@ bool entitySort( Entity* a, Entity* b )
 bool EntityManager::FindEntity(Entity* e)
 {
 	if (e)
-		return binary_search(mEntities.begin(), mEntities.end(), e, entitySort);
+		return find(mEntities.begin(), mEntities.end(), e) != mEntities.end();
 
 	return false;
 }
@@ -154,11 +154,14 @@ void EntityManager::AddEntity(Entity* e)
 
 	//if we already have it, don't add again
 	if (FindEntity(e))
+	{
+	    FATAL("Trying to replicate entity " + pts(e));
 		return;
-	
+	}
+
 	mEntities.push_back(e);
 	DispatchEntityCreateMessage(e);
-	
+
 	QueueEntityResort();
 }
 
@@ -172,7 +175,7 @@ void EntityManager::ResortEntities()
 {
 	if (!mNeedToResort)
 		return;
-		
+
 	mNeedToResort = false;
 
 	// do a bit of cleanup
@@ -184,14 +187,14 @@ void EntityManager::ResortEntities()
 void EntityManager::_delete(Entity* e)
 {
 	if (e->mManagerCanDeleteMe)
-	{	
+	{
 		e->AddPositionRectForUpdate(); // preparing for removal
-		
+
 		SAFEDELETE(e);
 	}
 	else
 	{
-		e->mMap = NULL;	
+		e->mMap = NULL;
 	}
 }
 
@@ -206,7 +209,7 @@ void EntityManager::_addToDeleteQueue(Entity* e)
 {
 	e->mDead = true;
 	mNeedToResort = true;
-	
+
 	MessageData md("ENTITY_DESTROY");
 	md.WriteUserdata("entity", e);
 	messenger.Dispatch(md, e);

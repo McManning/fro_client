@@ -11,7 +11,7 @@
 #include "../game/GameManager.h"
 #include "../map/Map.h"
 
-// Returns true if the entity is valid. (TODO: Make sure it's on the map?) 
+// Returns true if the entity is valid. (TODO: Make sure it's on the map?)
 bool _verifyEntity(Entity* e)
 {
 	return (e != NULL);
@@ -41,19 +41,19 @@ Entity* _getReferencedEntity(lua_State* ls, int index = 1)
 			luaError(ls, "", err);
 		}
 	}
-	
+
 	return e;
 }
 
-// .Exists(entity) - Returns true if the entity pointer is valid and on the map, false otherwise. 
+// .Exists(entity) - Returns true if the entity pointer is valid and on the map, false otherwise.
 // This is preferred over the checking-for-valid-entity-every-time-it's-accessed approach due to it being MUCH faster.
 int entity_Exists(lua_State* ls)
 {
 	PRINT("entity_Exists");
 	luaCountArgs(ls, 1);
-	
+
 	Entity* e = (Entity*)lua_touserdata(ls, 1);
-	
+
 	bool result = game->mMap->FindEntity(e);
 
 	// also check whether or not they're dead
@@ -65,7 +65,7 @@ int entity_Exists(lua_State* ls)
 }
 
 // .FindById("id") returns cptr to entity, nil if it doesn't exist.
-int entity_FindById(lua_State* ls) 
+int entity_FindById(lua_State* ls)
 {
 	PRINT("entity_FindById");
 	luaCountArgs(ls, 1);
@@ -77,7 +77,7 @@ int entity_FindById(lua_State* ls)
 		lua_pushnil(ls);
 	else
 		lua_pushlightuserdata(ls, e);
-		
+
 	return 1;
 }
 
@@ -89,14 +89,14 @@ int entity_FindAllById(lua_State* ls)
 	luaCountArgs(ls, 1);
 
 	ASSERT(game->mMap);
-	
+
 	string id = lua_tostring(ls, 1);
 
 	bool useWildmatch = false;
 	int numArgs = lua_gettop(ls);
 	if (numArgs > 1)
 		useWildmatch = lua_tonumber(ls, 2);
-	
+
 	//Construct a table to store all entities
 	lua_newtable(ls);
 	int top = lua_gettop(ls);
@@ -106,9 +106,9 @@ int entity_FindAllById(lua_State* ls)
 	for (int i = 0; i < game->mMap->mEntities.size(); ++i)
 	{
 		e = game->mMap->mEntities.at(i);
-			
+
 		//if it matches the search, add to table
-		if ( (useWildmatch && wildmatch(id.c_str(), e->mId.c_str())) 
+		if ( (useWildmatch && wildmatch(id.c_str(), e->mId.c_str()))
 			|| (!useWildmatch && e->mId == id) )
 		{
 			lua_pushnumber(ls, index);
@@ -117,12 +117,12 @@ int entity_FindAllById(lua_State* ls)
 			++index;
 		}
 	}
-	
+
 	return 1;
 }
 
 // .FindByName("name") returns cptr to entity, nil if it doesn't exist.
-int entity_FindByName(lua_State* ls) 
+int entity_FindByName(lua_State* ls)
 {
 	PRINT("entity_FindByName");
 	luaCountArgs(ls, 1);
@@ -134,7 +134,7 @@ int entity_FindByName(lua_State* ls)
 		lua_pushnil(ls);
 	else
 		lua_pushlightuserdata(ls, e);
-		
+
 	return 1;
 }
 
@@ -146,14 +146,14 @@ int entity_FindAllByName(lua_State* ls)
 	luaCountArgs(ls, 1);
 
 	ASSERT(game->mMap);
-	
+
 	string name = lua_tostring(ls, 1);
 
 	bool useWildmatch = false;
 	int numArgs = lua_gettop(ls);
 	if (numArgs > 1)
 		useWildmatch = lua_tonumber(ls, 2);
-	
+
 	//Construct a table to store all entities
 	lua_newtable(ls);
 	int top = lua_gettop(ls);
@@ -163,9 +163,9 @@ int entity_FindAllByName(lua_State* ls)
 	for (int i = 0; i < game->mMap->mEntities.size(); ++i)
 	{
 		e = game->mMap->mEntities.at(i);
-		
+
 		//if it matches the search, add to table
-		if ( (useWildmatch && wildmatch(name.c_str(), e->GetName().c_str())) 
+		if ( (useWildmatch && wildmatch(name.c_str(), e->GetName().c_str()))
 			|| (!useWildmatch && e->GetName() == name) )
 		{
 			lua_pushnumber(ls, index);
@@ -174,12 +174,12 @@ int entity_FindAllByName(lua_State* ls)
 			++index;
 		}
 	}
-	
+
 	return 1;
 }
 
 // x, y = .GetPosition(entity)
-int entity_GetPosition(lua_State* ls) 
+int entity_GetPosition(lua_State* ls)
 {
 	PRINT("entity_GetPosition");
 	luaCountArgs(ls, 1);
@@ -189,22 +189,22 @@ int entity_GetPosition(lua_State* ls)
 	point2d p = e->GetPosition();
 	lua_pushnumber(ls, p.x);
 	lua_pushnumber(ls, p.y);
-	
-	return 2;	
+
+	return 2;
 }
 
 // .SetPosition(entity, x, y)
-int entity_SetPosition(lua_State* ls) 
+int entity_SetPosition(lua_State* ls)
 {
 	PRINT("entity_SetPosition");
 	luaCountArgs(ls, 3);
-	
+
 	Entity* e = _getReferencedEntity(ls);
 
 	point2d p((sShort)lua_tonumber(ls, 2), (sShort)lua_tonumber(ls, 3));
 	e->SetPosition(p);
 
-	return 0;	
+	return 0;
 }
 
 int entity_GetOrigin(lua_State* ls)
@@ -215,24 +215,24 @@ int entity_GetOrigin(lua_State* ls)
 
 	lua_pushnumber(ls, e->mOrigin.x);
 	lua_pushnumber(ls, e->mOrigin.y);
-	
+
 	return 2;
 }
 
 int entity_SetOrigin(lua_State* ls)
 {
 	luaCountArgs(ls, 3);
-	
+
 	Entity* e = _getReferencedEntity(ls);
 
 	point2d p((sShort)lua_tonumber(ls, 2), (sShort)lua_tonumber(ls, 3));
 	e->mOrigin = p;
 
-	return 0;		
+	return 0;
 }
 
 // x, y, w, h = .GetRect(entity) - Where x, y are coordinates of the top left our our avatar on the map. w, h are avatar dimensions.
-int entity_GetRect(lua_State* ls) 
+int entity_GetRect(lua_State* ls)
 {
 	PRINT("entity_GetRect");
 	luaCountArgs(ls, 1);
@@ -244,16 +244,16 @@ int entity_GetRect(lua_State* ls)
 	lua_pushnumber(ls, r.y);
 	lua_pushnumber(ls, r.w);
 	lua_pushnumber(ls, r.h);
-	
-	return 4;	
+
+	return 4;
 }
 
 // .GetProp(entity, "property") returns a cptr, number, or string based on the property we're retrieving
-int entity_GetProp(lua_State* ls) 
+int entity_GetProp(lua_State* ls)
 {
 	PRINT("entity_GetProp");
 	luaCountArgs(ls, 2);
-	
+
 	Entity* e = _getReferencedEntity(ls);
 
 	string prop = lowercase(lua_tostring(ls, 2));
@@ -262,7 +262,7 @@ int entity_GetProp(lua_State* ls)
 
 	if (!result)
 		console->AddMessage("Entity.GetProp() '" + prop + "' Unknown");
-	
+
 	return result;
 }
 
@@ -284,7 +284,7 @@ int entity_SetProp(lua_State* ls)
 	return 0;
 }
 
-// .IsTouching(ent, ent) - Returns true if the two entities are intersecting collision rects, false otherwise. 
+// .IsTouching(ent, ent) - Returns true if the two entities are intersecting collision rects, false otherwise.
 //Also note, if the second ent is a bad pointer, it'll return false also.
 // ALSO ALSO, can do .IsTouching(ent, x, y) for a point test!
 int entity_IsTouching(lua_State* ls)
@@ -292,14 +292,14 @@ int entity_IsTouching(lua_State* ls)
 	PRINT("entity_IsTouching");
 	luaCountArgs(ls, 2);
 	int numArgs = lua_gettop(ls);
-	
+
 	Entity* e = _getReferencedEntity(ls);
-	
+
 	if (numArgs > 2 && lua_isnumber(ls, 2))
 	{
 		// test for point
 		lua_pushboolean(ls, e->CollidesWith(
-						rect((int)lua_tonumber(ls, 2), (int)lua_tonumber(ls, 3), 
+						rect((int)lua_tonumber(ls, 2), (int)lua_tonumber(ls, 3),
 							1, 1))
 						);
 	}
@@ -317,7 +317,7 @@ int entity_GetDistance(lua_State* ls)
 {
 	PRINT("entity_GetDistance");
 	luaCountArgs(ls, 2);
-	
+
 	Entity* e = _getReferencedEntity(ls);
 	Entity* e2 = _getReferencedEntity(ls, 2);
 
@@ -331,7 +331,7 @@ int entity_Say(lua_State* ls)
 {
 	PRINT("entity_Say");
 	luaCountArgs(ls, 2);
-	
+
 	Entity* e = _getReferencedEntity(ls);
 
 	int numArgs = lua_gettop(ls);
@@ -341,21 +341,21 @@ int entity_Say(lua_State* ls)
 	bool showinchat = (numArgs > 3) ? lua_toboolean(ls, 4) : true;
 
 	e->Say(msg, showbubble, showinchat);
-	
+
 	//Dispatch a say message
 	MessageData md("ENTITY_SAY");
 	md.WriteUserdata("entity", e);
 	md.WriteString("message", msg);
 	messenger.Dispatch(md, NULL);
-		
-	return 0;	
+
+	return 0;
 }
 
-//	.Remove(entity) - Remove the specified entity from the map. Returns true on success, false otherwise. 
+//	.Remove(entity) - Remove the specified entity from the map. Returns true on success, false otherwise.
 int entity_Remove(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	bool result;
 	if (lua_isnil(ls, 1))
 	{
@@ -364,9 +364,18 @@ int entity_Remove(lua_State* ls)
 	else
 	{
 		Entity* e = (Entity*)lua_touserdata(ls, 1);
-		result = game->mMap->RemoveEntity(e);
+
+		if (e)
+		{
+            if (e->mType == ENTITY_REMOTEACTOR || e->mType == ENTITY_LOCALACTOR)
+            {
+                luaError(ls, "Entity.Remove", "Tried to remove Remote/Local Actor: " + e->mName);
+            }
+
+            result = game->mMap->RemoveEntity(e);
+		}
 	}
-	
+
 	lua_pushboolean(ls, result);
 	return 1;
 }
@@ -376,52 +385,52 @@ int entity_RemoveAllById(lua_State* ls)
 {
 	PRINT("entity_Remove");
 	luaCountArgs(ls, 1);
-	
+
 	string id = lua_tostring(ls, 1);
 	bool result = game->mMap->RemoveAllEntitiesById(id);
-	
+
 	lua_pushboolean(ls, result);
 	return 1;
 }
 
-/*	Read in t.Collision = { 1, 2, 3, 4, ... } array of rects into Entity collisions list 
+/*	Read in t.Collision = { 1, 2, 3, 4, ... } array of rects into Entity collisions list
 	Returns 0 if malformed, 1 otherwise.
-*/	
+*/
 int _parseEntityCollision(lua_State* ls, Entity* e)
 {
 	rect r;
 	if (!lua_istable(ls, -1))
 		return 0;
-		
+
 	e->mCollisionRects.clear(); //clear up anything that may still be around
-		
+
 	lua_pushnil(ls);
 	while (lua_next(ls, -2) != 0)
 	{
 		//Run through 4 items manually to read in a single rect
 		r.x = (int)lua_tonumber(ls, -1);
 		lua_pop(ls, 1);
-		
+
 		if (lua_next(ls, -2)) { r.y = (int)lua_tonumber(ls, -1); lua_pop(ls, 1); } else return 0;
 		if (lua_next(ls, -2)) { r.w = (int)lua_tonumber(ls, -1); lua_pop(ls, 1); } else return 0;
 		if (lua_next(ls, -2)) { r.h = (int)lua_tonumber(ls, -1); lua_pop(ls, 1); } else return 0;
-		
+
 		e->mCollisionRects.push_back(r);
 	}
-	
+
 	return 1;
 }
 
-/*		Read in	t.CollisionFile = "Filename" 
+/*		Read in	t.CollisionFile = "Filename"
 */
 int _parseEntityCollisionFile(lua_State* ls, Entity* e)
 {
 	if (lua_isstring(ls, -1))
 		return e->LoadCollisionFile(game->mMap->mWorkingDir + lua_tostring(ls, -1));
-	
+
 	return 0;
 }
-/*		Read in	t.Image = { File = "Something", Width = #, Delay = #, Clip = {x, y, w, h} }	
+/*		Read in	t.Image = { File = "Something", Width = #, Delay = #, Clip = {x, y, w, h} }
 			OR 	t.Image = "Filename"
 */
 int _parseEntityImage(lua_State* ls, StaticObject* so, int virtualIndex = -1)
@@ -430,12 +439,12 @@ int _parseEntityImage(lua_State* ls, StaticObject* so, int virtualIndex = -1)
 	// This is because the lua_next() will screw up unless we specify an absolute.
 	if (virtualIndex < 0)
 		virtualIndex = lua_gettop(ls) + virtualIndex + 1;
-	
+
 	//printf("vi: %i top:%i\n", virtualIndex, lua_gettop(ls));
 	//luaStackdump(ls);
-	
+
 	string file;
-	
+
 	if (lua_isstring(ls, virtualIndex))
 	{
 		file = game->mMap->mWorkingDir + lua_tostring(ls, virtualIndex);
@@ -445,13 +454,13 @@ int _parseEntityImage(lua_State* ls, StaticObject* so, int virtualIndex = -1)
 		}
 		return 1;
 	}
-	
+
 	if (!lua_istable(ls, virtualIndex))
 		return 0;
-	
+
 	string key;
 	int width = 0, delay = 1000;
-	
+
 	lua_pushnil(ls); /* first key */
 	while (lua_next(ls, virtualIndex) != 0)
 	{
@@ -490,10 +499,10 @@ int _parseEntityAvatar(lua_State* ls, Actor* a, int virtualIndex = -1)
 	// This is because the lua_next() will screw up unless we specify an absolute.
 	if (virtualIndex < 0)
 		virtualIndex = lua_gettop(ls) + virtualIndex + 1;
-	
+
 	if (!lua_istable(ls, virtualIndex))
 		return 0;
-	
+
 	string key, file;
 	int width = 0, height = 0, delay = 1000, flags = 0;
 
@@ -514,11 +523,11 @@ int _parseEntityAvatar(lua_State* ls, Actor* a, int virtualIndex = -1)
 			else if (key == "Delay")
 				delay = (int)lua_tonumber(ls, -1);
 		}
-		lua_pop(ls, 1); //pop value	
+		lua_pop(ls, 1); //pop value
 	}
-	
+
 	if (!file.empty())
-	{	
+	{
 		// don't allow them out of our cache unless they're using an avy:// construct
 		if (file.find("avy://") == string::npos)
 			file = game->mMap->mWorkingDir + file;
@@ -534,25 +543,25 @@ int _parseEntityOrigin(lua_State* ls, Entity* e)
 	point2d p;
 	if (!lua_istable(ls, -1))
 		return 0;
-	
+
 	lua_pushnil(ls);
 	if (!lua_next(ls, -2))
 		return 0;
 
 	p.x = (int)lua_tonumber(ls, -1);
 	lua_pop(ls, 1);
-	
+
 	if (!lua_next(ls, -2))
 		return 0;
-		
+
 	p.y = (int)lua_tonumber(ls, -1);
 	lua_pop(ls, 1);
-	
+
 	e->mOrigin = p;
 
 	//Have to manually pop off the table because we're not running lua_next() to completion
-	lua_pop(ls, 1); 
-	
+	lua_pop(ls, 1);
+
 	return 1;
 }
 
@@ -563,33 +572,33 @@ int _getColorTable(lua_State* ls, color& c)
 {
 	if (!lua_istable(ls, -1))
 		return 0;
-	
+
 	lua_pushnil(ls);
-	
+
 	if (!lua_next(ls, -2)) return 0;
 	c.r = (int)lua_tonumber(ls, -1);
 	lua_pop(ls, 1);
-	
-	if (!lua_next(ls, -2)) return 0;	
+
+	if (!lua_next(ls, -2)) return 0;
 	c.g = (int)lua_tonumber(ls, -1);
 	lua_pop(ls, 1);
-	
-	if (!lua_next(ls, -2)) return 0;	
+
+	if (!lua_next(ls, -2)) return 0;
 	c.b = (int)lua_tonumber(ls, -1);
 	lua_pop(ls, 1);
-	
-	if (!lua_next(ls, -2)) return 0;	
+
+	if (!lua_next(ls, -2)) return 0;
 	c.a = (int)lua_tonumber(ls, -1);
 	lua_pop(ls, 1);
-	
+
 	//Have to manually pop off the table because we're not running lua_next() to completion
-	lua_pop(ls, 1); 
-	
+	lua_pop(ls, 1);
+
 	return 1;
 }
 
-	
-/* 	key is index -2, value is index -1 
+
+/* 	key is index -2, value is index -1
 	@return 0 on error, 1 otherwise
 */
 int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
@@ -604,7 +613,7 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 		e->SetName( lua_tostring(ls, -1) );
 	}
 	/*else if (key == "Species" && e->mType == ENTITY_LUNEM)
-	{	
+	{
 		((Lunem*)e)->SetSpecies( lua_tostring(ls, -1) );
 	}*/
 	else if (key == "Visible")
@@ -621,7 +630,7 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 	}
 	else if (key == "Clickable")
 	{
-		e->mClickRange = (int)lua_tonumber(ls, -1);	
+		e->mClickRange = (int)lua_tonumber(ls, -1);
 	}
 	else if (key == "Layer")
 	{
@@ -633,7 +642,7 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 	}
 	else if (key == "CollisionFile")
 	{
-		return _parseEntityCollisionFile(ls, e);	
+		return _parseEntityCollisionFile(ls, e);
 	}
 	else if (key == "Origin")
 	{
@@ -660,14 +669,14 @@ int _parseSingleEntityProperty(lua_State* ls, string key, Entity* e)
 
 	return 1;
 }
-	
-/*	Iterates through all members of the entity table, 
+
+/*	Iterates through all members of the entity table,
 	handling each property uniquely
 */
 int _parseEntityProperties(lua_State* ls, Entity* e, int tableIndex)
 {
 	lua_pushnil(ls);
-	
+
 	string key;
 	while (lua_next(ls, tableIndex) != 0)
 	{
@@ -678,12 +687,12 @@ int _parseEntityProperties(lua_State* ls, Entity* e, int tableIndex)
 		}
 		else
 		{
-			console->AddMessage("[_parseEntityProperties] key != string");	
+			console->AddMessage("[_parseEntityProperties] key != string");
 		}
-		lua_pop(ls, 1); //pop value	
-		
+		lua_pop(ls, 1); //pop value
+
 	} //while lua_next != 0
-	
+
 	return 1;
 }
 
@@ -712,10 +721,10 @@ Entity* _createEntity(int type)
 	}
 	return e;
 }
-	
+
 /* entity = Entity.Create(entityInfoTable, x<nil>, y<nil>);
 	Create a new entity instance and place it on the map at (x, y)
-	If (x, y) are nil, it will create a new entity and return it, but NOT 
+	If (x, y) are nil, it will create a new entity and return it, but NOT
 	add it to the map. It's our responsibility to do Entity.Add(ent, x, y)
 	later, or to do something else special with it (Such as adding to the
 	players party)
@@ -724,7 +733,7 @@ int entity_Create(lua_State* ls)
 {
 	Entity* e;
 	point2d p;
-	
+
 	// Make sure they passed in a table as the first parameter
 	if (!lua_istable(ls, 1))
 	{
@@ -736,7 +745,7 @@ int entity_Create(lua_State* ls)
 	lua_gettable(ls, 1);
 	int type = (int)lua_tonumber(ls, -1);
 	lua_pop(ls, 1);
-	
+
 	// Create the entity class based on the type provided
 
 	e = _createEntity(type);
@@ -752,19 +761,19 @@ int entity_Create(lua_State* ls)
 	}
 
 	int count = lua_gettop(ls);
-	
+
 	if (count > 1)
 	{
 		//Finally, add it to the map and return a reference to it
 		e->mMap = game->mMap;
 		game->mMap->AddEntity(e);
-		
+
 		p.x = (int)lua_tonumber(ls, 2);
 		p.y = (int)lua_tonumber(ls, 3);
-		
+
 		e->SetPosition(p);
 	}
-	
+
 	lua_pushlightuserdata(ls, e);
 	return 1;
 }
@@ -776,27 +785,27 @@ int entity_Create(lua_State* ls)
 int entity_Add(lua_State* ls)
 {
 	luaCountArgs(ls, 3);
-	
+
 	point2d p;
 	Entity* e = (Entity*)(lua_touserdata(ls, 1));
-	
+
 	if (e && e->mMap == NULL)
 	{
 		e->mMap = game->mMap;
 		game->mMap->AddEntity(e);
-		
+
 		p.x = (int)lua_tonumber(ls, 2);
 		p.y = (int)lua_tonumber(ls, 3);
-		
+
 		e->SetPosition(p);
-		
+
 		lua_pushboolean(ls, true);
 	}
 	else
 	{
 		lua_pushboolean(ls, false);
 	}
-	
+
 	return 1;
 }
 
@@ -811,7 +820,7 @@ int entity_SetImage(lua_State* ls)
 	Entity* e = _getReferencedEntity(ls);
 	if (!e || e->mType != ENTITY_STATICOBJECT)
 		return 0;
-	
+
 	return _parseEntityImage(ls, (StaticObject*)e, 2);
 }
 
@@ -825,7 +834,7 @@ int entity_SetAvatar(lua_State* ls)
 	Entity* e = _getReferencedEntity(ls);
 	if (!e || !(e->mType >= ENTITY_ACTOR && e->mType < ENTITY_END_ACTORS))
 		return 0;
-	
+
 	return _parseEntityAvatar(ls, (Actor*)e, 2);
 }
 
@@ -836,7 +845,7 @@ int entity_Explode(lua_State* ls)
 	Image* img;
 	rect r;
 	Entity* e = _getReferencedEntity(ls);
-	
+
 	if (e)
 	{
 		img = e->GetImage();
@@ -846,20 +855,20 @@ int entity_Explode(lua_State* ls)
 			new ExplodingEntity(e->mMap, img, point2d(r.x, r.y));
 		}
 	}
-	
+
 	return 0;
 }
-	
+
 //	.SetText(ent, "text", r, g, b, maxWidth<0>) - Set displayed text of a text object entity
 int entity_SetText(lua_State* ls)
 {
 	luaCountArgs(ls, 2);
-	
+
 	int args = lua_gettop(ls);
 	int width = 0;
 	color c;
 	string text;
-		
+
 	TextObject* o = (TextObject*)_getReferencedEntity(ls);
 	if (!o || o->mType != ENTITY_TEXT)
 	{
@@ -877,29 +886,29 @@ int entity_SetText(lua_State* ls)
 	o->SetText(text, c, width);
 	return 0;
 }
-	
+
 //	.SetFont(ent, "face"<nil>, size<nil>, style<nil>) - Set displayed text of a text object entity
 //		Any non-defined parameter will use user defaults
 int entity_SetFont(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	int args = lua_gettop(ls);
 	int size = 0, style = 0;
 	string face;
-			
+
 	TextObject* o = (TextObject*)_getReferencedEntity(ls);
 	if (!o || o->mType != ENTITY_TEXT)
 	{
 		return luaError(ls, "Entity.SetFont", "Invalid Entity type");
 	}
-	
+
 	if (args > 1 && lua_isstring(ls, 2))
 		face = lua_tostring(ls, 2);
 
 	if (args > 2 && lua_isnumber(ls, 3))
 		size = (int)lua_tonumber(ls, 3);
-		
+
 	if (args > 3 && lua_isnumber(ls, 4))
 		style = (int)lua_tonumber(ls, 4);
 

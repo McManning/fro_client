@@ -66,10 +66,7 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 				words.at(i) = words.at(i).substr(0, c); // everything before \n
 				i -= 1;
 			}
-			
-			// split at \t too
-			c = words.at(i).find("\\t", 0);
-			if (c != string::npos)
+			else if ((c = words.at(i).find("\\t", 0)) != string::npos) // split at \t too
 			{
 				// We found enough characters to fill one line, split and quit
 				
@@ -80,9 +77,7 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 				words.at(i) = words.at(i).substr(0, c); // everything before \t
 				i -= 1;
 			}
-			
-			c = words.at(i).find('\n', 0);
-			if (c != string::npos)
+			else if ((c = words.at(i).find('\n', 0)) != string::npos)
 			{
 				// We found enough characters to fill one line, split and quit
 				if (words.at(i).length() > c+1)
@@ -92,9 +87,7 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 				words.at(i) = words.at(i).substr(0, c); // everything before \n
 				i -= 1;
 			}
-			
-			c = words.at(i).find('\t', 0);
-			if (c != string::npos)
+			else if ((c = words.at(i).find('\t', 0)) != string::npos)
 			{
 				// We found enough characters to fill one line, split and quit
 				if (words.at(i).length() > c+1)
@@ -103,21 +96,23 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 				words.at(i) = words.at(i).substr(0, c); // everything before \t
 				i -= 1;
 			}
-			
-			if (GetWidth(words.at(i), true) > maxWidth)
-			{
-				// Word is too long, try to find a place to split it
-				quit = false;
-				for (c = 0; c < words.at(i).length() && !quit; ++c)
+			else
+			{			
+				if (GetWidth(words.at(i), true) > maxWidth)
 				{
-					if (GetWidth(words.at(i).substr(0, c), true) > maxWidth)
+					// Word is too long, try to find a place to split it
+					quit = false;
+					for (c = 0; c < words.at(i).length() && !quit; ++c)
 					{
-						// We found enough characters to fill one line, split and quit
-						words.insert(words.begin() + i + 1, words.at(i).substr(c-1));
-						words.at(i) = words.at(i).substr(0, c-1);
-						quit = true;
+						if (GetWidth(words.at(i).substr(0, c), true) > maxWidth)
+						{
+							// We found enough characters to fill one line, split and quit
+							words.insert(words.begin() + i + 1, words.at(i).substr(c-1));
+							words.at(i) = words.at(i).substr(0, c-1);
+							quit = true;
+						}
 					}
-				}
+				}	
 			}
 		}
 		++i;

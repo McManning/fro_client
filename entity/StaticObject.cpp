@@ -1,4 +1,5 @@
 
+#include <limits.h>
 #include "StaticObject.h"
 #include "LocalActor.h"
 #include "../game/GameManager.h"
@@ -9,25 +10,25 @@ void listener_staticObjectWarperEventMove(MessageListener* listener, MessageData
 {
 	Actor* a = (Actor*)event.ReadUserdata("entity");
 	StaticObject* so = (StaticObject*)listener->userdata;
-	
+
 	if (a != game->mPlayer || so->GetWarpId().empty())
 		return;
 
 	rect r;
 	r.w = 8;
 	r.h = 8;
-	
+
 	r.x = event.ReadInt("oldx") - 4;
 	r.y = event.ReadInt("oldy") - 8;
 	bool collidesWithOld = so->CollidesWith(r);
-	
+
 	r.x = event.ReadInt("newx") - 4;
 	r.y = event.ReadInt("newy") - 8;
 	bool collidesWithNew = so->CollidesWith(r);
-	
+
 	//If neither position collides with us, do nothing.
 	//if last position collides and new doesn't, do nothing.
-	
+
 	//if new collides, and last doesn't, warp them!
 	if (collidesWithNew && !collidesWithOld)
 	{
@@ -73,11 +74,11 @@ void StaticObject::Render()
 
 	Image* scr = Screen::Instance();
 	rect r;
-	
+
 	if (mImage)
 	{
 		RenderShadow();
-		
+
 		r = GetBoundingRect();
 
 		if (!IsPositionRelativeToScreen())
@@ -103,7 +104,7 @@ Image* StaticObject::GetImage()
 {
 	if (mImage)
 		return mImage;
-	
+
 	return mOriginalImage;
 }
 
@@ -114,13 +115,13 @@ void StaticObject::Rotozoom(double degree, double zoom)
 	ASSERT(mOriginalImage);
 
 	Image* img = mOriginalImage->Clone(true); //create a completely unique copy
-	
+
 	if (mImage != mOriginalImage)
 		resman->Unload(mImage); //unreference the original
-		
+
 	img->Rotate(mRotation, mScale, mUseAA);
 	mImage = img;
-	
+
 	AddPositionRectForUpdate();
 }
 
@@ -132,28 +133,28 @@ bool StaticObject::LoadImage(string file)
 		console->AddMessage(" *\\c900 StaticObject:" + mId + " Failed to load " + file);
 		return false;
 	}
-	
-	SetImage(img);   
+
+	SetImage(img);
     return true;
 }
 
 void StaticObject::SetImage(Image* img)
 {
     AddPositionRectForUpdate(); // add our old rect for update
-    
+
 	if (mImage != mOriginalImage)
 		resman->Unload(mImage);
-	
+
 	resman->Unload(mOriginalImage);
-	
+
 	mOriginalImage = img;
-	
+
 	if (mOriginalImage)
 		mImage = mOriginalImage->Clone();
 
 	mRotation = 0.0;
 	mScale = 1.0;
-	
+
 	PlayAnimation(); // will also add new rect to update
 }
 
@@ -173,9 +174,9 @@ void StaticObject::SetWarp(string id, string objectName)
 	mWarpDestinationObject = objectName;
 
 	messenger.RemoveListener(mWarpEntityMoveListener);
-	
+
 	if (!mWarpDestinationId.empty())
-		mWarpEntityMoveListener = messenger.AddListener("ENTITY_MOVE", listener_staticObjectWarperEventMove, 
+		mWarpEntityMoveListener = messenger.AddListener("ENTITY_MOVE", listener_staticObjectWarperEventMove,
 														NULL, this);
 }
 
@@ -183,25 +184,25 @@ void StaticObject::ToHorizontalAnimation(int frameWidth, int delay)
 {
 	if (mImage)
 		mImage->ConvertToHorizontalAnimation(rect(0, 0, frameWidth, mImage->Height()), delay);
-	
+
     if (mOriginalImage && mOriginalImage != mImage)
 		mOriginalImage->ConvertToHorizontalAnimation(rect(0, 0, frameWidth, mOriginalImage->Height()), delay);
-	
-	PlayAnimation();   
+
+	PlayAnimation();
 }
 
 // Called by the timer
 bool StaticObject::_animate()
 {
 	Image* img = GetImage();
-	
+
 	if (mAnimationTimer && img) // if the animation is playing
 	{
 		mAnimationTimer->interval = img->ForwardCurrentFrameset();
-		
+
 		AddPositionRectForUpdate();
-		
-		// if we hit the end of the animation, destroy the timer. 
+
+		// if we hit the end of the animation, destroy the timer.
 		if (mAnimationTimer->interval == ULONG_MAX)
 		{
 			mAnimationTimer = NULL;
@@ -218,10 +219,10 @@ void StaticObject::PlayAnimation()
 	if (img)
 	{
 		img->Reset();
-		
+
 		SDL_Frame* f = img->Frame();
 		ASSERT(f);
-		
+
 		if (!mAnimationTimer)
 		{
 			// only add if there's a reason to animate
@@ -232,7 +233,7 @@ void StaticObject::PlayAnimation()
 		{
 			mAnimationTimer->interval = f->delay;
 		}
-		
+
 		AddPositionRectForUpdate();
 	}
 }
@@ -240,11 +241,11 @@ void StaticObject::PlayAnimation()
 void StaticObject::StopAnimation()
 {
 	if (mAnimationTimer)
-	{	
+	{
 		timers->Remove(mAnimationTimer);
 		mAnimationTimer = NULL;
 	}
-	
+
 	AddPositionRectForUpdate();
 }
 

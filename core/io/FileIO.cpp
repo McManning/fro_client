@@ -17,7 +17,7 @@ uLong getFilesize(string filename)
     FILE *file = fopen(filename.c_str(), "rb");
     if (!file)
     	return 0;
-    
+
     fseek (file, 0, SEEK_END);
     uLong size = ftell(file);
     fclose (file);
@@ -257,52 +257,27 @@ bool decryptFile(string infile, string outfile, string password, uLong encryptio
 	return result;
 }
 
-string md5(const char* data, uLong len)
+string MD5String(const char* msg)
 {
-    string md5data;
-    md5_state_t state;
-	md5_byte_t digest[16];
+    MD5 context;
+    unsigned int len = strlen((char *)msg);
 
-	int di;
-    char charData[0];
+    context.update(msg, len);
+    context.finalize ();
 
-	md5_init(&state);
-	md5_append(&state, (const md5_byte_t *)data, len);
-	md5_finish(&state, digest);
-
-	for (di = 0; di < 16; di++)
-	{
-        sprintf(charData, "%02x", digest[di]);
-        md5data += charData;
-    }
-
-    return md5data;
+    string result;
+    result = (char*)context.hex_digest();
+    return result;
 }
 
-string md5file(string file)
+string MD5File(string file)
 {
-    std::ifstream stream(file.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
-
-	uLong size;
-    char* memblock;
     string result;
 
-    if (stream.is_open())
-	{
-        size = stream.tellg();
-        memblock = new char[size];
-        if (!memblock)
-        {
-        	FATAL("Out of memory: md5(" + file + ")");
-		}
-        stream.seekg(0, std::ios::beg);
-        stream.read(memblock, size);
-
-        result = md5((const char*)memblock, size);
-
-        stream.close();
-        delete[] memblock;
-    }
+    FILE* f = fopen(file.c_str(), "rb");
+    MD5 context(f);
+    result = (char*)context.hex_digest();
+    fclose(f);
 
     return result;
 }
@@ -426,7 +401,7 @@ string getCacheFilename(string url, string version, bool eraseOtherVersions)
 	filename += base64_encode(url.c_str(), url.length());*/
 
 	//Create a hash of the url itself. TODO: What's the chances of two files having the same hash?
-	filename += md5(url.c_str(), url.length()) + ".";
+	filename += MD5String(url.c_str()) + ".";
 
 	if (eraseOtherVersions)
 		killCacheVersionsExcluding(filename, version);
@@ -489,7 +464,7 @@ bool getFilesMatchingPattern(std::vector<string>& list, const string& pattern)
 	else
 	{
 		list.push_back(data.name);
-		
+
 		while ( _findnext(hFile, &data) == 0 )
 			list.push_back(data.name);
 
@@ -512,7 +487,7 @@ string getNextFileMatchingPattern(const string& start, const string& pattern)
 	std::vector<string> list;
 	if ( !getFilesMatchingPattern(list, pattern) )
 		return start;
-	
+
 	if (list.empty())
 		return start;
 
@@ -527,7 +502,7 @@ string getNextFileMatchingPattern(const string& start, const string& pattern)
 				return list.at(i + 1);
 		}
 	}
-	
+
 	//start wasn't found, return first.
 	return list.at(0);
 }
@@ -537,7 +512,7 @@ string getPreviousFileMatchingPattern(const string& start, const string& pattern
 	std::vector<string> list;
 	if ( !getFilesMatchingPattern(list, pattern) )
 		return start;
-	
+
 	if (list.empty())
 		return start;
 
@@ -552,7 +527,7 @@ string getPreviousFileMatchingPattern(const string& start, const string& pattern
 				return list.at(i - 1);
 		}
 	}
-	
+
 	//start wasn't found, return last.
 	return list.at(list.size()-1);
 }
@@ -563,7 +538,7 @@ bool fileToString(string& s, string file)
 	f = fopen(file.c_str(), "r");
 
 	if (!f)
-		return false; 
+		return false;
 
     char buffer[1024];
     uLong bytesRead = 0;
@@ -584,7 +559,7 @@ bool stringToFile(string& s, string file)
 
 	f = fopen(file.c_str(), "w");
 
-	if (f) 
+	if (f)
 	{
 		fprintf(f, "%s", s.c_str());
 		fclose(f);
@@ -611,7 +586,7 @@ bool vStringToFile(vString& v, string file, string delimiter)
 	string s;
 	if (!implode(&s, &v, delimiter))
 		return false;
-		
+
 	stringToFile(s, file);
 }
 
@@ -626,7 +601,7 @@ static void recursive_mkdir(const char *path)
 	if(opath[len - 1] == '/')
 			opath[len - 1] = '\0';
 	for (p = opath; *p; p++)
-			if(*p == '/') 
+			if(*p == '/')
 			{
 					*p = '\0';
 					if(access(opath, F_OK))
@@ -642,7 +617,7 @@ static void recursive_mkdir(const char *path)
 	path = a/b/c/file.ext
 	Will construct directory tree a/b/c/ in root if it does not exist
 	Returns false if it can't build directories, or the path is malformed
-	
+
 	Input -> Result
 	abc -> Is filename in root, returns true
 	abc/def -> Creates directory abc

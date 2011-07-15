@@ -1,4 +1,5 @@
 
+#include <time.h>
 #include "IrcNetListeners.h"
 #include "IrcNetSenders.h"
 #include "../game/GameManager.h"
@@ -22,11 +23,11 @@
 
 void printMessage(string& msg)
 {
-	if (!game->GetChat()) 
+	if (!game->GetChat())
 		console->AddMessage(msg);
 	else
 		game->GetChat()->AddMessage(msg);
-		
+
 	if (loginDialog)
 		loginDialog->mText->AddMessage(msg);
 }
@@ -45,10 +46,10 @@ string decompressActionBuffer(string buffer)
 
 //TODO: Move to Map?
 RemoteActor* _addRemoteActor(string& nick, string& address, DataPacket& data)
-{	
+{
 	char c;
 	point2d p;
-	
+
 	ASSERT(game->mMap);
 
 	RemoteActor* ra = new RemoteActor();
@@ -58,22 +59,22 @@ RemoteActor* _addRemoteActor(string& nick, string& address, DataPacket& data)
 	ra->SetName(nick);
 	if (userlist)
 		userlist->AddNick(nick);
-	
+
 	p.x = data.ReadInt();
 	p.y = data.ReadInt();
 	ra->SetPosition(p);
 
 	c = data.ReadChar();
 	ra->SetDirection(c);
-	
+
 	c = data.ReadChar();
 	ra->SetAction(c);
-	
+
 	if (!data.End()) //if we have avatar info (at least url/w/h), read it
 	{
 		ra->ReadAvatarFromPacket(data);
 	}
-	
+
 	game->mMap->AddEntity(ra);
 	return ra;
 }
@@ -90,21 +91,21 @@ void _removeRemoteActor(RemoteActor* a)
 		new ExplodingEntity(a->mMap, img, point2d(r.x, r.y));
 	}
 	*/
-	
+
 	if (userlist)
 		userlist->RemoveNick(a->GetName());
-		
+
 	a->mMap->RemoveEntity(a);
 }
 
 uShort timer_destroyMapStamp(timer* t, uLong ms)
 {
 	Entity* e = (Entity*)t->userData;
-	
+
 	if (game->mMap)
 		game->mMap->RemoveEntity(e);
-	
-	return TIMER_DESTROY;	
+
+	return TIMER_DESTROY;
 }
 
 //TODO: Move to Map?
@@ -121,9 +122,9 @@ void stampMapText(int x, int y, int rotation, string& text)
 		to->SetAA(true);
 		to->SetFont("", 10);
 		to->SetText(text, color());
-		to->Rotozoom(rotation, 1.0);	
+		to->Rotozoom(rotation, 1.0);
 		to->SetPosition( point2d(x - to->GetImage()->Width() / 2, y - to->GetImage()->Height() / 2) );
-	
+
 	// 5 minutes until the stamp cleans itself up
 	timers->Add("stamp", 5*60*1000, false, timer_destroyMapStamp, NULL, to);
 }
@@ -135,7 +136,7 @@ void _handleUnknownUser(string& nick)
 		a message from somewhere outside our channel? */
 	if ( timers->Find("pushNm") )
 		return;
-			
+
 	if (game->mPlayer->GetName() != nick)
 		netSendState(nick, "sup");
 
@@ -151,7 +152,7 @@ void _handleNetMessage_RequestAvatar(string& nick, DataPacket& data) //reqAvy
 void _handleNetMessage_Say(string& nick, DataPacket& data) // say msg
 {
 	if (!game->mMap) return;
-	
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (!ra) { _handleUnknownUser(nick); return; }
@@ -159,19 +160,19 @@ void _handleNetMessage_Say(string& nick, DataPacket& data) // say msg
 	//if they're too far, or blocked, ignore
 	//if ( ra->IsBlocked() || !ra->IsVisibleInCamera() )
 	//	return;
-	
+
 	string msg = data.ReadString();
 	MessageData md;
-	
+
 	if (msg.at(0) != '/')
 	{
 		md.SetId("NET_SAY");
 	}
 	else
-	{	
+	{
 		md.SetId("NET_CMD");
 	}
-	
+
 	md.WriteUserdata("entity", ra);
 	md.WriteString("message", msg);
 	messenger.Dispatch(md, ra);
@@ -180,26 +181,26 @@ void _handleNetMessage_Say(string& nick, DataPacket& data) // say msg
 void _handleNetMessage_Stamp(string& nick, DataPacket& data) // stamp x y angle msg
 {
 	if (!game->mMap) return;
-	
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (!ra) { _handleUnknownUser(nick); return; }
-	
+
 	if (ra->IsBlocked())
 		return;
-	
+
 	int x = data.ReadInt();
 	int y = data.ReadInt();
 	int rot = data.ReadInt();
 	string msg = data.ReadString();
-	
+
 	stampMapText(x, y, rot, msg);
 }
 
 void _handleNetMessage_Act(string& nick, DataPacket& data)
 {
 	if (!game->mMap) return;
-	
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (!ra) { _handleUnknownUser(nick); return; }
@@ -207,9 +208,9 @@ void _handleNetMessage_Act(string& nick, DataPacket& data)
 	//if they're too far, or blocked, ignore
 	if ( ra->IsBlocked() || !ra->IsVisibleInCamera() )
 		return;
-		
+
 	string formatted;
-	
+
 	char mode = data.ReadChar();
 	string msg = data.ReadString();
 	string msg2;
@@ -218,7 +219,7 @@ void _handleNetMessage_Act(string& nick, DataPacket& data)
 	{
 		case 1: //music command: act 1 song
 			formatted = "\\c099* " + stripCodes(nick)
-						+ " is listening to \\c059" 
+						+ " is listening to \\c059"
 						+ stripCodes( msg ) + " \\c099*";
 			break;
 		case 2: //beat command: act 2 target item
@@ -228,58 +229,63 @@ void _handleNetMessage_Act(string& nick, DataPacket& data)
 						+ stripCodes( msg2 ) + "\\c484 *";
 			break;
 		default: // act # msg
-			formatted = "\\c909* " + stripCodes(nick) 
+			formatted = "\\c909* " + stripCodes(nick)
 						+ " " + stripCodes( msg ) + " *";
 			break;
 	}
-	
+
 	printMessage(formatted);
 }
 
 void _handleNetMessage_Avy(string& nick, DataPacket& data)
 {
 	if (!game->mMap) return;
-	
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (!ra) { _handleUnknownUser(nick); return; }
-		
+
 	if (ra->IsBlocked())
 		return;
-	
+
 	ra->ReadAvatarFromPacket(data);
 }
 
 void _handleNetMessage_Sup(string& nick, string& address, DataPacket& data)
 {
 	if (!game->mMap) return;
-	
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
-	if (ra)
+	/*if (ra)
 	{
 		console->AddMessage("Double 'sup' from " + nick);
 		return;
-	}
-	
+	}*/
+
 	// make sure this sup is coming from our channel only
 	if (data.ReadString() != game->mNet->GetChannel()->mId)
 	{
 		console->AddMessage("Illegal 'sup' from " + nick + " (chan)");
 		return;
 	}
-	
+
 	//Make sure someone didn't try to clone someone elses 'sup' message to mimic them
 	if (data.ReadString() != nick)
 	{
 		console->AddMessage("Illegal 'sup' from " + nick + " (nick)");
-		return;	
+		return;
 	}
-	
+
 	/*	Add them to our map w/ their state data. Then reply
 		with a "nothing much" edition of our state
 	*/
-	ra = _addRemoteActor(nick, address, data);
+
+	if (!ra)
+	{
+		ra = _addRemoteActor(nick, address, data);
+	}
+
 	if (ra)
 	{
 		netSendState("", "nm");
@@ -287,14 +293,14 @@ void _handleNetMessage_Sup(string& nick, string& address, DataPacket& data)
 	}
 	else
 	{
-		console->AddMessage("Malformed 'sup' from " + nick);	
+		console->AddMessage("Malformed 'sup' from " + nick);
 	}
 }
 
 void _handleNetMessage_Nm(string& nick, string& address, DataPacket& data)
 {
 	if (!game->mMap) return;
-	
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 
 	if (ra)
@@ -308,11 +314,11 @@ void _handleNetMessage_Nm(string& nick, string& address, DataPacket& data)
 		console->AddMessage("Illegal 'nm' from " + nick + " (chan)");
 		return;
 	}
-	
+
 	if (data.ReadString() != nick)
 	{
 		console->AddMessage("Illegal 'nm' from " + nick + " (nick)");
-		return;	
+		return;
 	}
 
 	/*	Add them to our map w/ their state data.
@@ -325,17 +331,17 @@ void _handleNetMessage_Nm(string& nick, string& address, DataPacket& data)
 	}
 	else
 	{
-		console->AddMessage("Malformed 'nm' from " + nick);	
+		console->AddMessage("Malformed 'nm' from " + nick);
 	}
 }
 
 void _handleNetMessage_Afk(string& nick, DataPacket& data)
 {
 	if (!game->mMap) return;
-		
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
-	
+
 	ra->SetAfk(true);
 }
 
@@ -345,14 +351,14 @@ void _handleNetMessage_Back(string& nick, DataPacket& data)
 
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
-	
+
 	ra->SetAfk(false);
 }
 
 void _handleNetMessage_Mov(string& nick, DataPacket& data)
 {
 	if (!game->mMap) return;
-	
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
 
@@ -361,24 +367,24 @@ void _handleNetMessage_Mov(string& nick, DataPacket& data)
 		may take longer to process than it takes another computer to send. And if we jumped coordinates
 		every mov recv, we'd get jerky movement.
 	*/
-	
+
 	int dx = data.ReadInt();
 	int dy = data.ReadInt();
 	string buffer = data.ReadString();
-	
+
 	ra->AddToActionBuffer( 'c' + its(dx) + "."
 							+ its(dy) + "."
 							+ decompressActionBuffer( buffer ) );
-	
+
 }
 
 void _handleNetMessage_Emo(string& nick, DataPacket& data) // emo #emote
 {
 	if (!game->mMap) return;
-	
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
-	
+
 	if (ra->IsBlocked())
 		return;
 
@@ -390,27 +396,27 @@ void _handleNetMessage_Emo(string& nick, DataPacket& data) // emo #emote
 void _handleNetMessage_Lua(string& nick, DataPacket& data) // lua $id $msg
 {
 	if (!game->mMap) return;
-	
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
 
 	string id = data.ReadString();
 	string msg = data.ReadString();
-	
+
 	//Dispatch it and let lua listeners pick it up
 	MessageData md;
 	md.SetId("NET_LUA");
 	md.WriteString("id", id);
 	md.WriteUserdata("entity", ra);
 	md.WriteString("message", msg);
-	
+
 	messenger.Dispatch(md, ra);
 }
 
 void _handleNetMessage_Mod(string& nick, DataPacket& data) // mod #type
 {
 	if (!game->mMap) return;
-	
+
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	if (!ra) { _handleUnknownUser(nick); return; }
 
@@ -457,18 +463,18 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 		DEBUGOUT("Privmsg with no channel");
 		return;
 	}
-	
+
 	string nick = md.ReadString("sender");
 	string address = md.ReadString("address");
 	string target = md.ReadString("target");
 	string msg = md.ReadString("message");
-	
+
 	DEBUGOUT("[" + nick + "] " + msg);
 
 	//Convert our message to a data packet.
 	DataPacket data;
 	data.SetKey( game->mNet->GetEncryptionKey() );
-	
+
 	//Couldn't decrypt. Assume plaintext and privmsg to us
 	if (!data.FromString(msg) && target == game->mPlayer->GetName())
 	{
@@ -507,7 +513,7 @@ void listener_NetPrivmsg(MessageListener* ml, MessageData& md, void* sender)
 		_handleNetMessage_RequestAvatar(nick, data);
 	else if (target == game->mPlayer->GetName())
 		_handleNetMessage_Private(nick, msg);
-		
+
 	return;
 }
 
@@ -518,7 +524,7 @@ void listener_NetCmdError(MessageListener* ml, MessageData& md, void* sender)
 	switch (cmd)
 	{
 		case 442: //You're not on that channel! - Ignore.
-			break; 
+			break;
 		case 473: //+i invite only
 		case 474: //+b you're banned
 		case 475: //+k channel has key
@@ -529,7 +535,7 @@ void listener_NetCmdError(MessageListener* ml, MessageData& md, void* sender)
 		default:
 			msg = "\\c900 * [" + md.ReadString("command") + "] " + stripCodes(md.ReadString("message"));
 			printMessage(msg);
-			break;	
+			break;
 	}
 }
 
@@ -558,51 +564,51 @@ void listener_NetChannelJoin(MessageListener* ml, MessageData& md, void* sender)
 	{
 		string msg;
 		msg = "\\c090 * " + nick + "\\c090";
-		
+
 		if (game->mShowAddresses)
-			msg += " (" + md.ReadString("address") + ")";	
-			
+			msg += " (" + md.ReadString("address") + ")";
+
 		msg += " joins";
-		
+
 		printMessage(msg);
 	}
-	
+
 	//If it's not us, send our data to them
 	if (game->mPlayer->GetName() != nick)
 	{
 		netSendState(nick, "sup");
 	}
-	
-	//This is here, because anywhere else it would play constantly when we join a new map filled with people.	
+
+	//This is here, because anywhere else it would play constantly when we join a new map filled with people.
 //	if (sound)
 //		sound->Play("warpin");
 }
 
 void listener_NetChannelKick(MessageListener* ml, MessageData& md, void* sender)
 {
-	string msg; 
+	string msg;
 	string nick = md.ReadString("nick");
 	string kicker = md.ReadString("kicker");
 	string reason = md.ReadString("reason");
-	
+
 	if (game->mShowJoinParts)
 	{
 		msg = "\\c139 * " + nick + "\\c139 has been kicked by "
 			+ kicker + "\\c139 (" + reason + ")";
-			
+
 		printMessage(msg);
 	}
-	
+
 	if (nick == game->mPlayer->GetName()) //I was kicked. Will rejoin immediately
 	{
 		//console->AddMessage("\\c900 * That son of a bitch. Rejoining");
 		//SAFEDELETE( ((IrcNet*)sender)->mChannel );
-		//fast rejoin code. Ignores all that map loading stuff. 
+		//fast rejoin code. Ignores all that map loading stuff.
 		//I COULD trigger a full re-download on a kick, but that's pointless.
 		//JoinChannel(mChannel->mId, mChannel->mPassword);
 		msg = "\\c099 You have been kicked!";
 		game->UnloadMap();
-		
+
 		printMessage(msg);
 	}
 	else if (game->mMap)
@@ -617,22 +623,22 @@ void listener_NetChannelPart(MessageListener* ml, MessageData& md, void* sender)
 {
 	if (!game->mMap)
 		return;
-	
+
 	string nick = md.ReadString("nick");
-	
+
 	if (game->mShowJoinParts)
 	{
 		string msg;
 		msg = "\\c139 * " + nick + "\\c139";
-		
+
 		if (game->mShowAddresses)
-			msg += " (" + md.ReadString("address") + ")";	
-			
+			msg += " (" + md.ReadString("address") + ")";
+
 		msg += " leaves";
-		
+
 		printMessage(msg);
 	}
-	
+
 	//Remove them from our map if they were on it
 	RemoteActor* ra = (RemoteActor*)game->mMap->FindEntityByName(nick, ENTITY_REMOTEACTOR);
 	_removeRemoteActor(ra);
@@ -643,23 +649,23 @@ void listener_NetChannelQuit(MessageListener* ml, MessageData& md, void* sender)
 	string msg;
 	string reason;
 	string nick = md.ReadString("nick");
-	
+
 	if (game->mShowJoinParts)
 	{
 		msg = "\\c139 * " + nick + "\\c139";
-		
+
 		if (game->mShowAddresses)
-			msg += " (" + md.ReadString("address") + ")";	
-		
+			msg += " (" + md.ReadString("address") + ")";
+
 		msg += " quit";
-		
+
 		reason = md.ReadString("reason");
 		if (!reason.empty())
 			msg += " (" + reason + ")";
-		
+
 		printMessage(msg);
 	}
-	
+
 	if (nick == game->mPlayer->GetName())
 	{
 		msg = "User Quit";
@@ -677,17 +683,17 @@ void listener_NetChannelQuit(MessageListener* ml, MessageData& md, void* sender)
 void listener_NetUserlist(MessageListener* ml, MessageData& md, void* sender)
 {
 	string msg = "\\c099Online Users: " + stripCodes(md.ReadString("list"));
-	
+
 	//Pad the seperation between nicks with color tags
 	replace(&msg, ",", "\\c099,");
-	
+
 	printMessage(msg);
 }
 
 //(Note: This will be sent multiple times for extremely long motds, with different command ids)
 void listener_NetMotd(MessageListener* ml, MessageData& md, void* sender)
 {
-	//TODO: Maybe dump into a seperate output? 
+	//TODO: Maybe dump into a seperate output?
 	string msg = "\\c940" + md.ReadString("message");
 	printMessage(msg);
 }
@@ -695,7 +701,7 @@ void listener_NetMotd(MessageListener* ml, MessageData& md, void* sender)
 void listener_NetCouldNotConnect(MessageListener* ml, MessageData& md, void* sender)
 {
 	IrcNet* net = (IrcNet*)sender;
-	
+
 	string msg;
 	msg = "\\c900 * Could not connect to " + net->mHost + ":" + its(net->mPort);
 	printMessage(msg);
@@ -707,7 +713,7 @@ void listener_NetNotice(MessageListener* ml, MessageData& md, void* sender)
 {
 	string msg;
 	msg = "\\c900-" + md.ReadString("nick") + "\\c900- " + stripCodes(md.ReadString("message"));
-	
+
 	printMessage(msg);
 }
 
@@ -715,15 +721,15 @@ void listener_NetNotice(MessageListener* ml, MessageData& md, void* sender)
 void listener_NetUnknown(MessageListener* ml, MessageData& md, void* sender)
 {
 	int cmd = sti(md.ReadString("command"));
-	
+
 	//skip commands
 	if (cmd == 333)
 		return;
-	
+
 	vString v;
 	string line = md.ReadString("line");
 	explode(&v, &line, " ");
-	
+
 	/*Console* c;   Idle lies. When someone joins, you send a privmsg to them and it destroys idle state.
 	if (cmd == "317") //RPL_WHOISIDLE "<nick> <integer> :seconds idle"
 	{
@@ -731,11 +737,11 @@ void listener_NetUnknown(MessageListener* ml, MessageData& md, void* sender)
 		if (c)
 			c->AddMessage(v.at(3) + "\\c099 has been idle for " + v.at(4) + " seconds");
 	}*/
-	
+
 	string msg;
 	msg = "\\c900 * (" + md.ReadString("command") + ") " + stripCodes(md.ReadString("line"));
-	
-	printMessage(msg);	
+
+	printMessage(msg);
 }
 
 //channel, nick who sent it (or blank if server), new topic
@@ -744,12 +750,12 @@ void listener_NetTopic(MessageListener* ml, MessageData& md, void* sender)
 	string msg;
 	string nick = md.ReadString("nick");
 	string topic = md.ReadString("message");
-	
+
 	if (nick.empty())
 		msg = "\\c090 * Topic: " + topic;
 	else
 		msg = "\\c090 * " + nick + "\\c090 sets topic: " + topic;
-		
+
 	printMessage(msg);
 }
 
@@ -766,7 +772,7 @@ void listener_NetMode(MessageListener* ml, MessageData& md, void* sender)
 void listener_NetNick(MessageListener* ml, MessageData& md, void* sender)
 {
 	IrcNet* net = (IrcNet*)sender;
-	
+
 	string oldn = md.ReadString("oldnick");
 	string newn = md.ReadString("newnick");
 
@@ -778,13 +784,13 @@ void listener_NetNick(MessageListener* ml, MessageData& md, void* sender)
 		game->mUserData.SetValue("MapSettings", "Nick", newn);
 	}
 	else
-	{	
+	{
 		e = game->mMap->FindEntityByName(oldn, ENTITY_REMOTEACTOR);
 	}
-	
+
 	if (!e)
 		return;
-		
+
 	e->SetName(newn);
 	if (userlist)
 		userlist->ChangeNick(oldn, newn);
@@ -806,7 +812,7 @@ void listener_NetNewState(MessageListener* ml, MessageData& md, void* sender)
 	IrcNet* net = (IrcNet*)sender;
 
 	game->UpdateAppTitle();
-	
+
 	timers->Remove("resetNm"); //so we can send it again immediately
 
 	string s;
@@ -828,7 +834,7 @@ void listener_NetNewState(MessageListener* ml, MessageData& md, void* sender)
 			DEBUGOUT("ONCHANNEL");
 			if (game->mLoader)
 				game->mLoader->SetState(WorldLoader::WORLD_READY);
-			
+
 			// if we have a default nick still, bring up a request to change it
 			if (net->GetNick().find("fro_", 0) == 0)
 			{
@@ -836,18 +842,18 @@ void listener_NetNewState(MessageListener* ml, MessageData& md, void* sender)
 				{
 					OptionsDialog* o = new OptionsDialog();
 					o->DemandFocus(true);
-				}	
-				new MessagePopup("", "Change your nick!", 
+				}
+				new MessagePopup("", "Change your nick!",
 					"We recommend changing your nick from the default to something new!"
 					" When you enter a new nickname, hit the green checkmark to save!");
 			}
 			break;
 		case DISCONNECTED:
 			game->UnloadMap();
-			
+
 			if (!loginDialog)
 				new LoginDialog();
-				
+
 			new MessagePopup("", "Disconnected", "Disconnected from Server");
 			break;
 		default: break;
@@ -858,10 +864,10 @@ void listener_NetNewState(MessageListener* ml, MessageData& md, void* sender)
 void listener_NetNickInUse(MessageListener* ml, MessageData& md, void* sender)
 {
 	IrcNet* net = (IrcNet*)sender;
-	
+
 	string msg = "\\c900 * Could not change nickname: " + stripCodes(md.ReadString("message"));
 	printMessage(msg);
-	
+
 	if (net->GetState() != ONCHANNEL) // not on a world yet, force change
 	{
 		net->ChangeNick(net->GetNick() + "_");
@@ -875,14 +881,14 @@ void listener_NetNickInUse(MessageListener* ml, MessageData& md, void* sender)
 void listener_NetVerified(MessageListener* ml, MessageData& md, void* sender)
 {
 	IrcNet* net = (IrcNet*)sender;
-	
+
 	if (loginDialog)
 		loginDialog->SetActive(false);
-	
+
 	// Bug fix, the server could have changed our nick on join (if it was too long, etc)
 	// Without giving an Erronous Nickname message.
 	game->mPlayer->SetName(net->GetNick());
-	
+
 	//game->LoadOnlineWorld(game->mStartingWorldId);
 
 	WorldViewer* viewer = new WorldViewer();
@@ -892,9 +898,9 @@ void listener_NetVerified(MessageListener* ml, MessageData& md, void* sender)
 void listener_NetWhois(MessageListener* ml, MessageData& md, void* sender)
 {
 	IrcNet* net = (IrcNet*)sender;
-	
+
 	time_t t = (time_t)md.ReadInt("signon");
-	
+
 	string msg = "\\c099[WHOIS] " + md.ReadString("nick") + "\\c099 signed on at ";
 		msg += string(asctime(localtime(&t)));
 	printMessage(msg);
@@ -903,11 +909,11 @@ void listener_NetWhois(MessageListener* ml, MessageData& md, void* sender)
 void listener_NetWhois2(MessageListener* ml, MessageData& md, void* sender)
 {
 	IrcNet* net = (IrcNet*)sender;
-	
+
 	string msg = "\\c099[WHOIS] " + md.ReadString("nick") + "\\c099's hostname: ";
 		msg += md.ReadString("address");
 	printMessage(msg);
-	
+
 	msg = "\\c099[WHOIS] " + md.ReadString("nick") + "\\c099 is logged in as: ";
 		msg += md.ReadString("realname");
 	printMessage(msg);

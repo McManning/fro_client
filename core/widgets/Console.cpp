@@ -18,12 +18,12 @@ const int MAX_CONSOLE_INPUT_LENGTH = 256;
 void callback_consoleInput(Input* i)
 {
 	Console* c = (Console*)(i->GetParent());
-	
+
 	if (i->GetText().empty())
 		return;
-	
+
 	string cmd = lowercase( i->GetText().substr(0, i->GetText().find(" ")) );
-	
+
 	//global console commands
 	if (cmd == "/save")
 	{
@@ -36,17 +36,17 @@ void callback_consoleInput(Input* i)
 	}
 	else if (cmd == "/exit")
 	{
-		appState = APPSTATE_CLOSING;	
+		appState = APPSTATE_CLOSING;
 	}
 	else if (cmd == "/ss")
 	{
-		gui->Screenshot();	
+		gui->Screenshot();
 	}
 	else
 	{
-		c->DoCommand(i->GetText());	
+		c->DoCommand(i->GetText());
 	}
-	i->Clear();	
+	i->Clear();
 }
 
 void callback_consoleExit(Button* b)
@@ -80,11 +80,11 @@ Console::Console(string id, string title, string savePrefix, color c,
 	mSizeable = true; //will not create mSizer, and instead create a custom one
 	mOutput = NULL;
 	mSavePrefix = savePrefix;
-	
+
 	SetPosition( rect(gui->Width()-300,gui->Height()-176,300,176) );
 
 	if (hasInput)
-	{			
+	{
 		mInput = new Input(this, "input", rect(26,0,0,20), "", MAX_CONSOLE_INPUT_LENGTH, true, callback_consoleInput);
 		mInput->SetImage("assets/gui/console/input.png");
 		mInput->mFontColor = color(255,255,255);
@@ -93,20 +93,20 @@ Console::Console(string id, string title, string savePrefix, color c,
 	{
 		mInput = NULL;
 	}
-	
+
 	mOutput = new Multiline(this, "output", rect(0, 16, mPosition.w, mPosition.h - 42));
 		mOutput->mScrollbar->SetImageBase("assets/gui/console/vscroller");
-		
+
 		// Colorize to match
 	//	mOutput->mScrollbar->mTabImage->ColorizeGreyscale(c);
 	//	mOutput->mScrollbar->mValueUp->mImage->ColorizeGreyscale(c);
 	//	mOutput->mScrollbar->mValueDown->mImage->ColorizeGreyscale(c);
 	//	mOutput->mScrollbar->mImage->ColorizeGreyscale(c);
-	
+
 	// We have our own background drawn
 	resman->Unload(mOutput->mImage);
 	mOutput->mImage = NULL;
-	
+
 	mOutput->mFont = fonts->Get("", 0, TTF_STYLE_BOLD); //load default font, but bold.
 	mOutput->mFontColor = color(255,255,255);
 
@@ -116,19 +116,19 @@ Console::Console(string id, string title, string savePrefix, color c,
 		mExit = new Button(this, "exit", rect(0, 2, 12, 12), "", callback_consoleExit);
 		mExit->SetImage("assets/gui/console/exit.png");
 		mExit->mHoverText = "Close";
-		
+
 	//	mExit->mImage->ColorizeGreyscale(c);
 	}
-	
+
 	mBackgroundToggle = NULL;
 	if (hasExtraControls)
 	{
 		mBackgroundToggle = new Button(this, "", rect(0, 2, 12, 12), "", callback_consoleToggleBackground);
 		mBackgroundToggle->SetImage("assets/gui/console/toggle.png");
-		mBackgroundToggle->mHoverText = "Toggle Background";	
-		
+		mBackgroundToggle->mHoverText = "Toggle Background";
+
 	//	mBackgroundToggle->mImage->ColorizeGreyscale(c);
-		
+
 //		mFontSizeChange = new Button(this, "", rect(0, 2, 12, 12), "", callback_consoleChangeFontSize);
 //		mBackgroundToggle->SetImage(imageFile + "font.png");
 //		mBackgroundToggle->mHoverText = "Change Font Size";
@@ -139,7 +139,7 @@ Console::Console(string id, string title, string savePrefix, color c,
 	//don't use mImage b/c Frame will try to render it. Use a custom.
 	mBackgroundImage = resman->LoadImg("assets/gui/console/bg.png");
 	//mBackgroundImage->ColorizeGreyscale(c);
-	
+
 	ResizeChildren();
 
 }
@@ -153,26 +153,26 @@ Console::~Console()
 void Console::Render()
 {
 	Image* scr = Screen::Instance();
-	
+
 	rect r = GetScreenPosition();
 
 	//draw translucent background
 	if (mDrawBackground && mBackground && !mResizing && mOutput)
 	{
 		rect rr = mOutput->GetScreenPosition();
-		mBackground->Render(scr, rr.x, rr.y, 
+		mBackground->Render(scr, rr.x, rr.y,
 							rect(0,0,mBackground->Width(), mBackground->Height()));
 	}
-	
+
 	if (mBackgroundImage && !mResizing)
 	{
 		mBackgroundImage->RenderHorizontalEdge(scr, rect(0, 0, 26, CONSOLE_HEADER_HEIGHT),
-												rect(r.x, r.y, r.w, CONSOLE_HEADER_HEIGHT));	
-				
+												rect(r.x, r.y, r.w, CONSOLE_HEADER_HEIGHT));
+
 		if (mInput)
-		{							
+		{
 			mBackgroundImage->RenderHorizontalEdge(scr, rect(0, 16, 26, CONSOLE_FOOTER_WITH_INPUT_HEIGHT),
-												rect(r.x, r.y + r.h - CONSOLE_FOOTER_WITH_INPUT_HEIGHT, 
+												rect(r.x, r.y + r.h - CONSOLE_FOOTER_WITH_INPUT_HEIGHT,
 												r.w, CONSOLE_FOOTER_WITH_INPUT_HEIGHT));
 			if (mSizeable)
 				mBackgroundImage->Render(scr, r.x + r.w - 26, r.y + r.h - 26, rect(78, 0, 26, 26));
@@ -180,7 +180,7 @@ void Console::Render()
 		else
 		{
 			mBackgroundImage->RenderHorizontalEdge(scr, rect(0, 42, 26, CONSOLE_FOOTER_NO_INPUT_HEIGHT),
-												rect(r.x, r.y + r.h - CONSOLE_FOOTER_NO_INPUT_HEIGHT, 
+												rect(r.x, r.y + r.h - CONSOLE_FOOTER_NO_INPUT_HEIGHT,
 												r.w, CONSOLE_FOOTER_NO_INPUT_HEIGHT));
 			if (mSizeable)
 				mBackgroundImage->Render(scr, r.x + r.w - 16, r.y + r.h - 16, rect(78, 42, 16, 16));
@@ -193,7 +193,7 @@ void Console::Render()
 void Console::Event(SDL_Event* event)
 {
 	if (mInput && mOutput->HasKeyFocus())
-		mInput->SetKeyFocus();	
+		mInput->SetKeyFocus();
 
 	Frame::Event(event);
 }
@@ -208,20 +208,20 @@ void Console::ResizeChildren()
 		int h = (mInput) ? CONSOLE_FOOTER_WITH_INPUT_HEIGHT : CONSOLE_FOOTER_NO_INPUT_HEIGHT;
 		mOutput->SetPosition( rect(0, 16, mPosition.w, mPosition.h - CONSOLE_HEADER_HEIGHT - h) );
 	}
-	
+
 	if (mExit)
 		mExit->SetPosition( rect(mPosition.w - 16, 2, mExit->Width(), mExit->Height()) );
-	
+
 	if (mBackgroundToggle)
-		mBackgroundToggle->SetPosition( 
-								rect(mPosition.w - 16 - ((mExit) ? 16 : 0), 2, 
-									mBackgroundToggle->Width(), 
-									mBackgroundToggle->Height()) 
+		mBackgroundToggle->SetPosition(
+								rect(mPosition.w - 16 - ((mExit) ? 16 : 0), 2,
+									mBackgroundToggle->Width(),
+									mBackgroundToggle->Height())
 								);
 
 
 	resman->Unload(mBackground);
-	
+
 	if (isDefaultColor(mBackgroundColor))
 	{
 		mBackground = NULL;
@@ -229,11 +229,11 @@ void Console::ResizeChildren()
 	else
 	{
 		mBackground = resman->NewImage(mOutput->Width(), mOutput->Height(), color(255,255,255), true);
-	
+
 		if (mBackground)
 			mBackground->DrawRect(rect(0,0,mBackground->Width(),mBackground->Height()), mBackgroundColor);
 	}
-	
+
 	Frame::ResizeChildren();
 }
 
@@ -241,7 +241,7 @@ void Console::SetPosition(rect r)
 {
 	if (r.w < 150)
 		r.w = 150;
-		
+
 	if (r.h < 100)
 		r.h = 100;
 
@@ -251,10 +251,10 @@ void Console::SetPosition(rect r)
 void Console::AddMessage(string msg)
 {
 	if (msg.empty()) return;
-	
+
 	if (mShowTimestamps)
 		msg = shortTimestamp() + " " + msg;
-	
+
 	PRINT("[Console] " + msg);
 
 	mOutput->AddMessage(msg);
@@ -273,7 +273,7 @@ void Console::ShowCommands()
 void Console::HookCommand(string cmd, void (*callback)(Console*, string))
 {
 	UnhookCommand(cmd);
-	
+
 	consoleCommand c;
 	c.cmd = cmd;
 	c.callback = callback;
@@ -284,7 +284,7 @@ void Console::HookCommand(string cmd, void (*callback)(Console*, string))
 void Console::HookCommand(string cmd, consoleCommand::commandType type, void* link)
 {
 	UnhookCommand(cmd);
-	
+
 	consoleCommand c;
 	c.cmd = cmd;
 	c.callback = NULL;
@@ -308,7 +308,7 @@ void Console::UnhookCommand(string cmd)
 void Console::DoCommand(string s)
 {
 	string cmd = lowercase( s.substr(0, s.find(" ")) );
-	
+
 	consoleCommand* c = NULL;
 	for (uShort i = 0; i < mCommandHooks.size(); i++)
 	{
@@ -320,7 +320,7 @@ void Console::DoCommand(string s)
 		else if (mCommandHooks.at(i).cmd.empty())
 			c = &mCommandHooks.at(i);
 	}
-	
+
 	//not found, but if we have a catch-all, run it
 	if (c)
 		_runHookedCommand(*c, s);
@@ -335,7 +335,7 @@ void Console::_runHookedCommand(consoleCommand& c, string s)
 		c.callback(this, s);
 		return;
 	}
-	
+
 	//Command isn't a callback type, output its linked variable.
 	string out = c.cmd + " = ";
 
@@ -351,13 +351,13 @@ void Console::_runHookedCommand(consoleCommand& c, string s)
 			case consoleCommand::INT: out += its( *(int*)c.link ); break;
 			case consoleCommand::DOUBLE: out += dts( *(double*)c.link ); break;
 			case consoleCommand::STRING: out += *(string*)c.link; break;
-			case consoleCommand::VOID: out += pts( c.link ); break;
+			case consoleCommand::VOIDPTR: out += pts( c.link ); break;
 			case consoleCommand::RECT: out += rts( *(rect*)c.link ); break;
 			case consoleCommand::POINT2D: out += p2dts( *(point2d*)c.link ); break;
 			default: out += "?"; break;
 		}
 	}
-	
+
 	AddMessage(out);
 }
 
@@ -369,14 +369,14 @@ void Console::SaveText()
 	string s;
 	s = "saved/" + mSavePrefix + timestamp(true) + ".html";
 	buildDirectoryTree(s);
-	
+
 	FILE* f = fopen(s.c_str(), "w");
 	if (!f)
 	{
 		AddMessage("\\c900* Could not open output file");
 		return;
 	}
-	
+
 	fprintf(f, "<html>\n<head>\n"
 				"<title>Saved %s</title>\n"
 				"</head>\n<body bgcolor=\"#000000\">\n", timestamp(true).c_str());
@@ -384,11 +384,11 @@ void Console::SaveText()
 	string c;
 	for (int i = 0; i < mOutput->mRawText.size(); i++)
 	{
-		//Split up the line via \cRGB 
+		//Split up the line via \cRGB
 		explode(&v, &mOutput->mRawText.at(i), "\\c");
 		for (int ii = 0; ii < v.size(); ii++)
 		{
-			if (ii == 0 && mOutput->mRawText.at(i).find("\\c", 0) != 0) 
+			if (ii == 0 && mOutput->mRawText.at(i).find("\\c", 0) != 0)
 			{
 				//if we don't have a font color defined, use default
 				c = "FFFFFF";

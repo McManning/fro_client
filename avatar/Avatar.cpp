@@ -12,7 +12,7 @@ void callback_avatarDownloadSuccess(downloadData* data)
 		a->mImage = resman->LoadImg(data->filename, a->mPass);
 		a->mState = (a->mImage) ? Avatar::LOADED : Avatar::BADIMAGE;
 	}
-	
+
 	//clean up our cache file, regardless of results
 	removeFile(data->filename);
 }
@@ -24,7 +24,7 @@ void callback_avatarDownloadFailure(downloadData* data)
 	{
 		a->mState = Avatar::FAILED;
 	}
-	
+
 	removeFile(data->filename);
 }
 
@@ -39,7 +39,7 @@ Avatar::~Avatar()
 {
 	if (mDisplayedImage != mImage)
 		resman->Unload(mDisplayedImage);
-		
+
 	resman->Unload(mImage);
 	downloader->NullMatchingUserData(this);
 }
@@ -47,9 +47,9 @@ Avatar::~Avatar()
 bool Avatar::Modify(byte modifier)
 {
 	RevertModification();
-	
+
 	if (modifier != MOD_NONE)
-	{	
+	{
 		mDisplayedImage = mImage->Clone(true); //create a deep copy of mImage
 		if (!mDisplayedImage)
 			return false;
@@ -72,13 +72,13 @@ bool Avatar::Modify(byte modifier)
 				DEBUGOUT("Applying MOD_GHOST To Avatar");
 				mDisplayedImage->ReduceAlpha(200);
 				break;
-			default: 
-				console->AddMessage("\\c900 * Unknown Avatar Modifier: " + its(modifier)); 
+			default:
+				console->AddMessage("\\c900 * Unknown Avatar Modifier: " + its(modifier));
 				return false;
 				break;
 		}
 	}
-	
+
 	mModifier = modifier;
 	return true;
 }
@@ -86,7 +86,7 @@ bool Avatar::Modify(byte modifier)
 void Avatar::RevertModification()
 {
 	if (mDisplayedImage && mDisplayedImage != mImage)
-	{	
+	{
 		resman->Unload(mDisplayedImage);
 		mDisplayedImage = NULL;
 	}
@@ -97,21 +97,21 @@ bool Avatar::Convert()
 {
 	if (!mImage || !mImage->mImage)
 		return false;
-		
+
 	//TODO: Remove this GIF-block when we fix gif crashers
 	if (mImage->mImage->format == IMG_FORMAT_GIF)
 	{
 		mError = "GIF format not supported";
 		return false;
 	}
-	
+
 	// jpg, for avies? Are you crazy?
 	if (mImage->mImage->format == IMG_FORMAT_JPG)
 	{
 		mError = "JPG format not supported";
 		return false;
 	}
-	
+
 	return mImage->ConvertToAvatarFormat(mWidth, mHeight, mDelay, mFlags & AVATAR_FLAG_LOOPSTAND, mFlags & AVATAR_FLAG_LOOPSIT);
 }
 
@@ -131,24 +131,24 @@ void Avatar::Load()
 	resman->Unload(mImage);
 	resman->Unload(mDisplayedImage);
 	mDisplayedImage = mImage = NULL;
-	
+
 	if (mUrl.find("avy://", 0) == 0)
 	{
 		DEBUGOUT("Loading as composite");
 		mState = BADIMAGE; //if LoadComposite is successful, will set to LOADED
-		LoadComposite();	
+		LoadComposite();
 	}
 	else if (mUrl.find("http://", 0) == 0)
 	{
-		string file = DIR_CACHE + md5(mUrl.c_str(), mUrl.length());
-		
-		if (!downloader->QueueDownload(mUrl, file, this, callback_avatarDownloadSuccess, 
+		string file = DIR_CACHE + MD5String(mUrl.c_str());
+
+		if (!downloader->QueueDownload(mUrl, file, this, callback_avatarDownloadSuccess,
 										callback_avatarDownloadFailure,
 										true, false, "", MAX_AVATAR_FILESIZE))
 		{
 			DEBUGOUT("Could not queue avatar download");
 		}
-		
+
 		mState = LOADING;
 	}
 	else //local file
@@ -162,13 +162,13 @@ void Avatar::Load()
 void Avatar::LoadComposite()
 {
 	string url = mUrl.substr(6); //cut off avy://
-	
+
 	vString v;
 	explode(&v, &url, ".");
-	
+
 	if (v.size() < 7)
 		return;
-	
+
 	string base = v.at(0);
 	string sHead = v.at(1);
 	string sBody = v.at(3);
@@ -176,16 +176,16 @@ void Avatar::LoadComposite()
 	color cHead = hexToColor(v.at(2));
 	color cBody = hexToColor(v.at(4));
 	color cHair = hexToColor(v.at(6));
-	
+
 	//If any of these colors are greyscale, re-adjust them slightly to avoid conflict with the colorize routine
 	if (isGreyscale(cHead)) cHead.r += (cHead.r > 0) ? -1 : 1;
 	if (isGreyscale(cBody)) cBody.r += (cBody.r > 0) ? -1 : 1;
 	if (isGreyscale(cHair)) cHair.r += (cHair.r > 0) ? -1 : 1;
-	
+
 	Image* iHead = resman->LoadImg(DIR_AVA + base + ".head." + sHead + ".png");
 	Image* iBody = resman->LoadImg(DIR_AVA + base + ".body." + sBody + ".png");
 	Image* iHair = resman->LoadImg(DIR_AVA + base + ".hair." + sHair + ".png");
-	
+
 	//if we are lacking a resource, bad avy.
 	if (!iHead || !iBody || !iHair)
 		return;
@@ -209,7 +209,7 @@ void Avatar::LoadComposite()
 	iHair->Render(mImage, 0, 0);
 	mImage->ColorizeGreyscale(cHair);
 	resman->Unload(iHair);
-	
+
 	mState = LOADED;
 }
 
@@ -220,14 +220,14 @@ void Avatar::ToFiles()
 	if (!buildDirectoryTree(dir))
 		return;
 	string file;
-	
+
 	file = dir + "info.txt";
 	FILE* f = fopen(file.c_str(), "w");
-	
+
 	SDL_Image* img = GetImage()->mImage;
-	
+
 	fprintf(f, "Original File: %s - Format: %i\n", img->filename.c_str(), img->format);
-	
+
 	for (int i = 0; i < img->framesets.size(); i++)
 	{
 		fprintf(f, "Frameset %s - Loop: %i\n", img->framesets.at(i).key.c_str(), img->framesets.at(i).loop);
@@ -238,7 +238,7 @@ void Avatar::ToFiles()
 			IMG_SavePNG(file.c_str(), img->framesets.at(i).frames.at(ii).surf);
 		}
 	}
-	
+
 	fclose(f);
 }
 

@@ -49,7 +49,7 @@ void callback_FileDownload_Failure(downloadData* data)
 	if (au)
 	{
 		string reason = its(data->errorCode) + ":" + its(data->httpError);
-		
+
 		au->FileDownloadFailure(data->url, data->filename, reason);
 	}
 }
@@ -59,7 +59,7 @@ void callback_saveUpdaterLog(Button* b)
 	AutoUpdater* au = (AutoUpdater*)b->GetParent();
 	if (au)
 	{
-		au->SaveLog();	
+		au->SaveLog();
 	}
 }
 
@@ -68,7 +68,7 @@ void callback_retryUpdate(Button* b)
 	AutoUpdater* au = (AutoUpdater*)b->GetParent();
 	if (au)
 	{
-		au->Retry();	
+		au->Retry();
 	}
 }
 
@@ -76,18 +76,18 @@ AutoUpdater::AutoUpdater()
 	: Frame(gui, "AutoUpdater", rect(0,0,400,300), "Auto Updater (LOLBETA)", true, false, false, true)
 {
 	//DemandFocus();
-	
+
 	mLog = new Multiline(this, "", rect(5, 55, Width() - 10, Height() - 85));
 		//mLog->mHighlightSelected = true;
 		mLog->mWrap = false;
-		
+
 	mProgress = new Label(this, "", rect(5, 30), "Starting...");
-	
+
 	Button* b;
 	b = new Button(this, "", rect(Width()-25, Height()-25, 20, 20), "", callback_saveUpdaterLog);
 		b->SetImage("assets/buttons/clipboard.png");
 		b->mHoverText = "Save Log";
-	
+
 	mRetry = new Button(this, "", rect(5, Height()-25, 20, 20), "", callback_retryUpdate);
 		mRetry->SetImage("assets/buttons/reload_worlds.png");
 		mRetry->mHoverText = "Retry Update";
@@ -104,7 +104,7 @@ void AutoUpdater::Retry()
 {
 	mCompletedFiles = 0;
 	mTotalFiles = 0;
-	
+
 	mLog->AddMessage("\\c900<!> Retrying Update");
 	SendRequestForManifest();
 }
@@ -112,7 +112,7 @@ void AutoUpdater::Retry()
 void AutoUpdater::SendRequestForManifest()
 {
 	mRetry->SetActive(false);
-	
+
 	//generate the request url
 	string url = "http://sybolt.com/drm-svr/update.php";
 	url += "?ver=" VER_STRING;
@@ -123,9 +123,9 @@ void AutoUpdater::SendRequestForManifest()
 
 	SetState(AUTOUPDATER_GETTING_MANIFEST);
 
-	if (!downloader->QueueDownload(url, file, 
-									this, 
-									callback_manifestResponse_Success, 
+	if (!downloader->QueueDownload(url, file,
+									this,
+									callback_manifestResponse_Success,
 									callback_manifestResponse_Failure,
 									true, true))
 	{
@@ -145,27 +145,27 @@ void AutoUpdater::ParseManifest()
 	if (!fileToString(text, DIR_CACHE "manifest.res"))
 	{
 		SetError("Failed to load manifest file");
-		return;	
+		return;
 	}
 
 	mCompletedFiles = 0;
 	mTotalFiles = 0;
-	
+
 	//check for error:Some message
 	if (text.find("error:", 0) == 0)
 	{
 		SetError(text.substr(6));
 		return;
 	}
-	
+
 	QueueFiles(text);
 }
-	
+
 /**
 	If a master:URL line is read in, will change the master source for updates.
 	If a URL:HASH line is read in, will md5 hash the matching local file. If the local
-		does not match the remote, it will queue a download to replace the local. 
-	Will also check for .gz'd files, and compare uncompressed hashes. 
+		does not match the remote, it will queue a download to replace the local.
+	Will also check for .gz'd files, and compare uncompressed hashes.
 */
 void AutoUpdater::QueueFiles(string& items)
 {
@@ -178,7 +178,7 @@ void AutoUpdater::QueueFiles(string& items)
 
 	if (items.empty())
 		return;
-	
+
 	replace(&items, "\r", "");
 	explode(&v, &items, "\n");
 
@@ -206,14 +206,14 @@ void AutoUpdater::QueueFiles(string& items)
 				SetError("Malformed manifest");
 				return;
 			}
-			
+
 			v2.clear();
 			explode(&v2, &v.at(i), ":");
 
 			path = v2.at(0);
 			url = master + path;
 			download = true;
-			
+
 			// @todo This is hacky. Improve it.
 			if (path.find(".~", 0) == 0)
 			{
@@ -232,12 +232,12 @@ void AutoUpdater::QueueFiles(string& items)
 					if (fileExists(path)
 						|| (isMergable && fileExists(".~" + path)))
 						download = false;
-					
+
 					break;
 				case 2: // path/to/file.ext:UNCOMPRESSED_HASH
 					// if files match, don't download
-					if (md5file(path) == v2.at(1) 
-						|| (isMergable && md5file(".~" + path) == v2.at(1)))
+					if (MD5File(path) == v2.at(1)
+						|| (isMergable && MD5File(".~" + path) == v2.at(1)))
 					{
 						download = false;
 					}
@@ -247,12 +247,12 @@ void AutoUpdater::QueueFiles(string& items)
 					}
 					break;
 				case 3: // path/to/file.ext:UNCOMPRESSED_HASH:COMPRESSED_HASH
-					
+
 					path.erase(path.length()-3); // erase .gz extension
-					
+
 					// if our local hash matches the uncompressed one, don't download
-					if (md5file(path) == v2.at(1)
-						|| (isMergable && md5file(".~" + path) == v2.at(1)))
+					if (MD5File(path) == v2.at(1)
+						|| (isMergable && MD5File(".~" + path) == v2.at(1)))
 					{
 						download = false;
 					}
@@ -270,10 +270,10 @@ void AutoUpdater::QueueFiles(string& items)
 
 			if (download)
 				GetFile(url, path, hash);
-				
+
 		} // if !v.at(i).empty()
 	} // for all in v
-	
+
 	//if the manifest is empty, or we got everything, we're done!
 	if (mTotalFiles == 0)
 	{
@@ -285,7 +285,7 @@ void AutoUpdater::QueueFiles(string& items)
 void AutoUpdater::GetFile(string& url, string& file, string& hash)
 {
 	++mTotalFiles;
-	
+
 	mLog->AddMessage(file);
 	if (!downloader->QueueDownload(url, file, this,
 								callback_FileDownload_Success,
@@ -303,8 +303,8 @@ void AutoUpdater::FileDownloadSuccess(string& url, string& filename)
 	if (ExtractFile(filename))
 	{
 		mLog->AddMessage("\\c050* Finished " + filename);
-		mProgress->SetCaption("Progress " + its(mCompletedFiles) + "/" + its(mTotalFiles));	
-		
+		mProgress->SetCaption("Progress " + its(mCompletedFiles) + "/" + its(mTotalFiles));
+
 		if (mCompletedFiles == mTotalFiles)
 		{
 			SetState(AUTOUPDATER_COMPLETE);
@@ -328,22 +328,22 @@ bool AutoUpdater::ExtractFile(string& file)
 			SetError("Failed to decompress " + file);
 			return false;
 		}
-		
+
 		/*	Don't need to worry about hashing the decompressed. If decompression was
-			a success, then we know it maintained integrity. 
+			a success, then we know it maintained integrity.
 		*/
-		
+
 		// get rid of the compressed version
 		removeFile(file);
 	}
-	
+
 	return true;
 }
 
 void AutoUpdater::Finished()
 {
 	// shell the merger (if necessary) and kill fro
-	
+
 	// Just do it regardless
 
 	appState = APPSTATE_CLOSING;
@@ -353,12 +353,12 @@ void AutoUpdater::Finished()
 	// send it our process ID to let merger wait for us to close (or terminate if need be)
 	char buffer[64];
 	sprintf(buffer, "%d", GetCurrentProcessId());
-	
+
 	int result = (int)ShellExecute(NULL, "open", "merger.exe", buffer, NULL, SW_SHOWNORMAL);
 	if (result <= 32)
 	{
 		sprintf(buffer, "Encountered error code %d while trying to execute merger.exe", result);
-		
+
 		MessageBox(NULL, buffer, "Error",
 					MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
 	}
@@ -371,7 +371,7 @@ void AutoUpdater::SetState(int state)
 {
 	//something
 	DEBUGOUT("Setting state: " + its(state));
-	
+
 	switch (state)
 	{
 		case AUTOUPDATER_GETTING_MANIFEST:
@@ -391,7 +391,7 @@ void AutoUpdater::SetState(int state)
 			Finished();
 			break;
 		case AUTOUPDATER_ERROR:
-			
+
 			// so next time it'll try again
 			removeFile(DIR_CACHE "manifest.res");
 			mRetry->SetActive(true);
@@ -407,7 +407,7 @@ void AutoUpdater::SetError(string error)
 	console->AddMessage("\\c500[AutoUpdater] " + error);
 
 	// messagepopup?
-	
+
 	SetState(AUTOUPDATER_ERROR);
 }
 
@@ -419,14 +419,14 @@ void AutoUpdater::SaveLog()
 	string s;
 	s = "saved/updatelog_" + timestamp(true) + ".html";
 	buildDirectoryTree(s);
-	
+
 	FILE* f = fopen(s.c_str(), "w");
 	if (!f)
 	{
 		mLog->AddMessage("\\c500* Could not open output file");
 		return;
 	}
-	
+
 	fprintf(f, "<html>\n<head>\n"
 				"<title>Saved %s</title>\n"
 				"</head>\n<body bgcolor=\"#FFFFFF\">\n", timestamp(true).c_str());
@@ -434,11 +434,11 @@ void AutoUpdater::SaveLog()
 	string c;
 	for (int i = 0; i < mLog->mRawText.size(); i++)
 	{
-		//Split up the line via \cRGB 
+		//Split up the line via \cRGB
 		explode(&v, &mLog->mRawText.at(i), "\\c");
 		for (int ii = 0; ii < v.size(); ii++)
 		{
-			if (ii == 0 && mLog->mRawText.at(i).find("\\c", 0) != 0) 
+			if (ii == 0 && mLog->mRawText.at(i).find("\\c", 0) != 0)
 			{
 				//if we don't have a font color defined, use default
 				c = "000000";

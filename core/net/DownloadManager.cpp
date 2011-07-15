@@ -31,7 +31,7 @@ int thread_downloader(void* param)
 {
 	downloadThread* dt = (downloadThread*)param;
 	int result;
-	
+
 	//while (!downloader->mFlushing)
 	while (!isAppClosing())
 	{
@@ -99,7 +99,7 @@ uShort callback_downloaderManagerProcess(timer* t, uLong ms)
 {
 	DownloadManager* dm = (DownloadManager*)t->userData;
 	ASSERT(dm);
-	dm->Process();	
+	dm->Process();
 	return TIMER_CONTINUE;
 }
 
@@ -124,7 +124,7 @@ DownloadManager::~DownloadManager()
 PRINT("DL::~DL");
 	Flush(); //in case it wasn't called earlier
 	timers->RemoveMatchingUserData(this);
-	
+
 	//shut down winsocks
 #ifdef WIN32
 	WSACleanup(); //clean up winsocks
@@ -161,9 +161,9 @@ PRINT("DL::Init Building Mutexes");
 	mCompletedMutex = SDL_CreateMutex();
 PRINT("DL::Init Done");
 
-	timers->AddProcess("dlman", 
-						callback_downloaderManagerProcess, 
-						NULL, 
+	timers->AddProcess("dlman",
+						callback_downloaderManagerProcess,
+						NULL,
 						this);
 
 	return true;
@@ -176,10 +176,10 @@ void DownloadManager::Flush()
 	for (i = 0; i < mThreads.size(); i++)
 	{
 		//Wait for each thread to time out, they will once their current download is complete.
-		
+
 		//PRINT("Waiting for thread " + its(i) + ": " + pts(mThreads.at(i)->thread));
 		//SDL_WaitThread(mThreads.at(i)->thread, NULL);
-		
+
 		if (mThreads.at(i) && mThreads.at(i)->thread)
 		{
 			WARNING("Forcing a kill on thread " + pts(mThreads.at(i)->thread));
@@ -235,7 +235,7 @@ void DownloadManager::Flush()
 }
 
 void DownloadManager::Process()
-{	
+{
 	SDL_LockMutex(mCompletedMutex);
 
 	MessageData md;
@@ -248,29 +248,30 @@ void DownloadManager::Process()
 			//check for a bad hash for completed downloads
 			if ( mCompleted.at(i)->errorCode == DEC_SUCCESS )
 			{
-				if (!mCompleted.at(i)->md5hash.empty() 
-					&& md5file(mCompleted.at(i)->filename) != mCompleted.at(i)->md5hash)
+				if (!mCompleted.at(i)->md5hash.empty()
+					&& MD5File(mCompleted.at(i)->filename) != mCompleted.at(i)->md5hash)
 				{
+				    FATAL("Hash Check failure of " + mCompleted.at(i)->filename + " :: " + MD5File(mCompleted.at(i)->filename) + " vs " + mCompleted.at(i)->md5hash);
 					mCompleted.at(i)->errorCode = DEC_BADHASH;
 				}
 			}
-			
+
 			//finally, do our callbacks based on our error code
 			if ( mCompleted.at(i)->errorCode == DEC_SUCCESS )
 			{
 				if (mCompleted.at(i)->onSuccess)
 					mCompleted.at(i)->onSuccess(mCompleted.at(i));
-					
+
 				md.SetId("NET_DOWNLOAD_SUCCESS");
 			}
 			else
 			{
 				if (mCompleted.at(i)->onFailure)
 					mCompleted.at(i)->onFailure(mCompleted.at(i));
-					
+
 				md.SetId("NET_DOWNLOAD_FAILURE");
 			}
-			
+
 			// Send a global event notice
 			md.WriteString("url", mCompleted.at(i)->url);
 			md.WriteString("local", mCompleted.at(i)->filename);
@@ -280,7 +281,7 @@ void DownloadManager::Process()
 			messenger.Dispatch(md);
 
 			ProcessMatchingWaitingDownloads(mCompleted.at(i));
-	
+
 			delete mCompleted.at(i);
 		}
 	}
@@ -301,7 +302,7 @@ void DownloadManager::ProcessMatchingWaitingDownloads(downloadData* completed)
 			// They could have different files with the same URL
 			if (mWaiting.at(w)->filename != completed->filename)
 			{
-				copyFile(completed->filename, mWaiting.at(w)->filename);	
+				copyFile(completed->filename, mWaiting.at(w)->filename);
 			}
 
 			// do our callbacks based on our error code
@@ -315,7 +316,7 @@ void DownloadManager::ProcessMatchingWaitingDownloads(downloadData* completed)
 				if (mWaiting.at(w)->onFailure)
 					mWaiting.at(w)->onFailure(mWaiting.at(w));
 			}
-			
+
 			delete mWaiting.at(w);
 			mWaiting.erase(mWaiting.begin() + w);
 			--w;
@@ -342,17 +343,17 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 	data->errorCode = DEC_LOADING;
 	data->md5hash = md5hash;
 	data->byteCap = byteCap;
-	
+
 	if (overwrite)
 	{
 		//only erase the old file if it isn't a match
-		if (fileExists(file) &&  md5file(file) != md5hash)
+		if (fileExists(file) &&  MD5File(file) != md5hash)
 			removeFile(file);
 	}
 
 	//build directory structure if it's not there already
 	buildDirectoryTree(file);
-	
+
 	// if we're already downloading this file, store elsewhere
 	if (IsUrlQueued(url))
 	{
@@ -364,7 +365,7 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 		mQueued.push_back(data);
 		SDL_UnlockMutex(mQueuedMutex);
 	}
-	
+
 	MessageData md("NET_DOWNLOAD_QUEUED");
 	md.WriteString("url", url);
 	md.WriteString("local", file);
@@ -375,13 +376,13 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 }
 
 bool DownloadManager::IsUrlQueued(const string& url)
-{	
+{
 	int i;
 	bool result = false;
-	
+
 	SDL_LockMutex(mCompletedMutex);
 	SDL_LockMutex(mQueuedMutex);
-	
+
 	for (i = 0; i < mCompleted.size(); i++)
 	{
 		if (mCompleted.at(i)->url == url)
@@ -402,12 +403,12 @@ bool DownloadManager::IsUrlQueued(const string& url)
 			}
 		}
 	}
-	
+
 	if (!result)
 	{
 		for (i = 0; i < mThreads.size(); ++i)
 		{
-			if (mThreads.at(i)->currentData 
+			if (mThreads.at(i)->currentData
 				&& mThreads.at(i)->currentData->url == url)
 			{
 				result = true;
@@ -418,7 +419,7 @@ bool DownloadManager::IsUrlQueued(const string& url)
 
 	SDL_UnlockMutex(mCompletedMutex);
 	SDL_UnlockMutex(mQueuedMutex);
-	
+
 	return result;
 }
 
@@ -428,7 +429,7 @@ int DownloadManager::CountActiveDownloads()
 	for (int i = 0; i < mThreads.size(); ++i)
 	{
 		if (mThreads.at(i)->currentData)
-			++result;	
+			++result;
 	}
 	return result;
 }
@@ -437,7 +438,7 @@ int DownloadManager::CountMatchingUserData(void* userData)
 {
 	int count = 0;
 	int i;
-	
+
 	//lock these together to stop the threads from processing further COMPLETELY
 	SDL_LockMutex(mCompletedMutex);
 	SDL_LockMutex(mQueuedMutex);
@@ -453,7 +454,7 @@ int DownloadManager::CountMatchingUserData(void* userData)
 		if (mQueued.at(i)->userData == userData)
 			++count;
 	}
-	
+
 	for (i = 0; i < mWaiting.size(); i++)
 	{
 		if (mWaiting.at(i)->userData == userData)
@@ -471,7 +472,7 @@ int DownloadManager::CountMatchingUserData(void* userData)
 
 	SDL_UnlockMutex(mCompletedMutex);
 	SDL_UnlockMutex(mQueuedMutex);
-	
+
 	return count;
 }
 
@@ -498,7 +499,7 @@ bool DownloadManager::NullMatchingUserData(void* userData)
 		if (mQueued.at(i)->userData == userData)
 			mQueued.at(i)->userData = NULL;
 	}
-	
+
 	for (i = 0; i < mWaiting.size(); i++)
 	{
 		if (mWaiting.at(i)->userData == userData)
@@ -673,7 +674,7 @@ int sendHttpGet(string url, string file, int cap)
 	if (y != 0 && y != SOCKET_ERROR)
 	{
 		f.open(file.c_str(), std::fstream::out|std::fstream::trunc|std::fstream::binary);
-		
+
 	    string buffer = buff;
 
 	    headerEnd = buffer.find("\r\n\r\n", 0);
@@ -694,7 +695,7 @@ int sendHttpGet(string url, string file, int cap)
 			size = 0;
 		}
 		p = y - headerEnd; //current amount written NOT including the header
-		
+
 		while (p < size || size == 0)
 		{
 			//check for files that are too large. If they are, cancel download and delete file
@@ -702,7 +703,7 @@ int sendHttpGet(string url, string file, int cap)
 			{
 				f.close();
 				result = HTTP_FILESIZE_CAPPED;
-				break;	
+				break;
 			}
 
 			y = recv(conn, buff, sizeof(buff), 0);
@@ -718,7 +719,7 @@ int sendHttpGet(string url, string file, int cap)
 				p += y;
 			}
 		}
-		
+
 		f.close();
 	}
 
@@ -734,6 +735,6 @@ int sendHttpGet(string url, string file, int cap)
 	{
 		removeFile(file);
 	}
-	
+
 	return result;
 }

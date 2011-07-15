@@ -1,4 +1,7 @@
 
+#include <cstdlib>
+#include <stdio.h>
+#include <string.h>
 #include <zlib.h>
 #include "BoltFile.h"
 

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="fro" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="..\w32bin\fro_d" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="..\w32bin\" />
+				<Option object_output="..\w32obj" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-ansi" />
+					<Add option="-g" />
+					<Add option="-D__DEBUG__" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="..\w32bin\fro" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="..\w32bin\" />
+				<Option object_output="..\w32obj" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+			</Target>
+		</Build>
+		<Compiler>
+			<Add directory="C:\Dev-Cpp\include\freetype2" />
+		</Compiler>
+		<Linker>
+			<Add library="mingw32" />
+			<Add library="SDLmain" />
+			<Add library="SDL" />
+			<Add library="png" />
+			<Add library="freetype" />
+			<Add library="zdll" />
+			<Add library="jpeg" />
+			<Add library="wsock32" />
+			<Add library="lua5.1" />
+		</Linker>
+		<Unit filename="..\avatar\Avatar.cpp" />
+		<Unit filename="..\avatar\Avatar.h" />
+		<Unit filename="..\avatar\AvatarProperties.cpp" />
+		<Unit filename="..\avatar\AvatarProperties.h" />
+		<Unit filename="fro_private.h" />
+		<Unit filename="fro_private.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="..\core\Common.cpp" />
+		<Unit filename="..\core\Common.h" />
+		<Unit filename="..\core\Core.h" />
+		<Unit filename="..\core\FontManager.cpp" />
+		<Unit filename="..\core\FontManager.h" />
+		<Unit filename="..\core\GuiManager.cpp" />
+		<Unit filename="..\core\GuiManager.h" />
+		<Unit filename="..\core\Image.cpp" />
+		<Unit filename="..\core\Image.h" />
+		<Unit filename="..\core\MessageData.cpp" />
+		<Unit filename="..\core\MessageData.h" />
+		<Unit filename="..\core\MessageManager.cpp" />
+		<Unit filename="..\core\MessageManager.h" />
+		<Unit filename="..\core\RectManager.cpp" />
+		<Unit filename="..\core\RectManager.h" />
+		<Unit filename="..\core\ResourceManager.cpp" />
+		<Unit filename="..\core\ResourceManager.h" />
+		<Unit filename="..\core\SDL\IMG.c">
+			<Option compilerVar="CPP" />
+		</Unit>
+		<Unit filename="..\core\SDL\IMG_bmp.c">
+			<Option compilerVar="CPP" />
+		</Unit>
+		<Unit filename="..\core\SDL\IMG_gif.c">
+			<Option compilerVar="CPP" />
+		</Unit>
+		<Unit filename="..\core\SDL\IMG_jpg.c">
+			<Option compilerVar="CPP" />
+		</Unit>
+		<Unit filename="..\core\SDL\IMG_mng.c">
+			<Option compilerVar="CPP" />
+		</Unit>
+		<Unit filename="..\core\SDL\IMG_png.c">
+			<Option compilerVar="CPP" />
+		</Unit>
+		<Unit filename="..\core\SDL\SDL_Image.h" />
+		<Unit filename="..\core\SDL\SDL_Misc.cpp" />
+		<Unit filename="..\core\SDL\SDL_Misc.h" />
+		<Unit filename="..\core\SDL\SDL_gfxBlitFunc.c">
+			<Option compilerVar="CPP" />
+		</Unit>
+		<Unit filename="..\core\SDL\SDL_gfxBlitFunc.h" />
+		<Unit filename="..\core\SDL\SDL_gfxPrimitives.c">
+			<Option compilerVar="CPP" />
+		</Unit>
+		<Unit filename="..\core\SDL\SDL_gfxPrimitives.h" />
+		<Unit filename="..\core\SDL\SDL_rotozoom.cpp" />
+		<Unit filename="..\core\SDL\SDL_rotozoom.h" />
+		<Unit filename="..\core\SDL\SDL_ttf.c">
+			<Option compilerVar="CPP" />
+		</Unit>
+		<Unit filename="..\core\SDL\SDL_ttf.h" />
+		<Unit filename="..\core\Screen.cpp" />
+		<Unit filename="..\core\Screen.h" />
+		<Unit filename="..\core\TimerManager.cpp" />
+		<Unit filename="..\core\TimerManager.h" />
+		<Unit filename="..\core\io\BoltFile.cpp" />
+		<Unit filename="..\core\io\BoltFile.h" />
+		<Unit filename="..\core\io\Crypt.cpp" />
+		<Unit filename="..\core\io\Crypt.h" />
+		<Unit filename="..\core\io\FileIO.cpp" />
+		<Unit filename="..\core\io\FileIO.h" />
+		<Unit filename="..\core\io\KeyValueMap.cpp" />
+		<Unit filename="..\core\io\KeyValueMap.h" />
+		<Unit filename="..\core\io\md5.cpp" />
+		<Unit filename="..\core\io\md5.h" />
+		<Unit filename="..\core\io\tinyxml\tinyxml.cpp" />
+		<Unit filename="..\core\io\tinyxml\tinyxml.h" />
+		<Unit filename="..\core\io\tinyxml\tinyxmlerror.cpp" />
+		<Unit filename="..\core\io\tinyxml\tinyxmlparser.cpp" />
+		<Unit filename="..\core\net\DataPacket.cpp" />
+		<Unit filename="..\core\net\DataPacket.h" />
+		<Unit filename="..\core\net\DownloadManager.cpp" />
+		<Unit filename="..\core\net\DownloadManager.h" />
+		<Unit filename="..\core\net\IrcNet2.cpp" />
+		<Unit filename="..\core\net\IrcNet2.h" />
+		<Unit filename="..\core\net\TextSocketConnection.cpp" />
+		<Unit filename="..\core\net\TextSocketConnection.h" />
+		<Unit filename="..\core\widgets\Button.cpp" />
+		<Unit filename="..\core\widgets\Button.h" />
+		<Unit filename="..\core\widgets\Checkbox.cpp" />
+		<Unit filename="..\core\widgets\Checkbox.h" />
+		<Unit filename="..\core\widgets\ColorPicker.cpp" />
+		<Unit filename="..\core\widgets\ColorPicker.h" />
+		<Unit filename="..\core\widgets\Console.cpp" />
+		<Unit filename="..\core\widgets\Console.h" />
+		<Unit filename="..\core\widgets\Frame.cpp" />
+		<Unit filename="..\core\widgets\Frame.h" />
+		<Unit filename="..\core\widgets\HintBalloon.cpp" />
+		<Unit filename="..\core\widgets\HintBalloon.h" />
+		<Unit filename="..\core\widgets\Input.cpp" />
+		<Unit filename="..\core\widgets\Input.h" />
+		<Unit filename="..\core\widgets\Label.cpp" />
+		<Unit filename="..\core\widgets\Label.h" />
+		<Unit filename="..\core\widgets\MessagePopup.cpp" />
+		<Unit filename="..\core\widgets\MessagePopup.h" />
+		<Unit filename="..\core\widgets\Multiline.cpp" />
+		<Unit filename="..\core\widgets\Multiline.h" />
+		<Unit filename="..\core\widgets\OpenUrl.cpp" />
+		<Unit filename="..\core\widgets\OpenUrl.h" />
+		<Unit filename="..\core\widgets\RightClickMenu.cpp" />
+		<Unit filename="..\core\widgets\RightClickMenu.h" />
+		<Unit filename="..\core\widgets\Scrollbar.cpp" />
+		<Unit filename="..\core\widgets\Scrollbar.h" />
+		<Unit filename="..\core\widgets\SmallSelect.cpp" />
+		<Unit filename="..\core\widgets\SmallSelect.h" />
+		<Unit filename="..\core\widgets\Widget.cpp" />
+		<Unit filename="..\core\widgets\Widget.h" />
+		<Unit filename="..\core\widgets\WidgetList.cpp" />
+		<Unit filename="..\core\widgets\WidgetList.h" />
+		<Unit filename="..\core\widgets\YesNoPopup.cpp" />
+		<Unit filename="..\core\widgets\YesNoPopup.h" />
+		<Unit filename="..\entity\Actor.cpp" />
+		<Unit filename="..\entity\Actor.h" />
+		<Unit filename="..\entity\ChatBubble.cpp" />
+		<Unit filename="..\entity\ChatBubble.h" />
+		<Unit filename="..\entity\DamageIcon.cpp" />
+		<Unit filename="..\entity\DamageIcon.h" />
+		<Unit filename="..\entity\Entity.cpp" />
+		<Unit filename="..\entity\Entity.h" />
+		<Unit filename="..\entity\EntityManager.cpp" />
+		<Unit filename="..\entity\EntityManager.h" />
+		<Unit filename="..\entity\ExplodingEntity.cpp" />
+		<Unit filename="..\entity\ExplodingEntity.h" />
+		<Unit filename="..\entity\LocalActor.cpp" />
+		<Unit filename="..\entity\LocalActor.h" />
+		<Unit filename="..\entity\RemoteActor.cpp" />
+		<Unit filename="..\entity\RemoteActor.h" />
+		<Unit filename="..\entity\StaticObject.cpp" />
+		<Unit filename="..\entity\StaticObject.h" />
+		<Unit filename="..\entity\TextObject.cpp" />
+		<Unit filename="..\entity\TextObject.h" />
+		<Unit filename="..\game\ChatCommands.cpp" />
+		<Unit filename="..\game\ChatCommands.h" />
+		<Unit filename="..\game\CollisionBlob.cpp" />
+		<Unit filename="..\game\CollisionBlob.h" />
+		<Unit filename="..\game\GameManager.cpp" />
+		<Unit filename="..\game\GameManager.h" />
+		<Unit filename="..\game\WorldLoader.cpp" />
+		<Unit filename="..\game\WorldLoader.h" />
+		<Unit filename="..\interface\AutoUpdater.cpp" />
+		<Unit filename="..\interface\AutoUpdater.h" />
+		<Unit filename="..\interface\AvatarCreator.cpp" />
+		<Unit filename="..\interface\AvatarCreator.h" />
+		<Unit filename="..\interface\AvatarEdit.cpp" />
+		<Unit filename="..\interface\AvatarEdit.h" />
+		<Unit filename="..\interface\AvatarFavorites.cpp" />
+		<Unit filename="..\interface\AvatarFavorites.h" />
+		<Unit filename="..\interface\LoginDialog.cpp" />
+		<Unit filename="..\interface\LoginDialog.h" />
+		<Unit filename="..\interface\OptionsDialog.cpp" />
+		<Unit filename="..\interface\OptionsDialog.h" />
+		<Unit filename="..\interface\ScreenText.cpp" />
+		<Unit filename="..\interface\ScreenText.h" />
+		<Unit filename="..\interface\UserList.cpp" />
+		<Unit filename="..\interface\UserList.h" />
+		<Unit filename="..\interface\WorldViewer.cpp" />
+		<Unit filename="..\interface\WorldViewer.h" />
+		<Unit filename="..\lua\ActorLib.cpp" />
+		<Unit filename="..\lua\ActorLib.h" />
+		<Unit filename="..\lua\CameraLib.cpp" />
+		<Unit filename="..\lua\CameraLib.h" />
+		<Unit filename="..\lua\ConvoLib.cpp" />
+		<Unit filename="..\lua\ConvoLib.h" />
+		<Unit filename="..\lua\EntityLib.cpp" />
+		<Unit filename="..\lua\EntityLib.h" />
+		<Unit filename="..\lua\EventsLib.cpp" />
+		<Unit filename="..\lua\EventsLib.h" />
+		<Unit filename="..\lua\GameLib.cpp" />
+		<Unit filename="..\lua\GameLib.h" />
+		<Unit filename="..\lua\LuaCommon.cpp" />
+		<Unit filename="..\lua\LuaCommon.h" />
+		<Unit filename="..\lua\MapLib.cpp" />
+		<Unit filename="..\lua\MapLib.h" />
+		<Unit filename="..\lua\PlayerLib.cpp" />
+		<Unit filename="..\lua\PlayerLib.h" />
+		<Unit filename="..\lua\SystemLib.cpp" />
+		<Unit filename="..\lua\SystemLib.h" />
+		<Unit filename="..\lua\TimersLib.cpp" />
+		<Unit filename="..\lua\TimersLib.h" />
+		<Unit filename="..\main.cpp" />
+		<Unit filename="..\map\Map.cpp" />
+		<Unit filename="..\map\Map.h" />
+		<Unit filename="..\net\CheckIn.cpp" />
+		<Unit filename="..\net\CheckIn.h" />
+		<Unit filename="..\net\IrcNetListeners.cpp" />
+		<Unit filename="..\net\IrcNetListeners.h" />
+		<Unit filename="..\net\IrcNetSenders.cpp" />
+		<Unit filename="..\net\IrcNetSenders.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

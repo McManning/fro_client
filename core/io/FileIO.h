@@ -8,9 +8,8 @@
 
 #include "../Common.h"
 
-
-string md5file(string file);
-string md5(const char* data, uLong len);
+string MD5String(const char* msg);
+string MD5File(string file);
 
 //decompresses into a temporary file, then descrambles decompressed back into fileName and deletes temp
 bool decryptFile(string infile, string outfile, string password, uLong encryptionLength);
@@ -59,7 +58,7 @@ bool vStringToFile(vString& v, string file, string delimiter);
 	path = a/b/c/file.ext
 	Will construct directory tree a/b/c/ in root if it does not exist
 	Returns false if it can't build directories, or the path is malformed
-	
+
 	Input -> Result
 	abc -> Is filename in root, returns true
 	abc/def -> Creates directory abc

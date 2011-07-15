@@ -1,5 +1,6 @@
 
 #include <SDL/SDL_syswm.h>
+#include <time.h>
 #include "Common.h"
 #include "io/FileIO.h"
 
@@ -9,10 +10,10 @@ void throwError(const char* file, int line, int num)
 {
 	systemErrorMessage("Fatal Error", "[" + string(file) + "] Code ln" + its(line) + " [" + its(num)
 							+ "] \n\nREPORT THIS IMMEDIATELY!");
-	
+
 	FILE* f = fopen("logs/error.log", "a");
 	if (f)
-	{			
+	{
 		fprintf(f, "[%s] THROW - %s:%i - %i\n", timestamp(true).c_str(), file, line, num);
 		fclose(f);
 	}
@@ -20,11 +21,11 @@ void throwError(const char* file, int line, int num)
 	exit(0); //Hateful, but necessary on fatal errors
 }
 
-void warning(const char* file, int line, string msg) 
+void warning(const char* file, int line, string msg)
 {
 	printf("WARNING [%s:%i] %s\n", file, line, msg.c_str());
 	fflush(stdout); //make sure this outputs
-	
+
 	FILE* f = fopen("logs/error.log", "a");
 	if (f)
 	{
@@ -33,11 +34,11 @@ void warning(const char* file, int line, string msg)
 	}
 }
 
-void fatal(const char* file, int line, string msg) 
+void fatal(const char* file, int line, string msg)
 {
 	printf("FATAL [%s:%i] %s\n", file, line, msg.c_str());
 	fflush(stdout); //make sure this outputs
-	systemErrorMessage("Fatal Error", 
+	systemErrorMessage("Fatal Error",
 						"[" + string(file) + ":" + its(line) + "] "
 							+ msg + "\n\nREPORT THIS IMMEDIATELY!");
 
@@ -47,17 +48,17 @@ void fatal(const char* file, int line, string msg)
 		fprintf(f, "[%s] FATAL - %s:%i - %s\n", timestamp(true).c_str(), file, line, msg.c_str());
 		fclose(f);
 	}
-							
+
 	exit(0); //Hateful, but necessary on fatal errors
 }
 
-void print(string msg) 
+void print(string msg)
 {
 	printf("%s\n", msg.c_str());
 	fflush(stdout); //make sure this outputs
 }
 
-bool isAppClosing() 
+bool isAppClosing()
 {
 	return (appState == APPSTATE_CLOSING);
 }
@@ -216,7 +217,7 @@ bool isPointInPie(point2d center, int radius, int x, int y, int minDeg, int maxD
 
 	if (theta < min || theta > max)
 		return false;
- 
+
  	// != 0 is for game purposes only. Gives infinite vision.
 	if (radius != 0)
 	{
@@ -280,14 +281,14 @@ rect rectIntersection(const rect& a, const rect& b)
 	r.y = MAX(a.y, b.y);
 	sShort x2 = MIN(a.x+a.w, b.x+b.w);
 	sShort y2 = MIN(a.y+a.h, b.y+b.h);
-	
+
 	//check for invalid intersection
 	if (x2 < r.x || y2 < r.y)
 		return rect();
-	
+
 	r.w = x2 - r.x;
 	r.h = y2 - r.y;
-	
+
 	return r;
 }
 
@@ -338,12 +339,12 @@ bool isDefaultColor(color c)
 
 bool isGreyscale(color c)
 {
-	return (c.r == c.g && c.g == c.b);	
+	return (c.r == c.g && c.g == c.b);
 }
 
 color invertColor(color c)
 {
-	return color(255-c.r, 255-c.g, 255-c.b);	
+	return color(255-c.r, 255-c.g, 255-c.b);
 }
 
 bool isDark(color c)
@@ -385,7 +386,7 @@ string colorToHex(color c) //color(255,0,0) -> FF0000
 int hexToDec(string hex)
 {
     int value = 0;
-    
+
     int a = 0;
     int b = hex.length() - 1;
     for (; b >= 0; a++, b--)
@@ -433,21 +434,21 @@ color hexToColor(string hex) //FF0000 -> color(255,0,0)
 {
 	if (hex.at(0) == '#')
 		hex.erase(0, 1);
-	
-	color c;	
+
+	color c;
 	if (hex.size() > 1)
 		c.r = hexToDec(hex.substr(0, 2));
 	if (hex.size() > 3)
 		c.g = hexToDec(hex.substr(2, 2));
 	if (hex.size() > 5)
 		c.b = hexToDec(hex.substr(4, 2));
-		
+
 	return c;
 }
 
 /////////// STRING.H
 
-bool explode(vString* result, string* str, string delim, bool includeBlanks, int limit) 
+bool explode(vString* result, string* str, string delim, bool includeBlanks, int limit)
 {
 	if (!str || !result || str->empty() || delim.empty()) return false;
 
@@ -483,7 +484,7 @@ bool explode(vString* result, string* str, string delim, bool includeBlanks, int
 	return true;
 }
 
-bool implode(string* result, vString* vs, string delim) 
+bool implode(string* result, vString* vs, string delim)
 {
 	if (!vs || !result || vs->empty()) return false;
 
@@ -526,7 +527,7 @@ string GetFilenameFromUrl(string url)
 	? is one character replacement, * is as many as we want. =]
 	do NOT send a "" string in here else whole thing will fucking crash 8]
 */
-int wildmatch(const char *wild, const char *string) 
+int wildmatch(const char *wild, const char *string)
 {
 	if (strlen(wild) == 0 || strlen(string) == 0)
 		return 0;
@@ -563,7 +564,7 @@ int wildmatch(const char *wild, const char *string)
   return !*wild;
 }
 
-string lowercase(string msg) 
+string lowercase(string msg)
 {
 	uShort i = 0;
     while (i < msg.size()) {
@@ -646,7 +647,7 @@ string stripCodes(const string& msg)
 				}
 				else
 				{
-					stripped += msg.at(i); //another renderable character	
+					stripped += msg.at(i); //another renderable character
 				}
 			}
 		}
@@ -696,7 +697,7 @@ char getVowel()
 string generateWord(int length)
 {
 	srand(time(NULL));
-	
+
 	//abcdefghijklmnop [q] rstu [vwxyz] Don't need
 	string result;
 	char c;
@@ -835,7 +836,7 @@ string directionToString(direction dir)
 		case NORTHEAST: return "ne";
 		default: return "s";
 	}
-	
+
 	return string();
 }
 
@@ -844,7 +845,7 @@ direction stringToDirection(string s)
 	//handle numeric version
 	if (s.at(0) >= '1' && s.at(0) <= '9')
 		return charToDirection(s.at(0));
-	
+
 	//assume letters (n, e, nw, etc)
 	if (s == "n") return NORTH;
 	else if (s == "s") return SOUTH;

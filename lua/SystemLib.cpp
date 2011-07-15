@@ -28,7 +28,7 @@ int system_Print(lua_State* ls)
 	luaCountArgs(ls, 1);
 
 	console->AddMessage( lua_tostring(ls, 1) );
-	
+
 	return 0;
 }
 
@@ -39,7 +39,7 @@ int system_Fatal(lua_State* ls)
 	luaCountArgs(ls, 1);
 
 	FATAL( lua_tostring(ls, 1) );
-	
+
 	return 0;
 }
 
@@ -86,28 +86,28 @@ void callback_luaYesNo_No(YesNoPopup* yn)
 }
 
 //	.YesNo("title", "message", "callback", LongFormat<1|0>)
-//		Will call the callback with one boolean parameter. 
+//		Will call the callback with one boolean parameter.
 //		If longformat is true, will use a multiline for the message.
 int system_YesNo(lua_State* ls)
 {
 	PRINT("system_YesNo");
 	luaCountArgs(ls, 3);
 	int numArgs = lua_gettop(ls);
-	
+
 	luaCallback* data = new luaCallback;
 	data->state = ls;
 	data->func = lua_tostring(ls, 3);
-	
+
 	bool useMultiline = false;
 	if (numArgs > 3)
 		useMultiline = lua_toboolean(ls, 4);
-	
+
 	YesNoPopup* yn = new YesNoPopup("", lua_tostring(ls, 1), lua_tostring(ls, 2), useMultiline);
-	
+
 	yn->userdata = (void*)data;
 	yn->onYesCallback = callback_luaYesNo_Yes;
 	yn->onNoCallback = callback_luaYesNo_No;
-	
+
 	return 0;
 }
 
@@ -120,7 +120,7 @@ void callback_LuaRCM_Close(RightClickMenu* rcm)
 		if (rcm->mCallbacks.at(i).userdata)
 		{
 			lc = (luaCallback*)rcm->mCallbacks.at(i).userdata;
-			
+
 			luaL_unref(lc->state, LUA_REGISTRYINDEX, lc->reference);
 			delete lc;
 		}
@@ -146,7 +146,7 @@ void callback_LuaRCM_Select(RightClickMenu* rcm, void* userdata)
 				lua_rawgeti(lc->state, LUA_REGISTRYINDEX, lc->reference);
 			else
 				lua_pushnil(lc->state);
-				
+
 			if (luaCall(lc->state, 1, 0) != 0)
 			{
 				console->AddMessage("\\c900 * LUARCM [" + lc->func + "] Fail");
@@ -160,7 +160,7 @@ int system_NewRightClickMenu(lua_State* ls)
 {
 	RightClickMenu* rcm = new RightClickMenu();
 	rcm->onCloseCallback = callback_LuaRCM_Close;
-	
+
 	lua_pushlightuserdata(ls, rcm);
 	return 1;
 }
@@ -170,17 +170,17 @@ int system_AddToRightClickMenu(lua_State* ls)
 {
 	luaCountArgs(ls, 2);
 	int numArgs = lua_gettop(ls);
-	
+
 	RightClickMenu* rcm = (RightClickMenu*)lua_touserdata(ls, 1);
 	if (!rcm)
 		return luaError(ls, "System.AddToRightClickMenu", "Invalid pointer reference");
-		
+
 	if (numArgs > 2)
 	{
 		luaCallback* lc = new luaCallback;
 		lc->state = ls;
 		lc->func = lua_tostring(ls, 3);
-		
+
 		if (numArgs > 3) // has userdata
 		{
 			lua_pushvalue(ls, 4); //copy the value at index to the top of the stack
@@ -190,16 +190,16 @@ int system_AddToRightClickMenu(lua_State* ls)
 		{
 			lc->reference = LUA_NOREF;
 		}
-		
+
 		rcm->AddOption(lua_tostring(ls, 2), callback_LuaRCM_Select, lc);
 	}
 	else // no callback for the option
 	{
-		rcm->AddOption(lua_tostring(ls, 2), NULL, NULL);	
+		rcm->AddOption(lua_tostring(ls, 2), NULL, NULL);
 	}
-	
-	
-	
+
+
+
 	return 0;
 }
 
@@ -239,21 +239,21 @@ void callback_luaMessagePopup(MessagePopup* mp)
 }
 
 // .Alert("Title", "Message", "callback"<optional>)
-//		Will call the callback lua function (if it exists) with no parameters once closed. 
+//		Will call the callback lua function (if it exists) with no parameters once closed.
 int system_Alert(lua_State* ls)
 {
 	PRINT("system_Alert");
 	luaCountArgs(ls, 2);
 	int numArgs = lua_gettop(ls);
-	
+
 	MessagePopup* mp = new MessagePopup("", lua_tostring(ls, 1), lua_tostring(ls, 2), false);
-	
+
 	if (numArgs > 2)
 	{
 		luaCallback* data = new luaCallback;
 		data->state = ls;
 		data->func = lua_tostring(ls, 3);
-			
+
 		mp->userdata = (void*)data;
 		mp->onCloseCallback = callback_luaMessagePopup;
 	}
@@ -262,21 +262,21 @@ int system_Alert(lua_State* ls)
 }
 
 // .MessageDialog("Title", "Message", "callback"<optional>)
-//		Will call the callback lua function (if it exists) with no parameters once closed. 
+//		Will call the callback lua function (if it exists) with no parameters once closed.
 int system_MessageDialog(lua_State* ls)
 {
 	PRINT("system_MessageDialog");
 	luaCountArgs(ls, 2);
 	int numArgs = lua_gettop(ls);
-	
+
 	MessagePopup* mp = new MessagePopup("", lua_tostring(ls, 1), lua_tostring(ls, 2), true);
-	
+
 	if (numArgs > 2)
 	{
 		luaCallback* data = new luaCallback;
 		data->state = ls;
 		data->func = lua_tostring(ls, 3);
-			
+
 		mp->userdata = (void*)data;
 		mp->onCloseCallback = callback_luaMessagePopup;
 	}
@@ -291,7 +291,7 @@ int system_Wildmatch(lua_State* ls)
 	luaCountArgs(ls, 2);
 
 	lua_pushboolean( ls, wildmatch(lua_tostring(ls, 1), lua_tostring(ls, 2)) );
-	
+
 	return 1;
 }
 
@@ -302,7 +302,7 @@ int system_OpenUrl(lua_State* ls)
 	luaCountArgs(ls, 1);
 
 	new OpenUrl( lua_tostring(ls, 1) );
-	
+
 	return 0;
 }
 
@@ -311,13 +311,13 @@ int system_GetTheta(lua_State* ls)
 {
 	PRINT("system_GetTheta");
 	luaCountArgs(ls, 4);
-	
+
 	double dx = lua_tonumber(ls, 3) - lua_tonumber(ls, 1);
 	double dy = lua_tonumber(ls, 4) - lua_tonumber(ls, 2);
 	double theta = atan2( dy, dx );
-	
+
 	lua_pushnumber( ls, theta );
-	
+
 	return 1;
 }
 
@@ -326,11 +326,11 @@ int system_GetDistance(lua_State* ls)
 {
 	PRINT("system_GetDistance");
 	luaCountArgs(ls, 4);
-	
-	double distance = getDistance( point2d((sShort)lua_tonumber(ls, 1), (sShort)lua_tonumber(ls, 2)), 
+
+	double distance = getDistance( point2d((sShort)lua_tonumber(ls, 1), (sShort)lua_tonumber(ls, 2)),
 									point2d((sShort)lua_tonumber(ls, 3), (sShort)lua_tonumber(ls, 4)) );
 	lua_pushnumber( ls, distance );
-	
+
 	return 1;
 }
 
@@ -342,10 +342,10 @@ int system_OffsetByTheta(lua_State* ls)
 
 	double theta = lua_tonumber(ls, 3);
 	double distance = lua_tonumber(ls, 4);
-	
+
 	lua_pushnumber( ls, lua_tonumber(ls, 1) + distance * cos(theta * M_PI / 180) ); // x
 	lua_pushnumber( ls, lua_tonumber(ls, 2) + distance * sin(theta * M_PI / 180) ); // y
-	
+
 	return 2;
 }
 
@@ -354,18 +354,18 @@ int system_StringToNumber(lua_State* ls)
 {
 	PRINT("system_StringToNumber");
 	luaCountArgs(ls, 1);
-	
+
 	if (!lua_isstring(ls, 1))
 		return luaError(ls, "System.StringToNumber", "Invalid Param");
-	
+
 	int n = 0;
 	string s = lua_tostring(ls, 1);
-	
+
 	for (int i = 0; i < s.size(); i++)
 		n += s.at(i);
-	
+
 	n *= s.size();
-	
+
 	lua_pushnumber(ls, n);
 	return 1;
 }
@@ -375,12 +375,12 @@ int system_GenerateFilename(lua_State* ls)
 {
 	PRINT("system_GenerateFilename");
 	luaCountArgs(ls, 1);
-	
+
 	string key = lua_tostring(ls, 1);
-	
+
 	string file = DIR_CACHE;
-	file += "lua." + md5(key.c_str(), key.length());
-	
+	file += "lua." + MD5String(key.c_str());
+
 	lua_pushstring(ls, file.c_str());
 	return 1;
 }
@@ -390,13 +390,13 @@ int system_Encrypt(lua_State* ls)
 {
 	PRINT("system_Encrypt");
 	luaCountArgs(ls, 1);
-	
+
 	string file = game->mMap->mWorkingDir + lua_tostring(ls, 1);
 
 	bool result = encryptFile(file, file + "_", LUA_CRYPT_PASSWORD, LUA_CRYPT_LENGTH);
 	copyFile(file + "_", file);
 	removeFile(file + "_");
-	
+
 	lua_pushboolean(ls, result);
 	return 1;
 }
@@ -406,13 +406,13 @@ int system_Decrypt(lua_State* ls)
 {
 	PRINT("system_Decrypt");
 	luaCountArgs(ls, 1);
-	
+
 	string file = game->mMap->mWorkingDir + lua_tostring(ls, 1);
 
 	bool result = decryptFile(file, file + "_", LUA_CRYPT_PASSWORD, LUA_CRYPT_LENGTH);
 	copyFile(file + "_", file);
 	removeFile(file + "_");
-	
+
 	lua_pushboolean(ls, result);
 	return 1;
 }
@@ -426,7 +426,7 @@ int system_SetGuiColor(lua_State* ls)
 	c.g = (int)lua_tonumber(ls, 2);
 	c.b = (int)lua_tonumber(ls, 3);
 	gui->ColorizeGui(c);
-	
+
 	return 1;
 }
 
@@ -442,10 +442,10 @@ int system_StripCodes(lua_State* ls)
 int system_SetRenderOptimizationMethod(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	Screen* scr = Screen::Instance();
 	scr->mOptimizationMethod = (Screen::optimizationMethod)lua_tonumber(ls, 1);
-	return 0;	
+	return 0;
 }
 
 void callback_luaConsole(Console* c, string s)
@@ -463,17 +463,17 @@ int system_CreateConsole(lua_State* ls)
 	string id;
 	if (lua_gettop(ls) > 0)
 		id = lua_tostring(ls, 1);
-		
+
 	Console* c = new Console(id, "", "", color(), true, true, true);
 	game->mMap->Add(c);
-	
+
 	//Position and focus
 	c->Center();
 	c->ResizeChildren();
 	c->mInput->SetKeyFocus();
 
 	c->HookCommand("", callback_luaConsole);
-	
+
 	lua_pushlightuserdata(ls, c);
 
 	return 1;
@@ -483,15 +483,15 @@ int system_CreateConsole(lua_State* ls)
 int system_SetConsoleTitle(lua_State* ls)
 {
 	luaCountArgs(ls, 2);
-	
+
 	Console* c = (Console*)lua_touserdata(ls, 1);
-	
+
 	// sanity check
 	if (game->mMap->Get(c) < 0)
 		return luaError(ls, "System.SetConsoleTitle", "Console does not exist");
 
 	c->SetTitle(lua_tostring(ls, 2));
-	
+
 	return 0;
 }
 
@@ -499,15 +499,15 @@ int system_SetConsoleTitle(lua_State* ls)
 int system_SendToConsole(lua_State* ls)
 {
 	luaCountArgs(ls, 2);
-	
+
 	Console* c = (Console*)lua_touserdata(ls, 1);
-	
+
 	// sanity check
 	if (game->mMap->Get(c) < 0)
 		return luaError(ls, "System.SendToConsole", "Console does not exist");
 
 	c->AddMessage(lua_tostring(ls, 2));
-	
+
 	return 0;
 }
 
@@ -515,9 +515,9 @@ int system_SendToConsole(lua_State* ls)
 int system_CloseConsole(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	Console* c = (Console*)lua_touserdata(ls, 1);
-	
+
 	// sanity check
 	if (game->mMap->Get(c) < 0)
 		return luaError(ls, "System.CloseConsole", "Console does not exist");
@@ -531,7 +531,7 @@ int system_CloseConsole(lua_State* ls)
 int system_HasConsole(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	Console* c = (Console*)lua_touserdata(ls, 1);
 
 	lua_pushboolean(ls, game->mMap->Get(c) > -1);
@@ -560,13 +560,13 @@ static const luaL_Reg functions[] = {
 	{"SetGuiColor", system_SetGuiColor},
 	{"StripCodes", system_StripCodes},
 	{"SetRenderOptimizationMethod", system_SetRenderOptimizationMethod},
-	
+
 	{"CreateConsole", system_CreateConsole},
 	{"SetConsoleTitle", system_SetConsoleTitle},
 	{"SendToConsole", system_SendToConsole},
 	{"CloseConsole", system_CloseConsole},
 	{"HasConsole", system_HasConsole},
-		
+
 	{NULL, NULL}
 };
 
