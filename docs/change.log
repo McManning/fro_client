@@ -1668,7 +1668,8 @@ without either compatibility mode enabled, or security warnings, as seen with th
 - Fixed link clicking in the chatbox (last link wouldn't be detected)
 - Added Game.NetSendEmote(emote) to Lua
 - Removed hardcoded emotes and moved to Lua
-
+- Removed BoltFile class
+- Fixed cache files not deleting themselves in multiple instances
 
 	
 Issues on the upgrade:

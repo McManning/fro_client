@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -43,7 +43,6 @@
 #include "../core/widgets/Label.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/net/IrcNet2.h"
-#include "../core/io/BoltFile.h"
 #include "../core/io/FileIO.h"
 
 #include "../interface/LoginDialog.h"
@@ -52,19 +51,19 @@
 GameManager* game;
 
 /*
-// Load the file, assuming it's a 32x64 framed avatar with 5 rows and 2 columns, will 
+// Load the file, assuming it's a 32x64 framed avatar with 5 rows and 2 columns, will
 // replace the file with a new version that is 40x80
 void ResizeAvagenFile(const string& file)
 {
 	int x, y, dx, dy;
 	Image* img;
 	Image* result;
-	
+
 	img = resman->LoadImg(file);
 	if (!img) return;
-	
+
 	// assuming they're all pink backgrounded
-	
+
 	result = resman->NewImage(40*2, 80*5, color(0,0,0), true);
 	if (!result) { resman->Unload(img); return; }
 
@@ -83,7 +82,7 @@ void ResizeAvagenFile(const string& file)
 	}
 
 	result->SavePNG(file);
-	
+
 	resman->Unload(img);
 	resman->Unload(result);
 }
@@ -94,7 +93,7 @@ void ResizeAllAvagenParts()
 	// Grab a list of all the files we're about to fuck with
 	vString files;
 	string pattern = "assets/ava/*.png";
-	
+
 	getFilesMatchingPattern(files, pattern);
 
 	for (int i = 0; i < files.size(); ++i)
@@ -114,7 +113,7 @@ void callback_privmsgNoCommand(Console* c, string s)
 		c->AddMessage("\\c900 * Not Connected!");
 		return;
 	}
-	
+
 	string nick = c->mId.substr(4); //strip out 'priv' from beginning
 
 	game->mNet->Privmsg(nick, s);
@@ -128,7 +127,7 @@ void callback_privmsgCommandWhois(Console* c, string s)
 		c->AddMessage("\\c900 * Not Connected!");
 		return;
 	}
-	
+
 	string nick = c->mId.substr(4); //strip out 'priv' from beginning
 
 	game->mNet->Whois(nick);
@@ -138,7 +137,7 @@ void callback_consoleNetInfo(Console* c, string s)
 {
 	string ss;
 	game->mNet->StateToString(ss);
-	c->AddMessage(ss);	
+	c->AddMessage(ss);
 }
 
 void callback_consoleOutputAvatar(Console* c, string s)
@@ -153,9 +152,9 @@ void callback_consoleTestMap(Console* c, string s) //test <file>
 		c->AddMessage("Syntax: test id");
 		return;
 	}
-	
+
 	string id = s.substr(5);
-	
+
 	ASSERT(game);
 	game->LoadTestWorld(id);
 }
@@ -173,7 +172,7 @@ void callback_consoleDrawRects(Console* c, string s) //drawrects
 void callback_consoleMapDebug(Console* c, string s)
 {
 	if (game->mMap)
-		game->mMap->mShowDebug = !game->mMap->mShowDebug;	
+		game->mMap->mShowDebug = !game->mMap->mShowDebug;
 }
 
 void callback_consoleMakeCol(Console* c, string s) // makecol filename
@@ -203,7 +202,7 @@ uShort timer_gameManagerProcess(timer* t, uLong ms)
 {
 	GameManager* g = (GameManager*)t->userData;
 	ASSERT(g);
-	g->Process(ms);	
+	g->Process(ms);
 	return TIMER_CONTINUE;
 }
 
@@ -212,14 +211,14 @@ uShort timer_DestroyInfoBar(timer* t, uLong ms)
 	if (t->userData)
 	{
 		Frame* f = (Frame*)t->userData;
-		
+
 		MessageData md("INFOBAR");
 		md.WriteString("text", f->mId);
 		messenger.Dispatch(md);
-		
+
 		f->Die();
 	}
-	
+
 	return TIMER_DESTROY;
 }
 
@@ -231,20 +230,20 @@ GameManager::GameManager()
 	mNet = NULL;
 	mLoader = NULL;
 	//mParty = NULL;
-	
+
 	PRINT("[GM] Starting");
-	
+
 	game = this;
-	
+
 	buildDirectoryTree(DIR_PROFILE);
-	
+
 	UpdateAppTitle();
-	
+
 	//TODO: this is temp, to ensure we don't have multiple GMs running.
 	ASSERT( gui->Get("GameManager") == this );
 
 	PRINT("[GM] Loading Player Data");
-		
+
 	LoadUserData();
 
 	mMap = NULL;
@@ -254,7 +253,7 @@ GameManager::GameManager()
 	PRINT("[GM] Loading Network");
 	mNet = new IrcNet();
 	mNet->mRealname = "guest";
-	
+
 	PRINT("[GM] Hooking Network");
 	hookNetListeners();
 
@@ -264,9 +263,9 @@ GameManager::GameManager()
 	if (mPlayer->GetName().empty())
 		mPlayer->SetName("fro_user");
 
-	timers->AddProcess("gameproc", 
-						timer_gameManagerProcess, 
-						NULL, 
+	timers->AddProcess("gameproc",
+						timer_gameManagerProcess,
+						NULL,
 						this);
 
 	PRINT("[GM] Bringing up Login");
@@ -274,7 +273,7 @@ GameManager::GameManager()
 	new LoginDialog();
 
 	PRINT("[GM] Finished");
-	
+
 	ToggleGameMode(MODE_ACTION);
 
 	//Backpack* pack = new Backpack();
@@ -292,7 +291,7 @@ GameManager::GameManager()
 GameManager::~GameManager()
 {
 	PRINT("~GameManager 1");
-	
+
 	UnloadMap();
 
 	PRINT("~GameManager 2");
@@ -300,15 +299,15 @@ GameManager::~GameManager()
 	//erase all entities before it gets deleted, so we can unlink localactor
 	if (mMap)
 		mMap->FlushEntities();
-	
+
 	PRINT("~GameManager 4");
-	
+
 	if (mPlayer)
 	{
 		mPlayer->mMap = NULL;
 		SAFEDELETE(mPlayer);
 	}
-	
+
 	PRINT("~GameManager 5");
 
 	unhookNetListeners();
@@ -337,16 +336,16 @@ void GameManager::LoadTestWorld(string luafile)
 {
 	if (mLoader)
 		mLoader->Die();
-		
+
 	if (loginDialog)
 		loginDialog->Die();
-		
+
 	mLoader = new WorldLoader();
 	mLoader->LoadTestWorld(luafile);
 }
 
 void GameManager::LoadOnlineWorld(string id, point2d target, string targetObjectName)
-{	
+{
 	if (!mNet->IsConnected())
 	{
 		new MessagePopup("", "Not Connected", "No server connection! Could not jump worlds!");
@@ -355,10 +354,10 @@ void GameManager::LoadOnlineWorld(string id, point2d target, string targetObject
 	{
 		if (mLoader)
 			mLoader->Die();
-			
+
 		if (loginDialog)
 			loginDialog->Die();
-			
+
 		mLoader = new WorldLoader();
 		mLoader->LoadOnlineWorld(id, target, targetObjectName);
 	}
@@ -379,7 +378,7 @@ void GameManager::Process(uLong ms)
 	{
 		if (loginDialog)
 			loginDialog->Die();
-			
+
 		mMap->MoveToBottom();
 		mMap->Process();
 	}
@@ -395,12 +394,12 @@ void GameManager::UnloadMap()
 		mMap->Die();
 		mMap = NULL;
 	}
-	
+
 	mPlayer->mMap = NULL;
-	
+
 	if (userlist)
 		userlist->mOutput->Clear();
-		
+
 	// TODO: Somewhere better for resetting this!
 	Screen* scr = Screen::Instance();
 	scr->mOptimizationMethod = Screen::FULL_OPTIMIZATION;
@@ -416,7 +415,7 @@ void GameManager::Render()
 		//render some sort of color overlay surface over mMap?
 		mLoader->Render();
 	}
-	
+
 	Frame::Render();
 }
 
@@ -451,7 +450,7 @@ void GameManager::Event(SDL_Event* event)
 				md.SetId("MAP_MOUSEMOVE");
 				md.WriteInt("x", event->motion.x);
 				md.WriteInt("y", event->motion.y);
-				messenger.Dispatch(md);	
+				messenger.Dispatch(md);
 			}
 			break;
 		case SDL_KEYDOWN:
@@ -460,7 +459,7 @@ void GameManager::Event(SDL_Event* event)
 				md.SetId("MAP_KEYDOWN");
 				md.WriteInt("id", event->key.keysym.sym);
 				messenger.Dispatch(md);
-				
+
 				if (event->key.keysym.sym == SDLK_TAB && mGameMode != MODE_DUEL)
 				{
 					ToggleGameMode( (mGameMode == MODE_ACTION) ? MODE_CHAT : MODE_ACTION );
@@ -474,17 +473,17 @@ void GameManager::Event(SDL_Event* event)
 				{
 					achievement_StickyKeys();
 				}*/
-			
+
 				md.SetId("MAP_KEYUP");
 				md.WriteInt("id", event->key.keysym.sym);
 				messenger.Dispatch(md);
 			}
 			break;
-		default: break;	
+		default: break;
 	}
-	
+
 	Frame::Event(event);
-	
+
 	if (!gui->hasKeyFocus || gui->hasKeyFocus == mMap)
 	{
         if (mMap)
@@ -506,13 +505,13 @@ Console* GameManager::GetPrivateChat(string nick)
 						stripCodes(nick) + "_", color(217,245,213), true, true, true);
 
 		Add(c);
-		
+
 		//Position and focus
 		c->Center();
 		c->ResizeChildren(); //reloads background to proper color
 		c->mInput->SetKeyFocus();
 		c->mShowTimestamps = true;
-		
+
 		//Hook our input functions
 		c->HookCommand("", callback_privmsgNoCommand);
 		c->HookCommand("/whois", callback_privmsgCommandWhois);
@@ -531,13 +530,13 @@ void GameManager::LoadUserData()
 		mUserData.SetValue("MapSettings", "PrivMsg", "1");
 		mUserData.SetValue("MapSettings", "ShowNames", "0");
 		mUserData.SetValue("MapSettings", "ShowAddresses", "0");
-		mUserData.SetValue("MapSettings", "JoinParts", "1");	
-		
+		mUserData.SetValue("MapSettings", "JoinParts", "1");
+
 		mUserData.SetValue("System", "LowCpu", its(gui->mUseLowCpu));
 		mUserData.SetValue("System", "NoLimit", its(gui->mNoFpsLimit));
 		mUserData.SetValue("System", "FPS", its(gui->mFpsCap));
 		mUserData.SetValue("System", "Alerts", its(gui->mSystemAlertType));
-		
+
 		mUserData.SetValue("Login", "Remember", "0");
 		mUserData.SetValue("Login", "ID", "");
 		mUserData.SetValue("Login", "Password", "");
@@ -557,41 +556,41 @@ void GameManager::UpdateAppTitle()
 	string title = "fro [Build ";
 	title += VER_STRING;
 	title += "]";
-	
+
 	if (mNet && mNet->IsConnected())
 	{
 		title += " (" + ((mNet->mRealServerAddress.empty()) ? mNet->mHost : mNet->mRealServerAddress)
 				+ ":" + its(mNet->mPort);
 		//if (mNet->GetState() == ONCHANNEL && mNet->GetChannel())
 		//	title += " - " + mNet->GetChannel()->mId;
-		
+
 		if (mMap)
 			title += " - " + mMap->mId;
-		
-		
+
+
 		if (mNet->GetState() != ONCHANNEL)
-			title += " (local)";	
-			
+			title += " (local)";
+
 		title += ")";
 	}
-	
+
 	PRINT("Setting Title: " + title);
-	
+
 	gui->SetAppTitle(title);
 }
 
 void GameManager::ToggleGameMode(gameMode mode)
-{	
+{
 	/*if (mode == MODE_DUEL && mGameMode != MODE_DUEL)
 		EnableDuelMode();
 	else if (mGameMode == MODE_DUEL && mode != MODE_DUEL) //if we're switching FROM duel
 		DisableDuelMode();
 	*/
-	
+
 	mGameMode = mode;
-	
+
 	Console* c = GetChat();
-	
+
 	if (c)
 	{
     	if (mode == MODE_ACTION)
@@ -605,7 +604,7 @@ void GameManager::ToggleGameMode(gameMode mode)
     		c->mInput->Clear();
     	}
     }
-	
+
 	// Reset our speed
 	if (mPlayer->GetSpeed() == SPEED_RUN)
 		mPlayer->SetSpeed(SPEED_WALK);
@@ -628,30 +627,30 @@ void GameManager::ShowInfoBar(string id, string msg, int duration, string imageF
     	Frame* f = new Frame(mMap, id, rect(175, 0, 450, 30), "", false, false, false, true);
     		f->mBoxRender = false;
     		f->SetImage("assets/infobar.png");
-    		
+
     	Label* l = new Label(f, "", rect(0, 8), msg);
     		l->mFontColor = color(255, 255, 255);
-    		
+
     		r = l->GetPosition();
     		r.x = f->Width()/2 - r.w/2;
     		if (!imageFile.empty())
     			r.x += 25;
     		r.y = f->Height()/2 - r.h/2 + 2;
     		l->SetPosition( r );
-    	
+
     	if (!imageFile.empty())
     	{
     		r.x -= 25;
     		r.w = 20;
     		r.h = 20;
     		r.y = f->Height()/2 - 8;
-    		
+
     		// Add a button that just acts as an image
     		Button* b = new Button(f, "", r, "", NULL);
     			b->mUsesImageOffsets = false;
     			b->SetImage(imageFile);
     	}
-    	
+
     	timers->Add("", duration, false, timer_DestroyInfoBar, NULL, f);
     }
 }
@@ -661,12 +660,12 @@ void GameManager::ToggleHud(bool visible) // TODO: Eliminate this function?
 	//mChat->SetVisible(visible);
 	if (mMap && mMap->mHud)
 	   mMap->mHud->SetVisible(visible);
-	
+
 	//kill any dialogs that may exist
 	Widget* w;
 	w = gui->Get("AvatarFavorites");
 	if (w) w->Die();
-	
+
 	w = gui->Get("UserList");
 	if (w) w->Die();
 }
@@ -675,7 +674,7 @@ Console* GameManager::GetChat()
 {
     if (mMap && mMap->mChat)
         return mMap->mChat;
-       
-    return NULL;   
+
+    return NULL;
 }
 
