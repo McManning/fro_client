@@ -14,7 +14,7 @@
 	<math.h>
 	"../build/fro_private.h"
 
-1310704096 e:\fro\trunk\build\fro_private.h
+1319865362 e:\fro\trunk\build\fro_private.h
 
 1307762770 e:\fro\trunk\core\screen.h
 	"Common.h"
@@ -1061,7 +1061,7 @@
 1300784490 e:\fro\trunk\core\widgets\messagepopup.h
 	"Frame.h"
 
-1310719220 source:e:\fro\trunk\core\widgets\multiline.cpp
+1319865288 source:e:\fro\trunk\core\widgets\multiline.cpp
 	"Multiline.h"
 	"Scrollbar.h"
 	"OpenUrl.h"
@@ -1251,7 +1251,7 @@
 	<lua.hpp>
 	"TextObject.h"
 
-1307806990 source:e:\fro\trunk\game\chatcommands.cpp
+1319866488 source:e:\fro\trunk\game\chatcommands.cpp
 	<windows.h>
 	"GameManager.h"
 	"../core/net/IrcNet2.h"
@@ -1640,7 +1640,7 @@
 	"../entity/LocalActor.h"
 	"../avatar/Avatar.h"
 
-1310704097 source:e:\fro\trunk\build\fro_private.rc
+1319865368 source:e:\fro\trunk\build\fro_private.rc
 	<windows.h>
 
 1310701213 source:e:\fro\trunk\core\io\md5.cpp

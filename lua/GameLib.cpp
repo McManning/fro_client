@@ -8,6 +8,7 @@
 #include "../core/net/IrcNet2.h"
 #include "../core/net/DataPacket.h"
 #include "../entity/RemoteActor.h"
+#include "../net/IrcNetSenders.h"
 //#include "../interface/ScreenText.h"
 //#include "../interface/ActorStats.h"
 
@@ -18,7 +19,7 @@ int game_Print(lua_State* ls)
 	luaCountArgs(ls, 1);
 
 	game->GetChat()->AddMessage( lua_tostring(ls, 1) );
-	
+
 	return 0;
 }
 
@@ -28,7 +29,7 @@ int game_NetSendToChannel(lua_State* ls)
 {
 	PRINT("game_NetSendToChannel");
 	luaCountArgs(ls, 2);
-	
+
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("lua");
@@ -50,24 +51,32 @@ int game_NetSendToPlayer(lua_State* ls)
 
 	RemoteActor* ra = (RemoteActor*)getReferencedActor(ls, 1);
 
-	if (ra && ra->mType == ENTITY_REMOTEACTOR 
+	if (ra && ra->mType == ENTITY_REMOTEACTOR
 		&& game->mNet && game->mNet->GetState() == ONCHANNEL)
 	{
 		DataPacket data("lua");
 		data.SetKey( game->mNet->GetEncryptionKey() );
-		
+
 		data.WriteString( lua_tostring(ls, 2) );
 		data.WriteString( lua_tostring(ls, 3) );
-		
+
 		game->mNet->Privmsg( ra->GetName(), data.ToString() );
 	}
+}
+
+// .NetSendEmote(#emote)
+int game_NetSendEmote(lua_State* ls)
+{
+    luaCountArgs(ls, 1);
+    netSendEmote((int)lua_tonumber(ls, 1));
+    return 0;
 }
 
 //	.Version() - Return version number of the client as a string (ex: "1.2.1")
 int game_Version(lua_State* ls)
 {
 	lua_pushstring(ls, VER_STRING);
-	return 1;	
+	return 1;
 }
 
 //	.ToggleChat(bool) - Toggle visibility of the chatbox
@@ -91,24 +100,24 @@ int game_ToggleHud(lua_State* ls)
 int game_SetScreenText(lua_State* ls)
 {
 	luaCountArgs(ls, 5);
-	
+
 	color c;
 	string text;
 	int animType;
-	
+
 	text = lua_tostring(ls, 1);
 	c.r = (int)lua_tonumber(ls, 2);
 	c.g = (int)lua_tonumber(ls, 3);
 	c.b = (int)lua_tonumber(ls, 4);
 	animType = (int)lua_tonumber(ls, 5);
-	
+
 	int args = lua_gettop(ls);
 	int y = 300;
 	if (args > 5)
 		y = (int)lua_tonumber(ls, 6);
-		
+
 	new ScreenText(text, c, (ScreenText::animationType)animType, y);
-	
+
 	return 0;
 }
 */
@@ -151,12 +160,12 @@ int game_NewStatsBar(lua_State* ls)
 	ActorStats* s = new ActorStats(game->mMap);
 	s->SetMenuMode(ActorStats::DUEL_SCREEN_MENU);
 	s->SetLinked(a);
-	
+
 	rect r = s->GetPosition();
 	r.x = (int)lua_tonumber(ls, 2);
 	r.y = (int)lua_tonumber(ls, 3);
 	s->SetPosition(r);
-	
+
 	lua_pushlightuserdata(ls, s);
 	return 1;
 }
@@ -165,13 +174,13 @@ int game_NewStatsBar(lua_State* ls)
 int game_RemoveStatsBar(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	if (!lua_isnil(ls, 1))
 	{
 		ActorStats* s = (ActorStats*)lua_touserdata(ls, 1);
 		s->Die();
 	}
-	
+
 	return 0;
 }
 
@@ -179,18 +188,18 @@ int game_RemoveStatsBar(lua_State* ls)
 int game_IsStatsBarDecreasing(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	ActorStats* s = NULL;
-	
+
 	if (!lua_isnil(ls, 1))
 		s = (ActorStats*)lua_touserdata(ls, 1);
-	
+
 	if (s)
 		lua_pushboolean(ls, s->mCurrentHealth != s->mLinkedActor->m_iCurrentHealth);
 	else
 		lua_pushboolean(ls, false);
-		
-	return 1;	
+
+	return 1;
 }
 */
 
@@ -207,7 +216,7 @@ int game_GetCursorPosition(lua_State* ls)
 		lua_pushnumber(ls, -1);
 		lua_pushnumber(ls, -1);
 	}
-	
+
 	return 2;
 }
 
@@ -217,7 +226,7 @@ int game_GetCursorMapPosition(lua_State* ls)
 	if (SDL_GetAppState() & SDL_APPMOUSEFOCUS) //if we have the mouse
 	{
 		ASSERT(game->mMap);
-		
+
 		rect r = game->mMap->GetCameraPosition();
 		lua_pushnumber(ls, gui->GetMouseX() + r.x);
 		lua_pushnumber(ls, gui->GetMouseY() + r.y);
@@ -227,7 +236,7 @@ int game_GetCursorMapPosition(lua_State* ls)
 		lua_pushnumber(ls, -1);
 		lua_pushnumber(ls, -1);
 	}
-	
+
 	return 2;
 }
 
@@ -242,6 +251,7 @@ static const luaL_Reg functions[] = {
 	{"Print", game_Print},
 	{"NetSendToChannel", game_NetSendToChannel},
 	{"NetSendToPlayer", game_NetSendToPlayer},
+	{"NetSendEmote", game_NetSendEmote},
 	{"Version", game_Version},
 	{"ToggleChat", game_ToggleChat},
 	{"ToggleHud", game_ToggleHud},

@@ -1660,9 +1660,15 @@ without either compatibility mode enabled, or security warnings, as seen with th
 	hashes for some reason)
 - Fixed long URLs being clickable in Multilines from lines that are below the URL itself
 	
------ PUBLIC RELEASE AS 1.5.3 -----
+----- PUBLIC RELEASE AS 1.5.4 -----
 
 (Commit to r92)
+
+111028
+- Fixed link clicking in the chatbox (last link wouldn't be detected)
+- Added Game.NetSendEmote(emote) to Lua
+- Removed hardcoded emotes and moved to Lua
+
 
 	
 Issues on the upgrade:

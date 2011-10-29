@@ -577,24 +577,22 @@ string Multiline::GetUrl(int line)
 			}
 		}
 
-        if (found)
-        {
-            url = stripCodes(url); //erase any \c that may have been inserted
+		url = stripColorCodes(url); //erase any \c that may have been inserted
 
-            //now we have a url, however it may have some shit tagged on (from the next line)
-            //soooo, compare it to the collected url list. TODO: A better method?
-            found = false;
-            for (t = mUrls.size() - 1; t > -1 && !found; --t) //reverse cuz most recent are @ the bottom
-            {
-                if (mUrls.at(t) == url.substr(0, mUrls.at(t).length())) //compares length along with contents
-                {
-                    return mUrls.at(t);
-                }
-            }
-        }
+		//now we have a url, however it may have some shit tagged on (from the next line)
+		//soooo, compare it to the collected url list. TODO: A better method?
+		found = false;
+		for (t = mUrls.size() - 1; t > -1 && !found; --t) //reverse cuz most recent are @ the bottom
+		{
+			if (mUrls.at(t) == url.substr(0, mUrls.at(t).length())) //compares length along with contents
+			{
+				url = mUrls.at(t);
+				found = true;
+			}
+		}
 	}
 
-	return "";
+	return url;
 }
 
 //TODO: eraseable while wrapping?

@@ -61,19 +61,11 @@ void callback_chatCommandStamp(Console* c, string s)
 	netSendStamp(s.substr(7));
 }
 
-void callback_chatCommandEmote(Console* c, string s)
-{
-	if (s.length() < 6)
-		return;
-
-	netSendEmote(sti(s.substr(5)));
-}
-
 void callback_chatCommandPos(Console* c, string s)
 {
 	c->AddMessage("Player: " + its(game->mPlayer->mPosition.x) + ", " + its(game->mPlayer->mPosition.y));
 	c->AddMessage("Cursor (Real): " + its(gui->GetMouseX()) + ", " + its(gui->GetMouseY()));
-	
+
 	rect r = game->mMap->ToCameraPosition(gui->GetMouseRect());
 	c->AddMessage("Cursor (Map): " + its(r.x) + ", " + its(r.y));
 }
@@ -82,10 +74,10 @@ void callback_chatCommandPos(Console* c, string s)
 BOOL CALLBACK callback_findWinamp(HWND hwnd, LPARAM lParam) //for the below code
 {
 	char buffer[255];
-	 
+
 	GetWindowText(hwnd, buffer, sizeof(buffer));
     string title = buffer;
-	
+
 	int pos = title.find(" - Winamp", 0);
 	if (pos != string::npos)
 	{
@@ -107,7 +99,7 @@ void callback_chatCommandListeningTo(Console* c, string s)
 		netSendMusic(s.substr(7));
 		return;
 	}
-	
+
 	//otherwise, let's try to find Winamp!
 #ifdef WIN32
 	if (EnumWindows(callback_findWinamp, 0) == TRUE) //didn't find it
@@ -119,23 +111,6 @@ void callback_chatCommandListeningTo(Console* c, string s)
 #endif
 
 }
-
-void callback_chatCommandCoolface(Console* c, string s) { netSendEmote(1); }
-void callback_chatCommandBrofist(Console* c, string s) { netSendEmote(2); }
-void callback_chatCommandSpoilereyes(Console* c, string s) { netSendEmote(3); }
-void callback_chatCommandBaww(Console* c, string s) { netSendEmote(4); }
-void callback_chatCommandDerp(Console* c, string s) { netSendEmote(5); }
-void callback_chatCommandHappy(Console* c, string s) { netSendEmote(6); }
-void callback_chatCommandOmg(Console* c, string s) { netSendEmote(7); }
-void callback_chatCommandFFFUUU(Console* c, string s) { netSendEmote(8); }
-void callback_chatCommandHeart(Console* c, string s) { netSendEmote(9); }
-void callback_chatCommandAwesome(Console* c, string s) { netSendEmote(10); }
-void callback_chatCommandWtf(Console* c, string s) { netSendEmote(12); }
-void callback_chatCommandTroll(Console* c, string s) { netSendEmote(13); }
-void callback_chatCommandFacepalm(Console* c, string s) { netSendEmote(14); }
-void callback_chatCommandPedo(Console* c, string s) { netSendEmote(15); }
-void callback_chatCommandDatAss(Console* c, string s) { netSendEmote(16); }
-void callback_chatCommandRage(Console* c, string s) { netSendEmote(17); }
 
 /*
 void callback_chatCommandJoin(Console* c, string s)
@@ -153,9 +128,9 @@ void callback_chatCommandJoin(Console* c, string s)
 		&& game->mLoader->m_state != WorldLoader::FAILED)
 	{
 		c->AddMessage("\\c900* Already loading a world!");
-		return;	
+		return;
 	}
-	
+
 #ifndef DEBUG
 	timer* t = timers->Find("joinwait");
 	if (t)
@@ -184,10 +159,10 @@ void callback_chatCommandJoin(Console* c, string s)
 */
 
 void callback_chatCommandNick(Console* c, string s) // /nick nickname
-{	
+{
 	if (s.length() < 7)
 		return;
-		
+
 	s = s.substr(6);
 
 	if (s.find(" ", 0) != string::npos)
@@ -197,7 +172,7 @@ void callback_chatCommandNick(Console* c, string s) // /nick nickname
 	replace(&s, "\\t", "");
 	replace(&s, "\n", "");
 	replace(&s, "\t", "");
-	
+
 	if (!stripCodes(s).empty())
 	{
 		if (game->mNet->IsConnected())
@@ -221,7 +196,7 @@ void callback_chatCommandNick(Console* c, string s) // /nick nickname
 
 /*
 void callback_chatCommandWorldsViewer(Console* c, string s)
-{	
+{
 	//if (!gui->Get("WorldViewer"))
 	//	new WorldsViewer();
 }
@@ -235,14 +210,9 @@ void callback_chatCommandMsg(Console* c, string s) // /msg nick message
 		c->AddMessage("Syntax: /msg nick message");
 		return;
 	}
-	
+
 	if (game->mNet)
 		game->mNet->Privmsg(v.at(1), s.substr( s.find(v.at(2))) );
-}
-
-void callback_chatCommandListEmotes(Console* c, string s)
-{
-	c->AddMessage("\\c990Emotes:\\n  /facepalm, /datass, /rage, /troll, /coolface, /brofist, /spoilereyes, /sad, /cry, /derp, /happy, /omg, /fff, /heart, /love, /awesome, /wtf, /pedo");
 }
 
 void callback_chatCommandListCommands(Console* c, string s)
@@ -264,30 +234,8 @@ void hookChatCommands(Console* c)
 	c->HookCommand("/nick", callback_chatCommandNick);
 //	c->HookCommand("/worlds", callback_chatCommandWorldsViewer);
 	c->HookCommand("/msg", callback_chatCommandMsg);
-	c->HookCommand("/emo", callback_chatCommandEmote);
 	c->HookCommand("/pos", callback_chatCommandPos);
 
-	//Emotes
-	c->HookCommand("/coolface", callback_chatCommandCoolface);
-	c->HookCommand("/troll", callback_chatCommandTroll);
-	c->HookCommand("/brofist", callback_chatCommandBrofist);
-	c->HookCommand("/spoilereyes", callback_chatCommandSpoilereyes);
-	c->HookCommand("/sad", callback_chatCommandBaww);
-	c->HookCommand("/cry", callback_chatCommandBaww);
-	c->HookCommand("/derp", callback_chatCommandDerp);
-	c->HookCommand("/happy", callback_chatCommandHappy);
-	c->HookCommand("/omg", callback_chatCommandOmg);
-	c->HookCommand("/wtf", callback_chatCommandWtf);
-	c->HookCommand("/fff", callback_chatCommandFFFUUU);
-	c->HookCommand("/heart", callback_chatCommandHeart);
-	c->HookCommand("/love", callback_chatCommandHeart);
-	c->HookCommand("/awesome", callback_chatCommandAwesome);
-	c->HookCommand("/facepalm", callback_chatCommandFacepalm);
-	c->HookCommand("/pedo", callback_chatCommandPedo);
-	c->HookCommand("/datass", callback_chatCommandDatAss);
-	c->HookCommand("/rage", callback_chatCommandRage);
-	
-	c->HookCommand("/emotes", callback_chatCommandListEmotes);
 	c->HookCommand("/commands", callback_chatCommandListCommands);
 }
 
