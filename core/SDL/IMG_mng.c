@@ -1,7 +1,8 @@
 /*
     SDL_mng:  A library to load MNG files
     Copyright (C) 2003, Thomas Kircher
-
+	Copyright (C) 2011, Chase McManning
+	
     PNG code based on SDL_png.c, Copyright (C) 1998 Philippe Lavoie
 
     This library is free software; you can redistribute it and/or

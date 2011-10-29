@@ -3,6 +3,7 @@
  * This class controls how everything is updated on screen
  * Initial design by Eduardo B. Fonseca <ebf@drmsolucoes.com.br>
  * With lots of code from Paul H. Liu <paul@theV.net>
+ * SDL adaption by Chase McManning
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
