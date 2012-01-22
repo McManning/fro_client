@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1310701369 source:e:\fro\trunk\main.cpp
+1319872737 source:e:\fro\trunk\main.cpp
 	"core/Common.h"
 	"core/Screen.h"
 	"core/GuiManager.h"
@@ -8,67 +8,67 @@
 	"core/io/FileIO.h"
 	"game/GameManager.h"
 
-1307805708 e:\fro\trunk\core\common.h
+1327258313 e:\fro\trunk\core\common.h
 	<string>
 	<vector>
 	<math.h>
-	"../build/fro_private.h"
+	"../build/build.h"
 
 1319865362 e:\fro\trunk\build\fro_private.h
 
-1307762770 e:\fro\trunk\core\screen.h
+1319872737 e:\fro\trunk\core\screen.h
 	"Common.h"
 	"Image.h"
 	"RectManager.h"
 
-1303075228 e:\fro\trunk\core\image.h
+1319872737 e:\fro\trunk\core\image.h
 	"SDL/SDL_Image.h"
 	"Common.h"
 
-1300784490 e:\fro\trunk\core\sdl\sdl_image.h
+1319872737 e:\fro\trunk\core\sdl\sdl_image.h
 	<SDL/SDL.h>
 	<SDL/SDL_version.h>
 	<SDL/begin_code.h>
 	<SDL/close_code.h>
 
-1300784490 e:\fro\trunk\core\rectmanager.h
+1319872737 e:\fro\trunk\core\rectmanager.h
 	<SDL/SDL.h>
 	"Common.h"
 
-1304812180 e:\fro\trunk\core\guimanager.h
+1319872737 e:\fro\trunk\core\guimanager.h
 	"Common.h"
 	"widgets/Widget.h"
 
-1300784490 e:\fro\trunk\core\widgets\widget.h
+1319872737 e:\fro\trunk\core\widgets\widget.h
 	"../Common.h"
 	"../FontManager.h"
 	<SDL/SDL_events.h>
 
-1300784490 e:\fro\trunk\core\fontmanager.h
+1319872737 e:\fro\trunk\core\fontmanager.h
 	"Common.h"
 	"SDL/SDL_ttf.h"
 
-1300784490 e:\fro\trunk\core\sdl\sdl_ttf.h
+1319872737 e:\fro\trunk\core\sdl\sdl_ttf.h
 	<SDL/SDL.h>
 	<SDL/begin_code.h>
 	<SDL/close_code.h>
 
-1300784490 e:\fro\trunk\core\widgets\checkbox.h
+1319872737 e:\fro\trunk\core\widgets\checkbox.h
 	"Widget.h"
 
-1303079136 e:\fro\trunk\core\widgets\frame.h
+1319872737 e:\fro\trunk\core\widgets\frame.h
 	"Widget.h"
 
-1310700402 e:\fro\trunk\core\io\fileio.h
+1319872737 e:\fro\trunk\core\io\fileio.h
 	"../Common.h"
 
-1304817062 e:\fro\trunk\game\gamemanager.h
+1319872737 e:\fro\trunk\game\gamemanager.h
 	"../core/Core.h"
 	"../core/widgets/Frame.h"
 	"../core/io/KeyValueMap.h"
 	"WorldLoader.h"
 
-1304812180 e:\fro\trunk\core\core.h
+1319872737 e:\fro\trunk\core\core.h
 	"Common.h"
 	"MessageManager.h"
 	"GuiManager.h"
@@ -80,30 +80,30 @@
 	"net/DownloadManager.h"
 	"widgets/Console.h"
 
-1300784490 e:\fro\trunk\core\messagemanager.h
+1319872737 e:\fro\trunk\core\messagemanager.h
 	"Common.h"
 	"MessageData.h"
 
-1300784490 e:\fro\trunk\core\messagedata.h
+1319872737 e:\fro\trunk\core\messagedata.h
 	<map>
 	"Common.h"
 
-1303072288 e:\fro\trunk\core\resourcemanager.h
+1319872737 e:\fro\trunk\core\resourcemanager.h
 	"Image.h"
 
-1307768220 e:\fro\trunk\core\timermanager.h
+1319872737 e:\fro\trunk\core\timermanager.h
 	"Common.h"
 
-1304653068 e:\fro\trunk\core\net\downloadmanager.h
+1319872737 e:\fro\trunk\core\net\downloadmanager.h
 	"../Common.h"
 
-1310689663 e:\fro\trunk\core\widgets\console.h
+1319872737 e:\fro\trunk\core\widgets\console.h
 	"Frame.h"
 
-1304814308 e:\fro\trunk\core\io\keyvaluemap.h
+1319872737 e:\fro\trunk\core\io\keyvaluemap.h
 	"../Common.h"
 
-1301621394 e:\fro\trunk\game\worldloader.h
+1319872737 e:\fro\trunk\game\worldloader.h
 	"../core/widgets/Frame.h"
 
 1107041724 c:\dev-cpp\include\math.h
@@ -339,19 +339,19 @@
 	"begin_code.h"
 	"close_code.h"
 
-1310700402 source:e:\fro\trunk\avatar\avatar.cpp
+1319872737 source:e:\fro\trunk\avatar\avatar.cpp
 	"Avatar.h"
 	"../core/io/FileIO.h"
 	"../core/net/DataPacket.h"
 	"../game/GameManager.h"
 
-1304750628 e:\fro\trunk\avatar\avatar.h
+1319872737 e:\fro\trunk\avatar\avatar.h
 	"../core/Core.h"
 
-1300784490 e:\fro\trunk\core\net\datapacket.h
+1319872737 e:\fro\trunk\core\net\datapacket.h
 	"../Common.h"
 
-1304714930 source:e:\fro\trunk\avatar\avatarproperties.cpp
+1319872737 source:e:\fro\trunk\avatar\avatarproperties.cpp
 	<lua.hpp>
 	"AvatarProperties.h"
 
@@ -404,10 +404,10 @@
 	<stdio.h>
 	"lua.h"
 
-1304712724 e:\fro\trunk\avatar\avatarproperties.h
+1319872737 e:\fro\trunk\avatar\avatarproperties.h
 	"../core/Common.h"
 
-1310689106 source:e:\fro\trunk\core\common.cpp
+1319872737 source:e:\fro\trunk\core\common.cpp
 	<SDL/SDL_syswm.h>
 	<time.h>
 	"Common.h"
@@ -622,18 +622,18 @@
 	<_mingw.h>
 	<stddef.h>
 
-1307853862 source:e:\fro\trunk\core\fontmanager.cpp
+1319872737 source:e:\fro\trunk\core\fontmanager.cpp
 	"FontManager.h"
 	"ResourceManager.h"
 	"SDL/SDL_gfxBlitFunc.h"
 
-1300784490 e:\fro\trunk\core\sdl\sdl_gfxblitfunc.h
+1319872737 e:\fro\trunk\core\sdl\sdl_gfxblitfunc.h
 	<stdio.h>
 	<stdlib.h>
 	<SDL/SDL.h>
 	<SDL/SDL_video.h>
 
-1307810816 source:e:\fro\trunk\core\guimanager.cpp
+1319872737 source:e:\fro\trunk\core\guimanager.cpp
 	<SDL/SDL.h>
 	"GuiManager.h"
 	"SDL/SDL_Misc.h"
@@ -650,20 +650,20 @@
 	"MessageManager.h"
 	"io/FileIO.h"
 
-1303072288 e:\fro\trunk\core\sdl\sdl_misc.h
+1319872737 e:\fro\trunk\core\sdl\sdl_misc.h
 	<SDL/SDL.h>
 	"../Common.h"
 
-1303080672 e:\fro\trunk\core\widgets\input.h
+1319872737 e:\fro\trunk\core\widgets\input.h
 	"Frame.h"
 
-1300784490 e:\fro\trunk\core\widgets\label.h
+1319872737 e:\fro\trunk\core\widgets\label.h
 	"Widget.h"
 
-1300784490 e:\fro\trunk\core\widgets\hintballoon.h
+1319872737 e:\fro\trunk\core\widgets\hintballoon.h
 	"Widget.h"
 
-1310689122 source:e:\fro\trunk\core\image.cpp
+1319877522 source:e:\fro\trunk\core\image.cpp
 	<limits.h>
 	"Image.h"
 	"ResourceManager.h"
@@ -675,46 +675,46 @@
 	"TimerManager.h"
 	"Screen.h"
 
-1300784490 e:\fro\trunk\core\sdl\sdl_rotozoom.h
+1319872737 e:\fro\trunk\core\sdl\sdl_rotozoom.h
 	<math.h>
 	<SDL/SDL.h>
 
-1300784490 source:e:\fro\trunk\core\messagedata.cpp
+1319872737 source:e:\fro\trunk\core\messagedata.cpp
 	"MessageData.h"
 
-1300784490 source:e:\fro\trunk\core\messagemanager.cpp
+1319872737 source:e:\fro\trunk\core\messagemanager.cpp
 	"MessageManager.h"
 	"widgets/Console.h"
 
-1307703120 source:e:\fro\trunk\core\rectmanager.cpp
+1319872737 source:e:\fro\trunk\core\rectmanager.cpp
 	"RectManager.h"
 
-1303072288 source:e:\fro\trunk\core\resourcemanager.cpp
+1319872737 source:e:\fro\trunk\core\resourcemanager.cpp
 	"ResourceManager.h"
 	"net/DownloadManager.h"
 	"SDL/SDL_Misc.h"
 	"SDL/SDL_rotozoom.h"
 	"io/FileIO.h"
 
-1300784490 source:e:\fro\trunk\core\sdl\img.c
+1319872737 source:e:\fro\trunk\core\sdl\img.c
 	<windows.h>
 	<stdio.h>
 	<string.h>
 	<ctype.h>
 	"SDL_Image.h"
 
-1300784490 source:e:\fro\trunk\core\sdl\img_bmp.c
+1319872737 source:e:\fro\trunk\core\sdl\img_bmp.c
 	<stdio.h>
 	<string.h>
 	"SDL_Image.h"
 
-1300784490 source:e:\fro\trunk\core\sdl\img_gif.c
+1319872737 source:e:\fro\trunk\core\sdl\img_gif.c
 	"SDL_Image.h"
 	<stdio.h>
 	<string.h>
 	<ctype.h>
 
-1300784490 source:e:\fro\trunk\core\sdl\img_jpg.c
+1319872737 source:e:\fro\trunk\core\sdl\img_jpg.c
 	<stdio.h>
 	<string.h>
 	<setjmp.h>
@@ -737,7 +737,7 @@
 
 1116178942 c:\dev-cpp\include\jerror.h
 
-1300784490 source:e:\fro\trunk\core\sdl\img_mng.c
+1319872737 source:e:\fro\trunk\core\sdl\img_mng.c
 	<stdio.h>
 	<png.h>
 	<SDL/SDL.h>
@@ -784,36 +784,36 @@
 	<stddef.h>
 	<io.h>
 
-1300784490 source:e:\fro\trunk\core\sdl\img_png.c
+1319872737 source:e:\fro\trunk\core\sdl\img_png.c
 	<stdlib.h>
 	<stdio.h>
 	"SDL_Image.h"
 	<SDL/SDL_endian.h>
 	<png.h>
 
-1303074720 source:e:\fro\trunk\core\sdl\sdl_misc.cpp
+1319872737 source:e:\fro\trunk\core\sdl\sdl_misc.cpp
 	"SDL_Misc.h"
 
-1300784490 source:e:\fro\trunk\core\sdl\sdl_gfxblitfunc.c
+1319872737 source:e:\fro\trunk\core\sdl\sdl_gfxblitfunc.c
 	"SDL_gfxBlitFunc.h"
 
-1300784490 source:e:\fro\trunk\core\sdl\sdl_gfxprimitives.c
+1319872737 source:e:\fro\trunk\core\sdl\sdl_gfxprimitives.c
 	"SDL_gfxPrimitives.h"
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 
-1300784490 e:\fro\trunk\core\sdl\sdl_gfxprimitives.h
+1319872737 e:\fro\trunk\core\sdl\sdl_gfxprimitives.h
 	<math.h>
 	<SDL/SDL.h>
 
-1300784490 source:e:\fro\trunk\core\sdl\sdl_rotozoom.cpp
+1319872737 source:e:\fro\trunk\core\sdl\sdl_rotozoom.cpp
 	<windows.h>
 	<stdlib.h>
 	<string.h>
 	"SDL_rotozoom.h"
 
-1300784490 source:e:\fro\trunk\core\sdl\sdl_ttf.c
+1319872737 source:e:\fro\trunk\core\sdl\sdl_ttf.c
 	<math.h>
 	<stdio.h>
 	<stdlib.h>
@@ -840,12 +840,12 @@
 
 1169566372 c:\dev-cpp\include\freetype2\freetype\fterrors.h
 
-1307762770 source:e:\fro\trunk\core\screen.cpp
+1319872737 source:e:\fro\trunk\core\screen.cpp
 	<SDL/SDL.h>
 	"Screen.h"
 	"ResourceManager.h"
 
-1307768380 source:e:\fro\trunk\core\timermanager.cpp
+1319872737 source:e:\fro\trunk\core\timermanager.cpp
 	"TimerManager.h"
 	<SDL/SDL.h>
 
@@ -859,13 +859,13 @@
 1300784490 e:\fro\trunk\core\io\boltfile.h
 	"../Common.h"
 
-1300784490 source:e:\fro\trunk\core\io\crypt.cpp
+1319872737 source:e:\fro\trunk\core\io\crypt.cpp
 	"Crypt.h"
 
-1300784490 e:\fro\trunk\core\io\crypt.h
+1319872737 e:\fro\trunk\core\io\crypt.h
 	"../Common.h"
 
-1310702326 source:e:\fro\trunk\core\io\fileio.cpp
+1319872737 source:e:\fro\trunk\core\io\fileio.cpp
 	<zlib.h>
 	<fstream>
 	<sys/stat.h>
@@ -875,12 +875,12 @@
 	"md5.h"
 	"Crypt.h"
 
-1310700909 e:\fro\trunk\core\io\md5.h
+1319872737 e:\fro\trunk\core\io\md5.h
 	<stdio.h>
 	<fstream>
 	<iostream>
 
-1304814676 source:e:\fro\trunk\core\io\keyvaluemap.cpp
+1319872737 source:e:\fro\trunk\core\io\keyvaluemap.cpp
 	<lua.hpp>
 	"KeyValueMap.h"
 	"Crypt.h"
@@ -889,13 +889,13 @@
 	"md5.h"
 	<string.h>
 
-1300784490 source:e:\fro\trunk\core\io\tinyxml\tinyxml.cpp
+1319872737 source:e:\fro\trunk\core\io\tinyxml\tinyxml.cpp
 	<ctype.h>
 	<sstream>
 	<iostream>
 	"tinyxml.h"
 
-1300784490 e:\fro\trunk\core\io\tinyxml\tinyxml.h
+1319872737 e:\fro\trunk\core\io\tinyxml\tinyxml.h
 	<ctype.h>
 	<stdio.h>
 	<stdlib.h>
@@ -904,25 +904,25 @@
 	<string>
 	<string>
 
-1300784490 source:e:\fro\trunk\core\io\tinyxml\tinyxmlerror.cpp
+1319872737 source:e:\fro\trunk\core\io\tinyxml\tinyxmlerror.cpp
 	"tinyxml.h"
 
-1300784490 source:e:\fro\trunk\core\io\tinyxml\tinyxmlparser.cpp
+1319872737 source:e:\fro\trunk\core\io\tinyxml\tinyxmlparser.cpp
 	<ctype.h>
 	<stddef.h>
 	"tinyxml.h"
 	<windows.h>
 
-1300784490 source:e:\fro\trunk\core\net\datapacket.cpp
+1319872737 source:e:\fro\trunk\core\net\datapacket.cpp
 	"DataPacket.h"
 	"../io/Crypt.h"
 	"IrcNet2.h"
 
-1306713252 e:\fro\trunk\core\net\ircnet2.h
+1319872737 e:\fro\trunk\core\net\ircnet2.h
 	"../Core.h"
 	"TextSocketConnection.h"
 
-1300784490 e:\fro\trunk\core\net\textsocketconnection.h
+1319872737 e:\fro\trunk\core\net\textsocketconnection.h
 	"../../core/Core.h"
 	<winsock2.h>
 	<sys/types.h>
@@ -933,7 +933,7 @@
 	<sys/time.h>
 	<sys/select.h>
 
-1310700402 source:e:\fro\trunk\core\net\downloadmanager.cpp
+1319872737 source:e:\fro\trunk\core\net\downloadmanager.cpp
 	<fstream>
 	<SDL/SDL.h>
 	"DownloadManager.h"
@@ -950,15 +950,15 @@
 	<sys/select.h>
 	<arpa/inet.h>
 
-1306717602 source:e:\fro\trunk\core\net\ircnet2.cpp
+1319872737 source:e:\fro\trunk\core\net\ircnet2.cpp
 	<SDL/SDL.h>
 	"IrcNet2.h"
 	"../io/Crypt.h"
 
-1300784490 source:e:\fro\trunk\core\net\textsocketconnection.cpp
+1319872737 source:e:\fro\trunk\core\net\textsocketconnection.cpp
 	"TextSocketConnection.h"
 
-1307805708 source:e:\fro\trunk\core\widgets\button.cpp
+1319872737 source:e:\fro\trunk\core\widgets\button.cpp
 	"Button.h"
 	"../GuiManager.h"
 	"../Screen.h"
@@ -966,20 +966,20 @@
 	"../ResourceManager.h"
 	"RightClickMenu.h"
 
-1300784490 e:\fro\trunk\core\widgets\button.h
+1319872737 e:\fro\trunk\core\widgets\button.h
 	"Widget.h"
 
-1300784490 e:\fro\trunk\core\widgets\rightclickmenu.h
+1319872737 e:\fro\trunk\core\widgets\rightclickmenu.h
 	"Widget.h"
 
-1307805708 source:e:\fro\trunk\core\widgets\checkbox.cpp
+1319872737 source:e:\fro\trunk\core\widgets\checkbox.cpp
 	"Checkbox.h"
 	"../GuiManager.h"
 	"../Screen.h"
 	"../FontManager.h"
 	"../ResourceManager.h"
 
-1303028764 source:e:\fro\trunk\core\widgets\colorpicker.cpp
+1319872737 source:e:\fro\trunk\core\widgets\colorpicker.cpp
 	"ColorPicker.h"
 	"Input.h"
 	"Scrollbar.h"
@@ -989,13 +989,13 @@
 	"../Screen.h"
 	"../ResourceManager.h"
 
-1300784490 e:\fro\trunk\core\widgets\colorpicker.h
+1319872737 e:\fro\trunk\core\widgets\colorpicker.h
 	"Frame.h"
 
-1300784490 e:\fro\trunk\core\widgets\scrollbar.h
+1319872737 e:\fro\trunk\core\widgets\scrollbar.h
 	"Widget.h"
 
-1310689663 source:e:\fro\trunk\core\widgets\console.cpp
+1319872737 source:e:\fro\trunk\core\widgets\console.cpp
 	"Console.h"
 	"Input.h"
 	"Button.h"
@@ -1008,10 +1008,10 @@
 	"../FontManager.h"
 	"../io/FileIO.h"
 
-1303074086 e:\fro\trunk\core\widgets\multiline.h
+1319872737 e:\fro\trunk\core\widgets\multiline.h
 	"Widget.h"
 
-1304736418 source:e:\fro\trunk\core\widgets\frame.cpp
+1319872737 source:e:\fro\trunk\core\widgets\frame.cpp
 	"Frame.h"
 	"Label.h"
 	"Button.h"
@@ -1023,12 +1023,12 @@
 	"../ResourceManager.h"
 	"Console.h"
 
-1307805708 source:e:\fro\trunk\core\widgets\hintballoon.cpp
+1319872737 source:e:\fro\trunk\core\widgets\hintballoon.cpp
 	"HintBalloon.h"
 	"../Screen.h"
 	"../FontManager.h"
 
-1303087300 source:e:\fro\trunk\core\widgets\input.cpp
+1319872737 source:e:\fro\trunk\core\widgets\input.cpp
 	"Input.h"
 	"Button.h"
 	"ColorPicker.h"
@@ -1042,14 +1042,14 @@
 	"../io/FileIO.h"
 	"Console.h"
 
-1307805708 source:e:\fro\trunk\core\widgets\label.cpp
+1319872737 source:e:\fro\trunk\core\widgets\label.cpp
 	"Label.h"
 	"../Screen.h"
 	"../GuiManager.h"
 	"../FontManager.h"
 	"Console.h"
 
-1300784490 source:e:\fro\trunk\core\widgets\messagepopup.cpp
+1319872737 source:e:\fro\trunk\core\widgets\messagepopup.cpp
 	"MessagePopup.h"
 	"Button.h"
 	"Multiline.h"
@@ -1058,10 +1058,10 @@
 	"../GuiManager.h"
 	"../ResourceManager.h"
 
-1300784490 e:\fro\trunk\core\widgets\messagepopup.h
+1319872737 e:\fro\trunk\core\widgets\messagepopup.h
 	"Frame.h"
 
-1319865288 source:e:\fro\trunk\core\widgets\multiline.cpp
+1319872737 source:e:\fro\trunk\core\widgets\multiline.cpp
 	"Multiline.h"
 	"Scrollbar.h"
 	"OpenUrl.h"
@@ -1069,18 +1069,18 @@
 	"../Screen.h"
 	"../FontManager.h"
 
-1300784490 e:\fro\trunk\core\widgets\openurl.h
+1319872737 e:\fro\trunk\core\widgets\openurl.h
 	"../Core.h"
 	"Frame.h"
 
-1304725142 source:e:\fro\trunk\core\widgets\openurl.cpp
+1319872737 source:e:\fro\trunk\core\widgets\openurl.cpp
 	"OpenUrl.h"
 	<windows.h>
 	"Button.h"
 	"Label.h"
 	"../io/FileIO.h"
 
-1307849564 source:e:\fro\trunk\core\widgets\rightclickmenu.cpp
+1319872737 source:e:\fro\trunk\core\widgets\rightclickmenu.cpp
 	"RightClickMenu.h"
 	"Button.h"
 	"../Screen.h"
@@ -1091,7 +1091,7 @@
 	"../TimerManager.h"
 	"Console.h"
 
-1300784490 source:e:\fro\trunk\core\widgets\scrollbar.cpp
+1319872737 source:e:\fro\trunk\core\widgets\scrollbar.cpp
 	"Scrollbar.h"
 	"Button.h"
 	"../GuiManager.h"
@@ -1099,7 +1099,7 @@
 	"../Screen.h"
 	"../ResourceManager.h"
 
-1301890264 source:e:\fro\trunk\core\widgets\smallselect.cpp
+1319872737 source:e:\fro\trunk\core\widgets\smallselect.cpp
 	"SmallSelect.h"
 	"Button.h"
 	"../GuiManager.h"
@@ -1107,10 +1107,10 @@
 	"../Screen.h"
 	"../ResourceManager.h"
 
-1300784490 e:\fro\trunk\core\widgets\smallselect.h
+1319872737 e:\fro\trunk\core\widgets\smallselect.h
 	"Widget.h"
 
-1303694276 source:e:\fro\trunk\core\widgets\widget.cpp
+1319872737 source:e:\fro\trunk\core\widgets\widget.cpp
 	"Widget.h"
 	"../Screen.h"
 	"../ResourceManager.h"
@@ -1118,14 +1118,14 @@
 	"../FontManager.h"
 	"Console.h"
 
-1302838008 source:e:\fro\trunk\core\widgets\widgetlist.cpp
+1319872737 source:e:\fro\trunk\core\widgets\widgetlist.cpp
 	"WidgetList.h"
 	"Scrollbar.h"
 
-1301800140 e:\fro\trunk\core\widgets\widgetlist.h
+1319872737 e:\fro\trunk\core\widgets\widgetlist.h
 	"Frame.h"
 
-1300784490 source:e:\fro\trunk\core\widgets\yesnopopup.cpp
+1319872737 source:e:\fro\trunk\core\widgets\yesnopopup.cpp
 	"YesNoPopup.h"
 	"Button.h"
 	"Multiline.h"
@@ -1134,10 +1134,10 @@
 	"../GuiManager.h"
 	"../ResourceManager.h"
 
-1300784490 e:\fro\trunk\core\widgets\yesnopopup.h
+1319872737 e:\fro\trunk\core\widgets\yesnopopup.h
 	"Frame.h"
 
-1307697166 source:e:\fro\trunk\entity\actor.cpp
+1319872737 source:e:\fro\trunk\entity\actor.cpp
 	<lua.hpp>
 	"Actor.h"
 	"StaticObject.h"
@@ -1147,51 +1147,51 @@
 	"../map/Map.h"
 	"../avatar/Avatar.h"
 
-1306880716 e:\fro\trunk\entity\actor.h
+1319872737 e:\fro\trunk\entity\actor.h
 	"Entity.h"
 
-1307804274 e:\fro\trunk\entity\entity.h
+1319872737 e:\fro\trunk\entity\entity.h
 	<map>
 	"../core/Core.h"
 
-1301114042 e:\fro\trunk\entity\staticobject.h
+1319872737 e:\fro\trunk\entity\staticobject.h
 	"../core/Core.h"
 	"Entity.h"
 
-1300784490 e:\fro\trunk\entity\textobject.h
+1319872737 e:\fro\trunk\entity\textobject.h
 	"StaticObject.h"
 
-1306881874 e:\fro\trunk\entity\localactor.h
+1319872737 e:\fro\trunk\entity\localactor.h
 	"Actor.h"
 
-1301108994 e:\fro\trunk\entity\chatbubble.h
+1319872737 e:\fro\trunk\entity\chatbubble.h
 	"../core/Core.h"
 	"Entity.h"
 
-1307774086 e:\fro\trunk\map\map.h
+1319872737 e:\fro\trunk\map\map.h
 	<map>
 	"../core/Core.h"
 	"../core/widgets/Frame.h"
 	"../entity/EntityManager.h"
 
-1307769292 e:\fro\trunk\entity\entitymanager.h
+1319872737 e:\fro\trunk\entity\entitymanager.h
 	"../core/Core.h"
 	"Entity.h"
 
-1306656188 source:e:\fro\trunk\entity\chatbubble.cpp
+1319872737 source:e:\fro\trunk\entity\chatbubble.cpp
 	"ChatBubble.h"
 	"../core/SDL/SDL_rotozoom.h"
 	"../core/io/FileIO.h"
 	"../map/Map.h"
 
-1300784490 source:e:\fro\trunk\entity\damageicon.cpp
+1319872737 source:e:\fro\trunk\entity\damageicon.cpp
 	"DamageIcon.h"
 	"../map/Map.h"
 
-1300784490 e:\fro\trunk\entity\damageicon.h
+1319872737 e:\fro\trunk\entity\damageicon.h
 	"StaticObject.h"
 
-1307767634 source:e:\fro\trunk\entity\entity.cpp
+1319877522 source:e:\fro\trunk\entity\entity.cpp
 	<lua.hpp>
 	"Entity.h"
 	"EntityManager.h"
@@ -1201,18 +1201,18 @@
 	"../core/io/FileIO.h"
 	"../core/SDL/SDL_gfxPrimitives.h"
 
-1310703523 source:e:\fro\trunk\entity\entitymanager.cpp
+1319872737 source:e:\fro\trunk\entity\entitymanager.cpp
 	"EntityManager.h"
 	<algorithm>
 
-1300784490 source:e:\fro\trunk\entity\explodingentity.cpp
+1319872737 source:e:\fro\trunk\entity\explodingentity.cpp
 	"ExplodingEntity.h"
 	"../map/Map.h"
 
-1300784490 e:\fro\trunk\entity\explodingentity.h
+1319872737 e:\fro\trunk\entity\explodingentity.h
 	"Entity.h"
 
-1304815878 source:e:\fro\trunk\entity\localactor.cpp
+1319872737 source:e:\fro\trunk\entity\localactor.cpp
 	<lua.hpp>
 	"LocalActor.h"
 	"../map/Map.h"
@@ -1224,10 +1224,10 @@
 	"../net/IrcNetSenders.h"
 	"../avatar/Avatar.h"
 
-1301107788 e:\fro\trunk\net\ircnetsenders.h
+1319872737 e:\fro\trunk\net\ircnetsenders.h
 	"../core/Core.h"
 
-1306717602 source:e:\fro\trunk\entity\remoteactor.cpp
+1319872737 source:e:\fro\trunk\entity\remoteactor.cpp
 	<lua.hpp>
 	"RemoteActor.h"
 	"../avatar/Avatar.h"
@@ -1236,10 +1236,10 @@
 	"../game/GameManager.h"
 	"../net/IrcNetSenders.h"
 
-1306717602 e:\fro\trunk\entity\remoteactor.h
+1319872737 e:\fro\trunk\entity\remoteactor.h
 	"Actor.h"
 
-1310689582 source:e:\fro\trunk\entity\staticobject.cpp
+1319872737 source:e:\fro\trunk\entity\staticobject.cpp
 	<limits.h>
 	"StaticObject.h"
 	"LocalActor.h"
@@ -1247,11 +1247,11 @@
 	"../map/Map.h"
 	"../core/io/FileIO.h"
 
-1300784490 source:e:\fro\trunk\entity\textobject.cpp
+1319872737 source:e:\fro\trunk\entity\textobject.cpp
 	<lua.hpp>
 	"TextObject.h"
 
-1319866488 source:e:\fro\trunk\game\chatcommands.cpp
+1319872737 source:e:\fro\trunk\game\chatcommands.cpp
 	<windows.h>
 	"GameManager.h"
 	"../core/net/IrcNet2.h"
@@ -1261,22 +1261,22 @@
 	"../map/Map.h"
 	"../interface/UserList.h"
 
-1300784488 e:\fro\trunk\interface\userlist.h
+1319872737 e:\fro\trunk\interface\userlist.h
 	"../core/Core.h"
 	"../core/widgets/Frame.h"
 	"../core/widgets/Button.h"
 
-1300784490 source:e:\fro\trunk\game\collisionblob.cpp
+1319872737 source:e:\fro\trunk\game\collisionblob.cpp
 	"CollisionBlob.h"
 	"../core/io/FileIO.h"
 	"../core/ResourceManager.h"
 	"../core/Image.h"
 	"../core/widgets/Console.h"
 
-1300784490 e:\fro\trunk\game\collisionblob.h
+1319872737 e:\fro\trunk\game\collisionblob.h
 	"../core/Common.h"
 
-1307801964 source:e:\fro\trunk\game\gamemanager.cpp
+1319877523 source:e:\fro\trunk\game\gamemanager.cpp
 	<windows.h>
 	"GameManager.h"
 	"../net/IrcNetListeners.h"
@@ -1294,19 +1294,18 @@
 	"../core/widgets/Label.h"
 	"../core/widgets/MessagePopup.h"
 	"../core/net/IrcNet2.h"
-	"../core/io/BoltFile.h"
 	"../core/io/FileIO.h"
 	"../interface/LoginDialog.h"
 	"../interface/UserList.h"
 
-1300839060 e:\fro\trunk\net\ircnetlisteners.h
+1319872737 e:\fro\trunk\net\ircnetlisteners.h
 	"../core/Core.h"
 
-1300784488 e:\fro\trunk\interface\logindialog.h
+1319872737 e:\fro\trunk\interface\logindialog.h
 	"../core/Core.h"
 	"../core/widgets/Frame.h"
 
-1306882484 source:e:\fro\trunk\game\worldloader.cpp
+1319872737 source:e:\fro\trunk\game\worldloader.cpp
 	<lua.hpp>
 	"WorldLoader.h"
 	"GameManager.h"
@@ -1322,13 +1321,13 @@
 	"../interface/WorldViewer.h"
 	"../lua/MapLib.h"
 
-1303016554 e:\fro\trunk\interface\worldviewer.h
+1319872737 e:\fro\trunk\interface\worldviewer.h
 	"../core/widgets/Frame.h"
 
-1301110416 e:\fro\trunk\lua\maplib.h
+1319872737 e:\fro\trunk\lua\maplib.h
 	"../core/Core.h"
 
-1310700402 source:e:\fro\trunk\interface\autoupdater.cpp
+1319872737 source:e:\fro\trunk\interface\autoupdater.cpp
 	"AutoUpdater.h"
 	"../core/GuiManager.h"
 	"../core/net/DownloadManager.h"
@@ -1342,10 +1341,10 @@
 	<windows.h>
 	<process.h>
 
-1304649996 e:\fro\trunk\interface\autoupdater.h
+1319872737 e:\fro\trunk\interface\autoupdater.h
 	"../core/widgets/Frame.h"
 
-1307810816 source:e:\fro\trunk\interface\avatarcreator.cpp
+1319872737 source:e:\fro\trunk\interface\avatarcreator.cpp
 	"AvatarCreator.h"
 	"AvatarFavorites.h"
 	"../core/widgets/MessagePopup.h"
@@ -1356,15 +1355,15 @@
 	"../game/GameManager.h"
 	"../entity/LocalActor.h"
 
-1304750394 e:\fro\trunk\interface\avatarcreator.h
+1319872737 e:\fro\trunk\interface\avatarcreator.h
 	"../core/Core.h"
 	"../core/widgets/Frame.h"
 
-1304750582 e:\fro\trunk\interface\avatarfavorites.h
+1319872737 e:\fro\trunk\interface\avatarfavorites.h
 	"../core/widgets/Frame.h"
 	"../avatar/AvatarProperties.h"
 
-1304751380 source:e:\fro\trunk\interface\avataredit.cpp
+1319872737 source:e:\fro\trunk\interface\avataredit.cpp
 	"AvatarEdit.h"
 	"AvatarFavorites.h"
 	"../avatar/Avatar.h"
@@ -1373,10 +1372,10 @@
 	"../core/widgets/Input.h"
 	"../core/widgets/Checkbox.h"
 
-1304750680 e:\fro\trunk\interface\avataredit.h
+1319872737 e:\fro\trunk\interface\avataredit.h
 	"../core/widgets/Frame.h"
 
-1304754374 source:e:\fro\trunk\interface\avatarfavorites.cpp
+1319872737 source:e:\fro\trunk\interface\avatarfavorites.cpp
 	<lua.hpp>
 	"AvatarFavorites.h"
 	"AvatarCreator.h"
@@ -1389,7 +1388,7 @@
 	"../avatar/Avatar.h"
 	"../game/GameManager.h"
 
-1310700402 source:e:\fro\trunk\interface\logindialog.cpp
+1319877522 source:e:\fro\trunk\interface\logindialog.cpp
 	"LoginDialog.h"
 	"AutoUpdater.h"
 	"../game/GameManager.h"
@@ -1404,9 +1403,9 @@
 	"../core/io/FileIO.h"
 	"../core/net/IrcNet2.h"
 
-1300817720 e:\fro\trunk\net\checkin.h
+1319872737 e:\fro\trunk\net\checkin.h
 
-1307806984 source:e:\fro\trunk\interface\optionsdialog.cpp
+1319872737 source:e:\fro\trunk\interface\optionsdialog.cpp
 	"OptionsDialog.h"
 	"../core/widgets/Button.h"
 	"../core/widgets/Label.h"
@@ -1420,18 +1419,18 @@
 	"../map/Map.h"
 	"../interface/UserList.h"
 
-1300784488 e:\fro\trunk\interface\optionsdialog.h
+1319872737 e:\fro\trunk\interface\optionsdialog.h
 	"../core/Core.h"
 	"../core/widgets/Frame.h"
 
-1300784488 source:e:\fro\trunk\interface\screentext.cpp
+1319872737 source:e:\fro\trunk\interface\screentext.cpp
 	"ScreenText.h"
 
-1300784488 e:\fro\trunk\interface\screentext.h
+1319872737 e:\fro\trunk\interface\screentext.h
 	"../core/Core.h"
 	"../core/widgets/Frame.h"
 
-1307774086 source:e:\fro\trunk\interface\userlist.cpp
+1319872737 source:e:\fro\trunk\interface\userlist.cpp
 	"UserList.h"
 	"../game/GameManager.h"
 	"../entity/EntityManager.h"
@@ -1439,7 +1438,7 @@
 	"../core/widgets/Multiline.h"
 	"../core/widgets/Label.h"
 
-1310689728 source:e:\fro\trunk\interface\worldviewer.cpp
+1319872737 source:e:\fro\trunk\interface\worldviewer.cpp
 	<algorithm>
 	"WorldViewer.h"
 	"../core/widgets/MessagePopup.h"
@@ -1450,7 +1449,7 @@
 	"../core/io/FileIO.h"
 	"../game/GameManager.h"
 
-1306654686 source:e:\fro\trunk\lua\actorlib.cpp
+1319872737 source:e:\fro\trunk\lua\actorlib.cpp
 	<lua.hpp>
 	"ActorLib.h"
 	"EntityLib.h"
@@ -1461,14 +1460,14 @@
 	"../game/GameManager.h"
 	"../map/Map.h"
 
-1300784488 e:\fro\trunk\lua\actorlib.h
+1319872737 e:\fro\trunk\lua\actorlib.h
 
-1300784488 e:\fro\trunk\lua\entitylib.h
+1319872737 e:\fro\trunk\lua\entitylib.h
 
-1307815820 e:\fro\trunk\lua\luacommon.h
+1319872737 e:\fro\trunk\lua\luacommon.h
 	"../core/Core.h"
 
-1307769292 source:e:\fro\trunk\lua\cameralib.cpp
+1319872737 source:e:\fro\trunk\lua\cameralib.cpp
 	<lua.hpp>
 	"CameraLib.h"
 	"LuaCommon.h"
@@ -1477,9 +1476,9 @@
 	"../game/GameManager.h"
 	"../map/Map.h"
 
-1300784488 e:\fro\trunk\lua\cameralib.h
+1319872737 e:\fro\trunk\lua\cameralib.h
 
-1307815646 source:e:\fro\trunk\lua\convolib.cpp
+1319872737 source:e:\fro\trunk\lua\convolib.cpp
 	<lua.hpp>
 	"ConvoLib.h"
 	"LuaCommon.h"
@@ -1488,9 +1487,9 @@
 	"../core/widgets/Frame.h"
 	"../core/widgets/Multiline.h"
 
-1300784488 e:\fro\trunk\lua\convolib.h
+1319872737 e:\fro\trunk\lua\convolib.h
 
-1310703019 source:e:\fro\trunk\lua\entitylib.cpp
+1319872737 source:e:\fro\trunk\lua\entitylib.cpp
 	<lua.hpp>
 	"EntityLib.h"
 	"LuaCommon.h"
@@ -1502,16 +1501,16 @@
 	"../game/GameManager.h"
 	"../map/Map.h"
 
-1307815646 source:e:\fro\trunk\lua\eventslib.cpp
+1319872737 source:e:\fro\trunk\lua\eventslib.cpp
 	<lua.hpp>
 	"EventsLib.h"
 	"LuaCommon.h"
 	"../core/MessageManager.h"
 	"../core/MessageData.h"
 
-1300784488 e:\fro\trunk\lua\eventslib.h
+1319872737 e:\fro\trunk\lua\eventslib.h
 
-1306882484 source:e:\fro\trunk\lua\gamelib.cpp
+1319872737 source:e:\fro\trunk\lua\gamelib.cpp
 	<lua.hpp>
 	"GameLib.h"
 	"ActorLib.h"
@@ -1521,15 +1520,16 @@
 	"../core/net/IrcNet2.h"
 	"../core/net/DataPacket.h"
 	"../entity/RemoteActor.h"
+	"../net/IrcNetSenders.h"
 
-1300784488 e:\fro\trunk\lua\gamelib.h
+1319872737 e:\fro\trunk\lua\gamelib.h
 
-1307815860 source:e:\fro\trunk\lua\luacommon.cpp
+1319872737 source:e:\fro\trunk\lua\luacommon.cpp
 	<lua.hpp>
 	<stdarg.h>
 	"LuaCommon.h"
 
-1307815646 source:e:\fro\trunk\lua\maplib.cpp
+1319872737 source:e:\fro\trunk\lua\maplib.cpp
 	<lua.hpp>
 	"MapLib.h"
 	"LuaCommon.h"
@@ -1545,13 +1545,13 @@
 	"../game/GameManager.h"
 	"../map/Map.h"
 
-1300784488 e:\fro\trunk\lua\timerslib.h
+1319872737 e:\fro\trunk\lua\timerslib.h
 
-1300784488 e:\fro\trunk\lua\systemlib.h
+1319872737 e:\fro\trunk\lua\systemlib.h
 
-1300784488 e:\fro\trunk\lua\playerlib.h
+1319872737 e:\fro\trunk\lua\playerlib.h
 
-1304815730 source:e:\fro\trunk\lua\playerlib.cpp
+1319872737 source:e:\fro\trunk\lua\playerlib.cpp
 	<lua.hpp>
 	"PlayerLib.h"
 	"LuaCommon.h"
@@ -1560,7 +1560,7 @@
 	"../game/GameManager.h"
 	"../map/Map.h"
 
-1310700402 source:e:\fro\trunk\lua\systemlib.cpp
+1319872737 source:e:\fro\trunk\lua\systemlib.cpp
 	<lua.hpp>
 	"SystemLib.h"
 	"LuaCommon.h"
@@ -1573,12 +1573,12 @@
 	"../game/GameManager.h"
 	"../map/Map.h"
 
-1307815646 source:e:\fro\trunk\lua\timerslib.cpp
+1319872737 source:e:\fro\trunk\lua\timerslib.cpp
 	<lua.hpp>
 	"TimersLib.h"
 	"LuaCommon.h"
 
-1307801964 source:e:\fro\trunk\map\map.cpp
+1319872737 source:e:\fro\trunk\map\map.cpp
 	"Map.h"
 	"../entity/RemoteActor.h"
 	"../entity/LocalActor.h"
@@ -1597,9 +1597,9 @@
 	"../interface/AvatarCreator.h"
 	"../interface/WorldViewer.h"
 
-1300816452 e:\fro\trunk\game\chatcommands.h
+1319872737 e:\fro\trunk\game\chatcommands.h
 
-1306882484 source:e:\fro\trunk\net\checkin.cpp
+1319877522 source:e:\fro\trunk\net\checkin.cpp
 	"CheckIn.h"
 	"../core/widgets/MessagePopup.h"
 	"../core/io/FileIO.h"
@@ -1609,7 +1609,7 @@
 	"../core/net/IrcNet2.h"
 	"../core/io/tinyxml/tinyxml.h"
 
-1310689744 source:e:\fro\trunk\net\ircnetlisteners.cpp
+1319872737 source:e:\fro\trunk\net\ircnetlisteners.cpp
 	<time.h>
 	"IrcNetListeners.h"
 	"IrcNetSenders.h"
@@ -1630,7 +1630,7 @@
 	"../entity/RemoteActor.h"
 	"../avatar/Avatar.h"
 
-1307806976 source:e:\fro\trunk\net\ircnetsenders.cpp
+1319872737 source:e:\fro\trunk\net\ircnetsenders.cpp
 	"IrcNetSenders.h"
 	"IrcNetListeners.h"
 	"../core/net/IrcNet2.h"
@@ -1643,17 +1643,22 @@
 1319865368 source:e:\fro\trunk\build\fro_private.rc
 	<windows.h>
 
-1310701213 source:e:\fro\trunk\core\io\md5.cpp
+1319872737 source:e:\fro\trunk\core\io\md5.cpp
 	"md5.h"
 	<assert.h>
 	<strings.h>
 	<iostream>
 
-1170114516 e:\mingw\include\freetype2\freetype\ftoutln.h
+1170110916 e:\mingw\include\freetype2\freetype\ftoutln.h
 	<ft2build.h>
 
-1170349792 e:\mingw\include\freetype2\freetype\ttnameid.h
+1170346192 e:\mingw\include\freetype2\freetype\ttnameid.h
 	<ft2build.h>
 
-1169566372 e:\mingw\include\freetype2\freetype\fterrors.h
+1169562772 e:\mingw\include\freetype2\freetype\fterrors.h
+
+1327258260 e:\fro\trunk\build\build.h
+
+1327258756 source:e:\fro\trunk\build\build.rc
+	<windows.h>
 

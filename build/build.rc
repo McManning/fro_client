@@ -1,0 +1,31 @@
+
+#include <windows.h>
+
+1 ICON "fro.ico"
+
+2 VERSIONINFO
+FILEVERSION 1,5,6,0
+PRODUCTVERSION 1,5,6,0
+FILETYPE VFT_APP
+{
+  BLOCK "StringFileInfo"
+	 {
+		 BLOCK "040904E4"
+		 {
+			 VALUE "CompanyName", "Sybolt Studios"
+			 VALUE "FileVersion", ""
+			 VALUE "FileDescription", "fro Visual IRC Client"
+			 VALUE "InternalName", ""
+			 VALUE "LegalCopyright", "Copyright (c) Sybolt Studios 2007-2011"
+			 VALUE "LegalTrademarks", ""
+			 VALUE "OriginalFilename", ""
+			 VALUE "ProductName", ""
+			 VALUE "ProductVersion", ""
+		 }
+	 }
+  BLOCK "VarFileInfo"
+	 {
+		 VALUE "Translation", 0x0409, 1252
+	 }
+}
+

@@ -107,8 +107,6 @@
 		<Unit filename="..\core\Screen.h" />
 		<Unit filename="..\core\TimerManager.cpp" />
 		<Unit filename="..\core\TimerManager.h" />
-		<Unit filename="..\core\io\BoltFile.cpp" />
-		<Unit filename="..\core\io\BoltFile.h" />
 		<Unit filename="..\core\io\Crypt.cpp" />
 		<Unit filename="..\core\io\Crypt.h" />
 		<Unit filename="..\core\io\FileIO.cpp" />
