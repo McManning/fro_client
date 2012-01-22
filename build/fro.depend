@@ -8,7 +8,7 @@
 	"core/io/FileIO.h"
 	"game/GameManager.h"
 
-1327258313 e:\fro\trunk\core\common.h
+1327262815 e:\fro\trunk\core\common.h
 	<string>
 	<vector>
 	<math.h>
@@ -784,7 +784,7 @@
 	<stddef.h>
 	<io.h>
 
-1319872737 source:e:\fro\trunk\core\sdl\img_png.c
+1327260717 source:e:\fro\trunk\core\sdl\img_png.c
 	<stdlib.h>
 	<stdio.h>
 	"SDL_Image.h"
@@ -859,7 +859,7 @@
 1300784490 e:\fro\trunk\core\io\boltfile.h
 	"../Common.h"
 
-1319872737 source:e:\fro\trunk\core\io\crypt.cpp
+1327269617 source:e:\fro\trunk\core\io\crypt.cpp
 	"Crypt.h"
 
 1319872737 e:\fro\trunk\core\io\crypt.h
@@ -918,7 +918,7 @@
 	"../io/Crypt.h"
 	"IrcNet2.h"
 
-1319872737 e:\fro\trunk\core\net\ircnet2.h
+1327267383 e:\fro\trunk\core\net\ircnet2.h
 	"../Core.h"
 	"TextSocketConnection.h"
 
@@ -1305,7 +1305,7 @@
 	"../core/Core.h"
 	"../core/widgets/Frame.h"
 
-1319872737 source:e:\fro\trunk\game\worldloader.cpp
+1327267441 source:e:\fro\trunk\game\worldloader.cpp
 	<lua.hpp>
 	"WorldLoader.h"
 	"GameManager.h"
@@ -1316,6 +1316,7 @@
 	"../core/widgets/Label.h"
 	"../core/widgets/Button.h"
 	"../core/io/FileIO.h"
+	"../core/io/Crypt.h"
 	"../interface/Userlist.h"
 	"../interface/LoginDialog.h"
 	"../interface/WorldViewer.h"
@@ -1324,7 +1325,7 @@
 1319872737 e:\fro\trunk\interface\worldviewer.h
 	"../core/widgets/Frame.h"
 
-1319872737 e:\fro\trunk\lua\maplib.h
+1327262384 e:\fro\trunk\lua\maplib.h
 	"../core/Core.h"
 
 1319872737 source:e:\fro\trunk\interface\autoupdater.cpp
@@ -1363,7 +1364,7 @@
 	"../core/widgets/Frame.h"
 	"../avatar/AvatarProperties.h"
 
-1319872737 source:e:\fro\trunk\interface\avataredit.cpp
+1327261306 source:e:\fro\trunk\interface\avataredit.cpp
 	"AvatarEdit.h"
 	"AvatarFavorites.h"
 	"../avatar/Avatar.h"
@@ -1388,7 +1389,7 @@
 	"../avatar/Avatar.h"
 	"../game/GameManager.h"
 
-1319877522 source:e:\fro\trunk\interface\logindialog.cpp
+1327267476 source:e:\fro\trunk\interface\logindialog.cpp
 	"LoginDialog.h"
 	"AutoUpdater.h"
 	"../game/GameManager.h"
@@ -1401,6 +1402,7 @@
 	"../core/widgets/Scrollbar.h"
 	"../core/widgets/MessagePopup.h"
 	"../core/io/FileIO.h"
+	"../core/io/Crypt.h"
 	"../core/net/IrcNet2.h"
 
 1319872737 e:\fro\trunk\net\checkin.h
@@ -1438,7 +1440,7 @@
 	"../core/widgets/Multiline.h"
 	"../core/widgets/Label.h"
 
-1319872737 source:e:\fro\trunk\interface\worldviewer.cpp
+1327267506 source:e:\fro\trunk\interface\worldviewer.cpp
 	<algorithm>
 	"WorldViewer.h"
 	"../core/widgets/MessagePopup.h"
@@ -1447,6 +1449,8 @@
 	"../core/widgets/Button.h"
 	"../core/widgets/Input.h"
 	"../core/io/FileIO.h"
+	"../core/io/Crypt.h"
+	"../core/net/IrcNet2.h"
 	"../game/GameManager.h"
 
 1319872737 source:e:\fro\trunk\lua\actorlib.cpp
@@ -1529,7 +1533,7 @@
 	<stdarg.h>
 	"LuaCommon.h"
 
-1319872737 source:e:\fro\trunk\lua\maplib.cpp
+1327262385 source:e:\fro\trunk\lua\maplib.cpp
 	<lua.hpp>
 	"MapLib.h"
 	"LuaCommon.h"
@@ -1599,15 +1603,16 @@
 
 1319872737 e:\fro\trunk\game\chatcommands.h
 
-1319877522 source:e:\fro\trunk\net\checkin.cpp
+1327269576 source:e:\fro\trunk\net\checkin.cpp
 	"CheckIn.h"
 	"../core/widgets/MessagePopup.h"
 	"../core/io/FileIO.h"
+	"../core/io/Crypt.h"
 	"../game/GameManager.h"
 	"../map/Map.h"
 	"../entity/LocalActor.h"
 	"../core/net/IrcNet2.h"
-	"../core/io/tinyxml/tinyxml.h"
+	"../lua/MapLib.h"
 
 1319872737 source:e:\fro\trunk\net\ircnetlisteners.cpp
 	<time.h>
@@ -1643,7 +1648,7 @@
 1319865368 source:e:\fro\trunk\build\fro_private.rc
 	<windows.h>
 
-1319872737 source:e:\fro\trunk\core\io\md5.cpp
+1327260717 source:e:\fro\trunk\core\io\md5.cpp
 	"md5.h"
 	<assert.h>
 	<strings.h>
@@ -1659,6 +1664,6 @@
 
 1327258260 e:\fro\trunk\build\build.h
 
-1327258756 source:e:\fro\trunk\build\build.rc
+1327260956 source:e:\fro\trunk\build\build.rc
 	<windows.h>
 

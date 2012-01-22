@@ -78,8 +78,6 @@ struct exception //Structure for a basic exception error
 	int line;
 };
 
-#define CONFIG_FILENAME "assets/system.cfg"
-
 #define DIR_CACHE "cache/"
 
 #ifdef __DEBUG__

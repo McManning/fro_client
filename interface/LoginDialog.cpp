@@ -36,6 +36,7 @@
 #include "../core/widgets/Scrollbar.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/io/FileIO.h"
+#include "../core/io/Crypt.h"
 #include "../core/net/IrcNet2.h"
 
 LoginDialog* loginDialog;
@@ -312,12 +313,16 @@ void LoginDialog::SendLoginQuery(bool skip)
 	Checkbox* c;
 	Input* i;
 	string query;
+	string s;
 
 	//send http get: login.php?ver=1.1.0&id=test&pass=test
 
-	query = "http://sybolt.com/drm-svr/";
-	query += "login.php?ver=";
-	query += VER_STRING;
+    query = "http://sybolt.com/drm-svr/";
+	query += "login.php?v=";
+
+	s = VER_STRING;
+	CPHP_Encrypt(s, URL_CRYPT_KEY);
+	query += s;
 
 	if (!skip)
 	{
@@ -329,12 +334,15 @@ void LoginDialog::SendLoginQuery(bool skip)
 
 		if (!mUsername.empty())
 		{
-			query += "&id=" + htmlSafe(mUsername);
+			s = mUsername;
+			CPHP_Encrypt(s, URL_CRYPT_KEY);
+			query += "&u=" + s;
 
 			if (!mPassword.empty())
 			{
-				//mPassword = md5(mPassword.c_str(), mPassword.length());
-				query += "&pass=" + htmlSafe(mPassword);
+				s = mPassword;
+				CPHP_Encrypt(s, URL_CRYPT_KEY);
+				query += "&k=" + s;
 			}
 		}
 	}

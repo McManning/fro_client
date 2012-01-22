@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -41,10 +41,10 @@ void callback_avatarEditClose(Button* b)
 void callback_avatarEditSave(Button* b)
 {
 	AvatarEdit* editor = (AvatarEdit*)b->GetParent();
-	
-	if (!editor)	
+
+	if (!editor)
 		return;
-	
+
 	AvatarProperties props;
 
 	props.url = getInputText(editor, "url");
@@ -73,22 +73,23 @@ void callback_avatarEditSave(Button* b)
 	props.delay = sti( getInputText(editor, "delay") );
 	if (props.delay < 1)
 	{
-		editor->mAlertLabel->SetCaption("Invalid Delay. (1 to 9999)");
-		return;
+	    props.delay = 1;
+		//editor->mAlertLabel->SetCaption("Invalid Delay. (1 to 9999)");
+		//return;
 	}
 
 	props.pass = getInputText(editor, "pass");
-	
+
 	props.flags = 0;
 	if (getCheckboxState(editor, "loopsit"))
 	  props.flags |= AVATAR_FLAG_LOOPSIT;
-	  
+
 	if (getCheckboxState(editor, "loopstand"))
 	  props.flags |= AVATAR_FLAG_LOOPSTAND;
 
 
 	avatarFavorites->UpdateAvatar(avatarFavorites->mWorkingFolder, editor->mWorkingIndex, props);
-	
+
 	avatarFavorites->mAvatarEdit = NULL;
 	avatarFavorites->SetActive(true);
 
@@ -102,7 +103,7 @@ AvatarEdit::AvatarEdit(int workingIndex, AvatarProperties* props)
 	mClose->onClickCallback = callback_avatarEditClose; //so we can run some custom code while it closes
 
 	SetSize(260, 180);
-	
+
 	mWorkingIndex = workingIndex;
 
 	Input* i;
@@ -112,13 +113,13 @@ AvatarEdit::AvatarEdit(int workingIndex, AvatarProperties* props)
 
 	new Label(this, "", rect(10,55), "Width:");
 	i = new Input(this, "width", rect(60,55,55,20), "0123456789", 3, true, NULL);
-		i->mHoverText = "Single frame width in pixels \\c600(For PNGs Only)";
+		i->mHoverText = "Single frame width in pixels"; // \\c600(For PNGs Only)";
 		if (props) i->SetText(its(props->w));
 		i->SetMenuEnabled(false);
-		
+
 	new Label(this, "", rect(130,55), "Height:");
 	i = new Input(this, "height", rect(195,55,55,20), "0123456789", 3, true, NULL);
-		i->mHoverText = "Single frame height in pixels \\c600(For PNGs Only)";
+		i->mHoverText = "Single frame height in pixels"; // \\c600(For PNGs Only)";
 		if (props) i->SetText(its(props->h));
 		i->SetMenuEnabled(false);
 

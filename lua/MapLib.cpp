@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -63,7 +63,7 @@ int mapLib_luaCallBuildWorld(lua_State* ls, bool testMode, string& worldName, st
 	{
 		lua_pushnumber(ls, i);
 		lua_pushstring(ls, reslist.at(i).c_str());
-		lua_settable(ls, top);	
+		lua_settable(ls, top);
 	}
 
 	int result = 1;
@@ -79,9 +79,9 @@ int mapLib_luaCallBuildWorld(lua_State* ls, bool testMode, string& worldName, st
 			result = (int)lua_tonumber(ls, -1); //get the result
 		}
 	}
-	
+
 	lua_pop(ls, 1); //get rid of result from stack
-	
+
 	return result;
 }
 
@@ -89,21 +89,33 @@ int mapLib_luaCallBuildWorld(lua_State* ls, bool testMode, string& worldName, st
 void mapLib_CallDisplay(lua_State* ls)
 {
 	lua_getglobal(ls, "__MAIN_DISPLAY");
-	
-	if (lua_isfunction(ls, -1) && luaCall(ls, 0, 0) != 0)
+
+	if (!lua_isfunction(ls, -1) || luaCall(ls, 0, 0) != 0)
 	{
 		console->AddMessage("\\c900 * LUA [__MAIN_DISPLAY] Fail");
 	}
+}
+
+void mapLib_CallCheckin(lua_State* ls, string& filename)
+{
+    lua_getglobal(ls, "__MAIN_CHECKIN");
+
+    lua_pushstring(ls, filename.c_str());
+
+    if (!lua_isfunction(ls, -2) || luaCall(ls, 1, 0) != 0)
+    {
+        console->AddMessage("\\c900 * LUA [__MAIN_CHECKIN] Fail");
+    }
 }
 
 /*	Calls Destroy() in the lua script when the script is being unloaded. */
 void mapLib_CallDestroy(lua_State* ls)
 {
 	lua_getglobal(ls, "__MAIN_DESTROY");
-	
-	if (lua_isfunction(ls, -1) && luaCall(ls, 0, 0) != 0)
+
+	if (!lua_isfunction(ls, -1) || luaCall(ls, 0, 0) != 0)
 	{
-		console->AddMessage("\\c900 * LUA [__MAIN_DESTROY] Fail");	
+		console->AddMessage("\\c900 * LUA [__MAIN_DESTROY] Fail");
 	}
 }
 
@@ -112,9 +124,9 @@ void mapLib_CloseLuaState(lua_State* ls)
 {
 	if (!ls)
 		return;
-		
+
 	mapLib_CallDestroy(ls);
-	
+
 	unregisterAllEventListeners(ls);
 	unregisterAllLuaTimers(ls);
 	UnregisterConvoLib(ls);
@@ -126,10 +138,10 @@ void mapLib_CloseLuaState(lua_State* ls)
 lua_State* mapLib_OpenLuaState()
 {
 	lua_State* ls = luaL_newstate();
-	
+
 	// Register our functions & libraries with this new state
-	luaL_openlibs( ls );  
-	
+	luaL_openlibs( ls );
+
 	RegisterMapLib( ls );
 	RegisterEventsLib( ls );
 	RegisterTimersLib( ls );
@@ -140,7 +152,7 @@ lua_State* mapLib_OpenLuaState()
 	RegisterActorLib( ls );
 	RegisterConvoLib( ls );
 	RegisterGameLib( ls );
-	
+
 	return ls;
 }
 
@@ -156,16 +168,16 @@ int map_SetSpawn(lua_State* ls)
 {
 	luaCountArgs(ls, 2);
 	ASSERT(game->mMap);
-	
+
 	point2d spawn;
 	spawn.x = (int)lua_tonumber(ls, 1);
 	spawn.y = (int)lua_tonumber(ls, 2);
 	game->mMap->mSpawnPoint = spawn;
-	
+
 	return 0;
 }
 
-/*	.SetSize(w, h) - Sets map size. This determines how the camera 
+/*	.SetSize(w, h) - Sets map size. This determines how the camera
 		behaves (will stop at the edges of the world) (0, 0) will let
 		the camera free roam.
 */
@@ -191,7 +203,7 @@ int map_SetColor(lua_State* ls)
 	game->mMap->mBackground.g = (int)lua_tonumber(ls, 2);
 	game->mMap->mBackground.b = (int)lua_tonumber(ls, 3);
 	game->mMap->AddCameraRectForUpdate(true);
-	
+
 	return 0;
 }
 
@@ -206,8 +218,8 @@ int map_GetFlag(lua_State* ls)
 
 	string s = game->mMap->GetFlag( lua_tostring(ls, 1) );
 	lua_pushstring(ls, s.c_str());
-	
-	return 1;	
+
+	return 1;
 }
 
 //	.SetFlag("flag", "value")
@@ -229,7 +241,7 @@ int map_IsEditorMode(lua_State* ls)
 	ASSERT(game && game->mMap);
 
 	lua_pushboolean(ls, game->mMap->mEditorMode);
-	return 1;	
+	return 1;
 }
 
 //	.SetEditorMode(bool")
@@ -259,7 +271,7 @@ int map_GetWorkingDir(lua_State* ls)
 		else
 			dir = DIR_CACHE;
 	}
-		
+
 	lua_pushstring(ls, dir.c_str());
 	return 1;
 }
@@ -274,7 +286,7 @@ int map_GetID(lua_State* ls)
 		id = game->mMap->mId;
 	else if (game->mLoader)
 		id = game->mLoader->m_sWorldName;
-		
+
 	lua_pushstring(ls, id.c_str());
 	return 1;
 }
@@ -283,24 +295,24 @@ int map_GetID(lua_State* ls)
 int map_GetNextEntityUnderMouse(lua_State* ls)
 {
 	luaCountArgs(ls, 3);
-	
+
 	Entity* ent;
-	
+
 	if (lua_isnil(ls, 1))
 		ent = NULL;
 	else
 		ent = (Entity*)lua_touserdata(ls, 1);
-		
+
 	bool mustBeClickable = lua_toboolean(ls, 2);
 	bool playersOnly = lua_toboolean(ls, 3);
-	
+
 	ent = game->mMap->GetNextEntityUnderMouse(ent, mustBeClickable, playersOnly);
-	
+
 	if (ent)
 		lua_pushlightuserdata(ls, ent);
 	else
 		lua_pushnil(ls);
-		
+
 	return 1;
 }
 
@@ -309,11 +321,11 @@ int map_IsRectBlocked(lua_State* ls)
 {
 	luaCountArgs(ls, 4);
 	rect r;
-	r.x = (int)lua_tonumber(ls, 1);	
+	r.x = (int)lua_tonumber(ls, 1);
 	r.y = (int)lua_tonumber(ls, 2);
 	r.w = (int)lua_tonumber(ls, 3);
 	r.h = (int)lua_tonumber(ls, 4);
-	
+
 	lua_pushboolean(ls, game->mMap->IsRectBlocked(r));
 	return 1;
 }
@@ -321,15 +333,15 @@ int map_IsRectBlocked(lua_State* ls)
 int map_GetGravity(lua_State* ls)
 {
 	lua_pushnumber(ls, game->mMap->GetGravity());
-	return 1;	
+	return 1;
 }
 
 int map_SetGravity(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	game->mMap->SetGravity((int)lua_tonumber(ls, 1));
-	return 0;	
+	return 0;
 }
 
 static const luaL_Reg functions[] = {

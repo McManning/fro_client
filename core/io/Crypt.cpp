@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -29,12 +29,12 @@
 			 //qirxhpblmcodjngwtfzukveysa
 			 //jnBPR52!)4gKASO$%qil7N+MLzxd39mIGUwc&^~ukvJD{:|oQ?}]-ysa*fe#Chp(@*rtb
 
-static inline bool is_base64(unsigned char c, const string& charset) 
+static inline bool is_base64(unsigned char c, const string& charset)
 {
   return (charset.find(c) != string::npos);
 }
 
-string base64_encode(const char* bytes_to_encode, int in_len, const string& charset, char endbyte) 
+string base64_encode(const char* bytes_to_encode, int in_len, const string& charset, char endbyte)
 {
   string ret;
   int i = 0;
@@ -78,7 +78,7 @@ string base64_encode(const char* bytes_to_encode, int in_len, const string& char
 
 }
 
-string base64_decode(const char* encoded_string, int in_len, const string& charset, char endbyte) 
+string base64_decode(const char* encoded_string, int in_len, const string& charset, char endbyte)
 {
   int i = 0;
   int j = 0;
@@ -119,9 +119,9 @@ string base64_decode(const char* encoded_string, int in_len, const string& chars
   return ret;
 }
 
-//Simple byte shifting based on the password characters. 
+//Simple byte shifting based on the password characters.
 //(TODO: What if it results in NULL? Would it cut off the string prematurely? Haven't had an issue yet.. but still...)
-void scrambleString(string& msg, string pass, bool descramble) 
+void scrambleString(string& msg, string pass, bool descramble)
 {
 	int passChar = 0;
 	//(en)(de)crypt using the password characters as keys
@@ -131,25 +131,25 @@ void scrambleString(string& msg, string pass, bool descramble)
 		{
         	msg.at(i) -= pass.at(passChar); // * passMark;
 		}
-		else 
+		else
 		{
 		  	msg.at(i) += pass.at(passChar); // * passMark;
         }
 		i++;
 		passChar++;
-		if (passChar >= pass.length()) 
+		if (passChar >= pass.length())
 			passChar = 0;
     }
 }
 
-string encryptString(string msg, string pass) 
+string encryptString(string msg, string pass)
 {
 	//return msg;
 	scrambleString(msg, pass, false);
-	return base64_encode(msg.c_str(), msg.length());  
+	return base64_encode(msg.c_str(), msg.length());
 }
 
-string decryptString(string msg, string pass) 
+string decryptString(string msg, string pass)
 {
 	//return msg;
 	msg = base64_decode(msg.c_str(), msg.length());
@@ -163,44 +163,50 @@ string makePassword(string a, string b)
 	return base64_encode(a.c_str(), a.length());
 }
 
-/* 
+/*
 	Encrypt/Decrypt algorithms to work with a similar PHP function set
 */
 
-void CPHP_Encrypt(string& s, const string& key) 
+void CPHP_Encrypt(string& s, const string& key)
 {
 	string result;
 	int len = s.length();
 	char c, keyc;
-	
-	for (int i = 0; i < len; ++i) 
-	{
-		c = s.at(i);
-		keyc = key.at( (i % key.length()) - 1 );
-		c = c + keyc;
-		result += c;
-	}
 
-	s = base64_encode(result.c_str(), result.length(), 
-						base64_generic, '=');
+	if (len > 0)
+	{
+        for (int i = 0; i < len; ++i)
+        {
+            c = s.at(i);
+            keyc = key.at( (i % key.length()) );
+            c = c + keyc;
+            result += c;
+        }
+
+        s = base64_encode(result.c_str(), result.length(),
+                            base64_generic, '=');
+	}
 }
 
-void CPHP_Decrypt(string& s, const string& key) 
+void CPHP_Decrypt(string& s, const string& key)
 {
 	string result;
 	int len = s.length();
 	char c, keyc;
 
-	s = base64_decode(s.c_str(), s.length(), 
-						base64_generic, '=');
+    if (len > 0)
+    {
+        s = base64_decode(s.c_str(), s.length(),
+                            base64_generic, '=');
 
-	for (int i = 0; i < len; ++i) 
-	{
-		c = s.at(i);
-		keyc = key.at( (i % key.length()) - 1 );
-		c = c - keyc;
-		result += c;
-	}
+        for (int i = 0; i < len; ++i)
+        {
+            c = s.at(i);
+            keyc = key.at( (i % key.length()) );
+            c = c - keyc;
+            result += c;
+        }
 
-	s = result;
+        s = result;
+    }
 }

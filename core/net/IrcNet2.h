@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -48,8 +48,8 @@
 	NET_ERROR		error message
 	NET_PING			server that sent the ping
 	NET_TIMEOUT 	(Sent when CONNECTING or AWAITINGVERIFY states time out)
-	
-	
+
+
 	Reference Material
 		http://www.mirc.com/help/rfc2812.txt
 */
@@ -62,6 +62,7 @@
 
 const char* const SEPERATOR = "\x01";
 const char* const SECONDARY_PACKET_PASS = "DivineRightToRule";
+const char* const URL_CRYPT_KEY = "GibSvrYoSoul";
 
 const int NET_TIMEOUT_SECONDS = 60;
 const int PING_INTERVAL_SECONDS = 60;
@@ -78,18 +79,18 @@ class IrcChannel
 	{
 		mSuccess = false;
 	};
-	
+
 	string mId;
 	string mTopic;
 	string mPassword;
 	string mEncryptionKey;
-	
-	bool mSuccess;
-};	
 
-enum connectionState 
+	bool mSuccess;
+};
+
+enum connectionState
 {
-	DISCONNECTED = 0, 
+	DISCONNECTED = 0,
 	COULDNOTCONNECT, //error occured while connecting
 	CONNECTING, //if our thread is currently negotiating a connection
 	CONNECTED, //transfers to AWAITINGSERVERVERIFY once OnConnect is called.
@@ -111,18 +112,18 @@ class IrcNet : public TextSocketConnection
 
 	void OnConnect();
 
-	//Returns true if already connected. 
+	//Returns true if already connected.
 	//False if the address is invalid or it's trying to connect in another thread.
 	bool ConnectToServer(string address);
 	bool TryNextServer();
-	
+
 	//Ran from the connection thread.
 	void Connect();
 
 	connectionState GetState() const { return mState; };
-		
+
 	void PingServer();
-		
+
 	//CHANNEL RELATED
 	IrcChannel* CreateChannel(string chan, string pass = "");
 	void JoinChannel(IrcChannel* chan);
@@ -130,48 +131,48 @@ class IrcNet : public TextSocketConnection
 	IrcChannel* GetChannel() const { return mChannel; };
 	void PartChannel(IrcChannel* chan = NULL);
 	void SetTopic(IrcChannel* chan, string newTopic = "");
-	
+
 	//OUTBOUND MESSAGE HANDLERS
 	void Privmsg(string receiver, string message);
 	void Notice(string receiver, string message);
 	void Whois(string lookupnick);
-	
+
 	void ChangeNick(string newNick);
 	string GetNick() const { return mNickname; };
-	
-	void Rawmsg(string raw); //send a raw message to the server. 
-	
+
+	void Rawmsg(string raw); //send a raw message to the server.
+
 	void Quit(string text = "");
-	void MessageToChannel(string msg); 
+	void MessageToChannel(string msg);
 
 	//OTHER FUNCTIONS
 	void StateToString(string& s) const;
-	
-	string GetEncryptionKey() const; 
+
+	string GetEncryptionKey() const;
 
  	string mRealname;
 	string mServerPassword;
 
 	vString mServerList; //list of servers to try to connect to
 	int mServerListIndex;
-	
+
 	// When IRC hubs bounce us, this will be different than the connect address
 	string mRealServerAddress;
-	
+
   private:
 	void _setState(connectionState newState);
 	bool _connectServer(string address);
-	
+
 	//Act upon various state changes. Returns false if we should not process anything else
 	bool _checkState();
-	
+
 	connectionState mState;
 	SDL_Thread* mConnectThread;
 	IrcChannel* mChannel;
-	
+
 	string mNickname;
-	
-	bool mWaitingForPong; 
+
+	bool mWaitingForPong;
 };
 
 #endif //_IRCNET2_H_

@@ -25,85 +25,34 @@
 #include "CheckIn.h"
 #include "../core/widgets/MessagePopup.h"
 #include "../core/io/FileIO.h"
+#include "../core/io/Crypt.h"
 #include "../game/GameManager.h"
 #include "../map/Map.h"
 #include "../entity/LocalActor.h"
 #include "../core/net/IrcNet2.h"
-#include "../core/io/tinyxml/tinyxml.h"
+#include "../lua/MapLib.h"
 
+#ifdef DEBUG
+const int CHECK_IN_TIMER_INTERVAL_MS = 60*1000; // 1min
+#else
 const int CHECK_IN_TIMER_INTERVAL_MS = 15*60*1000; //15min
+#endif
 
-/*	Reply from the server after a check in. With this xml (and proper security),
+/*	Reply from the server after a check in. With this lua code insertion (and proper security),
 	we can do several things, including event notification, forum news/update/private message
 	notification, random item drops, additional data requests, etc.
-<checkin>
-	blahblahblah
-</checkin>
 */
-void dlCallback_CheckInXmlSuccess(downloadData* data)
+void dlCallback_CheckInSuccess(downloadData* data)
 {
-	TiXmlDocument doc;
-	TiXmlElement* e;
-	TiXmlElement* e2;
-	const char* c;
-	string id;
-
-	if (doc.LoadFile(data->filename.c_str()) == false)
-	{
-		WARNING(doc.ErrorDesc());
-	}
-	else
-	{
-        e = doc.FirstChildElement("checkin");
-
-        for (e; e; e = e->NextSiblingElement())
-        {
-            id = e->Value();
-
-            if (id == "msg") // <msg>Stuff to add to chatbox</msg>
-            {
-                if (game && game->GetChat() && !e->NoChildren())
-                    game->GetChat()->AddMessage( e->FirstChild()->Value() );
-            }
-            else if (id == "alert") // <alert title="error">Alert message</alert>
-            {
-                c = e->Attribute("title");
-                new MessagePopup("", (c) ? c : "Alert", e->FirstChild()->Value());
-            }
-            else if (id == "event")
-            {
-                /*
-                    <event id="SOME_EVENT">
-                        <key id="some key">data</key>
-                        <key ...></key>
-                    </event>
-                */
-                c = e->Attribute("id");
-                if (c)
-                {
-                    MessageData md(c);
-
-                    e2 = e->FirstChildElement();
-                    for (e2; e2; e2 = e2->NextSiblingElement())
-                    {
-                        c = e2->Attribute("id");
-                        if (c && !e2->NoChildren())
-                        {
-                            md.WriteString(c, e2->FirstChild()->Value());
-                        }
-                    }
-                    messenger.Dispatch(md, NULL);
-                }
-            }
-        }
-	}
+    if (game->mMap && game->mMap->mLuaState)
+        mapLib_CallCheckin(game->mMap->mLuaState, data->filename);
 
 	removeFile(data->filename);
 }
 
-void dlCallback_CheckInXmlFailure(downloadData* data)
+void dlCallback_CheckInFailure(downloadData* data)
 {
-	string error = "PONG Xml Error: " + its(data->errorCode);
+	string error = "Checkin Reply Error: " + its(data->errorCode);
 	console->AddMessage(error);
 	removeFile(data->filename);
 }
@@ -112,27 +61,47 @@ uShort timer_CheckInWithServer(timer* t, uLong ms)
 {
 	//send http get: login.php?act=ping&nick=test&id=test&pass=test&map=library
 	string query;
+	string s;
 
 	// if we're not on a server, don't check in
 	if (!game->mNet->IsConnected())
 		return TIMER_CONTINUE;
 
 	query = "http://sybolt.com/drm-svr/";
-	query += "checkin.php?ver=";
-	query += VER_STRING;
+	query += "checkin.php?v=";
 
-	query += "&id=" + htmlSafe(game->mUsername);
-	query += "&pass=" + htmlSafe(game->mPassword);
+	// Note: Don't crypt it all together as one giant B64.
+	// They could always stick &blah=blah as a password and falsify keys
+
+	s = VER_STRING;
+	CPHP_Encrypt(s, URL_CRYPT_KEY);
+	query += s;
+
+    s = game->mUsername;
+    CPHP_Encrypt(s, URL_CRYPT_KEY);
+    query += "&u=" + s;
+
+    s = game->mPassword;
+    CPHP_Encrypt(s, URL_CRYPT_KEY);
+    query += "&k=" + s;
 
 	if (game->mPlayer)
-		query += "&nick=" + htmlSafe(game->mPlayer->GetName());
+	{
+	    s = game->mPlayer->GetName();
+        CPHP_Encrypt(s, URL_CRYPT_KEY);
+		query += "&n=" + s;
+	}
 
 	if (game->mMap)
-		query += "&map=" + htmlSafe(game->mMap->mId);
+	{
+	    s = game->mMap->mId;
+        CPHP_Encrypt(s, URL_CRYPT_KEY);
+		query += "&m=" + s;
+	}
 
 	downloader->QueueDownload(query, getTemporaryCacheFilename(),
-								NULL, dlCallback_CheckInXmlSuccess,
-								dlCallback_CheckInXmlFailure, true);
+								NULL, dlCallback_CheckInSuccess,
+								dlCallback_CheckInFailure, true);
 
 	DEBUGOUT("Checking in with master");
 

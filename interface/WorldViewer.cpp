@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -30,6 +30,8 @@
 #include "../core/widgets/Button.h"
 #include "../core/widgets/Input.h"
 #include "../core/io/FileIO.h"
+#include "../core/io/Crypt.h"
+#include "../core/net/IrcNet2.h"
 #include "../game/GameManager.h"
 
 void callback_reloadWorlds(Button* b)
@@ -301,16 +303,27 @@ void WorldViewer::UpdateWorldList()
 void WorldViewer::RequestWorldList(listType type)
 {
 	string query;
+    string s;
 
 	mCurrentListType = type;
 
 	//send http get: worlds.php?ver=1.2.3&id=test&pass=test&type=???
 
 	query = "http://sybolt.com/drm-svr/"; // TODO: less hardcoding
-	query += "worldlist.php?ver=";
-	query += VER_STRING;
-	query += "&user=" + htmlSafe(game->mUsername);
-	query += "&pass=" + htmlSafe(game->mPassword);
+	query += "worldlist.php?v=";
+
+    s = VER_STRING;
+	CPHP_Encrypt(s, URL_CRYPT_KEY);
+	query += s;
+
+	s = game->mUsername;
+    CPHP_Encrypt(s, URL_CRYPT_KEY);
+    query += "&u=" + s;
+
+    s = game->mPassword;
+    CPHP_Encrypt(s, URL_CRYPT_KEY);
+    query += "&k=" + s;
+
 	query += "&type=" + its(mCurrentListType);
 
 	downloader->QueueDownload(query, getTemporaryCacheFilename(),
