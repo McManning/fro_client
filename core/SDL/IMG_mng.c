@@ -2,7 +2,7 @@
     SDL_mng:  A library to load MNG files
     Copyright (C) 2003, Thomas Kircher
 	Copyright (C) 2011, Chase McManning
-	
+
     PNG code based on SDL_png.c, Copyright (C) 1998 Philippe Lavoie
 
     This library is free software; you can redistribute it and/or
@@ -66,17 +66,17 @@ typedef struct
 	unsigned char Change_timeout_and_termination;
 	unsigned char Change_layer_clipping_boundaries;
 	unsigned char Change_sync_id_list;
-	
+
 	/* timeout crap (the only ones we really care about) */
-	unsigned int Interframe_delay; /*	This field must be omitted if the change_interframe_delay 
+	unsigned int Interframe_delay; /*	This field must be omitted if the change_interframe_delay
 										field is zero or is omitted. */
 	unsigned int Timeout; /* Same rules as Interframe_delay */
-	
-	/* clipping boundary crap 
+
+	/* clipping boundary crap
 		This and the following four fields must be omitted if the
 		change_layer_clipping_boundaries field is zero or is
 		omitted.
-	
+
 	unsigned int Layer_clipping_boundary_delta_type;
 	unsigned int Left_layer_cb;
 	unsigned int Right_layer cb;
@@ -86,8 +86,8 @@ typedef struct
 		Must be omitted if
         change_sync_id_list=0 and can be omitted if the new
         list is empty; repeat until all sync_ids have been
-        listed. 
-	
+        listed.
+
 	unsigned int Sync_id;*/
 }
 FRAM_chunk;
@@ -101,7 +101,7 @@ typedef struct
     //global palette
     png_colorp globalPalette;
     int globalPaletteSize;
-    
+
     //global transparency
 	png_bytep trans;
 	int num_trans;
@@ -211,21 +211,21 @@ FRAM_chunk read_FRAM(SDL_RWops *src)
 {
 	FRAM_chunk fram;
 	int bytesRead = 0;
-	
+
 	fram.Framing_mode = MNG_read_byte(src);
 	bytesRead++;
-	
+
 	dbgout("IMG_mng FRAM: Framing_mode:%i\n", fram.Framing_mode);fflush(stdout);
-	
+
 	char c;
 	do //skip over Subframe_name (ends with a null character)
 	{
 		c = MNG_read_byte(src);
 		bytesRead++;
 	} while (c != 0);
-	
+
 	dbgout("IMG_mng FRAM: reading changes\n");fflush(stdout);
-	
+
 	fram.Change_interframe_delay 			= MNG_read_byte(src);
 	fram.Change_timeout_and_termination 	= MNG_read_byte(src);
 	fram.Change_layer_clipping_boundaries 	= MNG_read_byte(src);
@@ -241,10 +241,10 @@ FRAM_chunk read_FRAM(SDL_RWops *src)
 		dbgout("IMG_mng FRAM: interframe_delay:%i\n", fram.Interframe_delay);fflush(stdout);
 	}
 	//rest of the crap: I don't care.
-	
-	//seek backward the amount of bytes read so we can skip the rest 
+
+	//seek backward the amount of bytes read so we can skip the rest
 	SDL_RWseek(src, -(bytesRead), SEEK_CUR);
-	
+
 	dbgout("IMG_mng FRAM: Skipping useless crap\n");fflush(stdout);
 	return fram;
 }
@@ -276,14 +276,14 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 
 	int count = 0;
 	SDL_Frame* frames = NULL;
-	
+
     MNG_Image image;
 	image.globalPalette = NULL;
     image.globalPaletteSize = 0;
 	image.trans = NULL;
 	image.num_trans = 0;
 	image.trans_values = NULL;
-	
+
 	int doneWithHeader = 0; /* set to 1 once we encounter a png */
 	int IHDR_position = 0;
 
@@ -300,7 +300,7 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 				//seek back to start to read
                 SDL_RWseek(src, -(current_chunk.chunk_size + 4), SEEK_CUR);
                 image.mhdr = read_MHDR(src);
-                
+
                 /* I'm not writing support for JNG, so check and break out if invalid
 					TODO: this
 					bit 4: JNG
@@ -310,16 +310,16 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 				*/
                 /*if (image->mhdr.Simplicity_profile & (1 << 4))
 				{
-					dbgout("Has JNG\n");	
+					dbgout("Has JNG\n");
 				}
 				else
 					dbgout("No JNG\n");
-					
+
 				fflush(stdout);*/
-                
+
                 break;
-				
-			/* 
+
+			/*
 				set frame properties. Only appears if there's a differences between two frames.
 				All frames that appear after this FRAM is declared would use its settings
 			*/
@@ -331,15 +331,15 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 				//Seek forward again, skipping the crap we didn't want to read from FRAM
 				SDL_RWseek(src, current_chunk.chunk_size + 4, SEEK_CUR);
 				dbgout("IMG_mng Read Done\n");fflush(stdout);
-				
+
 				break;
 
-            /* Set global color palette. Only on the FIRST read of this. */ 
+            /* Set global color palette. Only on the FIRST read of this. */
             case MNG_UINT_PLTE:
 				/*TODO: set up global palette, if png doesn't have a palette, use
 					this.
-					
-					The number of entries is determined from the chunk length. 
+
+					The number of entries is determined from the chunk length.
 					A chunk length not divisible by 3 is an error.
 				*/
 				if (doneWithHeader)
@@ -348,48 +348,49 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 				}
 				else
 				{
-					if (current_chunk.chunk_size % 3 != 0) 
+					if (current_chunk.chunk_size % 3 != 0)
 					{
 						dbgout("IMG_mng MNG_UINT_PLTE Not divisible by 3\n");fflush(stdout);
 						goto done;
 					}
 					/* store in our main image */
 					image.globalPalette = (png_colorp)current_chunk.chunk_data;
-					
+
 					/* size is the number of colors (3 bytes each) */
 					image.globalPaletteSize = current_chunk.chunk_size / 3;
-					
+
 					dbgout("IMG_mng Palette Size: %i\n", image.globalPaletteSize);fflush(stdout);
 				}
 				break;
 
 			/* set global transparency. Only on the FIRST read of this */
+			/* 120122 - McManning - I lied, do it every read. Some MNGs change the global palette at frames */
 			case MNG_UINT_tRNS:
-				if (doneWithHeader)
+				/*if (doneWithHeader)
 				{
 					dbgout("IMG_mng Encountered tRNS that will be ignored\n");fflush(stdout);
 				}
 				else
-				{
+				{*/
 					/*
 						http://www.libpng.org/pub/png/spec/iso/index-object.html#11tRNS
 						Depending on color type, there's various formats of this crap.
-						To ease useage, let's just guess and check them to see what 
-						giam will produce. :| 
+						To ease useage, let's just guess and check them to see what
+						giam will produce. :|
 						I BELIEVE giam will produce the palette version all the time, since
 						it's lazy. (color_type == 3) So let's that one
-						
+
 						color_type 3:
-							the tRNS chunk contains a series of one-byte alpha values, 
-							corresponding to entries in the PLTE chunk. 
+							the tRNS chunk contains a series of one-byte alpha values,
+							corresponding to entries in the PLTE chunk.
 					*/
 					image.trans_values = NULL; //for non-palette images
 					image.trans = (png_bytep)current_chunk.chunk_data;
 					image.num_trans = current_chunk.chunk_size;
 					dbgout("IMG_mng Created global tRNS. num_trans:%i trans:%p, trans_values:%p\n",
 								image.num_trans, image.trans, image.trans_values);fflush(stdout);
-				}
-				
+			//	}
+
 				break;
 
             /* Reset our byte count */
@@ -399,7 +400,7 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
                 dbgout("IMG_mng Found IHDR\n");fflush(stdout);
                 IHDR_position = byte_count;
                 break;
-                
+
             /* We've reached the end of a PNG - seek to IHDR (if it exists) and read */
             case MNG_UINT_IEND:
 				if (IHDR_position == 0)
@@ -411,9 +412,9 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 				else
 				{
 					dbgout("IMG_mng IEND, reading from IHDR at byte_count: %i\n", byte_count);fflush(stdout);
-					
+
 	                SDL_RWseek(src, -byte_count, SEEK_CUR);
-	
+
 					if (frames == NULL)
 	                {
 						frames = (SDL_Frame*)malloc(sizeof(SDL_Frame));
@@ -429,11 +430,11 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 						}
 						count++;
 	                }
-					
+
 					if ( MNG_read_frame(src, &image, &frames[count-1]) )
 					{
 						/* Since mngs can have a different TPS instead of 1000, factor it in */
-						frames[count-1].delay = 
+						frames[count-1].delay =
 							1000 / image.mhdr.Ticks_per_second * image.fram.Interframe_delay;
 					}
 					else
@@ -442,7 +443,7 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 						count = 0;
 						goto done;
 					}
-					
+
 	                IHDR_position = 0;
 				}
                 break;
@@ -454,7 +455,7 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
         }
     }
     while(current_chunk.chunk_ID != MNG_UINT_MEND && byte_count <= total_bytes);
-    
+
     // if we didn't hit an MEND, consider this a failed half-loaded image
     if (current_chunk.chunk_ID != MNG_UINT_MEND)
     {
@@ -465,7 +466,7 @@ int IMG_LoadMNG_RW(SDL_RWops* src, IMG_File* dst)
 	{
 		dbgout("IMG_mng \nMEND HIT. Beginning copy\n");fflush(stdout);
 	}
-	
+
 done:
 	if (count < 1 || !frames)
 	{
@@ -483,11 +484,11 @@ done:
 	    dst->format = IMG_FORMAT_MNG;
 	    dbgout("IMG_mng Finalized!\n");fflush(stdout);
 	}
-	
+
 	dbgout("IMG_mng Returning!\n");fflush(stdout);
 	return (dst->count > 0);
 }
-	
+
 /* Read a PNG frame from the MNG file */
 int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 {
@@ -510,7 +511,7 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 	png_ptr = NULL; info_ptr = NULL; row_pointers = NULL; surface = NULL;
 
 	/* Check to make sure we have something to do */
-	if ( ! src ) 
+	if ( ! src )
 	{
 		goto done;
 	}
@@ -526,7 +527,7 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 
 	 /* Allocate/initialize the memory for image information.  REQUIRED. */
 	info_ptr = png_create_info_struct(png_ptr);
-	if (info_ptr == NULL) 
+	if (info_ptr == NULL)
 	{
 		SDL_SetError("Couldn't create image information for PNG file");fflush(stdout);
 		goto done;
@@ -536,7 +537,7 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 	 * the normal method of doing things with libpng).  REQUIRED unless you
 	 * set up your own error handlers in png_create_read_struct() earlier.
 	 */
-	if ( setjmp(png_ptr->jmpbuf) ) 
+	if ( setjmp(png_ptr->jmpbuf) )
 	{
 		SDL_SetError("Error reading the PNG file.");fflush(stdout);
 		goto done;
@@ -573,7 +574,7 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 	/*
 		If we have an empty palette, use global
 	*/
-	if (color_type == PNG_COLOR_TYPE_PALETTE && info_ptr->num_palette < 1) 
+	if (color_type == PNG_COLOR_TYPE_PALETTE && info_ptr->num_palette < 1)
 	{
 		png_set_PLTE(png_ptr, info_ptr, image->globalPalette, image->globalPaletteSize);
 		dbgout("Changing palette. New Size: %i\n", info_ptr->num_palette);fflush(stdout);
@@ -596,38 +597,38 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 	{
 		dbgout("Not modifying transparency\n");fflush(stdout);
 	}
-	
 
-	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) 
+
+	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
 	{
 		dbgout("Using internal transparency\n");
 	    int num_trans;
 		Uint8 *trans;
 		png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, &transv);
-		if(color_type == PNG_COLOR_TYPE_PALETTE) 
+		if(color_type == PNG_COLOR_TYPE_PALETTE)
 		{
 		    /* Check if all tRNS entries are opaque except one */
 		    int i, t = -1;
 		    for(i = 0; i < num_trans; i++)
 		    {
-				if(trans[i] == 0) 
+				if(trans[i] == 0)
 				{
 				    if(t >= 0)
 					break;
 				    t = i;
-				} 
+				}
 				else if(trans[i] != 255)
 				{
 				    break;
 				}
 			}
-			
-		    if(i == num_trans) 
+
+		    if(i == num_trans)
 			{
 				/* exactly one transparent index */
 				ckey = t;
-		    } 
-			else 
+		    }
+			else
 			{
 				/* more than one transparent index, or translucency */
 				png_set_expand(png_ptr);
@@ -635,7 +636,7 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 		} else
 		    ckey = 0; /* actual value will be set later */
 	}
-	
+
 	if ( color_type == PNG_COLOR_TYPE_GRAY_ALPHA )
 		png_set_gray_to_rgb(png_ptr);
 
@@ -649,23 +650,23 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 
 	dbgout("\n\nPNG INFO\n");
 	dbgout("width:%i height:%i\n", info_ptr->width, info_ptr->height);
-	dbgout("valid:%i rowbytes:%i num_palette:%i\n", 
+	dbgout("valid:%i rowbytes:%i num_palette:%i\n",
 			info_ptr->valid, info_ptr->rowbytes, info_ptr->num_palette);
-	dbgout("num_trans:%i bit_depth:%i color_type:%i\n", 
+	dbgout("num_trans:%i bit_depth:%i color_type:%i\n",
 			info_ptr->num_trans, info_ptr->bit_depth, info_ptr->color_type);
-	dbgout("compression_type:%i filter_type:%i interlace_type:%i\n", 
+	dbgout("compression_type:%i filter_type:%i interlace_type:%i\n",
 			info_ptr->compression_type, info_ptr->filter_type, info_ptr->interlace_type);
-	dbgout("channels:%i pixel_depth:%i spare_byte:%i\n", 
+	dbgout("channels:%i pixel_depth:%i spare_byte:%i\n",
 			info_ptr->channels, info_ptr->pixel_depth, info_ptr->spare_byte);
 	if (info_ptr->text)
 	{
-		dbgout("text:%s key:%s\n", info_ptr->text->text, info_ptr->text->key);	
+		dbgout("text:%s key:%s\n", info_ptr->text->text, info_ptr->text->key);
 	}
 	//output RAW CRAP
 	if (info_ptr->valid & PNG_INFO_IDAT)
 	{
 		dbgout("OUTPUTTING RAW DATA\n");
-		for (int row = 0; row < info_ptr->height; row++) 
+		for (int row = 0; row < info_ptr->height; row++)
 		{
 			for (int col = 0; col < info_ptr->width; col++)
 			{
@@ -678,9 +679,9 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 	{
 		dbgout("info_ptr->valid & PNG_INFO_IDAT zero\n");
 	}
-	
+
 	dbgout("FLAG CHECKING:\n");
-	
+
 #ifdef SDL_IMAGE_DEBUG
 	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_gAMA) != 0) dbgout("PNG_INFO_gAMA\n");
 	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_sBIT) != 0) dbgout("PNG_INFO_sBIT\n");
@@ -694,12 +695,12 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_PLTE) != 0) dbgout("PNG_INFO_PLTE\n");
 #endif
 	dbgout("\n\n");
-	
+
 	fflush(stdout);
 ///////////////////////////////////////////////////////////
 
 	/* Allocate the SDL surface to hold the image */
-	Rmask = Gmask = Bmask = Amask = 0 ; 
+	Rmask = Gmask = Bmask = Amask = 0 ;
 	if ( color_type != PNG_COLOR_TYPE_PALETTE ) {
 		if ( SDL_BYTEORDER == SDL_LIL_ENDIAN ) {
 			Rmask = 0x000000FF;
@@ -716,13 +717,13 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 	}
 	surface = SDL_AllocSurface(SDL_SWSURFACE, width, height,
 			bit_depth*info_ptr->channels, Rmask,Gmask,Bmask,Amask);
-	if ( surface == NULL ) 
+	if ( surface == NULL )
 	{
 		SDL_SetError("Out of memory");
 		goto done;
 	}
 
-	if (ckey != -1) 
+	if (ckey != -1)
 	{
 	        if(color_type != PNG_COLOR_TYPE_PALETTE)
 	        {
@@ -737,15 +738,15 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 
 	/* Create the array of pointers to image data */
 	row_pointers = (png_bytep*) malloc(sizeof(png_bytep)*height);
-	if ( (row_pointers == NULL) ) 
+	if ( (row_pointers == NULL) )
 	{
 		SDL_SetError("Out of memory");
 		SDL_FreeSurface(surface);
 		surface = NULL;
 		goto done;
 	}
-	
-	for (row = 0; row < (int)height; row++) 
+
+	for (row = 0; row < (int)height; row++)
 	{
 		row_pointers[row] = (png_bytep)
 				(Uint32 *)surface->pixels + row*surface->pitch;
@@ -759,21 +760,21 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 
 	/* Load the palette, if any */
 	palette = surface->format->palette;
-	if ( palette ) 
+	if ( palette )
 	{
-	    if(color_type == PNG_COLOR_TYPE_GRAY) 
+	    if(color_type == PNG_COLOR_TYPE_GRAY)
 		{
 			palette->ncolors = 256;
-			for(i = 0; i < 256; i++) 
+			for(i = 0; i < 256; i++)
 			{
 			    palette->colors[i].r = i;
 			    palette->colors[i].g = i;
 			    palette->colors[i].b = i;
 			}
-	    } else if (info_ptr->num_palette > 0 ) 
+	    } else if (info_ptr->num_palette > 0 )
 		{
-			palette->ncolors = info_ptr->num_palette; 
-			for( i=0; i<info_ptr->num_palette; ++i ) 
+			palette->ncolors = info_ptr->num_palette;
+			for( i=0; i<info_ptr->num_palette; ++i )
 			{
 			    palette->colors[i].b = info_ptr->palette[i].blue;
 			    palette->colors[i].g = info_ptr->palette[i].green;
@@ -783,14 +784,14 @@ int MNG_read_frame(SDL_RWops *src, MNG_Image* image, SDL_Frame* dst)
 	}
 
 done:	/* Clean up and return */
-	
-	if ( row_pointers ) 
+
+	if ( row_pointers )
 	{
 		free(row_pointers);
 	}
 
 	int result = 0;
-	
+
 	if (surface && dst)
 	{
 		dst->surf = surface;
@@ -814,9 +815,9 @@ done:	/* Clean up and return */
 		dst->surf = NULL;
 		result = 0;
 	}
-	
+
 	png_destroy_read_struct(&png_ptr, info_ptr ? &info_ptr : (png_infopp)0,
 								(png_infopp)0);
 
-	return result; 
+	return result;
 }

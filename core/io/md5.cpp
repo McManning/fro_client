@@ -267,7 +267,8 @@ char *MD5::hex_digest(){
   if (!finalized){
     cerr << "MD5::hex_digest:  Can't get digest if you haven't "<<
       "finalized the digest!" <<endl;
-    return "";
+    s[0] = '\0';
+    return s;
   }
 
   for (i=0; i<16; i++)

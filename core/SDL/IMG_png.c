@@ -31,25 +31,25 @@
 
 /*=============================================================================
         File: SDL_png.c
-     Purpose: A PNG loader and saver for the SDL library      
-    Revision: 
+     Purpose: A PNG loader and saver for the SDL library
+    Revision:
   Created by: Philippe Lavoie          (2 November 1998)
               lavoie@zeus.genie.uottawa.ca
- Modified by: 
+ Modified by:
 
  Copyright notice:
           Copyright (C) 1998 Philippe Lavoie
- 
+
           This library is free software; you can redistribute it and/or
           modify it under the terms of the GNU Library General Public
           License as published by the Free Software Foundation; either
           version 2 of the License, or (at your option) any later version.
- 
+
           This library is distributed in the hope that it will be useful,
           but WITHOUT ANY WARRANTY; without even the implied warranty of
           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
           Library General Public License for more details.
- 
+
           You should have received a copy of the GNU Library General Public
           License along with this library; if not, write to the Free
           Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -294,7 +294,7 @@ static void png_read_data(png_structp ctx, png_bytep area, png_size_t size)
 	SDL_RWread(src, area, size, 1);
 }
 
-static void png_write_data(png_structp ctx, png_bytep area, png_size_t size) 
+static void png_write_data(png_structp ctx, png_bytep area, png_size_t size)
 {
 	SDL_RWops* dst;
 	dst = (SDL_RWops *)png_get_io_ptr(ctx);
@@ -416,7 +416,7 @@ int IMG_LoadPNG_RW(SDL_RWops *src, IMG_File* dst)
 			&color_type, &interlace_type, NULL, NULL);
 
 	/* Allocate the SDL surface to hold the image */
-	Rmask = Gmask = Bmask = Amask = 0 ; 
+	Rmask = Gmask = Bmask = Amask = 0 ;
 	if ( color_type != PNG_COLOR_TYPE_PALETTE ) {
 		if ( SDL_BYTEORDER == SDL_LIL_ENDIAN ) {
 			Rmask = 0x000000FF;
@@ -481,7 +481,7 @@ int IMG_LoadPNG_RW(SDL_RWops *src, IMG_File* dst)
 		    palette->colors[i].b = i;
 		}
 	    } else if (info_ptr->num_palette > 0 ) {
-		palette->ncolors = info_ptr->num_palette; 
+		palette->ncolors = info_ptr->num_palette;
 		for( i=0; i<info_ptr->num_palette; ++i ) {
 		    palette->colors[i].b = info_ptr->palette[i].blue;
 		    palette->colors[i].g = info_ptr->palette[i].green;
@@ -516,14 +516,14 @@ done:	/* Clean up and return */
 }
 
 /*
-Supported color types shall include: 
-	PNG_COLOR_TYPE_GRAY (bit depths 1, 2, 4, 8, 16) 
-	PNG_COLOR_TYPE_GRAY_ALPHA (bit depths 8, 16) 
-	PNG_COLOR_TYPE_PALETTE (bit depths 1, 2, 4, 8) 
-	PNG_COLOR_TYPE_RGB (bit depths 8, 16) 
-	PNG_COLOR_TYPE_RGB_ALPHA (bit depths 8, 16) 
-	PNG_COLOR_MASK_PALETTE 
-	PNG_COLOR_MASK_COLOR 
+Supported color types shall include:
+	PNG_COLOR_TYPE_GRAY (bit depths 1, 2, 4, 8, 16)
+	PNG_COLOR_TYPE_GRAY_ALPHA (bit depths 8, 16)
+	PNG_COLOR_TYPE_PALETTE (bit depths 1, 2, 4, 8)
+	PNG_COLOR_TYPE_RGB (bit depths 8, 16)
+	PNG_COLOR_TYPE_RGB_ALPHA (bit depths 8, 16)
+	PNG_COLOR_MASK_PALETTE
+	PNG_COLOR_MASK_COLOR
 	PNG_COLOR_MASK_ALPHA
 */
 int write_png(const char *file_name, png_bytep *rows, int w, int h, int colortype, int bitdepth) {
@@ -534,15 +534,15 @@ int write_png(const char *file_name, png_bytep *rows, int w, int h, int colortyp
 	png_infop info_ptr = NULL;
 	FILE* fp = NULL;
 
-	char *doing = "open for writing";
+	const char *doing = "open for writing";
 	int error = 0;
-	
+
 	fp = fopen(file_name, "wb");
 /*	if (!fp) return 0;
 	fprintf(fp, "Dicks\n");
 	fclose(fp);
 	return 0;*/
-	
+
 	if (!fp) goto fail;
 	doing = "create png write struct";
 
@@ -550,9 +550,9 @@ int write_png(const char *file_name, png_bytep *rows, int w, int h, int colortyp
 	doing = "create png info struct";
 	if (!(info_ptr = png_create_info_struct(png_ptr))) goto fail;
 	if (setjmp(png_jmpbuf(png_ptr))) goto fail;
-	
+
 /*	png_set_write_fn(png_ptr, fp, png_write_data); Using standard C FILE*, don't need to modify*/
-	
+
 	doing = "init IO";
 	png_init_io(png_ptr, fp);
 	doing = "write header";
@@ -566,14 +566,14 @@ int write_png(const char *file_name, png_bytep *rows, int w, int h, int colortyp
 	doing = "write end";
 	png_write_end(png_ptr, NULL);
 
-out: 
-	if (png_ptr) 
+out:
+	if (png_ptr)
 		png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
-	if (fp) 
+	if (fp)
 		fclose(fp);
 	return error;
 
-fail: 
+fail:
 	dbgout("Write_png: could not %s\n", doing);
 	error = -1;
 	goto out;
@@ -593,20 +593,20 @@ int IMG_SavePNG(const char* filename, SDL_Surface* surf) {
 		dbgout("Performing Lock\n");
 
 		/*Create a surface formatted just for PNG saving since it must be 24bit*/
-	    ss_surface = 
-			SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w, surf->h, 
+	    ss_surface =
+			SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w, surf->h,
 								24, RMASK, GMASK, BMASK, AMASK);
 		if (!ss_surface) {
 			dbgout("Failed to allocate PNG surface\n");
 			return -1;
 		}
-	
+
 		dbgout("Making Rows\n");
 	    ss_rows = (unsigned char**)malloc(sizeof(unsigned char*) * surf->h);
-	
+
 		dbgout("Blitting\n");
 	    SDL_BlitSurface(surf, NULL, ss_surface, NULL); /* Render the pic onto the formatted surface */
-			
+
 		dbgout("Lock and copy\n");
 		if (SDL_MUSTLOCK(surf))
 			SDL_LockSurface(surf);
@@ -615,7 +615,7 @@ int IMG_SavePNG(const char* filename, SDL_Surface* surf) {
 	    }
 		if (SDL_MUSTLOCK(surf))
 			SDL_UnlockSurface(surf);
-	
+
 		dbgout("Writing\n");
 	    write_png(filename, ss_rows, surf->w, surf->h, PNG_COLOR_TYPE_RGB, 8);
 		dbgout("Freeing\n");

@@ -38,7 +38,7 @@
 
 /* Table of image detection and loading functions */
 static struct {
-	char *type;
+	const char *type;
 	int (SDLCALL *is)(SDL_RWops *src);
 	int (SDLCALL *load)(SDL_RWops *src, IMG_File* dst);
 } supported[] = {
@@ -124,14 +124,14 @@ int IMG_LoadTyped_RW(SDL_RWops *src, int freesrc, char *type, IMG_File* dst)
 	int result;
 
 	/* Make sure there is something to do.. */
-	if ( src == NULL ) 
+	if ( src == NULL )
 	{
 		IMG_SetError("Passed a NULL data source");
 		return 0;
 	}
 
 	/* See whether or not this data source can handle seeking */
-	if ( SDL_RWseek(src, 0, SEEK_CUR) < 0 ) 
+	if ( SDL_RWseek(src, 0, SEEK_CUR) < 0 )
 	{
 		IMG_SetError("Can't seek in this data source");
 		if(freesrc)
@@ -140,14 +140,14 @@ int IMG_LoadTyped_RW(SDL_RWops *src, int freesrc, char *type, IMG_File* dst)
 	}
 
 	/* Detect the type of image being loaded */
-	for ( i=0; i < ARRAYSIZE(supported); ++i ) 
+	for ( i=0; i < ARRAYSIZE(supported); ++i )
 	{
-		if(supported[i].is) 
+		if(supported[i].is)
 		{
 			if(!supported[i].is(src))
 				continue;
-		} 
-		else 
+		}
+		else
 		{
 			/* magicless format */
 			if (!type || !IMG_string_equals(type, supported[i].type))
@@ -162,11 +162,11 @@ int IMG_LoadTyped_RW(SDL_RWops *src, int freesrc, char *type, IMG_File* dst)
 		return result;
 	}
 
-	if ( freesrc ) 
+	if ( freesrc )
 	{
 		SDL_RWclose(src);
 	}
-	
+
 	IMG_SetError("Unsupported image format");
 	return 0;
 }
@@ -188,7 +188,7 @@ int IMG_SurfaceToFrameset(SDL_Surface* surface, IMG_File* dst)
 	dst->frames = (SDL_Frame*)malloc(sizeof(SDL_Frame));
 	if (!dst->frames)
 		return 0;
-	
+
 	dst->frames[0].key = NULL;
 	dst->frames[0].delay = 0;
 	dst->frames[0].surf = surface;

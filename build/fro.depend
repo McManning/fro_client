@@ -696,7 +696,7 @@
 	"SDL/SDL_rotozoom.h"
 	"io/FileIO.h"
 
-1319872737 source:e:\fro\trunk\core\sdl\img.c
+1327260586 source:e:\fro\trunk\core\sdl\img.c
 	<windows.h>
 	<stdio.h>
 	<string.h>
@@ -737,7 +737,7 @@
 
 1116178942 c:\dev-cpp\include\jerror.h
 
-1319872737 source:e:\fro\trunk\core\sdl\img_mng.c
+1327260333 source:e:\fro\trunk\core\sdl\img_mng.c
 	<stdio.h>
 	<png.h>
 	<SDL/SDL.h>
