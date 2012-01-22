@@ -3,10 +3,10 @@
 #define _BUILD_H
 
 /* VERSION DEFINITIONS */
-#define VER_STRING	"1.5.6.0"
+#define VER_STRING	"1.6.0.0"
 #define VER_MAJOR	1
-#define VER_MINOR	5
-#define VER_RELEASE	6
+#define VER_MINOR	6
+#define VER_RELEASE	0
 #define VER_BUILD	0
 #define COMPANY_NAME	"Sybolt Studios"
 #define FILE_VERSION	""
