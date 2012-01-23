@@ -1,4 +1,3 @@
-
 fro Visual IRC Client
 =============
 
@@ -11,15 +10,15 @@ Each channel is represented by its own Lua scriptable world, where users can mov
 Building fro
 ------------
 
-Hah. Good luck with that. 
-Oh, you're serious?
+Hah. Good luck with that ... Oh, you're serious?
 
-Dependencies
-+ [SDL](http://libsdl.org/)
-+ Freetype
-+ libpng
-+ zlib
-+ libjpeg
+**Dependencies**
+
+* [SDL](http://libsdl.org/)
+* Freetype
+* libpng
+* zlib
+* libjpeg
 
 100% chance you'll have to roll your own build solution. Mine is a DevC++ project imported into Code::Blocks (I know, horrid). I've even got the dependencies loading from DevC++'s lib folder. If I ever pick this up as an active project again, I'll be sure to put in a proper build solution (see below for details on why this isn't the case).
 
