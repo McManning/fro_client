@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -38,7 +38,7 @@
 // .Print("Message")
 int game_Print(lua_State* ls)
 {
-	PRINT("game_Print");
+	DEBUGOUT("game_Print");
 	luaCountArgs(ls, 1);
 
 	game->GetChat()->AddMessage( lua_tostring(ls, 1) );
@@ -50,7 +50,7 @@ int game_Print(lua_State* ls)
 //		Send a custom packet over the network to all members of the channel
 int game_NetSendToChannel(lua_State* ls)
 {
-	PRINT("game_NetSendToChannel");
+	DEBUGOUT("game_NetSendToChannel");
 	luaCountArgs(ls, 2);
 
 	if (game->mNet && game->mNet->GetState() == ONCHANNEL)
@@ -69,7 +69,7 @@ int game_NetSendToChannel(lua_State* ls)
 //		Send a custom packet over the network to the specified entity
 int game_NetSendToPlayer(lua_State* ls)
 {
-	PRINT("game_NetSendToPlayer");
+	DEBUGOUT("game_NetSendToPlayer");
 	luaCountArgs(ls, 3);
 
 	RemoteActor* ra = (RemoteActor*)getReferencedActor(ls, 1);

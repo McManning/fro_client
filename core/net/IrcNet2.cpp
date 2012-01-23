@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -30,7 +30,7 @@
 string getWord(string text, int n)
 {
 	int pos = 0;
-	for (int i = 1; i < n; i++) 
+	for (int i = 1; i < n; i++)
 	{
 		pos = text.find (' ', pos) + 1;
 	}
@@ -40,10 +40,10 @@ string getWord(string text, int n)
 uShort timer_netProcess(timer* t, uLong ms)
 {
 	IrcNet* net = (IrcNet*)t->userData;
-	
+
 	if (!net)
 		return TIMER_DESTROY;
-		
+
 	net->Process();
 	return TIMER_CONTINUE;
 }
@@ -51,28 +51,28 @@ uShort timer_netProcess(timer* t, uLong ms)
 uShort timer_netTimeout(timer* t, uLong ms)
 {
 	IrcNet* net = (IrcNet*)t->userData;
-	
+
 	if (net)
 	{
 		MessageData md("NET_TIMEOUT");
 		messenger.Dispatch(md, net);
-		
+
 		net->Disconnect();
 		net->TryNextServer();
 	}
-	
+
 	return TIMER_DESTROY;
 }
 
 uShort timer_netPing(timer* t, uLong ms)
 {
 	IrcNet* net = (IrcNet*)t->userData;
-	
+
 	if (!net)
 		return TIMER_DESTROY;
 
 	net->PingServer();
-	
+
 	return TIMER_CONTINUE;
 }
 
@@ -88,7 +88,7 @@ int thread_serverConnect(void* param)
 	return 0;
 }
 
-IrcNet::IrcNet() 
+IrcNet::IrcNet()
 {
 	mChannel = NULL;
 	mMaxMessageSize = 512; //irc max size
@@ -96,22 +96,22 @@ IrcNet::IrcNet()
 	mState = DISCONNECTED;
 	mConnectThread = NULL;
 	mWaitingForPong = false;
-	
+
 	timers->AddProcess("netProcess", timer_netProcess, NULL, this);
 	timers->Add("netPing", PING_INTERVAL_SECONDS*1000, false, timer_netPing, NULL, this);
 }
 
-IrcNet::~IrcNet() 
+IrcNet::~IrcNet()
 {
 	SAFEDELETE(mChannel);
-	
+
 	if (IsConnected())
 	{
 		Quit();
 		//TODO: I don't think they get the quit if the socket closes right after..
 		Disconnect();
 	}
-	
+
 	if (mConnectThread)
 	{
 		WARNING("Forcing a kill on thread " + pts(mConnectThread));
@@ -125,19 +125,19 @@ IrcNet::~IrcNet()
 void IrcNet::Connect() //NOTE: This will be ran from a thread!
 {
 	TextSocketConnection::Connect();
-	
-	//TODO: Probably mutex locking to make sure we don't access these when in use. 
+
+	//TODO: Probably mutex locking to make sure we don't access these when in use.
 	//Can't do from a thread. _setState( (IsConnected()) ? CONNECTED : COULDNOTCONNECT );
 	mState = (IsConnected()) ? CONNECTED : COULDNOTCONNECT;
 
 	mConnectThread = NULL;
 }
 
-bool IrcNet::ConnectToServer(string address) 
+bool IrcNet::ConnectToServer(string address)
 {
 	mServerListIndex = mServerList.size();
 	mServerList.push_back(address);
-	
+
 	return _connectServer(address);
 }
 
@@ -150,11 +150,11 @@ bool IrcNet::TryNextServer()
 		mServerListIndex = 0;
 
 	_setState(CONNECTING);
-	
+
 	bool result = _connectServer(mServerList.at(mServerListIndex));
-	
+
 	mServerListIndex++;
-	
+
 	return result;
 }
 
@@ -163,7 +163,7 @@ bool IrcNet::_connectServer(string address)
 {
 	int port;
 	int i;
-	
+
 	i = address.find(":");
 	if (i == string::npos)
 	{
@@ -177,7 +177,7 @@ bool IrcNet::_connectServer(string address)
 
 	if (address == mHost && IsConnected())
 	{
-		console->AddMessage("\\c090 * Server Alreadly Connected!");	
+		console->AddMessage("\\c090 * Server Alreadly Connected!");
 		return true;
 	}
 
@@ -189,12 +189,12 @@ bool IrcNet::_connectServer(string address)
 		WARNING("Forcing a kill on thread " + pts(mConnectThread));
 		SDL_KillThread(mConnectThread);
 	}
-	
+
 	//Run it in a seperate thread so we don't lock up the client
 	mConnectThread = SDL_CreateThread(thread_serverConnect, this);
-				
+
 	//add our reconnect timer to ensure we stay on a server while the client is running
-//	timers->Add("reconnect", sti(config.GetParamInt("communication", "reconnect")) * 60000, 
+//	timers->Add("reconnect", sti(config.GetParamInt("communication", "reconnect")) * 60000,
 //					false, timer_reconnect);
 
 	return false;
@@ -204,24 +204,24 @@ bool IrcNet::_connectServer(string address)
 void IrcNet::OnConnect()
 {
 	string msg;
-	
-	if (!mServerPassword.empty()) 
+
+	if (!mServerPassword.empty())
 	{
 		msg = "PASS " + mServerPassword + "\r\n";
 		SendLine(msg);
 	}
-		
+
 	//ChangeNick(mRealname);
-	
+
 	//USER <username> <hostname> <servername> <realname>
-	// Hostname and servername are ignored by the server. Username will be overwritten by the 
+	// Hostname and servername are ignored by the server. Username will be overwritten by the
 	// server, so it's pretty pointless itself. Realname is all that matters.
 	msg = "USER FroUser 0 * :" + mRealname + "\r\n";
-	SendLine(msg); 
+	SendLine(msg);
 }
 
 void IrcNet::PingServer()
-{	
+{
 	string s;
 	if (IsConnected())
 	{
@@ -251,63 +251,63 @@ IrcChannel* IrcNet::CreateChannel(string chan, string pass)
 void IrcNet::JoinChannel(IrcChannel* chan)
 {
 	if (!chan || !IsConnected()) return;
-	
-	PRINT("#####JOINING");
 
-	PartChannel(mChannel); 
+	DEBUGOUT("#####JOINING");
+
+	PartChannel(mChannel);
 	mChannel = chan;
 
 	MessageData md("NET_JOINING");
 	md.WriteString("channel", mChannel->mId);
 	messenger.Dispatch(md, this);
-	
+
 	string msg = "JOIN " + mChannel->mId + " " + mChannel->mPassword + "\r\n";
 	SendLine(msg);
 
-	PRINT("#####JOINDONE");
+	DEBUGOUT("#####JOINDONE");
 }
 
-void IrcNet::JoinChannel(string chan, string pass) 
+void IrcNet::JoinChannel(string chan, string pass)
 {
 	JoinChannel(CreateChannel(chan, pass));
 }
 
-void IrcNet::Privmsg(string receiver, string message) 
+void IrcNet::Privmsg(string receiver, string message)
 {
 	string msg = "PRIVMSG " + receiver + " :" + message + "\r\n";
 	SendLine(msg);
 }
 
-void IrcNet::Notice(string receiver, string message) 
+void IrcNet::Notice(string receiver, string message)
 {
 	string msg = "NOTICE " + receiver + " :" + message + "\r\n";
 	SendLine(msg);
 }
 
-void IrcNet::Whois(string lookupnick) 
+void IrcNet::Whois(string lookupnick)
 {
 	string msg = "WHOIS " + lookupnick + "\r\n";
 	SendLine(msg);
 }
 
-void IrcNet::PartChannel(IrcChannel* chan) 
+void IrcNet::PartChannel(IrcChannel* chan)
 {
 	if (!mChannel) return;
-	
+
 	DEBUGOUT("\\c900Sending Part: " + mChannel->mId);
 	string msg = "PART " + mChannel->mId + "\r\n";
 	SendLine(msg);
 	SAFEDELETE(mChannel);
 }
 
-void IrcNet::SetTopic(IrcChannel* chan, string topic) 
+void IrcNet::SetTopic(IrcChannel* chan, string topic)
 {
 	if (!chan) return;
 	string msg = "TOPIC " + chan->mId + " :" + topic + "\r\n";
 	SendLine(msg);
 }
 
-void IrcNet::ChangeNick(string newNick) 
+void IrcNet::ChangeNick(string newNick)
 {
 	string msg = "NICK " + newNick + "\r\n";
 	//mNickname = newNick;
@@ -328,7 +328,7 @@ void IrcNet::kick(string nick, string reason) {
 }
 */
 
-void IrcNet::Rawmsg(string raw) 
+void IrcNet::Rawmsg(string raw)
 {
 	raw += "\r\n";
 	SendLine(raw);
@@ -338,24 +338,24 @@ void IrcNet::Quit(string text)
 {
 	string msg = "QUIT :" + text + "\r\n";
 	SendLine(msg);
-	
+
 	//If we're not on a channel, forcefully disconnect.
 	if (!mChannel)
 		Disconnect();
-		
+
 	if (mConnectThread)
 	{
 		SDL_KillThread(mConnectThread);
 		mConnectThread = NULL;
 	}
-	
+
 	mWaitingForPong = false;
 }
 
-void IrcNet::MessageToChannel(string msg) 
+void IrcNet::MessageToChannel(string msg)
 {
 	if (mChannel && mChannel->mSuccess)
-		Privmsg(mChannel->mId, msg);	
+		Privmsg(mChannel->mId, msg);
 }
 
 //write all possible information about the network
@@ -374,18 +374,18 @@ void IrcNet::StateToString(string& s) const
 		default: break;
 	}
 	if (mChannel)
-		s += "\\nChannel: " + mChannel->mId + " [" + mChannel->mPassword + "]"; 
+		s += "\\nChannel: " + mChannel->mId + " [" + mChannel->mPassword + "]";
 }
 
 string IrcNet::GetEncryptionKey() const
 {
 	/*
 		Changes of encryption from 1.2.2 to 1.2.3:
-			Due to some design issues with multi-channel bots (helios), 
+			Due to some design issues with multi-channel bots (helios),
 			we can no longer use channel IDs as part of the encryption.
 			However, since we're still scrambling text AND using a custom
 			base64 method, the extra protection isn't really necessary
-			for the time being. 
+			for the time being.
 	*/
 	return SECONDARY_PACKET_PASS;
 }
@@ -401,14 +401,14 @@ void IrcNet::_setState(connectionState newState)
 	{
 		timers->Remove("netTimeout", this);
 	}
-	
+
 	mState = newState;
-	
+
 	mWaitingForPong = false;
 
 	MessageData md("NET_NEWSTATE");
 	md.WriteInt("state", newState);
-	
+
 	messenger.Dispatch(md, this);
 }
 
@@ -429,7 +429,7 @@ bool IrcNet::_checkState()
 
 			md.SetId("NET_FAILED");
 			md.Clear();
-			
+
 			messenger.Dispatch(md, this);
 
 			//_setState(DISCONNECTED);
@@ -460,8 +460,8 @@ bool IrcNet::_checkState()
 	return result;
 }
 
-bool IrcNet::Process() 
-{	
+bool IrcNet::Process()
+{
 	//Return false if we're not actually connected and ready to receive messages
 	if (!_checkState())
 		return false;
@@ -475,8 +475,8 @@ bool IrcNet::Process()
 	string line;
 	string s1, s2, s3;
 	MessageData md;
-	
-	while (CanReadLine()) 
+
+	while (CanReadLine())
 	{
 		line = GetLine();
 		PRINTF("%s\n", line.c_str());
@@ -487,16 +487,16 @@ bool IrcNet::Process()
 			string cmd = lowercase(getWord (line, 2));
 			string msg = line.substr(line.find (':',1) + 1);
 
-			if (cmd == "privmsg") 
+			if (cmd == "privmsg")
 			{
 				s1 = line.substr(1, line.find ('!',0) - 1); //user who sent it
 				s2 = line.substr(s1.length() + 2, line.find(' ', s1.length()) - s1.length() - 2); //address
-				
+
 				md.Clear();
 				md.WriteString("sender", s1); //Sender Nick
 				md.WriteString("address", s2); //Sender Address
 				md.WriteString("target", getWord(line, 3)); //Target
-				md.WriteString("message", msg); //Message	
+				md.WriteString("message", msg); //Message
 
 				string x01 = "\x01";
 				if (msg.find(x01 + "VERSION", 0) == 0)
@@ -520,8 +520,8 @@ bool IrcNet::Process()
 			}
 			else if (cmd == "join") //:Halio!~HalioBot@25C32C5.C816C137.BF0FDDF8.IP JOIN :#drm.library..
 			{
-				s1 = line.substr(1, line.find ('!',0) - 1); //joiner				
-				s2 = line.substr(s1.length() + 2, line.find(' ', s1.length()) - s1.length() - 2);	
+				s1 = line.substr(1, line.find ('!',0) - 1); //joiner
+				s2 = line.substr(s1.length() + 2, line.find(' ', s1.length()) - s1.length() - 2);
 				if (s2.find("@", 0) != string::npos) //trash the realname
 					s2.erase(0, s2.find("@", 0)+1);
 
@@ -531,19 +531,19 @@ bool IrcNet::Process()
 				md.WriteString("address", s2); //Joiner Address
 
 				messenger.Dispatch(md, this);
-				
+
 				// We have joined our channel, trigger an ONCHANNEL event
 				if (s1 == GetNick())
 				{
 					mChannel->mSuccess = true;
-					_setState(ONCHANNEL);			
-					
+					_setState(ONCHANNEL);
+
 					mChannel->mId = msg; //getWord(line, 3).substr(1);
-					
+
 					md.Clear();
 					md.SetId("NET_ONCHANNEL");
 					md.WriteString("channel", mChannel->mId); //channel
-					
+
 					messenger.Dispatch(md, this);
 				}
 			}
@@ -551,7 +551,7 @@ bool IrcNet::Process()
 			{
 				s1 = getWord(line, 4); //kicked
 				s2 = line.substr(1, line.find ('!',0) - 1); //nick that kicked them
-				
+
 				md.Clear();
 				md.SetId("NET_KICK");
 				md.WriteString("nick", s1); //Kicked Nick
@@ -559,22 +559,22 @@ bool IrcNet::Process()
 				md.WriteString("reason", msg); //Reason
 
 				messenger.Dispatch(md, this);
-				
+
 				if (s1 == mNickname)
 				{
 					SAFEDELETE(mChannel);
-				}	
-			} 
+				}
+			}
 			else if (cmd == "nick") //:Noel!~noel@Rizon-B5D29C05.hsd1.ca.comcast.net NICK :test...
 			{
 				s1 = line.substr(1, line.find ('!',0) - 1); //old nick
 				s2 = line.substr(line.find("NICK ")+5); //new nick
 				if (s2.at(0) == ':')
 					s2.erase(0, 1);
-		
+
 				if (s1 == mNickname)
 					mNickname = s2;
-		
+
 				md.Clear();
 				md.SetId("NET_NICK");
 				md.WriteString("oldnick", s1); //Old Nick
@@ -585,70 +585,70 @@ bool IrcNet::Process()
 			else if (cmd == "part")
 			{
 				s1 = line.substr(1, line.find ('!',0) - 1); //nick
-				
-				s2 = line.substr(s1.length() + 2, line.find(' ', s1.length()) - s1.length() - 2);	
+
+				s2 = line.substr(s1.length() + 2, line.find(' ', s1.length()) - s1.length() - 2);
 				if (s2.find("@", 0) != string::npos) //trash the realname
 					s2.erase(0, s2.find("@", 0)+1);
-				
+
 				md.Clear();
 				md.SetId("NET_PART");
 				md.WriteString("nick", s1); //Parter Nick
 				md.WriteString("address", s2); //Parter Address
-				
+
 				messenger.Dispatch(md, this);
 			}
-			else if (cmd == "mode") 
+			else if (cmd == "mode")
 			{
 				if (line.find('!', 0) == string::npos)
 					s1 = line.substr(1, line.find (' ',0) - 1); //server
 				else
 					s1 = line.substr(1, line.find ('!',0) - 1); //nick
-				
+
 				s2 = line.substr(line.find("MODE", 0) + 4); //Mode
 
 				md.Clear();
 				md.SetId("NET_MODE");
 				md.WriteString("sender", s1); //Server Address or Nick
 				md.WriteString("mode", s2); //Mode set
-				
+
 				messenger.Dispatch(md, this);
-			} 
+			}
 			else if (cmd == "topic")
-			{ 
+			{
 				s1 = getWord(line, 3); //chan
 				s2 = line.substr(1, line.find ('!',0) - 1); //nick
-				
+
 				if (mChannel && s1 == mChannel->mId)
-					mChannel->mTopic = msg;	
-					
+					mChannel->mTopic = msg;
+
 				md.Clear();
 				md.SetId("NET_TOPIC");
 				md.WriteString("channel", s1); //channel
 				md.WriteString("nick", s2); //nick who set it
 				md.WriteString("message", msg); //new topic
-				
+
 				messenger.Dispatch(md, this);
 			}
 			else if (cmd == "quit") //:Halio!~HalioBot@25C32C5.C816C137.BF0FDDF8.IP QUIT :Read error: Connection reset by peer..
-			{ 
+			{
 				s1 = line.substr(1, line.find ('!',0) - 1); //user
 				s2 = line.substr(line.find(':',1) + 1); //reason
 				s3 = line.substr(s1.length() + 2, line.find(' ', s1.length()) - s1.length() - 2); //address
-				
+
 				if (s3.find("@", 0) != string::npos) //trash the realname
 					s3.erase(0, s3.find("@", 0)+1);
-				
+
 				md.Clear();
 				md.SetId("NET_QUIT");
 				md.WriteString("nick", s1); //Parter Nick
 				md.WriteString("address", s3); //Parter Address
 				md.WriteString("reason", s2); //Reason
-				
+
 				messenger.Dispatch(md, this);
 			}
 			else if (cmd == "notice") //:Noel!~noel@Rizon-1F2DCFAD.hsd1.ca.comcast.net NOTICE Drm_gabide :ffff
 			{
-				s1 = getWord(line, 1); 
+				s1 = getWord(line, 1);
 				s1 = s1.substr( 1, s1.find("!", 1) - 1 );
 
 				md.Clear();
@@ -661,41 +661,41 @@ bool IrcNet::Process()
 			else if (cmd == "pong")
 			{
 				DEBUGOUT("PONG");
-				mWaitingForPong = false; //should probably double check the address, but I don't care.	
+				mWaitingForPong = false; //should probably double check the address, but I don't care.
 			}
 			else if (cmd == "332") //channel topic when joining
-			{ 
+			{
 				s1 = getWord (line, 4);
-				
-				if (mChannel && s1 == mChannel->mId) 
+
+				if (mChannel && s1 == mChannel->mId)
 				{
 					mChannel->mTopic = msg;
 					mChannel->mSuccess = true;
 				}
-				
+
 				md.Clear();
 				md.SetId("NET_TOPIC");
 				md.WriteString("channel", s1); //channel
 				md.WriteString("nick", ""); //No nick (was sent while joining)
 				md.WriteString("message", msg); //topic
-				
+
 				messenger.Dispatch(md, this);
 
-			} 
+			}
 			else if (cmd == "433" || cmd == "432") // Nickname already in use / Erronous Nickname
-			{ 
+			{
 				md.Clear();
 				md.SetId("NET_NICKINUSE");
 				md.WriteString("message", msg); //message
-				
+
 				messenger.Dispatch(md, this);
-			} 
+			}
 			else if (cmd == "001") //successful registration: :in.sybolt 001 MYNICK :Welcome to the drm.server [etc]
-			{		
+			{
 				// Get the real host name
 				mRealServerAddress = getWord(line, 1);
 				mRealServerAddress.erase(0, 1); //erase prefix colon
-				
+
 				// Get our real nick (Bug fix for when nicks at server connect are too long, and it cuts it down)
 				mNickname = getWord(line, 3);
 
@@ -703,31 +703,31 @@ bool IrcNet::Process()
 
 				md.Clear();
 				md.SetId("NET_VERIFIED");
-				
+
 				messenger.Dispatch(md, this);
 
 				return true; //gotta break out so we can stop the doConnect loop
-			} 
+			}
 			else if (cmd == "439") // Please wait while we process your connection
 			{
 				// Get the real host name
 				mRealServerAddress = getWord(line, 1);
 				mRealServerAddress.erase(0, 1); //erase prefix colon
-			
+
 				_setState(VERIFYING);
 			}
 			else if (cmd == "353") //userlist
-			{	
+			{
 				md.Clear();
 				md.SetId("NET_USERLIST");
 				md.WriteString("list", msg); //list
-				
+
 				messenger.Dispatch(md, this);
 			}
 			else if (cmd == "366" || cmd == "323" || cmd == "321"
 					|| cmd == "319" || cmd == "312" || cmd == "318"
 					|| cmd == "338" || cmd == "310") //ignore!
-			{ 
+			{
 				/*
 					 :irc.lunarforums.org 366 ircNet_Nick #drm-testing :End of /NAMES list.
 					 :server 321 NICK Channel :Users Name
@@ -739,7 +739,7 @@ bool IrcNet::Process()
 				md.Clear();
 				md.SetId("NET_MOTD");
 				md.WriteString("message", msg); //motd data
-				
+
 				messenger.Dispatch(md, this);
 			}
 			else if (cmd == "322") //:irc.server.net 322 MYNICK channel users :topic
@@ -747,63 +747,63 @@ bool IrcNet::Process()
 				md.Clear();
 				md.SetId("NET_CHANNEL_COUNT");
 				md.WriteString("channel", getWord(line, 4));
-				md.WriteInt("count", sti(getWord(line, 5))); 	
+				md.WriteInt("count", sti(getWord(line, 5)));
 				messenger.Dispatch(md, this);
 			}
 			else if (cmd == "317") // :server 317 mynick hisnick 827 4548948974 :seconds idle, signon time
 			{
-				s1 = getWord(line, 4); 
+				s1 = getWord(line, 4);
 				s3 = getWord(line, 5);
 				s2 = getWord(line, 6);
-				
+
 				md.Clear();
 				md.SetId("NET_WHOIS");
 				md.WriteString("nick", s1);
 				md.WriteInt("idle", sti(s3));
 				md.WriteInt("signon", sti(s2));
-				
+
 				messenger.Dispatch(md, this);
 			}
 			else if (cmd == "311") // :server 311 mynick hisnick ~Frouser ADDRESS * :realname
 			{
-				s1 = getWord(line, 4); 
+				s1 = getWord(line, 4);
 				s2 = getWord(line, 6);
-				
+
 				md.Clear();
 				md.SetId("NET_WHOIS2");
 				md.WriteString("nick", s1);
 				md.WriteString("address", s2);
 				md.WriteString("realname", msg);
-				
+
 				messenger.Dispatch(md, this);
 			}
 			else if ((atoi(cmd.c_str()) > 400 && atoi(cmd.c_str()) < 503) || cmd == "263") //command ERROR reply from IRC server
-			{		
+			{
 				md.Clear();
 				md.SetId("NET_CMDERROR");
 				md.WriteString("command", cmd); //the command issued
 				md.WriteString("message", msg); //the error
-				
+
 				messenger.Dispatch(md, this);
-			} 
+			}
 			else //unidentified
 			{
 				md.Clear();
 				md.SetId("NET_UNKNOWN");
 				md.WriteString("command", cmd); //the command issued
 				md.WriteString("line", line); //the full line of data sent
-				
+
 				messenger.Dispatch(md, this);
 			}
 		}
 		else if (getWord(line, 1) == "ERROR") //ERROR :Closing Link: Rizon-1F2DCFAD.hsd1.ca.comcast.net ()
 		{
-			s1 = line.substr(line.find(':',1) + 1); 
-						
+			s1 = line.substr(line.find(':',1) + 1);
+
 			md.Clear();
 			md.SetId("NET_ERROR");
 			md.WriteString("message", s1); //the error
-			
+
 			messenger.Dispatch(md, this);
 		}
 		else if (getWord(line, 1) == "PING") //  necessary to keep us hooked up to the server
@@ -811,11 +811,11 @@ bool IrcNet::Process()
 			s1 = line.substr(4);
 			s2 = "PONG" + s1 + "\r\n";
 			SendLine(s2);
-			
+
 			md.Clear();
 			md.SetId("NET_PING");
 			md.WriteString("sender", s1); //the server
-			
+
 			messenger.Dispatch(md, this);
 		}
 	}

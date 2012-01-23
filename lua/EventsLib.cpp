@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -33,21 +33,21 @@
 
 -- Return 0 to destroy this event listener. 1 to keep it running.
 function event_callback(eventId, dataTable)
-	
+
 	--let us assume this data table has a key 'entity' with a value of a Entity* cptr
 
 	ent = dataTable["entity"];
 	Entity.Say(ent, "Hello from event listener " .. eventId);
-	
+
 	return 1;
 end
 
 Events.Register("SOME_EVENT", "event_callback");
 
--- parameter 2 being optional. If set, will only remove events matching with both properties. 
--- Also only unregisters events matching the matching lua_State, 
+-- parameter 2 being optional. If set, will only remove events matching with both properties.
+-- Also only unregisters events matching the matching lua_State,
 -- so it won't unregister event listeners outside this script.
-Events.Unregister("SOME_EVENT", "event_callback"); 
+Events.Unregister("SOME_EVENT", "event_callback");
 
 Events.UnregisterAll(); -- Removes all event listeners with this lua_State
 */
@@ -60,19 +60,19 @@ class LuaMessageListener
 		luaState = NULL;
 		luaReference = LUA_NOREF;
 	};
-	
+
 	~LuaMessageListener()
 	{
 		luaL_unref(luaState, LUA_REGISTRYINDEX, luaReference);
 	};
-	
+
 	// Call the lua function within the state, converting and passing MessageData into it.
 	//if it returns -1, delete the listener from the manager.
 	int DoFunction(MessageListener*, MessageData&);
 
 	lua_State* luaState; //lua_state containing our target lua function
 	string luaFunction; //function that will be called during this message dispatch.
-	
+
 	int luaReference; //Unique id of the attached lua object
 };
 
@@ -86,25 +86,25 @@ int LuaMessageListener::DoFunction(MessageListener* ml, MessageData& data)
 	if (!lua_isfunction(luaState, -1))
 	{
 		WARNING("Lua Function " + luaFunction + " not found during firing of event " + data.mId);
-		return 0;	
+		return 0;
 	}
 
 	//first argument, listener handle
 	lua_pushnumber(luaState, ml->handle);
 
 	//second argument, event id
-	lua_pushstring(luaState, data.mId.c_str()); 
+	lua_pushstring(luaState, data.mId.c_str());
 
 	//Convert our std::map to a lua table as the third parameter
 	lua_newtable(luaState);
 	int top = lua_gettop(luaState);
 
-	for (std::map<string, MessageData::messageItem>::iterator it = data.mData.begin(); it != data.mData.end(); ++it) 
+	for (std::map<string, MessageData::messageItem>::iterator it = data.mData.begin(); it != data.mData.end(); ++it)
 	{
 		const char* key = it->first.c_str();
 		lua_pushstring(luaState, key);
-		
-		//Add a data type that corrosponds to our value's type. 
+
+		//Add a data type that corrosponds to our value's type.
 		MessageData::messageItem& item = it->second;
 		switch (item.type)
 		{
@@ -121,7 +121,7 @@ int LuaMessageListener::DoFunction(MessageListener* ml, MessageData& data)
 		}
 		lua_settable(luaState, top);
 	}
-	
+
 	//fourth argument, our stored lua object
 	lua_rawgeti(luaState, LUA_REGISTRYINDEX, luaReference);
 
@@ -138,7 +138,7 @@ int LuaMessageListener::DoFunction(MessageListener* ml, MessageData& data)
 		if (lua_isnumber(luaState, -1))
 		{
 			result = (int)lua_tonumber(luaState, -1); //get the result
-		
+
 		}
 	}
 
@@ -150,7 +150,7 @@ int LuaMessageListener::DoFunction(MessageListener* ml, MessageData& data)
 void listener_luaActivate(MessageListener* ml, MessageData& data, void* sender)
 {
 	LuaMessageListener* luaListener = (LuaMessageListener*)ml->userdata;
-	
+
 	//If bad userdata, or the function returns 0, delete listener.
 	if (!luaListener || luaListener->DoFunction(ml, data) == -1)
 	{
@@ -162,7 +162,7 @@ void listener_luaDestroy(MessageListener* ml)
 {
 	LuaMessageListener* luaListener = (LuaMessageListener*)ml->userdata;
 	SAFEDELETE(luaListener);
-	
+
 	ml->userdata = NULL;
 }
 
@@ -175,7 +175,7 @@ void unregisterAllEventListeners(lua_State* ls)
 		if (messenger.mListeners.at(i) && messenger.mListeners.at(i)->onActivate == listener_luaActivate)
 		{
 			luaListener = (LuaMessageListener*)messenger.mListeners.at(i)->userdata;
-			
+
 			//if this listener exists and was created by this lua_state...
 			if (luaListener && luaListener->luaState == ls)
 			{
@@ -188,11 +188,11 @@ void unregisterAllEventListeners(lua_State* ls)
 // .Register("id", "luafunc", userdata<nil>) - Returns the unique handle of the newly created listener
 int events_Register(lua_State* ls)
 {
-	PRINT("events_Register");
+	DEBUGOUT("events_Register");
 	luaCountArgs(ls, 2);
 
 	int numArgs = lua_gettop( ls );
-	
+
 	if (!lua_isstring(ls, 1) || !lua_isstring(ls, 2))
 		return luaError(ls, "Events.Register", "Bad Params");
 
@@ -202,15 +202,15 @@ int events_Register(lua_State* ls)
 	LuaMessageListener* luaListener = new LuaMessageListener();
 	luaListener->luaState = ls;
 	luaListener->luaFunction = func;
-	
+
 	if (numArgs > 2)
 	{
 		lua_pushvalue(ls, 3); //copy the value at index to the top of the stack
 		luaListener->luaReference = luaL_ref(ls, LUA_REGISTRYINDEX); //create a reference to the stack top and pop
 	}
-	
+
 	MessageListener* ml = messenger.AddListener(id, listener_luaActivate, listener_luaDestroy, luaListener);
-	
+
 	lua_pushnumber(ls, ml->handle); //return our handle
 	return 1;
 }
@@ -218,13 +218,13 @@ int events_Register(lua_State* ls)
 //	bool = .UnregisterHandle(handle) - Unregisters the event with the handle. Returns true on success, false otherwise.
 int events_UnregisterHandle(lua_State* ls)
 {
-	PRINT("events_UnregisterHandle");
+	DEBUGOUT("events_UnregisterHandle");
 	luaCountArgs(ls, 1);
-	
+
 	uLong handle = (uLong)lua_tonumber(ls, 1);
-	
+
 	bool result = messenger.RemoveListenerByHandle(handle);
-	
+
 	lua_pushboolean(ls, result);
 	return 1;
 }
@@ -233,9 +233,9 @@ int events_UnregisterHandle(lua_State* ls)
 // Note: This will only unregister matching data from THIS LUA_STATE. Will not damage any other similar outside listeners.
 int events_Unregister(lua_State* ls)
 {
-	PRINT("events_Unregister");
+	DEBUGOUT("events_Unregister");
 	luaCountArgs(ls, 1);
-	
+
 	int numArgs = lua_gettop( ls );
 
 	string id = lua_tostring(ls, 1);
@@ -250,12 +250,12 @@ int events_Unregister(lua_State* ls)
 		if (messenger.mListeners.at(i) && messenger.mListeners.at(i)->onActivate == listener_luaActivate)
 		{
 			luaListener = (LuaMessageListener*)messenger.mListeners.at(i)->userdata;
-			
+
 			//if this listener exists and was created by this lua_state...
 			if (luaListener && luaListener->luaState == ls)
 			{
 				//if we have a matching event ID, and a matching lua function name (if supplied), erase it!
-				if ( messenger.mListeners.at(i)->id == id 
+				if ( messenger.mListeners.at(i)->id == id
 						&& (func.empty() || luaListener->luaFunction == func) )
 				{
 					messenger.RemoveListener( messenger.mListeners.at(i) );
@@ -263,14 +263,14 @@ int events_Unregister(lua_State* ls)
 			}
 		}
 	}
-	
+
 	return 0;
 }
 
 // .UnregisterAll() - Deletes all message listeners referencing our lua_State
 int events_UnregisterAll(lua_State* ls)
 {
-	PRINT("events_UnregisterAll");
+	DEBUGOUT("events_UnregisterAll");
 
 	unregisterAllEventListeners(ls);
 	return 0;

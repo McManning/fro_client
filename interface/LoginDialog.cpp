@@ -70,7 +70,7 @@ void dlCallback_welcomeDataSuccess(downloadData* data)
 				// if our hashes don't match, trigger an update
 				if (hash != lines.at(i).substr(9))
 				{
-					printf("Hash %s doesn't match\n", hash.c_str());
+					logger.Write("Manifest hash %s does not match local", hash.c_str());
 					loginDialog->SetControlState(false);
 
 					Label* l = (Label*)(loginDialog->Get("status"));

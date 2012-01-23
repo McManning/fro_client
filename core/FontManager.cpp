@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -25,17 +25,18 @@
 #include "FontManager.h"
 #include "ResourceManager.h"
 #include "SDL/SDL_gfxBlitFunc.h"
+#include "Logger.h"
 
 FontManager* fonts;
 
-Font::Font() 
+Font::Font()
 {
 	data = NULL;
 	mType = FONTRENDER_BLENDED;
 	mUseBlitOverride = false;
 }
 
-Font::~Font() 
+Font::~Font()
 {
 	if (data)
 		TTF_CloseFont(data);
@@ -49,9 +50,9 @@ Font::~Font()
 				if width of characters all > max width
 					split word @ char - 1
 					go to next word (could be the split from this word)
-	
+
 	For each word, determine width of s + space + word
-		If width > max width 
+		If width > max width
 			add s to v, clear s, then put word into s
 */
 void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
@@ -70,11 +71,11 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 		v.push_back(" ");
 		return;
 	}
-	
+
 	/*	Find words wider than the max width, and split them up into multiple words */
 	i = 0;
 	while (i < words.size())
-	{	
+	{
 		if (words.at(i) != "\n" && words.at(i) != "\t")
 		{
 			// split at \n
@@ -84,7 +85,7 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 				// We found enough characters to fill one line, split and quit
 				if (words.at(i).length() > c+2)
 					words.insert(words.begin() + i + 1, words.at(i).substr(c+2)); //everything after \n
-					
+
 				words.insert(words.begin() + i + 1, "\n"); // the \n itself
 				words.at(i) = words.at(i).substr(0, c); // everything before \n
 				i -= 1;
@@ -92,10 +93,10 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 			else if ((c = words.at(i).find("\\t", 0)) != string::npos) // split at \t too
 			{
 				// We found enough characters to fill one line, split and quit
-				
+
 				if (words.at(i).length() > c+2)
 					words.insert(words.begin() + i + 1, words.at(i).substr(c+2)); //everything after \t
-				
+
 				words.insert(words.begin() + i + 1, "\t"); // the \t itself
 				words.at(i) = words.at(i).substr(0, c); // everything before \t
 				i -= 1;
@@ -105,7 +106,7 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 				// We found enough characters to fill one line, split and quit
 				if (words.at(i).length() > c+1)
 					words.insert(words.begin() + i + 1, words.at(i).substr(c+1)); //everything after \n
-				
+
 				words.insert(words.begin() + i + 1, "\n"); // the \n itself
 				words.at(i) = words.at(i).substr(0, c); // everything before \n
 				i -= 1;
@@ -120,7 +121,7 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 				i -= 1;
 			}
 			else
-			{			
+			{
 				if (GetWidth(words.at(i), true) > maxWidth)
 				{
 					// Word is too long, try to find a place to split it
@@ -135,7 +136,7 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 							quit = true;
 						}
 					}
-				}	
+				}
 			}
 		}
 		++i;
@@ -150,9 +151,9 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 			v.push_back(s);
 			s.clear();
 		}
-		else if (words.at(i) == "\\t" || words.at(i) == "\t") 
+		else if (words.at(i) == "\\t" || words.at(i) == "\t")
 		{
-			s += "  ";	
+			s += "  ";
 		}
 		else
 		{
@@ -160,7 +161,7 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 				sw = words.at(i);
 			else
 				sw = ' ' + words.at(i);
-	
+
 			if (GetWidth(s + sw, true) > maxWidth)
 			{
 				// Too long, next word won't fit, split
@@ -173,7 +174,7 @@ void Font::CharacterWrapMessage(vString& v, string& msg, int maxWidth)
 			}
 		}
 	}
-	
+
 	// Add the remains of the string
 	if (!s.empty())
 		v.push_back(s);
@@ -186,7 +187,7 @@ rect Font::GetTextRect(string text, bool ignoreCodes, int maxWidth)
 
 	if (ignoreCodes)
 		text = stripColorCodes(text);
-			
+
 	if (maxWidth > 0)
 	{
 		CharacterWrapMessage(v, text, maxWidth);
@@ -207,7 +208,7 @@ rect Font::GetTextRect(string text, bool ignoreCodes, int maxWidth)
 				if (w > r.w)
 					r.w = w;
 			}
-			
+
 			r.h = v.size() * GetHeight();
 		}
 	}
@@ -216,7 +217,7 @@ rect Font::GetTextRect(string text, bool ignoreCodes, int maxWidth)
 		r.w = GetWidth(text);
 		r.h = GetHeight();
 	}
-	
+
 	return r;
 }
 
@@ -229,7 +230,7 @@ SDL_Surface* Font::RenderToSDL(const char* text, color rgb)
 		s = TTF_RenderText_Blended(data, text, c);
 	else
 		s = TTF_RenderText_Solid(data, text, c);
-	
+
 	return s;
 }
 
@@ -257,15 +258,15 @@ void Font::_renderLine(Image* dst, int x, int y, string& text, color c)
 		if (i == 0 && text.find("\\c", 0) != 0)
 			surf = RenderToSDL(v.at(i).c_str(), c);
 		else if (v.at(i).length() > 3) //must have at least RGB starting it
-			surf = RenderToSDL(v.at(i).substr(3).c_str(), slashCtoColor(v.at(i).substr(0, 3)));	
+			surf = RenderToSDL(v.at(i).substr(3).c_str(), slashCtoColor(v.at(i).substr(0, 3)));
 		else
 			surf = NULL;
-		
+
 		if (surf)
 		{
 			rDst.w = surf->w;
 			rDst.h = surf->h;
-			
+
 			if (mUseBlitOverride)
 			{
 				if ( SDL_gfxBlitRGBA(surf, &surf->clip_rect, dstsurf, &rDst) < 0 )
@@ -282,10 +283,10 @@ void Font::_renderLine(Image* dst, int x, int y, string& text, color c)
 			}
 			SDL_FreeSurface(surf);
 			x += rDst.w; //offset the X for the next section
-			
+
 			//SDL_BlitSurface will fuck with our rect after clipping, fix it.
 			rDst.x = x;
-			rDst.y = y; 
+			rDst.y = y;
 		}
 	}
 
@@ -293,12 +294,12 @@ void Font::_renderLine(Image* dst, int x, int y, string& text, color c)
 
 void Font::Render(Image* dst, int x, int y, string text, color c, int width)
 {
-	if (width > 0) //wrap it 
+	if (width > 0) //wrap it
 	{
 		vString v;
 		CharacterWrapMessage(v, text, width);
 		int index;
-		
+
 		for (int i = 0; i < v.size(); ++i)
 		{
 			_renderLine(dst, x, y, v.at(i), c);
@@ -309,15 +310,15 @@ void Font::Render(Image* dst, int x, int y, string text, color c, int width)
 
 			y += GetHeight();
 		}
-	} 
+	}
 	else
 	{
 		_renderLine(dst, x, y, text, c);
 	}
-	
+
 }
 
-void Font::GetTextSize(string text, int* w, int* h) 
+void Font::GetTextSize(string text, int* w, int* h)
 {
 	int _w, _h;
 	//if(getUTF8()) TTF_SizeUTF8(data, text, &_w, &_h);
@@ -333,21 +334,21 @@ int Font::GetWidth(string text, bool ignoreCodes)
 		GetTextSize(stripColorCodes(text), &w, &h);
 	else
 		GetTextSize(text, &w, &h);
-		
+
 	return w;
 }
 
 int Font::GetHeight(string text, int width)
 {
 	int h = TTF_FontHeight(data);
-	
+
 	if (width > 0)
 	{
 		vString v;
 		CharacterWrapMessage(v, text, width);
 		h *= v.size();
 	}
-	
+
 	return h;
 }
 
@@ -356,41 +357,41 @@ int Font::GetLineSkip()
 	return TTF_FontLineSkip(data);
 }
 
-FontManager::FontManager() 
+FontManager::FontManager()
 {
 
 }
 
-FontManager::~FontManager() 
+FontManager::~FontManager()
 {
 	//Unload all loaded fonts
 	Font* f;
 	for (int i = 0; i < loadedFonts.size(); i++)
 	{
 		f = loadedFonts.at(i);
-		PRINT("Erasing Font: " + f->filename + " " + pts(f));
+		logger.Write("Erasing Font: %s (0x%p)", f->filename.c_str(), f);
 		SAFEDELETE(f);
 	}
-	
-	PRINT("TTF_Quit");
+
+	logger.Write("TTF_Quit");
 	TTF_Quit();
 }
 
 //Load up default standard fonts, intialize ttf and shit, etc
-bool FontManager::Initialize() 
+bool FontManager::Initialize()
 {
 	if(TTF_Init() < 0) {
-        WARNING("SDL_TTF: " + string(SDL_GetError()));
+        logger.WriteError("TTF_Init Error: %s", SDL_GetError());
     	return false;
 	}
 
 	return true;
 }
 
-Font* FontManager::Get(string filename, int size, int style) 
+Font* FontManager::Get(string filename, int size, int style)
 {
 	if (filename.empty())
-		filename = "assets/font.ttf"; //config.GetParamString("font", "face");	
+		filename = "assets/font.ttf"; //config.GetParamString("font", "face");
 	if (size == 0)
 		size = 12; //config.GetParamInt("font", "size");
 
@@ -406,41 +407,44 @@ Font* FontManager::Get(string filename, int size, int style)
 		f->size = size;
 		f->filename = filename;
 		f->style = style;
-		
+
 		//#define TTF_STYLE_NORMAL	0x00
 		//#define TTF_STYLE_BOLD		0x01
 		//#define TTF_STYLE_ITALIC	0x02
 		//#define TTF_STYLE_UNDERLINE	0x04
 		if (style != 0)
 			TTF_SetFontStyle(ttf, style);
-		
+
 		loadedFonts.push_back(f);
 		return f;
 	}
-	else WARNING(filename + ": " + SDL_GetError());
+	else
+	{
+	    logger.WriteError("TTF_OpenFont Error: %s", SDL_GetError());
+	}
 
 	return NULL;
 }
 
 //Returns true on success
-bool FontManager::Unload(string filename, int size, int style) 
+bool FontManager::Unload(string filename, int size, int style)
 {
 	int index;
 	Font* f = Find(filename, size, style, &index);
-	
+
 	if (f)
 	{
 		SAFEDELETE(f);
 		loadedFonts.erase(loadedFonts.begin() + index);
 	}
-	
+
 	return (f != NULL);
 }
 
 //Returns both the font and optionally the index position (Used internally)
 Font* FontManager::Find(string filename, int size, int style, int* index) {
 	Font* f;
-	
+
 	for (int i = 0; i < loadedFonts.size(); i++)
 	{
 		f = loadedFonts.at(i);
@@ -448,10 +452,10 @@ Font* FontManager::Find(string filename, int size, int style, int* index) {
 		{
 			if (index)
 				*index = i;
-				
+
 			return f;
 		}
 	}
-	
+
 	return NULL;
 }

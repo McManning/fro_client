@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -26,59 +26,23 @@
 #include <time.h>
 #include "Common.h"
 #include "io/FileIO.h"
+#include "Logger.h"
 
 applicationState appState;
 
-void throwError(const char* file, int line, int num)
+void _warning(const char* file, int line, string msg)
 {
-	systemErrorMessage("Fatal Error", "[" + string(file) + "] Code ln" + its(line) + " [" + its(num)
-							+ "] \n\nREPORT THIS IMMEDIATELY!");
-
-	FILE* f = fopen("logs/error.log", "a");
-	if (f)
-	{
-		fprintf(f, "[%s] THROW - %s:%i - %i\n", timestamp(true).c_str(), file, line, num);
-		fclose(f);
-	}
-
-	exit(0); //Hateful, but necessary on fatal errors
+	logger.WriteError("WARNING [%s:%i] %s", file, line, msg.c_str());
 }
 
-void warning(const char* file, int line, string msg)
+void _fatal(const char* file, int line, string msg)
 {
-	printf("WARNING [%s:%i] %s\n", file, line, msg.c_str());
-	fflush(stdout); //make sure this outputs
-
-	FILE* f = fopen("logs/error.log", "a");
-	if (f)
-	{
-		fprintf(f, "[%s] WARNING - %s:%i - %s\n", timestamp(true).c_str(), file, line, msg.c_str());
-		fclose(f);
-	}
-}
-
-void fatal(const char* file, int line, string msg)
-{
-	printf("FATAL [%s:%i] %s\n", file, line, msg.c_str());
-	fflush(stdout); //make sure this outputs
+    logger.WriteError("FATAL [%s:%i] %s", file, line, msg.c_str());
 	systemErrorMessage("Fatal Error",
 						"[" + string(file) + ":" + its(line) + "] "
 							+ msg + "\n\nREPORT THIS IMMEDIATELY!");
 
-	FILE* f = fopen("logs/error.log", "a");
-	if (f)
-	{
-		fprintf(f, "[%s] FATAL - %s:%i - %s\n", timestamp(true).c_str(), file, line, msg.c_str());
-		fclose(f);
-	}
-
 	exit(0); //Hateful, but necessary on fatal errors
-}
-
-void print(string msg)
-{
-	printf("%s\n", msg.c_str());
-	fflush(stdout); //make sure this outputs
 }
 
 bool isAppClosing()

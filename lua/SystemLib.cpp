@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -47,7 +47,7 @@ struct luaCallback
 // .Print("Message")
 int system_Print(lua_State* ls)
 {
-	PRINT("system_Print");
+	DEBUGOUT("system_Print");
 	luaCountArgs(ls, 1);
 
 	console->AddMessage( lua_tostring(ls, 1) );
@@ -58,7 +58,7 @@ int system_Print(lua_State* ls)
 // .Fatal("Message")
 int system_Fatal(lua_State* ls)
 {
-	PRINT("system_Fatal");
+	DEBUGOUT("system_Fatal");
 	luaCountArgs(ls, 1);
 
 	FATAL( lua_tostring(ls, 1) );
@@ -113,7 +113,7 @@ void callback_luaYesNo_No(YesNoPopup* yn)
 //		If longformat is true, will use a multiline for the message.
 int system_YesNo(lua_State* ls)
 {
-	PRINT("system_YesNo");
+	DEBUGOUT("system_YesNo");
 	luaCountArgs(ls, 3);
 	int numArgs = lua_gettop(ls);
 
@@ -265,7 +265,7 @@ void callback_luaMessagePopup(MessagePopup* mp)
 //		Will call the callback lua function (if it exists) with no parameters once closed.
 int system_Alert(lua_State* ls)
 {
-	PRINT("system_Alert");
+	DEBUGOUT("system_Alert");
 	luaCountArgs(ls, 2);
 	int numArgs = lua_gettop(ls);
 
@@ -288,7 +288,7 @@ int system_Alert(lua_State* ls)
 //		Will call the callback lua function (if it exists) with no parameters once closed.
 int system_MessageDialog(lua_State* ls)
 {
-	PRINT("system_MessageDialog");
+	DEBUGOUT("system_MessageDialog");
 	luaCountArgs(ls, 2);
 	int numArgs = lua_gettop(ls);
 
@@ -310,7 +310,7 @@ int system_MessageDialog(lua_State* ls)
 // bool = .Wildmatch("pattern", "message") - Returns true if the message matches the pattern
 int system_Wildmatch(lua_State* ls)
 {
-	PRINT("system_Wildmatch");
+	DEBUGOUT("system_Wildmatch");
 	luaCountArgs(ls, 2);
 
 	lua_pushboolean( ls, wildmatch(lua_tostring(ls, 1), lua_tostring(ls, 2)) );
@@ -321,7 +321,7 @@ int system_Wildmatch(lua_State* ls)
 // .OpenUrl("url") - Open an OpenUrl request
 int system_OpenUrl(lua_State* ls)
 {
-	PRINT("system_OpenUrl");
+	DEBUGOUT("system_OpenUrl");
 	luaCountArgs(ls, 1);
 
 	new OpenUrl( lua_tostring(ls, 1) );
@@ -332,7 +332,7 @@ int system_OpenUrl(lua_State* ls)
 // .GetTheta(x, y, x2, y2) - Returns theta (in degrees), using (x,y) as origin.
 int system_GetTheta(lua_State* ls)
 {
-	PRINT("system_GetTheta");
+	DEBUGOUT("system_GetTheta");
 	luaCountArgs(ls, 4);
 
 	double dx = lua_tonumber(ls, 3) - lua_tonumber(ls, 1);
@@ -347,7 +347,7 @@ int system_GetTheta(lua_State* ls)
 // .GetDistance(x, y, x2, y2) - Returns distance between (x,y) and (x2,y2)
 int system_GetDistance(lua_State* ls)
 {
-	PRINT("system_GetDistance");
+	DEBUGOUT("system_GetDistance");
 	luaCountArgs(ls, 4);
 
 	double distance = getDistance( point2d((sShort)lua_tonumber(ls, 1), (sShort)lua_tonumber(ls, 2)),
@@ -360,7 +360,7 @@ int system_GetDistance(lua_State* ls)
 // x, y = .OffsetByTheta(x, y, theta, distance) - Returns a new point, offset from the original
 int system_OffsetByTheta(lua_State* ls)
 {
-	PRINT("system_OffsetByTheta");
+	DEBUGOUT("system_OffsetByTheta");
 	luaCountArgs(ls, 4);
 
 	double theta = lua_tonumber(ls, 3);
@@ -375,7 +375,7 @@ int system_OffsetByTheta(lua_State* ls)
 // .StringToNumber("string") - Hash the string into an integer, usable as a random number seed
 int system_StringToNumber(lua_State* ls)
 {
-	PRINT("system_StringToNumber");
+	DEBUGOUT("system_StringToNumber");
 	luaCountArgs(ls, 1);
 
 	if (!lua_isstring(ls, 1))
@@ -396,7 +396,7 @@ int system_StringToNumber(lua_State* ls)
 //	.GenerateFilename("key") - Returns a random named cache file, generated from the key value
 int system_GenerateFilename(lua_State* ls)
 {
-	PRINT("system_GenerateFilename");
+	DEBUGOUT("system_GenerateFilename");
 	luaCountArgs(ls, 1);
 
 	string key = lua_tostring(ls, 1);
@@ -411,7 +411,7 @@ int system_GenerateFilename(lua_State* ls)
 //	bool = .Encrypt("file") - Encrypts the file WORKING_DIR/file
 int system_Encrypt(lua_State* ls)
 {
-	PRINT("system_Encrypt");
+	DEBUGOUT("system_Encrypt");
 	luaCountArgs(ls, 1);
 
 	string file = game->mMap->mWorkingDir + lua_tostring(ls, 1);
@@ -427,7 +427,7 @@ int system_Encrypt(lua_State* ls)
 //	bool = .Decrypt("file") - Decrypts the file WORKING_DIR/file
 int system_Decrypt(lua_State* ls)
 {
-	PRINT("system_Decrypt");
+	DEBUGOUT("system_Decrypt");
 	luaCountArgs(ls, 1);
 
 	string file = game->mMap->mWorkingDir + lua_tostring(ls, 1);

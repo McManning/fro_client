@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -72,7 +72,7 @@ Entity* _getReferencedEntity(lua_State* ls, int index = 1)
 // This is preferred over the checking-for-valid-entity-every-time-it's-accessed approach due to it being MUCH faster.
 int entity_Exists(lua_State* ls)
 {
-	PRINT("entity_Exists");
+	DEBUGOUT("entity_Exists");
 	luaCountArgs(ls, 1);
 
 	Entity* e = (Entity*)lua_touserdata(ls, 1);
@@ -90,7 +90,7 @@ int entity_Exists(lua_State* ls)
 // .FindById("id") returns cptr to entity, nil if it doesn't exist.
 int entity_FindById(lua_State* ls)
 {
-	PRINT("entity_FindById");
+	DEBUGOUT("entity_FindById");
 	luaCountArgs(ls, 1);
 
 	ASSERT(game->mMap);
@@ -108,7 +108,7 @@ int entity_FindById(lua_State* ls)
 // If the second parameter is supplied, it's a bool indicating whether to use wildcard matching or not
 int entity_FindAllById(lua_State* ls)
 {
-	PRINT("entity_FindAllById");
+	DEBUGOUT("entity_FindAllById");
 	luaCountArgs(ls, 1);
 
 	ASSERT(game->mMap);
@@ -147,7 +147,7 @@ int entity_FindAllById(lua_State* ls)
 // .FindByName("name") returns cptr to entity, nil if it doesn't exist.
 int entity_FindByName(lua_State* ls)
 {
-	PRINT("entity_FindByName");
+	DEBUGOUT("entity_FindByName");
 	luaCountArgs(ls, 1);
 
 	ASSERT(game->mMap);
@@ -165,7 +165,7 @@ int entity_FindByName(lua_State* ls)
 // If the second parameter is supplied, it's a bool indicating whether to use wildcard matching or not
 int entity_FindAllByName(lua_State* ls)
 {
-	PRINT("entity_FindAllByName");
+	DEBUGOUT("entity_FindAllByName");
 	luaCountArgs(ls, 1);
 
 	ASSERT(game->mMap);
@@ -204,7 +204,7 @@ int entity_FindAllByName(lua_State* ls)
 // x, y = .GetPosition(entity)
 int entity_GetPosition(lua_State* ls)
 {
-	PRINT("entity_GetPosition");
+	DEBUGOUT("entity_GetPosition");
 	luaCountArgs(ls, 1);
 
 	Entity* e = _getReferencedEntity(ls);
@@ -219,7 +219,7 @@ int entity_GetPosition(lua_State* ls)
 // .SetPosition(entity, x, y)
 int entity_SetPosition(lua_State* ls)
 {
-	PRINT("entity_SetPosition");
+	DEBUGOUT("entity_SetPosition");
 	luaCountArgs(ls, 3);
 
 	Entity* e = _getReferencedEntity(ls);
@@ -257,7 +257,7 @@ int entity_SetOrigin(lua_State* ls)
 // x, y, w, h = .GetRect(entity) - Where x, y are coordinates of the top left our our avatar on the map. w, h are avatar dimensions.
 int entity_GetRect(lua_State* ls)
 {
-	PRINT("entity_GetRect");
+	DEBUGOUT("entity_GetRect");
 	luaCountArgs(ls, 1);
 
 	Entity* e = _getReferencedEntity(ls);
@@ -274,7 +274,7 @@ int entity_GetRect(lua_State* ls)
 // .GetProp(entity, "property") returns a cptr, number, or string based on the property we're retrieving
 int entity_GetProp(lua_State* ls)
 {
-	PRINT("entity_GetProp");
+	DEBUGOUT("entity_GetProp");
 	luaCountArgs(ls, 2);
 
 	Entity* e = _getReferencedEntity(ls);
@@ -292,7 +292,7 @@ int entity_GetProp(lua_State* ls)
 // .SetProp(entity, "property", value) Sets the property to the specified value. Value can be num, string, ptr, depends on the property.
 int entity_SetProp(lua_State* ls)
 {
-	PRINT("entity_SetProp");
+	DEBUGOUT("entity_SetProp");
 	luaCountArgs(ls, 3);
 
 	Entity* e = _getReferencedEntity(ls);
@@ -312,7 +312,7 @@ int entity_SetProp(lua_State* ls)
 // ALSO ALSO, can do .IsTouching(ent, x, y) for a point test!
 int entity_IsTouching(lua_State* ls)
 {
-	PRINT("entity_IsTouching");
+	DEBUGOUT("entity_IsTouching");
 	luaCountArgs(ls, 2);
 	int numArgs = lua_gettop(ls);
 
@@ -338,7 +338,7 @@ int entity_IsTouching(lua_State* ls)
 // .GetDistance(ent, ent) - Returns distance between GetPosition() points of both entities. Error if either entity is invalid.
 int entity_GetDistance(lua_State* ls)
 {
-	PRINT("entity_GetDistance");
+	DEBUGOUT("entity_GetDistance");
 	luaCountArgs(ls, 2);
 
 	Entity* e = _getReferencedEntity(ls);
@@ -352,7 +352,7 @@ int entity_GetDistance(lua_State* ls)
 // .Say(entity, "msg", showbubble<true>, showinchat<true>) - Say the message. Last two parameters are optional, and default to 1.
 int entity_Say(lua_State* ls)
 {
-	PRINT("entity_Say");
+	DEBUGOUT("entity_Say");
 	luaCountArgs(ls, 2);
 
 	Entity* e = _getReferencedEntity(ls);
@@ -406,7 +406,7 @@ int entity_Remove(lua_State* ls)
 //	.RemoveAllById("id") - Removes all entities with the specified ID. Returns true if at least one was removed, false otherwise
 int entity_RemoveAllById(lua_State* ls)
 {
-	PRINT("entity_Remove");
+	DEBUGOUT("entity_Remove");
 	luaCountArgs(ls, 1);
 
 	string id = lua_tostring(ls, 1);
@@ -837,7 +837,7 @@ int entity_Add(lua_State* ls)
 //	.SetImage(entity, {...});
 int entity_SetImage(lua_State* ls)
 {
-	PRINT("entity_SetImage");
+	DEBUGOUT("entity_SetImage");
 	luaCountArgs(ls, 2);
 
 	Entity* e = _getReferencedEntity(ls);
@@ -851,7 +851,7 @@ int entity_SetImage(lua_State* ls)
 //	.SetAvatar(entity, {...});
 int entity_SetAvatar(lua_State* ls)
 {
-	PRINT("entity_SetAvatar");
+	DEBUGOUT("entity_SetAvatar");
 	luaCountArgs(ls, 2);
 
 	Entity* e = _getReferencedEntity(ls);

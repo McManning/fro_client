@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -46,7 +46,7 @@ void TimerManager::FlushTimers()
 		t = mTimers.at(i);
 		if (t)
 		{
-			PRINT("Flush: " + t->id + " " + pts(t) + " UserData: " + pts(t->userData));
+			DEBUGOUT("Flush: " + t->id + " " + pts(t) + " UserData: " + pts(t->userData));
 			if (t->onDestroy)
 				t->onDestroy(t);
 
@@ -78,7 +78,7 @@ void TimerManager::Process(uLong ms)
 			i--;
 		}
 	}
-	
+
 /*	if (mResortTimers)
 	{
 		mResortTimers = false;
@@ -107,9 +107,9 @@ timer* TimerManager::Add(string id, uLong interval, bool runImmediately,
 	return t;
 }
 
-timer* TimerManager::AddProcess(string id, 
-							uShort (*onActivate)(timer*, uLong), 
-							void (*onDestroy)(timer*), 
+timer* TimerManager::AddProcess(string id,
+							uShort (*onActivate)(timer*, uLong),
+							void (*onDestroy)(timer*),
 							void* userData)
 {
 	timer* t = new timer();
@@ -125,7 +125,7 @@ timer* TimerManager::AddProcess(string id,
 	mTimers.push_back(t);
 	mResortTimers = true;
 	return t;
-}	
+}
 
 bool TimerManager::Remove(string id, void* userData)
 {
@@ -167,7 +167,7 @@ bool TimerManager::RemoveByHandle(uLong handle)
 	{
 		for (int i = 0; i < mTimers.size(); i++)
 		{
-			if ( mTimers.at(i) && mTimers.at(i)->handle == handle ) 
+			if ( mTimers.at(i) && mTimers.at(i)->handle == handle )
 			{
 				_delete(i);
 				return true;
@@ -206,11 +206,11 @@ uShort TimerManager::_doTimer(uLong ms, timer* t)
 
 		return TIMER_DESTROY;
 	}
-	
+
 	//make sure the timer was never given an invalid interval
 	if (t->interval < 1)
 		t->interval = 1;
-	
+
 	if (t->lastMs == 0) //If this timer was just created, make sure it waits the interval time before activation
 	{
 		t->lastMs = ms;
@@ -221,7 +221,7 @@ uShort TimerManager::_doTimer(uLong ms, timer* t)
 		int lastInterval = t->interval;
 		while (ms >= t->lastMs + t->interval)
 		{
-			//PRINT("Timer " + t->id + " (Interval: " + its(t->interval) + ") Running. Count: " + its(counter));
+			//DEBUGOUT("Timer " + t->id + " (Interval: " + its(t->interval) + ") Running. Count: " + its(counter));
 			counter++;
 			t->lastMs += t->interval;
 			t->runCount++;
@@ -231,7 +231,7 @@ uShort TimerManager::_doTimer(uLong ms, timer* t)
 				return TIMER_DESTROY;
 			else if (t->onActivate(t, t->lastMs) == TIMER_DESTROY)
 				return TIMER_DESTROY;
-				
+
 			//if the timer had it's interval changed during onActivate, make sure it's still valid
 			if (t->interval < 1)
 			{
@@ -239,8 +239,8 @@ uShort TimerManager::_doTimer(uLong ms, timer* t)
 				return TIMER_CONTINUE;
 			}
 		}
-		
-		// timer changed itself, trigger a resort. 
+
+		// timer changed itself, trigger a resort.
 		if (t->interval != lastInterval)
 			mResortTimers = true;
 	}
@@ -256,7 +256,7 @@ void TimerManager::_delete(uShort index)
 		mTimers.at(index)->onDestroy( mTimers.at(index) );
 
 	SAFEDELETE(mTimers.at(index));
-	
+
 	mResortTimers = true;
 }
 
@@ -294,7 +294,7 @@ timer* TimerManager::Find(string id, void* userData)
 	for (int i = 0; i < mTimers.size(); i++)
 	{
 		if ( mTimers.at(i) != NULL &&
-			mTimers.at(i)->id == id && 
+			mTimers.at(i)->id == id &&
 			mTimers.at(i)->userData == userData)
 		{
 			return mTimers.at(i);

@@ -28,6 +28,7 @@
 #include "core/widgets/Checkbox.h"
 #include "core/widgets/Frame.h"
 #include "core/io/FileIO.h"
+#include "core/Logger.h"
 //#include "objecteditor/ObjectEditor.h"
 //#include "mapeditor/MapEditorDialog.h"
 
@@ -44,14 +45,10 @@ void checkLastRun()
 
 	if (fileExists("logs/marker"))
 	{
-		f = fopen("logs/error.log", "a");
-		if (f)
-		{
-			fprintf(f, "[%s] MARKER\n", timestamp(true).c_str());
-			fclose(f);
-		}
-		if (getFilesize("logs/out.log") > 0)
-			copyFile("logs/out.log", "logs/crashlog_" + timestamp(true) + ".log");
+	    logger.WriteError("Marker found");
+
+		if (getFilesize("logs/info.log") > 0)
+			copyFile("logs/info.log", "logs/crashlog_" + timestamp(true) + ".log");
 	}
 	else
 	{
@@ -65,18 +62,17 @@ int main (int argc, char *argv[])
 {
 	buildDirectoryTree("logs/");
 
-#ifdef DEBUG
-	freopen("logs/dbgout.log", "w", stdout);
-#else
-	freopen("logs/out.log", "w", stdout);
-#endif
-	removeFile("logs/time_profile.log");
+	//freopen("logs/info.log", "w", stdout);
 
-	checkLastRun();
+	removeFile("logs/time_profile.log");
 
 	appState = APPSTATE_STARTING;
 
-	printf("[main] Starting app at %s.\n", timestamp(true).c_str());
+	if (!logger.Start())
+        return 0;
+
+	checkLastRun();
+
 	try
 	{
 		Uint32 screenFlags = SDL_SWSURFACE | SDL_DOUBLEBUF;
@@ -85,7 +81,7 @@ int main (int argc, char *argv[])
 		new GuiManager();
 
 #ifndef GUI_ONLY
-		PRINT("Booting up GM");
+		DEBUGOUT("Booting up GM");
 		new GameManager();
 #else
 		new Checkbox(gui, "", rect(20, 20), "OMFG CHECKBOX", 0);
@@ -97,23 +93,23 @@ int main (int argc, char *argv[])
     }
     catch (std::exception& e)
 	{
-		printf("[main] Std Exception: %s\n", e.what());
+		logger.Write("[main] Std Exception: %s\n", e.what());
 		systemErrorMessage("Std Exception", e.what());
     }
 	catch (exception e)
 	{
-		printf("[main] Exception: [%s] Code %i . %i\n", e.file, e.line, e.code);
+		logger.Write("[main] Exception: [%s] Code %i . %i\n", e.file, e.line, e.code);
 		systemErrorMessage("Exception", "[" + string(e.file) + "] Code " + its(e.line) + "." + its(e.code)
 							+ "\n\nREPORT THIS IMMEDIATELY!");
 	}
 	catch (const char* e)
 	{
-		printf("[main] Const Exception: %s\n", e);
+		logger.Write("[main] Const Exception: %s\n", e);
 		systemErrorMessage("Const Exception ", string(e) + "\n\nREPORT THIS IMMEDIATELY!");
 	}
     catch (...)
 	{
-		printf("[main] Unknown Exception\n");
+		logger.Write("[main] Unknown Exception\n");
 		systemErrorMessage("Exception", "Unknown Error\n\nREPORT THIS IMMEDIATELY!");
 	}
 
@@ -123,7 +119,7 @@ int main (int argc, char *argv[])
 	// Avoid reporting that the shutdown was a failure
 	removeFile("logs/marker");
 
-	printf("[main] Closing app at %s, have a nice day.\n", timestamp(true).c_str());
+    logger.Close();
 
 	return 0;
 }

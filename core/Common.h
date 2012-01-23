@@ -84,31 +84,22 @@ struct exception //Structure for a basic exception error
 #	define DEBUG
 #endif
 
-//Uncomment to use the (unfinished) render optimization system
-//#define OPTIMIZED
-
-#define WARNING(msg) ( warning(__FILE__, __LINE__, msg) )
-#define THROW ( throwError(__FILE__, __LINE__, 0) )
-#define FATAL(msg) ( fatal(__FILE__, __LINE__, msg) )
-#define THROWNUM(num) ( throwError(__FILE__, __LINE__, num) )
-#define ASSERT(val) if (!(val)) { fatal(__FILE__, __LINE__, "Assertion Failed (" + string(#val) + ")"); }
+#define WARNING(msg) ( _warning(__FILE__, __LINE__, msg) )
+#define FATAL(msg) ( _fatal(__FILE__, __LINE__, msg) )
+#define ASSERT(val) if (!(val)) { _fatal(__FILE__, __LINE__, "Assertion Failed (" + string(#val) + ")"); }
 
 #ifdef DEBUG
-#	define PRINT(msg) ( print(msg) )
-#	define DEBUGOUT(msg) ( console->AddMessage(string("DBG:") + msg) )
-#	define PRINTF printf
+#	define DEBUGOUT(msg) ( logger.Write(msg) )
+#	define PRINTF logger.Write
 
 #else
-#	define PRINT
 #	define DEBUGOUT
 #	define PRINTF
 
 #endif
 
-void throwError(const char* file = NULL, int line = 0, int num = 0);
-void warning(const char* file, int line, string msg);
-void fatal(const char* file, int line, string msg);
-void print(string msg);
+void _warning(const char* file, int line, string msg);
+void _fatal(const char* file, int line, string msg);
 
 //void* newMemory(const char* file, int line, int size, const char* id);
 //void deleteMemory(const char* file, int line, void* data, const char* id);

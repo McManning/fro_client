@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -38,6 +38,7 @@
 #include "net/DownloadManager.h"
 #include "MessageManager.h"
 #include "io/FileIO.h"
+#include "Logger.h"
 
 GuiManager* gui;
 
@@ -55,7 +56,7 @@ uShort timer_killGuiAlert(timer* t, uLong ms)
 
 void callback_ToggleMessengerDebug(Console* c, string s)
 {
-	messenger.mDebugMode = !messenger.mDebugMode;	
+	messenger.mDebugMode = !messenger.mDebugMode;
 }
 
 GuiManager::GuiManager()
@@ -66,11 +67,10 @@ GuiManager::GuiManager()
 	mPendingScreenshot = false;
 	mCustomCursorSourceY = 0;
 
-	PRINT("--------------------------------------------------");
-	PRINT("-Begin Gui Initialization-------------------------\n  *\n *\n*\n");
-	
+	logger.Write("Starting GuiManager");
+
 	Image* scr = Screen::Instance(); //Start up SDL before anything else
-	
+
 //SDL Settings
 	SDL_EnableUNICODE(SDL_ENABLE); //TODO: unicode has an overhead, however it handles shift/capslock so keep till I write in a fix.. or actually USE unicode
 	SDL_ShowCursor(SDL_DISABLE); //We have our own cursor
@@ -79,44 +79,44 @@ GuiManager::GuiManager()
 	SetAppTitle(mAppTitle);
 
 //ResourceManager
-	PRINT("Loading ResMan");
+	logger.Write("Starting ResourceManager");
 	resman = new ResourceManager();
-	
+
 //TimerManager
-	PRINT("Loading TimerMan");
+	logger.Write("Starting TimerManager");
 	timers = new TimerManager();
 	timers->Add("GuiSec", 1000, true, timer_GuiThinkInSeconds);
-	
+
 //FontManager
-	PRINT("Loading FontMan");
+	logger.Write("Starting FontManager");
 	fonts = new FontManager();
 	if (!fonts->Initialize())
 		FATAL("FontMan Init Fail");
 
 //SoundManager
 #ifdef _SOUNDMANAGER_H_
-	PRINT("Loading SoundMan");
+	logger.Write("Starting SoundManager");
 	sound = new SoundManager();
 	if (!sound->Initialize())
 		WARNING("Failed to Initialize Sound Manager");
-		
+
 	sound->SetVolume( config.GetParamInt("sound", "volume") );
 
 	sound->Load("blip", "assets/sfx/chat.wav");
 #endif
 
 //DownloadManager
-	PRINT("Loading DlMan");
+	logger.Write("Starting DownloadManager");
 	downloader = new DownloadManager();
 	if (!downloader->Initialize(5))
-		FATAL("DlMan Init Fail");
+		FATAL("DownloadManager could not start");
 
 //Configurations/Settings
 
 	PrecacheColorizedAssets();
 
-	hasMouseFocus 
-		= hasKeyFocus 
+	hasMouseFocus
+		= hasKeyFocus
 		= previousMouseFocus = NULL;
 	mNoFpsLimit = false;
 	mUseLowCpu = true;
@@ -132,16 +132,14 @@ GuiManager::GuiManager()
 	mFont = fonts->Get();
 	mAppInputFocus = true;
 	mSystemAlertType = 1;
-	
+
 	mDarkOverlay = resman->NewImage(scr->Width(), scr->Height(), color(255,255,255), true);
 	mDarkOverlay->DrawRect(mDarkOverlay->GetClip(), color(0,0,0,200));
 
 //Consoles
-	PRINT("Loading Console");
+	logger.Write("Loading Console");
 	console = new Console("console", "Console @ Build " + string(VER_STRING), "log_", color(85,90,100), false, true, true);
 	console->mShowTimestamps = true;
-	
-	PRINT("Configuring Console");
 
 	console->SetSize(SCREEN_WIDTH - 160, SCREEN_HEIGHT - 120);
 	console->Center();
@@ -150,29 +148,26 @@ GuiManager::GuiManager()
 
 	//console->mBackgroundColor = color(0,0,0,50);
 	console->ResizeChildren();
-	
+
 	Add(console);
 	console->SetVisible(false);
 
 // Gui Stuff
     mHoverTextHintBalloon = new HintBalloon(this);
-    
+
     mStatsLabel = new Label(this, "", rect(5, Height() - 20), "");
 		mStatsLabel->mFont = fonts->Get("", 0, TTF_STYLE_BOLD);
-	
-	PRINT("GuiManager Finished");
 }
 
 GuiManager::~GuiManager()
 {
-	PRINT("--------------------------------------------------");
-	PRINT("-Begin Gui Shutdown-------------------------------\n  *\n *\n*\n");
+    logger.Write("Shutting down GuiManager");
 
 	mGlobalEventHandlers.clear();
 	_cleanDeletionStack();
 
-	PRINT("Burning Widget Tree");
-	
+	logger.Write("Burning down the great widget tree");
+
 	//Delete all children widgets before deleting any managers they may require
 	for (uShort i = 0;  i < mChildren.size(); i++)
 	{
@@ -180,44 +175,33 @@ GuiManager::~GuiManager()
 		SAFEDELETE(mChildren.at(i));
 	}
 	mChildren.clear();
-	
+
 	mHoverTextHintBalloon = NULL;
 
 	resman->Unload(mCursorImage);
-	
-	UnloadColorizedAssets();
 
-	PRINT("Flushing Timers");
+	UnloadColorizedAssets();
 
 	/*	Erase all timers before we start deleting classes that may
 		need to be accessed during timer deletion
 	*/
 	timers->FlushTimers();
-	
-	PRINT("Deleting DlMan");
+
 	SAFEDELETE(downloader);
-	
+
 #ifdef _SOUNDMANAGER_H_
-	PRINT("Deleting Sound");
 	SAFEDELETE(sound);
 #endif
 
-	PRINT("Deleting FontMan");
 	SAFEDELETE(fonts);
-	
-	PRINT("Deleting TimerMan");
 	SAFEDELETE(timers);
-	
-	PRINT("Deleting ResMan");
 	SAFEDELETE(resman);
 
-	PRINT("Destroying Screen");
 	Screen::Destroy();
-	
-	PRINT("Closing SDL");
+
 	SDL_Quit(); //must be the last call after all SDL-related calls
-	
-	PRINT("Gui Shutdown Complete");
+
+	logger.Write("GuiManager is closed for business");
 }
 
 //Perform recursive search for children that have the coords in their rect
@@ -275,7 +259,7 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		case SDL_MOUSEBUTTONDOWN:
 		{
 			SetHasMouseFocus(GrabWidgetUnderXY(this, event->button.x, event->button.y));
-			
+
 			if (hasMouseFocus)
 			{
 				if (hasMouseFocus->IsActive())
@@ -308,7 +292,7 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 				//If the gui system has key focus, null it out. (guiManager doesn't need it)
 				if (hasKeyFocus == this)
 					hasKeyFocus = NULL;
-				
+
 			} //TODO: Should globals handle this as an else case?
 		} break;
 		case SDL_MOUSEBUTTONUP:
@@ -316,7 +300,7 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 			SetHasMouseFocus(GrabWidgetUnderXY(this, event->button.x, event->button.y));
 			//if (hasMouseFocus) hasMouseFocus->Event(event);
 			//if (previousMouseFocus) previousMouseFocus->Event(event);
-			
+
 			if (hasKeyFocus)
 				hasKeyFocus->Event(event);
 			_sendToGlobalEventHandlers(event, hasKeyFocus);
@@ -324,20 +308,20 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 		case SDL_MOUSEMOTION:
 		{
 			SetMousePosition(event->motion.x, event->motion.y);
-		
+
             SetHasMouseFocus(GrabWidgetUnderXY(this, event->motion.x, event->motion.y));
 
-			if (hasMouseFocus) 
+			if (hasMouseFocus)
                 hasMouseFocus->Event(event);
-			
-			if (previousMouseFocus && previousMouseFocus != hasMouseFocus) 
+
+			if (previousMouseFocus && previousMouseFocus != hasMouseFocus)
                 previousMouseFocus->Event(event);
-			
+
 			//DEBUGOUT("Has: " + ((hasMouseFocus) ? hasMouseFocus->mId : string("NULL")));
 			//DEBUGOUT("Prev: " + ((previousMouseFocus) ? previousMouseFocus->mId : string("NULL")));
-			
+
 			//Don't want either hasMouseFocus or previousMouseFocus to be sent the event, globally,
-			// else it'll double-send. 
+			// else it'll double-send.
 			_sendToGlobalEventHandlers(event, hasMouseFocus, previousMouseFocus);
 
 		} break;
@@ -351,17 +335,17 @@ void GuiManager::_distributeEvent(SDL_Event* event)
 void GuiManager::_updateStatsLabel()
 {
 	string s;
-	
+
 	if (mStatsLabel->IsVisible())
 	{
 		s += "\\c550 [DL " + its(downloader->mQueued.size()); // Count of queued files to download
 		s += ">" + its(downloader->CountActiveDownloads()); // Count of active downloads
 		s += ">" + its(downloader->mCompleted.size()) + "] "; // Count of completed files
-		
+
 		s += " [FPS:" + its(mFps); //frames rendered per second
 		s += " BPS:" + its(mBps); //heartbeats a second
 		s += " rMS:" + its(mRenderTime) + "]"; //time it took to render last frame
-	
+
 		mStatsLabel->SetCaption(s);
 	}
 }
@@ -369,7 +353,7 @@ void GuiManager::_updateStatsLabel()
 void GuiManager::_renderCursor(Image* scr)
 {
 	rect r = GetMouseRect();
-	
+
 	//If the cursor is over an input widget, render a caret version
 	if (hasMouseFocus && hasMouseFocus->mType == WIDGET_INPUT)
 	{
@@ -404,17 +388,17 @@ rect GuiManager::GetMouseRect()
 
 void GuiManager::Render()
 {
-//	PRINT("GuiMan::Render");
+//	DEBUGOUT("GuiMan::Render");
 	uLong ms;
 	string text;
-	
+
 	rect r;
 	uLong renderStart = SDL_GetTicks(); //keep track of how long this render takes
 	Screen* scr = Screen::Instance();
 
 	scr->PreRender();
-	
-	if (scr->mOptimizationMethod == Screen::NO_OPTIMIZATION 
+
+	if (scr->mOptimizationMethod == Screen::NO_OPTIMIZATION
 		|| g_RectMan.m_RectSet != NULL)
 	{
 		//Render widget tree
@@ -423,8 +407,8 @@ void GuiManager::Render()
 		if (SDL_GetAppState() & SDL_APPMOUSEFOCUS)
 		{
 			_renderCursor(scr);
-		}	
-	
+		}
+
 		scr->PostRender();
 	}
 
@@ -434,16 +418,16 @@ void GuiManager::Render()
 	mRenderTime = ms - renderStart;
 
 	_getNextRenderTick(ms);
-	
+
 	mFrameCounter++;
 
-//	PRINT("Done");
+//	DEBUGOUT("Done");
 }
 
 void GuiManager::RenderDarkOverlay()
 {
 	Screen* scr = Screen::Instance();
-	
+
 	if (mDarkOverlay)
 		mDarkOverlay->Render(scr, 0, 0);
 }
@@ -479,9 +463,9 @@ bool GuiManager::IsMouseButtonDown(byte button, int* x, int* y) const
 void GuiManager::SetMousePosition(int x, int y)
 {
 	g_screen->AddRect(GetMouseRect()); // Store old rect
-	
+
 	mLastMousePosition = mMousePosition;
-	
+
 //	SDL_WarpMouse(x, y);
 
 	mMousePosition.x = x;
@@ -490,15 +474,15 @@ void GuiManager::SetMousePosition(int x, int y)
 	g_screen->AddRect(GetMouseRect()); // Store new rect
 }
 
-void GuiManager::AddGlobalEventHandler(Widget* w) 
-{ 
-	mGlobalEventHandlers.push_back(w); 
+void GuiManager::AddGlobalEventHandler(Widget* w)
+{
+	mGlobalEventHandlers.push_back(w);
 }
 
 void GuiManager::RemoveGlobalEventHandler(Widget* w)
 {
-//	PRINT("Gui::RemoveGlobalEventHandler: " + w->mId);
-	
+//	DEBUGOUT("Gui::RemoveGlobalEventHandler: " + w->mId);
+
 	//Null them instead of deleting, in case we're iterating the list elsewhere
 	for (int i = 0; i < mGlobalEventHandlers.size(); ++i)
 	{
@@ -509,7 +493,7 @@ void GuiManager::RemoveGlobalEventHandler(Widget* w)
 
 void GuiManager::_sendToGlobalEventHandlers(SDL_Event* event, Widget* excludingA, Widget* excludingB)
 {
-//	PRINT("Gui::_sendToGlobalEventHandlers");
+//	DEBUGOUT("Gui::_sendToGlobalEventHandlers");
 
 	for (int i = 0; i < mGlobalEventHandlers.size(); ++i)
 	{
@@ -558,7 +542,7 @@ void GuiManager::DereferenceWidget(Widget* w)
 
 	RemoveGlobalEventHandler(w);
 	RemoveFromDemandFocusStack(w);
-	
+
 	if (timers)
 		timers->RemoveMatchingUserData(w);
 }
@@ -567,7 +551,7 @@ Widget* GuiManager::GetDemandsFocus() const
 {
 	if (mDemandFocusStack.empty())
 		return NULL;
-	
+
 	return mDemandFocusStack.at(mDemandFocusStack.size() - 1);
 }
 
@@ -584,13 +568,13 @@ void GuiManager::RemoveFromDemandFocusStack(Widget* w)
 }
 
 /**
-	Called during SDL_MOUSEMOTION, SDL_MOUSEBUTTONDOWN/UP events and DereferenceWidget() 
+	Called during SDL_MOUSEMOTION, SDL_MOUSEBUTTONDOWN/UP events and DereferenceWidget()
 */
 void GuiManager::SetHasMouseFocus(Widget* w)
 {
 	previousMouseFocus = hasMouseFocus;
 	hasMouseFocus = w;
-	
+
 	// update hint balloon for widget hover text
     if (mHoverTextHintBalloon)
 	{
@@ -598,8 +582,8 @@ void GuiManager::SetHasMouseFocus(Widget* w)
         {
             mHoverTextHintBalloon->SetCaption(w->mHoverText);
             mHoverTextHintBalloon->SetVisible(true);
-            
-            
+
+
             rect r = mHoverTextHintBalloon->GetPosition();
             r.x = GetMouseX();
             r.y = GetMouseY() - r.h;
@@ -644,7 +628,7 @@ void GuiManager::ThinkInSeconds(uLong ms)
 void GuiManager::SetAppTitle(string caption)
 {
 	mAppTitle = caption;
-	
+
 	// TODO: fps/bps is temp for testing purposes!
 /*	string s = mAppTitle;
 
@@ -656,7 +640,7 @@ void GuiManager::SetAppTitle(string caption)
 	   s += ">" + its(downloader->CountActiveDownloads()); // Count of active downloads
 	   s += ">" + its(downloader->mCompleted.size()) + "] "; // Count of completed files
     }
-    
+
 	s += " [FPS:" + its(mFps); //frames rendered per second
 	s += " BPS:" + its(mBps); //heartbeats a second
 	s += " rMS:" + its(mRenderTime) + "]"; //time it took to render last frame
@@ -677,7 +661,7 @@ void GuiManager::Process()
 		mPendingScreenshot = false;
 		string s = "saved/ss_" + timestamp(true) + ".png";
 		buildDirectoryTree(s);
-	
+
 		IMG_SavePNG(s.c_str(), Screen::Instance()->Surface());
 	}
 
@@ -693,7 +677,7 @@ void GuiManager::Process()
 			    r.w = event.resize.w;
 				r.h = event.resize.h;
 				Screen::Instance()->Resize(event.resize.w, event.resize.h);
-				
+
 				SetPosition(r);
 				//_sendToGlobalEventHandlers(&event, NULL);
 				break;
@@ -711,22 +695,22 @@ void GuiManager::Process()
 						flashWindowState(false);
 						mInputFlashStateOn = false;
 					}
-					/* HACK: 
+					/* HACK:
 						http://bugzilla.libsdl.org/show_bug.cgi?id=659
 						SDL does not like alt+tab on Windows, it sticks the alt modifier.
-					*/ 
+					*/
 					SDL_SetModState(KMOD_NONE);
-				}				
+				}
 				break;
 			default:
 				_distributeEvent(&event);
 				break;
 		}
-		
+
 		// A little sanity checking (TODO: A better placement)
 		if (hasKeyFocus && !hasKeyFocus->IsVisible())
 			hasKeyFocus = NULL;
-		
+
 		if (hasMouseFocus && !hasMouseFocus->IsVisible())
 			hasMouseFocus = NULL;
 	}
@@ -741,10 +725,10 @@ void GuiManager::Process()
 	//make sure focused window is always on top the other
 	if (GetDemandsFocus())
 		GetDemandsFocus()->MoveToTop();
-		
+
 	if (mStatsLabel->IsVisible())
 		mStatsLabel->MoveToTop();
-		
+
 	// Has absolute topmost priority (other than the mouse)
     if (mHoverTextHintBalloon->IsVisible())
         mHoverTextHintBalloon->MoveToTop();
@@ -752,8 +736,7 @@ void GuiManager::Process()
 
 void GuiManager::MainLoop()
 {
-	PRINT("--------------------------------------------------");
-	PRINT("-Begin Main Loop----------------------------------\n  *\n *\n*\n");
+    logger.Write("Starting GuiManager heartbeat");
 
 	while (!isAppClosing())
 	{
@@ -780,10 +763,10 @@ void GuiManager::Screenshot()
 	mPendingScreenshot = true;
 	mNextRenderTick = 0; // force a redraw asap
 	FlagRender();
-	
+
 /*	string s = "saved/ss_" + timestamp(true) + ".png";
 	buildDirectoryTree(s);
-	
+
 	IMG_SavePNG(s.c_str(), Screen::Instance()->Surface());
 
 	SetAlert("\\c090* Screenshot saved to \\c239" + s);
@@ -793,15 +776,15 @@ void GuiManager::Screenshot()
 void GuiManager::SetAlert(string msg)
 {
 	mAlert = msg;
-	
+
 	console->AddMessage(msg);
-	
+
 	timers->Remove("KillGuiAlert");
 	timers->Add("KillGuiAlert", GUI_ALERT_DISPLAY_MS, false, timer_killGuiAlert);
 }
 
 
-const char* const COLORIZED_ASSETS[] = 
+const char* const COLORIZED_ASSETS[] =
 {
 	"assets/gui/console/input.png",
 	"assets/gui/console/bg.png",
@@ -829,7 +812,7 @@ void GuiManager::PrecacheColorizedAssets()
 		{
 			WARNING("Could not precache " + string(COLORIZED_ASSETS[i]));
 		}
-		
+
 		++i;
 	}
 }
@@ -847,15 +830,15 @@ void GuiManager::UnloadColorizedAssets()
 				break;
 			}
 		}
-		
+
 		++i;
-	}	
+	}
 }
 
 void GuiManager::ColorizeGui(color c)
 {
 	mBaseColor = c;
-	
+
 	// Reload and colorize all colorizeable "assets and globals used by the GUI
 	int i = 0, d, fs, f;
 	SDL_Image* img;
@@ -864,12 +847,12 @@ void GuiManager::ColorizeGui(color c)
 		for (d = 0; d < resman->mImages.size(); ++d)
 		{
 			img = resman->mImages.at(d);
-			
+
 			if (img->filename == COLORIZED_ASSETS[i])
 			{
 				DEBUGOUT("Reloading " + img->filename);
 				resman->ReloadFromDisk(img);
-				
+
 				// colorize all subsurfaces
 				for (fs = 0; fs < img->framesets.size(); ++fs)
 				{
@@ -880,7 +863,7 @@ void GuiManager::ColorizeGui(color c)
 				}
 			}
 		}
-		
+
 		++i;
 	}
 }

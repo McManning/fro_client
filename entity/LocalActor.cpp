@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -56,7 +56,7 @@ LocalActor::LocalActor()
 	mCanChangeAvatar = true;
 	mIsLocked = false;
 	mActionBufferSendDelayMs = DEFAULT_ACTION_BUFFER_SEND_DELAY;
-	
+
 	mActionBufferTimer = timers->Add("actsend", mActionBufferSendDelayMs, false,
 									timer_playerActionBufferSend,
 									NULL,
@@ -85,7 +85,7 @@ LocalActor::~LocalActor()
 }
 
 bool LocalActor::ProcessMovement()
-{	
+{
 	_checkInput();
 
 	bool result = Actor::ProcessMovement();
@@ -107,27 +107,27 @@ void LocalActor::_checkInput()
 
 	if (!IsMoving() && mNeedsToSendBuffer)
 	{
-		mNeedsToSendBuffer = false;	
+		mNeedsToSendBuffer = false;
 
 		if (!mOutputActionBuffer.empty())
 		{
 			netSendActionBuffer();
-					
+
 			mLastSavedPosition.x = mDestination.x;
 			mLastSavedPosition.y = mDestination.y;
-		
+
 			mOutputActionBuffer.clear();
-		
+
 			//So we don't prematurely send again after a forced sending
 			if (mActionBufferTimer)
 				mActionBufferTimer->lastMs = gui->GetTick();
 		}
 	}
-	
+
 	if (game->mGameMode != GameManager::MODE_ACTION)
 		return;
 
-	if (gui->GetDemandsFocus() || mIsLocked || IsMoving() || !mMap || !mActionBuffer.empty()) 
+	if (gui->GetDemandsFocus() || mIsLocked || IsMoving() || !mMap || !mActionBuffer.empty())
 		return;
 
 	if ((game->GetChat() && !game->GetChat()->HasKeyFocusInTree()) && !mMap->HasKeyFocus())
@@ -182,7 +182,7 @@ void LocalActor::_checkInput()
 				AddToActionBuffer("w");
 			else
 				AddToActionBuffer("r");
-			
+
 			mShiftDown = true;
 		}
 	}
@@ -190,7 +190,7 @@ void LocalActor::_checkInput()
 	{
 		mShiftDown = false;
 	}
-	
+
 	//Check if they try to sit
 	if (keystate[SDLK_RCTRL] || keystate[SDLK_LCTRL])
 	{
@@ -210,20 +210,20 @@ void LocalActor::_checkInput()
 			AddToActionBuffer(string("t") + directionToChar(newDir));
 			SetDirection(newDir);
 		}
-		
+
 		AddToActionBuffer("j");
-		
+
 		//determine jump type
 		if (moving)
 		{
 			if (GetSpeed() == SPEED_RUN)
 				AddToActionBuffer("r");
 			else
-				AddToActionBuffer("w"); 
+				AddToActionBuffer("w");
 		}
 		else //standing jump
 		{
-			AddToActionBuffer("s"); 
+			AddToActionBuffer("s");
 		}
 	}
 	else if (moving) //regular movement
@@ -246,13 +246,13 @@ bool LocalActor::StepForward()
 
 bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags)
 {
-	PRINT("LocalActor::LoadAvatar");
+	DEBUGOUT("LocalActor::LoadAvatar");
 
 	bool result = Actor::LoadAvatar(file, pass, w, h, delay, flags);
-	
+
 	//only save remote files
 	if (result && (file.find("http://", 0) == 0 || file.find("avy://", 0) == 0) )
-	{	
+	{
 		game->mUserData.SetValue("Avatar", "Url", file);
 		game->mUserData.SetValue("Avatar", "Pass", pass);
 		game->mUserData.SetValue("Avatar", "Width", its(w));
@@ -262,9 +262,9 @@ bool LocalActor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort
 
 		netSendAvatar(mLoadingAvatar);
 	}
-	
-	PRINT("LocalActor::LoadAvatar end");
-	
+
+	DEBUGOUT("LocalActor::LoadAvatar end");
+
 	return result;
 }
 
@@ -273,12 +273,12 @@ void LocalActor::AvatarError(int err)
 {
     string msg;
     string file;
-    	
+
 	if (game && game->GetChat())
 	{
     	if (mLoadingAvatar)
     		file = GetFilenameFromUrl(mLoadingAvatar->mUrl);
-    	
+
     	switch (err)
     	{
     		case Actor::AVYERR_LOADFAIL:
@@ -295,10 +295,10 @@ void LocalActor::AvatarError(int err)
     			break;
     		default: break;
     	}
-    	
+
     	game->GetChat()->AddMessage(msg);
     }
-	
+
 	Actor::AvatarError(err);
 }
 
@@ -326,10 +326,10 @@ string LocalActor::GetFlag(string flag)
 {
 	flag = base64_encode(flag.c_str(), flag.length());
 	string value = mFlags[flag];
-	
+
 	if (value.empty())
 		return value;
-	
+
 	return base64_decode(value.c_str(), value.length());
 }
 
@@ -342,7 +342,7 @@ void LocalActor::LoadFlags()
 
 	vString v;
 	explode(&v, &flags, ",");
-	
+
 	for (int i = 0; i < v.size(); i+=2)
 	{
 		DEBUGOUT(v.at(i));
@@ -358,11 +358,11 @@ void LocalActor::SaveFlags()
 {
 	string flags;
 	//Convert our map to a string
-	for (std::map<string, string>::iterator it = mFlags.begin(); it != mFlags.end(); ++it) 
+	for (std::map<string, string>::iterator it = mFlags.begin(); it != mFlags.end(); ++it)
 	{
 		flags += it->first + ',';
 		flags += it->second + ',';
-	}	
+	}
 
 	game->mUserData.SetValue("MapSettings", "Flags", flags);
 }
@@ -370,11 +370,11 @@ void LocalActor::SaveFlags()
 void LocalActor::PrintFlags()
 {
 	string flag, value;
-	for (std::map<string, string>::iterator it = mFlags.begin(); it != mFlags.end(); ++it) 
+	for (std::map<string, string>::iterator it = mFlags.begin(); it != mFlags.end(); ++it)
 	{
 		flag = base64_decode( it->first.c_str(), it->first.length() );
 		value = base64_decode( it->second.c_str(), it->second.length() );
-		
+
 		console->AddMessage("[" + flag + "] => " + value);
 	}
 }
@@ -390,7 +390,7 @@ void LocalActor::Warp(string id, point2d position, string targetObjectName)
 void LocalActor::Warp(point2d pos)
 {
 	AddToActionBuffer('c' + its(pos.x) + '.' + its(pos.y) + '.');
-	mLastSavedPosition = pos;	
+	mLastSavedPosition = pos;
 }
 
 /*	index - Index of the stack where our new value for the property should be */
@@ -405,7 +405,7 @@ int LocalActor::LuaSetProp(lua_State* ls, string& prop, int index)
 		netSendAvatarMod();
 	}
 	else return Actor::LuaSetProp(ls, prop, index);
-	
+
 	return 1;
 }
 
@@ -415,7 +415,7 @@ int LocalActor::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "avylocked") lua_pushboolean( ls, mCanChangeAvatar );
 	else if (prop == "bufferdelay") lua_pushnumber( ls, mActionBufferSendDelayMs );
 	else return Actor::LuaGetProp(ls, prop);
-	
+
 	return 1;
 }
 

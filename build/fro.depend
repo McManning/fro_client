@@ -1,14 +1,15 @@
 # depslib dependency file v1.0
-1319872737 source:e:\fro\trunk\main.cpp
+1327351077 source:e:\fro\trunk\main.cpp
 	"core/Common.h"
 	"core/Screen.h"
 	"core/GuiManager.h"
 	"core/widgets/Checkbox.h"
 	"core/widgets/Frame.h"
 	"core/io/FileIO.h"
+	"core/Logger.h"
 	"game/GameManager.h"
 
-1327262815 e:\fro\trunk\core\common.h
+1327349629 e:\fro\trunk\core\common.h
 	<string>
 	<vector>
 	<math.h>
@@ -68,8 +69,9 @@
 	"../core/io/KeyValueMap.h"
 	"WorldLoader.h"
 
-1319872737 e:\fro\trunk\core\core.h
+1327348390 e:\fro\trunk\core\core.h
 	"Common.h"
+	"Logger.h"
 	"MessageManager.h"
 	"GuiManager.h"
 	"Image.h"
@@ -407,11 +409,12 @@
 1319872737 e:\fro\trunk\avatar\avatarproperties.h
 	"../core/Common.h"
 
-1319872737 source:e:\fro\trunk\core\common.cpp
+1327349640 source:e:\fro\trunk\core\common.cpp
 	<SDL/SDL_syswm.h>
 	<time.h>
 	"Common.h"
 	"io/FileIO.h"
+	"Logger.h"
 
 1255800450 c:\dev-cpp\include\sdl\sdl_syswm.h
 	"SDL_stdinc.h"
@@ -622,10 +625,11 @@
 	<_mingw.h>
 	<stddef.h>
 
-1319872737 source:e:\fro\trunk\core\fontmanager.cpp
+1327351589 source:e:\fro\trunk\core\fontmanager.cpp
 	"FontManager.h"
 	"ResourceManager.h"
 	"SDL/SDL_gfxBlitFunc.h"
+	"Logger.h"
 
 1319872737 e:\fro\trunk\core\sdl\sdl_gfxblitfunc.h
 	<stdio.h>
@@ -633,7 +637,7 @@
 	<SDL/SDL.h>
 	<SDL/SDL_video.h>
 
-1319872737 source:e:\fro\trunk\core\guimanager.cpp
+1327351074 source:e:\fro\trunk\core\guimanager.cpp
 	<SDL/SDL.h>
 	"GuiManager.h"
 	"SDL/SDL_Misc.h"
@@ -649,6 +653,7 @@
 	"net/DownloadManager.h"
 	"MessageManager.h"
 	"io/FileIO.h"
+	"Logger.h"
 
 1319872737 e:\fro\trunk\core\sdl\sdl_misc.h
 	<SDL/SDL.h>
@@ -663,7 +668,7 @@
 1319872737 e:\fro\trunk\core\widgets\hintballoon.h
 	"Widget.h"
 
-1319877522 source:e:\fro\trunk\core\image.cpp
+1327350085 source:e:\fro\trunk\core\image.cpp
 	<limits.h>
 	"Image.h"
 	"ResourceManager.h"
@@ -689,12 +694,13 @@
 1319872737 source:e:\fro\trunk\core\rectmanager.cpp
 	"RectManager.h"
 
-1319872737 source:e:\fro\trunk\core\resourcemanager.cpp
+1327351074 source:e:\fro\trunk\core\resourcemanager.cpp
 	"ResourceManager.h"
 	"net/DownloadManager.h"
 	"SDL/SDL_Misc.h"
 	"SDL/SDL_rotozoom.h"
 	"io/FileIO.h"
+	"Logger.h"
 
 1327260586 source:e:\fro\trunk\core\sdl\img.c
 	<windows.h>
@@ -791,7 +797,7 @@
 	<SDL/SDL_endian.h>
 	<png.h>
 
-1319872737 source:e:\fro\trunk\core\sdl\sdl_misc.cpp
+1327350328 source:e:\fro\trunk\core\sdl\sdl_misc.cpp
 	"SDL_Misc.h"
 
 1319872737 source:e:\fro\trunk\core\sdl\sdl_gfxblitfunc.c
@@ -845,7 +851,7 @@
 	"Screen.h"
 	"ResourceManager.h"
 
-1319872737 source:e:\fro\trunk\core\timermanager.cpp
+1327351074 source:e:\fro\trunk\core\timermanager.cpp
 	"TimerManager.h"
 	<SDL/SDL.h>
 
@@ -865,7 +871,7 @@
 1319872737 e:\fro\trunk\core\io\crypt.h
 	"../Common.h"
 
-1327346575 source:e:\fro\trunk\core\io\fileio.cpp
+1327351124 source:e:\fro\trunk\core\io\fileio.cpp
 	<zlib.h>
 	<fstream>
 	<sys/stat.h>
@@ -933,13 +939,14 @@
 	<sys/time.h>
 	<sys/select.h>
 
-1319872737 source:e:\fro\trunk\core\net\downloadmanager.cpp
+1327351589 source:e:\fro\trunk\core\net\downloadmanager.cpp
 	<fstream>
 	<SDL/SDL.h>
 	"DownloadManager.h"
 	"../io/FileIO.h"
 	"../TimerManager.h"
 	"../MessageManager.h"
+	"../Logger.h"
 	<winsock2.h>
 	<sys/types.h>
 	<sys/socket.h>
@@ -950,7 +957,7 @@
 	<sys/select.h>
 	<arpa/inet.h>
 
-1319872737 source:e:\fro\trunk\core\net\ircnet2.cpp
+1327351075 source:e:\fro\trunk\core\net\ircnet2.cpp
 	<SDL/SDL.h>
 	"IrcNet2.h"
 	"../io/Crypt.h"
@@ -995,7 +1002,7 @@
 1319872737 e:\fro\trunk\core\widgets\scrollbar.h
 	"Widget.h"
 
-1319872737 source:e:\fro\trunk\core\widgets\console.cpp
+1327351075 source:e:\fro\trunk\core\widgets\console.cpp
 	"Console.h"
 	"Input.h"
 	"Button.h"
@@ -1137,7 +1144,7 @@
 1319872737 e:\fro\trunk\core\widgets\yesnopopup.h
 	"Frame.h"
 
-1319872737 source:e:\fro\trunk\entity\actor.cpp
+1327351075 source:e:\fro\trunk\entity\actor.cpp
 	<lua.hpp>
 	"Actor.h"
 	"StaticObject.h"
@@ -1212,7 +1219,7 @@
 1319872737 e:\fro\trunk\entity\explodingentity.h
 	"Entity.h"
 
-1319872737 source:e:\fro\trunk\entity\localactor.cpp
+1327351075 source:e:\fro\trunk\entity\localactor.cpp
 	<lua.hpp>
 	"LocalActor.h"
 	"../map/Map.h"
@@ -1276,7 +1283,7 @@
 1319872737 e:\fro\trunk\game\collisionblob.h
 	"../core/Common.h"
 
-1319877523 source:e:\fro\trunk\game\gamemanager.cpp
+1327351075 source:e:\fro\trunk\game\gamemanager.cpp
 	<windows.h>
 	"GameManager.h"
 	"../net/IrcNetListeners.h"
@@ -1305,7 +1312,7 @@
 	"../core/Core.h"
 	"../core/widgets/Frame.h"
 
-1327267441 source:e:\fro\trunk\game\worldloader.cpp
+1327351075 source:e:\fro\trunk\game\worldloader.cpp
 	<lua.hpp>
 	"WorldLoader.h"
 	"GameManager.h"
@@ -1328,7 +1335,7 @@
 1327262384 e:\fro\trunk\lua\maplib.h
 	"../core/Core.h"
 
-1327346563 source:e:\fro\trunk\interface\autoupdater.cpp
+1327347056 source:e:\fro\trunk\interface\autoupdater.cpp
 	"AutoUpdater.h"
 	"../core/GuiManager.h"
 	"../core/net/DownloadManager.h"
@@ -1389,7 +1396,7 @@
 	"../avatar/Avatar.h"
 	"../game/GameManager.h"
 
-1327267476 source:e:\fro\trunk\interface\logindialog.cpp
+1327351589 source:e:\fro\trunk\interface\logindialog.cpp
 	"LoginDialog.h"
 	"AutoUpdater.h"
 	"../game/GameManager.h"
@@ -1453,7 +1460,7 @@
 	"../core/net/IrcNet2.h"
 	"../game/GameManager.h"
 
-1319872737 source:e:\fro\trunk\lua\actorlib.cpp
+1327351076 source:e:\fro\trunk\lua\actorlib.cpp
 	<lua.hpp>
 	"ActorLib.h"
 	"EntityLib.h"
@@ -1471,7 +1478,7 @@
 1319872737 e:\fro\trunk\lua\luacommon.h
 	"../core/Core.h"
 
-1319872737 source:e:\fro\trunk\lua\cameralib.cpp
+1327351076 source:e:\fro\trunk\lua\cameralib.cpp
 	<lua.hpp>
 	"CameraLib.h"
 	"LuaCommon.h"
@@ -1493,7 +1500,7 @@
 
 1319872737 e:\fro\trunk\lua\convolib.h
 
-1319872737 source:e:\fro\trunk\lua\entitylib.cpp
+1327351076 source:e:\fro\trunk\lua\entitylib.cpp
 	<lua.hpp>
 	"EntityLib.h"
 	"LuaCommon.h"
@@ -1505,7 +1512,7 @@
 	"../game/GameManager.h"
 	"../map/Map.h"
 
-1319872737 source:e:\fro\trunk\lua\eventslib.cpp
+1327351076 source:e:\fro\trunk\lua\eventslib.cpp
 	<lua.hpp>
 	"EventsLib.h"
 	"LuaCommon.h"
@@ -1514,7 +1521,7 @@
 
 1319872737 e:\fro\trunk\lua\eventslib.h
 
-1319872737 source:e:\fro\trunk\lua\gamelib.cpp
+1327351076 source:e:\fro\trunk\lua\gamelib.cpp
 	<lua.hpp>
 	"GameLib.h"
 	"ActorLib.h"
@@ -1533,7 +1540,7 @@
 	<stdarg.h>
 	"LuaCommon.h"
 
-1327272472 source:e:\fro\trunk\lua\maplib.cpp
+1327351077 source:e:\fro\trunk\lua\maplib.cpp
 	<lua.hpp>
 	"MapLib.h"
 	"LuaCommon.h"
@@ -1555,7 +1562,7 @@
 
 1319872737 e:\fro\trunk\lua\playerlib.h
 
-1319872737 source:e:\fro\trunk\lua\playerlib.cpp
+1327351077 source:e:\fro\trunk\lua\playerlib.cpp
 	<lua.hpp>
 	"PlayerLib.h"
 	"LuaCommon.h"
@@ -1564,7 +1571,7 @@
 	"../game/GameManager.h"
 	"../map/Map.h"
 
-1319872737 source:e:\fro\trunk\lua\systemlib.cpp
+1327351077 source:e:\fro\trunk\lua\systemlib.cpp
 	<lua.hpp>
 	"SystemLib.h"
 	"LuaCommon.h"
@@ -1577,7 +1584,7 @@
 	"../game/GameManager.h"
 	"../map/Map.h"
 
-1319872737 source:e:\fro\trunk\lua\timerslib.cpp
+1327351077 source:e:\fro\trunk\lua\timerslib.cpp
 	<lua.hpp>
 	"TimersLib.h"
 	"LuaCommon.h"
@@ -1666,4 +1673,13 @@
 
 1327274416 source:e:\fro\trunk\build\build.rc
 	<windows.h>
+
+1327351243 e:\fro\trunk\core\logger.h
+	"Common.h"
+
+1327351402 source:e:\fro\trunk\core\logger.cpp
+	<time.h>
+	<cstdarg>
+	<fstream>
+	"Logger.h"
 

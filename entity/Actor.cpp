@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -56,24 +56,24 @@ uShort timer_ActorAnimate(timer* t, uLong ms)
 		WARNING("No actor assigned to timer " + pts(t));
 		return TIMER_DESTROY;
 	}
-	
+
 	return (a->_animate()) ? TIMER_CONTINUE : TIMER_DESTROY;
 }
 
 uShort timer_checkLoadingAvatar(timer* t, uLong ms)
 {
     Actor* a = (Actor*)t->userData;
-    
+
     if (a)
 	{
         // keep the timer alive until the avatar stops loading
         if (a->CheckLoadingAvatar())
             return TIMER_CONTINUE;
 
-        a->mCheckLoadingAvatarTimer = NULL; 
+        a->mCheckLoadingAvatarTimer = NULL;
 	}
-	
-    return TIMER_DESTROY;  
+
+    return TIMER_DESTROY;
 }
 
 
@@ -94,7 +94,7 @@ Actor::Actor()
 	mFalling = true;
 	SetIgnoreSolids(false);
 
-	mMovementTimer = timers->Add("movproc", 
+	mMovementTimer = timers->Add("movproc",
 								PROCESS_MOVE_INTERVAL, false,
 								timer_processMovement,
 								NULL,
@@ -110,7 +110,7 @@ Actor::~Actor()
 rect Actor::GetBoundingRect()
 {
 	rect r;
-	
+
 	if (mAvatar && mAvatar->GetImage())
 	{
 		r.w = mAvatar->GetImage()->Width();
@@ -121,7 +121,7 @@ rect Actor::GetBoundingRect()
 		r.w = 16;
 		r.h = 16;
 	}
-	
+
 	r.x = mPosition.x - (r.w / 2);
 	r.y = mPosition.y - r.h - mJumpHeight;
 	r.h += mJumpHeight;
@@ -132,11 +132,11 @@ rect Actor::GetBoundingRect()
 Image* Actor::GetImage()
 {
 	Avatar* a = GetAvatar();
-	
+
 	if (a)
 		return a->GetImage();
-		
-	return NULL;	
+
+	return NULL;
 }
 
 void Actor::SetName(string name)
@@ -167,7 +167,7 @@ void Actor::Move(direction dir, sShort distance, byte speed)
 	//WARNING("SETTINGDST " + its(mPosition.x) + "," + its(mPosition.y) + "->"
 	//		 + its(mDestination.x) + "," + its(mDestination.y));
 
-	if (mAvatar && mAvatar->GetImage()) 
+	if (mAvatar && mAvatar->GetImage())
 	{
 		_syncAvatarFrameset();
 		StopAnimation();
@@ -180,14 +180,14 @@ void Actor::MoveTo(point2d destination, byte speed)
 	//FATAL("TODO: Redesign");
 
 	SetAction(IDLE);
-	
+
 	mPreviousPosition = mPosition;
 	mDestination = destination;
 
 	if (speed != 0) //0 = use mSpeed
 		SetSpeed(speed);
-		
-	if (mAvatar && mAvatar->GetImage()) 
+
+	if (mAvatar && mAvatar->GetImage())
 	{
 		_syncAvatarFrameset();
 		StopAnimation();
@@ -199,17 +199,17 @@ void Actor::MoveTo(point2d destination, byte speed)
 bool Actor::CanMove(direction d, sShort distance)
 {
 	ASSERT(mMap);
-	
+
 	if (IgnoreSolids())
 		return true;
 
 	point2d temp = mPosition;
-	
-	//Continuously offset our position in the specified direction and distance, checking 
+
+	//Continuously offset our position in the specified direction and distance, checking
 	//for collision along the way
 /*TODO:	for (int totalDistance = 0; totalDistance <= distance; totalDistance += 8)
 	{
-		
+
 	}
 */
 	rect r;
@@ -219,19 +219,19 @@ bool Actor::CanMove(direction d, sShort distance)
 
 	mPosition.x = r.x;
 	mPosition.y = r.y;
-	
+
 	bool result = true;
-	
+
 	if ((r.x >= mMap->mWidth && mMap->mWidth > 0) || r.x < 0)
 		result = false;
-		
+
 	if ((r.y >= mMap->mHeight && mMap->mHeight > 0) || r.y < 0)
 		result = false;
-	
+
 	//if we're still on the map, check for entity collisions if we actually collide with others
 	if (result)
 		result = !IsCollidingWithSolid();
-	
+
 	mPosition = temp; //reset mPosition to it's original
 
 	return result;
@@ -242,7 +242,7 @@ void Actor::_dispatchEntityMove()
 	//don't dispatch if we actually haven't moved
 	if (mPreviousPosition.x == mDestination.x && mPreviousPosition.y == mDestination.y)
 		return;
-	
+
 	//DEBUGOUT("ENTITY_MOVE " + mName + ": " + p2dts(mPreviousPosition) + " " + p2dts(mDestination));
 	MessageData md("ENTITY_MOVE");
 	md.WriteUserdata("entity", this);
@@ -253,23 +253,23 @@ void Actor::_dispatchEntityMove()
 	md.WriteInt("direction", GetDirection());
 	md.WriteInt("speed", GetSpeed());
 	messenger.Dispatch(md, this);
-	
-	mPreviousPosition = mPosition;	
+
+	mPreviousPosition = mPosition;
 }
 
 bool Actor::ProcessMovement()
 {
 	if (!mMap)
 		return false;
-	
+
 	if (!IsMoving()) //already there, don't need to move
 	{
-		if (mActionBuffer.empty()) 
+		if (mActionBuffer.empty())
 			return false;
-			
+
 		_checkActionBuffer(); //could have steps to perform
 	}
-	
+
 	AddPositionRectForUpdate();
 
 	_stepTowardDestination();
@@ -277,13 +277,13 @@ bool Actor::ProcessMovement()
 	_recalculateDirection();
 
 	_recalculateStep();
-		
+
 	if (mStep == 4 && mMap) //Run these messages, but not too fast. Only when we get halfway through a step
-	{	
+	{
 		mMap->QueueEntityResort();
-		
+
 		//don't send until we land, and have actually changed coordinate position
-		if (!IsJumping() && (mPreviousPosition.x != mPosition.x || mPreviousPosition.y != mPosition.y) ) 
+		if (!IsJumping() && (mPreviousPosition.x != mPosition.x || mPreviousPosition.y != mPosition.y) )
 		{
 			_dispatchEntityMove();
 		}
@@ -309,7 +309,7 @@ void Actor::PostMovement()
 
 	if (!IsMoving())
 	{
-		if (mAvatar && mAvatar->GetImage())// && (GetAction() != IDLE || mAvatar->mLoopStand)) 
+		if (mAvatar && mAvatar->GetImage())// && (GetAction() != IDLE || mAvatar->mLoopStand))
 		{
 			_syncAvatarFrameset();
 			PlayAnimation();
@@ -321,14 +321,14 @@ void Actor::PostMovement()
 bool Actor::_animate()
 {
 	Image* img = mAvatar->GetImage();
-	
+
 	if (mAnimationTimer && img) // if the animation is playing
 	{
 		mAnimationTimer->interval = img->ForwardCurrentFrameset();
-		
+
 		AddPositionRectForUpdate();
-		
-		// if we hit the end of the animation, destroy the timer. 
+
+		// if we hit the end of the animation, destroy the timer.
 		if (mAnimationTimer->interval == ULONG_MAX)
 		{
 			mAnimationTimer = NULL;
@@ -343,12 +343,12 @@ void Actor::PlayAnimation()
 {
 	Image* img = mAvatar->GetImage();
 	ASSERT(img);
-	
+
 	img->Reset();
-	
+
 	SDL_Frame* f = img->Frame();
 	ASSERT(f);
-	
+
 	if (!mAnimationTimer)
 	{
 		// only add if there's a reason to animate
@@ -359,23 +359,23 @@ void Actor::PlayAnimation()
 	{
 		mAnimationTimer->interval = f->delay;
 	}
-	
+
 	AddPositionRectForUpdate();
 }
 
 void Actor::StopAnimation()
 {
 	if (mAnimationTimer)
-	{	
+	{
 		timers->Remove(mAnimationTimer);
 		mAnimationTimer = NULL;
 	}
-	
+
 	AddPositionRectForUpdate();
 }
 
-/* 	Based on the current action of our character, change the frameset we are currently playing. 
-	Will also reset the current frame we're on, so only call when it needs to be changed. 
+/* 	Based on the current action of our character, change the frameset we are currently playing.
+	Will also reset the current frame we're on, so only call when it needs to be changed.
 */
 void Actor::_syncAvatarFrameset()
 {
@@ -424,7 +424,7 @@ void Actor::_syncAvatarFrameset()
 		}
 		else
 		{
-			//Look for a stop frame. If we don't have one, try a _stop_2, 
+			//Look for a stop frame. If we don't have one, try a _stop_2,
 			//if don't have that, try a move frame. If not that, _move_2.
 			if ( !img->SetFrameset("_stop_" + dir) )
 			{
@@ -437,7 +437,7 @@ void Actor::_syncAvatarFrameset()
 	}
 
 	//TODO: Detect run, check for _RUN_dir, Detect jump, check for _JUMP_dir
-	
+
 	AddPositionRectForUpdate();
 }
 
@@ -523,11 +523,11 @@ PRINTF("Checking Buffer [%s]: %c\n", mId.c_str(), c);
 		{
 			if (x == 0 && y == 0)
 			{
-				//PRINT("\\c700 MANTICORE Double Zero Ignore " + mId);
+				//DEBUGOUT("\\c700 MANTICORE Double Zero Ignore " + mId);
 			}
 			else
 			{
-				//PRINT("\\c700 MANTICORE Correcting Position " + mId
+				//DEBUGOUT("\\c700 MANTICORE Correcting Position " + mId
 				//		+ " " + its(mPosition.x) + "," + its(mPosition.y) + " -> "
 				//		+ its(x) + "," + its(y));
 				SetPosition(point2d(x, y));
@@ -551,14 +551,14 @@ PRINTF("Check done. Recheck? %i\n", recheck);
 bool Actor::IsMoving() const
 {
 	if (IsJumping()) return true;
-	return !(mDestination.x == mPosition.x && mDestination.y == mPosition.y);	
+	return !(mDestination.x == mPosition.x && mDestination.y == mPosition.y);
 }
 
 void Actor::SetPosition(point2d position)
 {
 	Entity::SetPosition(position);
 	mDestination = mPosition; //so it won't try to walk to mDestination
-	
+
 //	AddToActionBuffer('c' + its(position.x) + "." + its(position.y) + ".");
 }
 
@@ -593,9 +593,9 @@ void Actor::_recalculateDirection()
 {
 	if (mPosition.x == mDestination.x && mPosition.y == mDestination.y)
 		return;
-	
+
 	direction dir;
-	
+
 	//Recalculate direction
 	if (mPosition.y < mDestination.y) //moving south
 	{
@@ -681,23 +681,23 @@ void Actor::_stepTowardDestination()
 		else
 			mPosition.y -= mSpeed;
 	}
-	
+
 	//Make sure we can move!
 	bool canMove = true;
-	
+
 	if (!IgnoreSolids())
 	{
 		if ((mPosition.x >= mMap->mWidth && mMap->mWidth > 0) || mPosition.x < 0)
 			canMove = false;
-			
+
 		if ((mPosition.y >= mMap->mHeight && mMap->mHeight > 0) || mPosition.y < 0)
 			canMove = false;
-		
+
 		//if we're still on the map, check for entity collisions
 		if (canMove)
 			canMove = !IsCollidingWithSolid();
 	}
-	
+
 	if (!canMove) //revert mPosition back to original, and cancel destination. We hit a block.
 	{
 		mPosition = p;
@@ -721,19 +721,19 @@ bool Actor::SwapAvatars()
     	else // All post-load checks are fine, load it.
     	{
     		byte mod = Avatar::MOD_NONE;
-    
+
     		//if our loading avatar decided to set a custom mod, set it
     		if (mLoadingAvatar->mModifier != Avatar::MOD_NONE)
     			mod = mLoadingAvatar->mModifier;
     		else if (mAvatar) //if not, use the previous avatars mod
     			mod = mAvatar->mModifier;
-    			
-    		// If the new avy is smaller, this'll make sure the old one cleans up 
+
+    		// If the new avy is smaller, this'll make sure the old one cleans up
     		AddPositionRectForUpdate();
-    			
+
     		SAFEDELETE(mAvatar);
     		mAvatar = mLoadingAvatar;
-    			
+
     		//Carry the modifier over to the new avatar
     		if (mod != Avatar::MOD_NONE)
     			SetAvatarModifier(mod);
@@ -741,13 +741,13 @@ bool Actor::SwapAvatars()
     		_syncAvatarFrameset();
     		UpdateCollisionAndOrigin();
     		PlayAnimation();
-    		
+
     		mLoadingAvatar = NULL;
-    		
+
     	    MessageData md("ENTITY_SWAPAVATAR");
         	md.WriteUserdata("entity", this);
         	messenger.Dispatch(md);
-	
+
     		return true;
     	}
     }
@@ -768,15 +768,15 @@ void Actor::UpdateCollisionAndOrigin()
 	else
 	{
 		mOrigin.x = 0;
-		mOrigin.y = 0;	
+		mOrigin.y = 0;
 	}
-	
+
 	r.x = mOrigin.x - 6;
 	r.y = mOrigin.y - 10;
-	
+
 	mCollisionRects.clear();
-	mCollisionRects.push_back(r);	
-	
+	mCollisionRects.push_back(r);
+
 	AddPositionRectForUpdate();
 
 	// OPTIMIZETODO: Reload shadow image if we got one
@@ -802,20 +802,20 @@ bool Actor::CheckLoadingAvatar()
 			} break;
 		}
 	}
-	
+
 	return (mLoadingAvatar && mLoadingAvatar->mState == Avatar::LOADING);
 }
 
 bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort delay, uShort flags)
 {
 	DEBUGOUT("\\c139* Loading avatar: " + file);
-		
+
 	bool wasLoadingAvatar = (mLoadingAvatar != NULL);
-		
+
 	SAFEDELETE(mLoadingAvatar);
-	
+
 	mLoadingAvatar = new Avatar();
-	
+
 	mLoadingAvatar->mUrl = file;
 	mLoadingAvatar->mPass = pass;
 	mLoadingAvatar->mWidth = w;
@@ -826,18 +826,18 @@ bool Actor::LoadAvatar(string file, string pass, uShort w, uShort h, uShort dela
 	mLoadingAvatar->Load();
 
     if (!mCheckLoadingAvatarTimer)
-        mCheckLoadingAvatarTimer = timers->Add("avacheck", 
+        mCheckLoadingAvatarTimer = timers->Add("avacheck",
                     					500, false,
                     					timer_checkLoadingAvatar,
                     					NULL,
                     					this);
-                    					
+
     MessageData md("ENTITY_LOADAVATAR");
 	md.WriteUserdata("entity", this);
 	md.WriteString("file", file);
 	md.WriteInt("replaced", wasLoadingAvatar);
 	messenger.Dispatch(md);
-	
+
 	return true;
 }
 
@@ -845,7 +845,7 @@ void Actor::AvatarError(int err)
 {
 	console->AddMessage(GetName() + " Avatar Error: " + its(err));
 	SAFEDELETE(mLoadingAvatar);
-	
+
 	MessageData md("ENTITY_BADAVATAR");
     md.WriteUserdata("entity", this);
     md.WriteInt("id", err);
@@ -862,7 +862,7 @@ void Actor::Render()
 
 	//if we're not in a ghost mode, render a shadow
 	if (!mAvatar || mAvatar->mModifier != Avatar::MOD_GHOST)
-		RenderShadow();	
+		RenderShadow();
 
 	//render mAvatar
 	if (mAvatar && mAvatar->GetImage())
@@ -873,7 +873,7 @@ void Actor::Render()
 
 		mAvatar->GetImage()->Render(scr, r.x, r.y);
 	}
-	
+
 	//_doDepthRender();
 
 	//render mName
@@ -883,9 +883,9 @@ void Actor::Render()
 
 	if ( !mName.empty() && (areRectsIntersecting( r, gui->GetMouseRect() ) || mMap->mShowPlayerNames) )
 	{
-		f->Render(scr, 
-					r.x + r.w / 2 - (f->GetWidth(stripCodes(mName)) / 2), 
-					r.y - (f->GetHeight() + 2), 
+		f->Render(scr,
+					r.x + r.w / 2 - (f->GetWidth(stripCodes(mName)) / 2),
+					r.y - (f->GetHeight() + 2),
 					mName, color(255,255,255));
 	}
 	*/
@@ -897,7 +897,7 @@ void Actor::_doDepthRender()
 {
 	if (IsPositionRelativeToScreen()) // Don't worry about for screen relative entities
 		return;
-		
+
 	rect dst;
 	rect src;
 	StaticObject* o;
@@ -905,8 +905,8 @@ void Actor::_doDepthRender()
 	{
 		if ( mMap->mEntities.at(i) == this )
 			break;
-		
-		//If we need to do depth rendering on this object, do it. 
+
+		//If we need to do depth rendering on this object, do it.
 		if ( mMap->mEntities.at(i)->mType == ENTITY_STATICOBJECT
 			&& areRectsIntersecting(mMap->mEntities.at(i)->GetBoundingRect(), GetBoundingRect()) )
 		{
@@ -916,17 +916,17 @@ void Actor::_doDepthRender()
 				src = GetBoundingRect();
 				dst.x = src.x;
 				dst.y = mPosition.y - o->mDepth;
-			
+
 				src.x = dst.x - o->mPosition.x;
 				src.y = dst.y - o->mPosition.y;
 				src.h = o->mDepth + src.w / 10; //shadow is BoundingRect().w / 8, and only half a shadow below our rect, so / 10.
-				
+
 				dst = mMap->ToScreenPosition(dst);
-				
+
 				o->mImage->Render(Screen::Instance(), dst.x, dst.y, src);
 			}
 		}
-	}	
+	}
 }
 
 void Actor::Jump(byte type)
@@ -936,9 +936,9 @@ void Actor::Jump(byte type)
 	mJumpHeight = 0;
 	mCustomVelocity = 0;
 	mFalling = false;
-	
+
 	mPreviousPosition = mPosition;
-	
+
 	MessageData md("ENTITY_JUMP");
 	md.WriteUserdata("entity", this);
 	messenger.Dispatch(md);
@@ -951,8 +951,8 @@ void Actor::Fall(int height, int velocity)
 	mJumpHeight = height;
 	mCustomVelocity = velocity;
 	mFalling = true;
-	
-	mPreviousPosition = mPosition;	
+
+	mPreviousPosition = mPosition;
 }
 
 /**	Will rise the actor to a height of 1000. Used for a flying-off-map kind of thing,
@@ -966,17 +966,17 @@ void Actor::Rise(int velocity)
 	mCustomVelocity = velocity;
 }
 
-bool Actor::IsJumping() const 
-{ 
+bool Actor::IsJumping() const
+{
 	//console->AddMessage("Falling: " + its(mFalling) + " Height: " + its(mJumpHeight));
-	return (!mFalling || mJumpHeight > 0); 
+	return (!mFalling || mJumpHeight > 0);
 }
 
 void Actor::Land() //code to run after we land from a jump
 {
 	mFalling = true;
 	mJumpHeight = 0;
-	
+
 	MessageData md("ENTITY_LAND");
 	md.WriteUserdata("entity", this);
 	messenger.Dispatch(md);
@@ -1005,10 +1005,10 @@ void Actor::_processJump()
 	{
 		mFalling = true;
 		mJumpHeight = 0;
-		return; 
+		return;
 	}
 	*/
-	
+
 	switch (mJumpType)
 	{
 		case STANDING_JUMP:
@@ -1019,7 +1019,7 @@ void Actor::_processJump()
 			yVelocity = WALKING_JUMP_VELOCITY;
 			maxHeight = WALKING_JUMP_HEIGHT; // * mMap->GetGravity();
 			break;
-		case RUNNING_JUMP: 
+		case RUNNING_JUMP:
 			yVelocity = RUNNING_JUMP_VELOCITY;
 			maxHeight = RUNNING_JUMP_HEIGHT; // * mMap->GetGravity();
 			break;
@@ -1047,20 +1047,20 @@ void Actor::_processJump()
 			return;
 		}
 	}
-	
+
 	if (mJumpType != STANDING_JUMP && mJumpType != CUSTOM_JUMP) //no moving while standing jump
 	{
 		//don't offset destination more if we're still moving toward a destination point
 		if (mDestination.x != mPosition.x || mDestination.y != mPosition.y)
 			return;
-				
+
 		uShort stepDistance = 16; //(WALKING_JUMP) ? WALKING_JUMP_STEP : RUNNING_JUMP_STEP;
 		uShort moveSpeed = (mJumpType == WALKING_JUMP) ? SPEED_WALK : SPEED_RUN;
-	
+
 		//we can change our jump height, but if we can't move in this direction, don't do it.
-		
+
 		//TODO: This'll screw up if our client has a solid object on the map where other clients do not. (Moveable map objects and such)
-		if (!CanMove(mDirection, stepDistance)) 
+		if (!CanMove(mDirection, stepDistance))
 		{
 			_dispatchEntityMove();
 			return;
@@ -1090,7 +1090,7 @@ void Actor::Face(Entity* e)
 		dir = SOUTH;
 	else //2, -3, -2
 		dir = NORTH;
-	
+
 	SetDirection(dir);
 }
 
@@ -1120,7 +1120,7 @@ int Actor::LuaGetProp(lua_State* ls, string& prop)
 	else if (prop == "action") lua_pushnumber( ls, GetAction() );
 	else if (prop == "noclip") lua_pushboolean( ls, IgnoreSolids() );
 	else if (prop == "mod" && GetAvatar()) lua_pushnumber( ls, GetAvatar()->mModifier );
-	else if (prop == "loadingavatar") lua_pushboolean( ls, mLoadingAvatar != NULL ); 
+	else if (prop == "loadingavatar") lua_pushboolean( ls, mLoadingAvatar != NULL );
 	else return Entity::LuaGetProp(ls, prop);
 
 	return 1;

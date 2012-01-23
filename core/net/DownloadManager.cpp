@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -30,6 +30,7 @@
 #include "../io/FileIO.h"
 #include "../TimerManager.h"
 #include "../MessageManager.h"
+#include "../Logger.h"
 
 #ifdef WIN32
 	#include <winsock2.h>
@@ -88,14 +89,14 @@ int thread_downloader(void* param)
 						/*	Success here doesn't necessarily mean it's the correct file. The host
 							could have sent a 404 html page. Or an entirely different file.
 						*/
-						//PRINT("GOT FILE " + dt->currentData->url);
-					//	PRINT("CODE " + its(dt->currentData->errorCode));
+						//DEBUGOUT("GOT FILE " + dt->currentData->url);
+					//	DEBUGOUT("CODE " + its(dt->currentData->errorCode));
 					}
 				}
 				else //file is there, no need to download
 				{
 					dt->currentData->errorCode = DEC_SUCCESS;
-					//PRINT("Already Exists " + dt->currentData->filename);
+					//DEBUGOUT("Already Exists " + dt->currentData->filename);
 				}
 			#endif
 
@@ -112,7 +113,7 @@ int thread_downloader(void* param)
 
 		SDL_Delay(10);
 	}
-PRINT("Closing Down Thread");
+DEBUGOUT("Closing Down Thread");
 
 	dt->thread = NULL;
 	return 0; //??
@@ -144,7 +145,7 @@ DownloadManager::DownloadManager()
 
 DownloadManager::~DownloadManager()
 {
-PRINT("DL::~DL");
+DEBUGOUT("DL::~DL");
 	Flush(); //in case it wasn't called earlier
 	timers->RemoveMatchingUserData(this);
 
@@ -157,7 +158,6 @@ PRINT("DL::~DL");
 
 bool DownloadManager::Initialize(uShort threadCount)
 {
-PRINT("DL::Init");
 	SDL_Thread* thread = NULL;
 	downloadThread* dt = NULL;
 	for (uShort i = 0; i < threadCount; i++)
@@ -167,7 +167,7 @@ PRINT("DL::Init");
 		thread = SDL_CreateThread(thread_downloader, (void*)dt);
 		if (thread)
 		{
-			PRINT("DL::Init Adding Thread " + pts(thread));
+			logger.Write("Starting worker thread 0x%p", thread);
 			dt->thread = thread;
 			dt->currentData = NULL;
 			mThreads.push_back(dt);
@@ -175,14 +175,12 @@ PRINT("DL::Init");
 		else
 		{
 			SAFEDELETE(dt);
-			PRINT("DL::Init " + its(i));
+			logger.WriteError("SDL_CreateThread error: %s", SDL_GetError());
 		}
 	}
 
-PRINT("DL::Init Building Mutexes");
 	mQueuedMutex = SDL_CreateMutex();
 	mCompletedMutex = SDL_CreateMutex();
-PRINT("DL::Init Done");
 
 	timers->AddProcess("dlman",
 						callback_downloaderManagerProcess,
@@ -200,7 +198,7 @@ void DownloadManager::Flush()
 	{
 		//Wait for each thread to time out, they will once their current download is complete.
 
-		//PRINT("Waiting for thread " + its(i) + ": " + pts(mThreads.at(i)->thread));
+		//DEBUGOUT("Waiting for thread " + its(i) + ": " + pts(mThreads.at(i)->thread));
 		//SDL_WaitThread(mThreads.at(i)->thread, NULL);
 
 		if (mThreads.at(i) && mThreads.at(i)->thread)
@@ -209,10 +207,10 @@ void DownloadManager::Flush()
 			SDL_KillThread(mThreads.at(i)->thread);
 		}
 
-		PRINT("Thread " + its(i) + " Done");
+		DEBUGOUT("Thread " + its(i) + " Done");
 		SAFEDELETE(mThreads.at(i));
 	}
-	PRINT("All threads done.");
+	DEBUGOUT("All threads done.");
 	mThreads.clear();
 
 	//Call onFailure for each one, in case we need to delete the userData
@@ -274,8 +272,12 @@ void DownloadManager::Process()
 				if (!mCompleted.at(i)->md5hash.empty()
 					&& MD5File(mCompleted.at(i)->filename) != mCompleted.at(i)->md5hash)
 				{
-				    FATAL("Hash Check failure of " + mCompleted.at(i)->filename + " :: " + MD5File(mCompleted.at(i)->filename) + " vs " + mCompleted.at(i)->md5hash);
-					mCompleted.at(i)->errorCode = DEC_BADHASH;
+				    logger.WriteError("Hash check failure of %s (%s). Should be %s",
+                          mCompleted.at(i)->filename.c_str(),
+                          MD5File(mCompleted.at(i)->filename).c_str(),
+                          mCompleted.at(i)->md5hash.c_str());
+
+                    mCompleted.at(i)->errorCode = DEC_BADHASH;
 				}
 			}
 
@@ -353,7 +355,7 @@ bool DownloadManager::QueueDownload(string url, string file, void* userData,
 {
 	if (!mCanQueue && !overrideQueueLock) //can't queue and can't override, cancel.
 	{
-		WARNING("Queue Locked! Attempting: " + url);
+		WARNING("Queue locked while trying " + url);
 		return false;
 	}
 

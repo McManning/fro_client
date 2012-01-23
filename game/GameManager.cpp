@@ -231,33 +231,26 @@ GameManager::GameManager()
 	mLoader = NULL;
 	//mParty = NULL;
 
-	PRINT("[GM] Starting");
-
 	game = this;
 
 	buildDirectoryTree(DIR_PROFILE);
 
 	UpdateAppTitle();
 
-	//TODO: this is temp, to ensure we don't have multiple GMs running.
-	ASSERT( gui->Get("GameManager") == this );
-
-	PRINT("[GM] Loading Player Data");
-
+	logger.Write("Loading user settings");
 	LoadUserData();
 
 	mMap = NULL;
 	mShowJoinParts = sti(mUserData.GetValue("MapSettings", "JoinParts"));
 	mShowAddresses = sti(mUserData.GetValue("MapSettings", "ShowAddresses"));
 
-	PRINT("[GM] Loading Network");
+	logger.Write("Starting IrcNet");
 	mNet = new IrcNet();
 	mNet->mRealname = "guest";
 
-	PRINT("[GM] Hooking Network");
 	hookNetListeners();
 
-	PRINT("[GM] Loading Local Actor");
+	logger.Write("Loading LocalActor");
 	mPlayer = new LocalActor();
 	mPlayer->SetName(mUserData.GetValue("MapSettings", "Nick"));
 	if (mPlayer->GetName().empty())
@@ -268,11 +261,9 @@ GameManager::GameManager()
 						NULL,
 						this);
 
-	PRINT("[GM] Bringing up Login");
+	logger.Write("Initializing Login");
 
 	new LoginDialog();
-
-	PRINT("[GM] Finished");
 
 	ToggleGameMode(MODE_ACTION);
 
@@ -290,17 +281,11 @@ GameManager::GameManager()
 
 GameManager::~GameManager()
 {
-	PRINT("~GameManager 1");
-
 	UnloadMap();
-
-	PRINT("~GameManager 2");
 
 	//erase all entities before it gets deleted, so we can unlink localactor
 	if (mMap)
 		mMap->FlushEntities();
-
-	PRINT("~GameManager 4");
 
 	if (mPlayer)
 	{
@@ -308,12 +293,8 @@ GameManager::~GameManager()
 		SAFEDELETE(mPlayer);
 	}
 
-	PRINT("~GameManager 5");
-
 	unhookNetListeners();
 	SAFEDELETE(mNet);
-
-	PRINT("~GameManager 7");
 
 	game = NULL;
 }
@@ -574,7 +555,7 @@ void GameManager::UpdateAppTitle()
 		title += ")";
 	}
 
-	PRINT("Setting Title: " + title);
+	DEBUGOUT("Setting Title: " + title);
 
 	gui->SetAppTitle(title);
 }

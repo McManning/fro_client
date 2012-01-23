@@ -107,8 +107,8 @@ bool compressFile(string infile, string outfile)
     gzclose(out);
 
 	uLong totalWrote = getFilesize(outfile);
-	PRINTF("Read %ld bytes, Wrote %ld bytes, Compression factor %4.2f%%\n",
-		totalRead, totalWrote, (1.0 - totalWrote * 1.0 / totalRead) * 100.0);
+	//PRINTF("Read %ld bytes, Wrote %ld bytes, Compression factor %4.2f%%\n",
+	//	totalRead, totalWrote, (1.0 - totalWrote * 1.0 / totalRead) * 100.0);
 
 	return true;
 }
@@ -132,11 +132,11 @@ string compressString(string s)
 		case Z_OK:
 			break;
 		case Z_MEM_ERROR:
-			THROWNUM(1);
+			FATAL("Z_MEM_ERROR");
 		case Z_BUF_ERROR:
-			THROWNUM(201);
+			FATAL("Z_BUF_ERROR");
 		case Z_STREAM_ERROR:
-			THROWNUM(202);
+			FATAL("Z_STREAM_ERROR");
 		default: break;
 	}
 
@@ -159,12 +159,12 @@ string decompressString(string s)
 		case Z_OK:
 			break;
 		case Z_MEM_ERROR:
-			THROWNUM(1);
+			FATAL("Z_MEM_ERROR");
 		case Z_BUF_ERROR: {
-			THROWNUM(201);
+			FATAL("Z_BUF_ERROR");
 		} break;
 		case Z_DATA_ERROR:
-			PRINT("Corrupt/Incomplete input");
+			WARNING("Z_DATA_ERROR");
 			tmp.clear();
 			break;
 		case Z_ERRNO:
@@ -172,7 +172,7 @@ string decompressString(string s)
 			tmp.clear();
 			break;
 		case Z_VERSION_ERROR:
-			THROWNUM(202);
+			FATAL("Z_VERSION_ERROR");
 		case Z_STREAM_ERROR:
 			WARNING("Z_STREAM_ERROR");
 			tmp.clear();
@@ -449,7 +449,7 @@ void killCacheVersionsExcluding(string filename, string version)
 	if (h >= 0)
 	{
 		do {
-			PRINT(data.name);
+			DEBUGOUT(data.name);
 			if (data.name != string(filename + version))
 				remove(data.name);
 		} while ( _findnext(h, &data) == 0);

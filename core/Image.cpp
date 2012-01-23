@@ -78,7 +78,7 @@ bool SDL_Image::Load(string file, string pass)
 
 	_unloadFramesets(); // in case we tried to reload it
 
-	PRINT("Loading " + file);
+	DEBUGOUT("Loading " + file);
 	if ( !IMG_Load(file.c_str(), &imgf) || !imgf.frames || imgf.count < 1 )
 	{
 		//TODO: Possible memory leak here?
@@ -271,7 +271,7 @@ bool Image::SetFrameset(string key)
 		{
 			if (mImage->framesets.at(i).key == key)
 			{
-				PRINT("[Image::SetFrameset] Setting To Key " + key);
+				DEBUGOUT("[Image::SetFrameset] Setting To Key " + key);
 				mFramesetIndex = i;
 				mFrameIndex = 0;
 				Reset();
@@ -280,7 +280,7 @@ bool Image::SetFrameset(string key)
 		}
 	}
 
-	PRINT("[Image::SetFrameset] Key " + key + " Not Found!");
+	DEBUGOUT("[Image::SetFrameset] Key " + key + " Not Found!");
 	return false;
 }
 
@@ -384,7 +384,7 @@ bool Image::ConvertToHorizontalAnimation(rect clip, uShort delay)
 
 	SDL_FreeSurface(src); //done with the original
 
-	PRINT("[Image::CTHA] Done");
+	DEBUGOUT("[Image::CTHA] Done");
 	return true;
 }
 
@@ -394,7 +394,7 @@ bool Image::ConvertToAvatarFormat(uShort w, uShort h, uShort delay, bool loopSta
 		|| mImage->framesets.at(0).frames.empty()
 		|| !mImage->framesets.at(0).frames.at(0).surf)
 	{
-		PRINT("[ConvertToAvatarFormat] Bad Source");
+		DEBUGOUT("[ConvertToAvatarFormat] Bad Source");
 		return false;
 	}
 

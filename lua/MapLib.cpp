@@ -211,7 +211,7 @@ int map_SetColor(lua_State* ls)
 //	string = .GetFlag("flag") Returns string of value. Empty string if it doesn't exist
 int map_GetFlag(lua_State* ls)
 {
-	PRINT("map_GetFlag");
+	DEBUGOUT("map_GetFlag");
 	luaCountArgs(ls, 1);
 
 	ASSERT(game && game->mMap);
@@ -225,7 +225,7 @@ int map_GetFlag(lua_State* ls)
 //	.SetFlag("flag", "value")
 int map_SetFlag(lua_State* ls)
 {
-	PRINT("map_SetFlag");
+	DEBUGOUT("map_SetFlag");
 	luaCountArgs(ls, 2);
 
 	ASSERT(game && game->mMap);

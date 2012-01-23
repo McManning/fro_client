@@ -46,7 +46,7 @@ WorldLoader::WorldLoader()
 	: Frame(game, "WorldLoader", rect(0,0,game->Width(),game->Height()), "",
 		false, false, false, false)
 {
-	PRINT("Creating WorldLoader");
+	DEBUGOUT("Creating WorldLoader");
 
 	m_BackgroundImage = resman->LoadImg("assets/loading.png");
 
@@ -60,7 +60,7 @@ WorldLoader::WorldLoader()
 
 
 	SetState(IDLE);
-	PRINT("WorldLoader Done");
+	DEBUGOUT("WorldLoader Done");
 }
 
 WorldLoader::~WorldLoader()

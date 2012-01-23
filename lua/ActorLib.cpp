@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -32,7 +32,7 @@
 #include "../game/GameManager.h"
 #include "../map/Map.h"
 
-// Returns true if the entity is a valid actor. (TODO: Make sure it's on the map) 
+// Returns true if the entity is a valid actor. (TODO: Make sure it's on the map)
 bool _verifyActor(Entity* e)
 {
 	return (e != NULL && e->mType >= ENTITY_ACTOR && e->mType < ENTITY_END_ACTORS);
@@ -49,7 +49,7 @@ Actor* getReferencedActor(lua_State* ls, int index)
 		lua_pushstring( ls, err.c_str() );
 		lua_error( ls );
 	}
-	
+
 	return a;
 }
 
@@ -60,11 +60,11 @@ Actor* getReferencedActor(lua_State* ls, int index)
 // .IsIdle(actor)
 int actor_IsIdle(lua_State* ls)
 {
-	PRINT("actor_IsIdle");
+	DEBUGOUT("actor_IsIdle");
 	luaCountArgs(ls, 1);
 
 	Actor* a = getReferencedActor(ls);
-	
+
 	lua_pushnumber( ls, !a->IsMoving() );
 	return 1;
 }
@@ -72,23 +72,23 @@ int actor_IsIdle(lua_State* ls)
 // .IsJumping(actor)
 int actor_IsJumping(lua_State* ls)
 {
-	PRINT("actor_IsJumping");
+	DEBUGOUT("actor_IsJumping");
 	luaCountArgs(ls, 1);
 
 	Actor* a = getReferencedActor(ls);
-	
+
 	lua_pushnumber( ls, !a->IsJumping() );
 	return 1;
 }
 
-// .Emote(actor, type)	
+// .Emote(actor, type)
 int actor_Emote(lua_State* ls)
 {
-	PRINT("actor_Emote");
+	DEBUGOUT("actor_Emote");
 	luaCountArgs(ls, 2);
 
 	Actor* a = getReferencedActor(ls);
-	
+
 	a->Emote( (uShort)lua_tonumber(ls, 2) );
 	return 0;
 }
@@ -96,11 +96,11 @@ int actor_Emote(lua_State* ls)
 // .Jump(actor, type) - Type being: 0: Standing Jump, 1: Walking Jump, 2: Running Jump
 int actor_Jump(lua_State* ls)
 {
-	PRINT("actor_Jump");
+	DEBUGOUT("actor_Jump");
 	luaCountArgs(ls, 2);
 
 	Actor* a = getReferencedActor(ls);
-	
+
 	a->Jump( (byte)lua_tonumber(ls, 2) );
 	return 0;
 }
@@ -110,7 +110,7 @@ int actor_Fall(lua_State* ls)
 {
 	luaCountArgs(ls, 3);
 	Actor* a = getReferencedActor(ls);
-	
+
 	a->Fall( (int)lua_tonumber(ls, 2), (int)lua_tonumber(ls, 3) );
 	return 0;
 }
@@ -120,38 +120,38 @@ int actor_Rise(lua_State* ls)
 {
 	luaCountArgs(ls, 2);
 	Actor* a = getReferencedActor(ls);
-	
+
 	a->Rise( (int)lua_tonumber(ls, 2) );
 	return 0;
 }
 
 // x, y = .GetDestination(actor)
-int actor_GetDestination(lua_State* ls) 
+int actor_GetDestination(lua_State* ls)
 {
-	PRINT("actor_GetDestination");
+	DEBUGOUT("actor_GetDestination");
 	luaCountArgs(ls, 1);
 
 	Actor* a = getReferencedActor(ls);
-	
+
 	point2d p = a->GetDestination();
 	lua_pushnumber(ls, p.x);
 	lua_pushnumber(ls, p.y);
-	
-	return 2;	
+
+	return 2;
 }
 
 // .CanMove(actor, direction, distance) - Direction corrosponding with a keypad number.
 int actor_CanMove(lua_State* ls)
 {
-	PRINT("actor_CanMove");
+	DEBUGOUT("actor_CanMove");
 	luaCountArgs(ls, 3);
 
 	Actor* a = getReferencedActor(ls);
-	
-	bool canMove = a->CanMove( stringToDirection(lua_tostring(ls, 2)), 
+
+	bool canMove = a->CanMove( stringToDirection(lua_tostring(ls, 2)),
 												(sShort)lua_tonumber(ls, 3)
 							);
-	
+
 	lua_pushboolean( ls, canMove );
 	return 1;
 }
@@ -159,59 +159,59 @@ int actor_CanMove(lua_State* ls)
 // .MoveTo(actor, x, y, speed) - Will try to move to x, y. (Will use pathfinding, and return 1 if it's possible, when implemented)
 int actor_MoveTo(lua_State* ls)
 {
-	PRINT("actor_MoveTo");
+	DEBUGOUT("actor_MoveTo");
 	luaCountArgs(ls, 3);
 
 	int numArgs = lua_gettop( ls );
-	
+
 	Actor* a = getReferencedActor(ls);
-	
+
 	byte speed = 0;
 	if (numArgs > 3)
 		speed = (byte)lua_tonumber(ls, 4);
-	
+
 	point2d p((sShort)lua_tonumber(ls, 2), (sShort)lua_tonumber(ls, 3));
 	a->MoveTo(p, speed);
-	
+
 	return 0;
 }
 
 // .Move(actor, direction, distance, speed)
 int actor_Move(lua_State* ls)
 {
-	PRINT("actor_Move");
+	DEBUGOUT("actor_Move");
 	luaCountArgs(ls, 4);
 
 	Actor* a = getReferencedActor(ls);
-	
+
 	a->Move( stringToDirection(lua_tostring(ls, 2)), (sShort)lua_tonumber(ls, 3), (byte)lua_tonumber(ls, 4) );
-	
+
 	return 0;
 }
 
 // .AddToBuffer(actor, "bufferdata")
 int actor_AddToBuffer(lua_State* ls)
 {
-	PRINT("actor_AddToBuffer");
+	DEBUGOUT("actor_AddToBuffer");
 	luaCountArgs(ls, 2);
 
 	Actor* a = getReferencedActor(ls);
-	
+
 	a->AddToActionBuffer( lua_tostring(ls, 2) );
-	
+
 	return 0;
 }
 
 // .LoadAvatar(actor, "file", "pass", w, h, delay, flags) Returns 1 on success, 0 otherwise.
 int actor_LoadAvatar(lua_State* ls)
 {
-	PRINT("actor_LoadAvatar");
+	DEBUGOUT("actor_LoadAvatar");
 	luaCountArgs(ls, 7);
 
 	Actor* a = getReferencedActor(ls);
 
 	string url = lua_tostring(ls, 2);
-	
+
 	// don't allow them out of our cache unless they're using an avy:// construct
 	if (url.find("avy://") == string::npos)
 		url = game->mMap->mWorkingDir + url;
@@ -220,7 +220,7 @@ int actor_LoadAvatar(lua_State* ls)
 							(uShort)lua_tonumber(ls, 4), (uShort)lua_tonumber(ls, 5),
 							(uShort)lua_tonumber(ls, 6), (uShort)lua_tonumber(ls, 7)
 						);
-						
+
 	lua_pushboolean(ls, result);
 	return 1;
 }
@@ -228,16 +228,16 @@ int actor_LoadAvatar(lua_State* ls)
 //	.Face(actor1, entity) - Change actor1's direction to face entity
 int actor_Face(lua_State* ls)
 {
-	PRINT("actor_Face");
+	DEBUGOUT("actor_Face");
 	luaCountArgs(ls, 2);
-	
+
 	Actor* a = getReferencedActor(ls);
 
 	Entity* e = (Entity*)lua_touserdata(ls, 2);
-	
+
 	if (!_verifyEntity(e))
 		return 0;
-	
+
 	a->Face(e);
 	return 0;
 }
@@ -280,10 +280,10 @@ int actor_GetSkill(lua_State* ls)
 	}
 	else
 	{
-		lua_pushnil(ls);	
+		lua_pushnil(ls);
 	}
-	
-	return 1;	
+
+	return 1;
 }
 
 //	.SetSkill(actor, slot, "id") - Sets the slot to the specified skill ID
@@ -295,13 +295,13 @@ int actor_SetSkill(lua_State* ls)
 	Actor* a = getReferencedActor(ls, 1);
 	int slot = (int)lua_tonumber(ls, 2);
 	string s = lua_tostring(ls, 3);
-	
+
 	if (slot >= 0 && slot < 5)
 	{
 		a->m_sSkills[slot].id = s;
 	}
-	
-	return 0;	
+
+	return 0;
 }
 */
 static const luaL_Reg functions[] = {

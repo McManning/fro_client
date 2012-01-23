@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -45,7 +45,7 @@ uShort timer_doWarpQueue(timer* t, uLong ms)
 {
 	queuedPlayerWarp* w = (queuedPlayerWarp*)t->userData;
 	game->mPlayer->Warp(w->id, w->point, w->obj);
-	
+
 	return TIMER_DESTROY;
 }
 
@@ -62,7 +62,7 @@ void timer_destroyWarpQueue(timer* t)
 // .GetActor() return cptr to our controlled entity, so that it can be manipulated via the Entity lib
 int player_GetActor(lua_State* ls)
 {
-	PRINT("player_GetActor");
+	DEBUGOUT("player_GetActor");
 
 	lua_pushlightuserdata(ls, game->mPlayer);
 	return 1;
@@ -71,7 +71,7 @@ int player_GetActor(lua_State* ls)
 int player_IsInChatMode(lua_State* ls)
 {
 	lua_pushboolean(ls, game->mGameMode == GameManager::MODE_CHAT);
-	return 1;	
+	return 1;
 }
 
 //.Warp("id", x<-1>, y<-1>) - Warp to the specified map. If x, y are not supplied, will warp to default spawn point.
@@ -79,15 +79,15 @@ int player_IsInChatMode(lua_State* ls)
 // OR .Warp(x, y) - Warp to specified coordinates on the current map
 int player_Warp(lua_State* ls)
 {
-	PRINT("player_Warp");
+	DEBUGOUT("player_Warp");
 	luaCountArgs(ls, 1);
-	
+
 	int numArgs = lua_gettop(ls);
-	
+
 	string id;
 	string name;
 	point2d p;
-	
+
 	if (lua_isnumber(ls, 1) && numArgs > 1) //change coordinates on current map
 	{
 		p.x = (int)lua_tonumber(ls, 1);
@@ -113,12 +113,12 @@ int player_Warp(lua_State* ls)
 		// By calling Warp here, we destroy the lua script from within. This cannot be done.
 		// So it's time to rig a timer!
 		//game->mPlayer->Warp(id, p, name);
-		
+
 		queuedPlayerWarp* w = new queuedPlayerWarp;
 		w->id = id;
 		w->point = p;
 		w->obj = name;
-		timers->Add("", 0, true, timer_doWarpQueue, timer_destroyWarpQueue, w); 
+		timers->Add("", 0, true, timer_doWarpQueue, timer_destroyWarpQueue, w);
 	}
 
 	return 0;
@@ -129,7 +129,7 @@ int player_Warp(lua_State* ls)
 ********************************/
 
 /*
-//.GiveItem(tItem) - Adds the detailed item to our inventory. 
+//.GiveItem(tItem) - Adds the detailed item to our inventory.
 int player_GiveItem(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
@@ -147,7 +147,7 @@ int player_GetItem(lua_State* ls)
 
 	ASSERT(inventory);
 	string id = lua_tostring(ls, 1);
-	
+
 	return inventory->LuaWriteItemTable(ls, id);
 }
 
@@ -163,11 +163,11 @@ int player_TakeItem(lua_State* ls)
 	return 0;
 }
 
-// .GetCash() - Returns total dorra 
+// .GetCash() - Returns total dorra
 int player_GetCash(lua_State* ls)
 {
 	ASSERT(inventory);
-	
+
 	lua_pushnumber(ls, inventory->GetCash());
 	return 1;
 }
@@ -176,48 +176,48 @@ int player_GetCash(lua_State* ls)
 int player_AddCash(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	ASSERT(inventory);
-	
+
 	int amt = (int)lua_tonumber(ls, 1);
 	int mydorra = inventory->GetCash();
-	
+
 	if (mydorra + amt < 0)
 		amt = mydorra * -1;
 
-	game->mChat->AddMessage("\\c990 * " + string( (amt < 0) ? "Lost " : "Gained " ) + 
+	game->mChat->AddMessage("\\c990 * " + string( (amt < 0) ? "Lost " : "Gained " ) +
 							its((amt < 0) ? -amt : amt) + " Dorra!");
-	
+
 	inventory->SetCash( mydorra + amt );
 	return 0;
 }
 */
 
 // .GetProp("property") returns a cptr, number, or string based on the property we're retrieving
-int player_GetProp(lua_State* ls) 
+int player_GetProp(lua_State* ls)
 {
-	PRINT("player_GetProp");
+	DEBUGOUT("player_GetProp");
 	luaCountArgs(ls, 1);
 
 	ASSERT(game->mPlayer);
-	
+
 	string prop = lowercase(lua_tostring(ls, 1));
 	int result = game->mPlayer->LuaGetProp(ls, prop);
 
 	if (!result)
 		console->AddMessage("Player.GetProp() '" + prop + "' Unknown");
-	
+
 	return result;
 }
 
 // .SetProp("property", value) Sets the property to the specified value. Value can be num, string, ptr, depends on the property.
 int player_SetProp(lua_State* ls)
 {
-	PRINT("player_SetProp");
+	DEBUGOUT("player_SetProp");
 	luaCountArgs(ls, 2);
 
 	ASSERT(game->mPlayer);
-	
+
 	string prop = lowercase(lua_tostring(ls, 1));
 	int result = game->mPlayer->LuaSetProp(ls, prop, 2);
 
@@ -236,8 +236,8 @@ int player_GetFlag(lua_State* ls)
 
 	string s = game->mPlayer->GetFlag( lua_tostring(ls, 1) );
 	lua_pushstring(ls, s.c_str());
-	
-	return 1;	
+
+	return 1;
 }
 
 //	.SetFlag("flag", "value")
@@ -257,22 +257,22 @@ int player_SetFlag(lua_State* ls)
 //		Will +1 the total for the achievement. If total == max, display to the player
 int player_EarnAchievement(lua_State* ls)
 {
-	PRINT("player_EarnAchievement");
+	DEBUGOUT("player_EarnAchievement");
 	luaCountArgs(ls, 1);
 	int numArgs = lua_gettop(ls);
-	
+
 	string title, desc, file;
 	int max = 1;
-	
+
 	title = lua_tostring(ls, 1);
 	if (numArgs > 1)
 		desc = lua_tostring(ls, 2);
-	
+
 	if (numArgs > 2)
 		max = (int)lua_tonumber(ls, 3);
 
 	game->EarnAchievement(title, desc, max);
-	
+
 	return 0;
 }
 
@@ -280,20 +280,20 @@ int player_EarnAchievement(lua_State* ls)
 //		if they have earned the achievement. Or nothing if we don't have it.
 int player_GetAchievement(lua_State* ls)
 {
-	PRINT("player_GetAchievement");
+	DEBUGOUT("player_GetAchievement");
 	luaCountArgs(ls, 1);
-	
+
 	if (!lua_isstring(ls, 1))
 		return 0;
-	
+
 	string title = lua_tostring(ls, 1);
 
 	XmlFile* xf = &game->mPlayerData;
-		
+
 	//Get master element
 	TiXmlElement* top = xf->mDoc.FirstChildElement();
 	TiXmlElement* e;
-	
+
 	ASSERT(top);
 
 	e = top->FirstChildElement("achievements");
@@ -306,22 +306,22 @@ int player_GetAchievement(lua_State* ls)
 			{
 				lua_newtable(ls);
 				int top = lua_gettop(ls);
-				
+
 				//insert our data into a new table
 				lua_pushstring( ls, "title" );
 				lua_pushstring( ls, title.c_str() );
-				
+
 				lua_pushstring( ls, "description" );
 				lua_pushstring( ls, xf->GetParamString(e, "desc").c_str() );
-				
+
 				lua_pushstring( ls, "max" );
 				lua_pushnumber( ls, xf->GetParamInt(e, "max") );
-				
+
 				lua_pushstring( ls, "total" );
 				lua_pushnumber( ls, xf->GetParamInt(e, "total") );
-				
+
 				lua_settable(ls, top);
-				
+
 				return 1;
 			}
 			e = e->NextSiblingElement();
@@ -336,7 +336,7 @@ int player_GetAchievement(lua_State* ls)
 int player_RequestDuelAction(lua_State* ls)
 {
 	luaCountArgs(ls, 2);
-	
+
 	Actor* a = NULL;
 	if (!lua_isnil(ls, 1))
 		a = (Actor*)lua_touserdata(ls, 1);
@@ -345,7 +345,7 @@ int player_RequestDuelAction(lua_State* ls)
 
 	PlayerActionMenu* m = new PlayerActionMenu(timeout, a);
 	game->mMap->Add(m);
-	
+
 	return 0;
 }
 
@@ -355,13 +355,13 @@ int player_GetPartySlot(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
 	int slot = (int)lua_tonumber(ls, 1);
-	
+
 	Entity* e;
 	if (slot == -1)
 		e = game->mPlayer;
 	else
 		e = game->mParty->GetSlot( slot );
-	
+
 	if (e)
 		lua_pushlightuserdata(ls, e);
 	else
@@ -375,22 +375,22 @@ int player_AddLunemToParty(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
 	Entity* e = (Entity*)lua_touserdata(ls, 1);
-	
+
 	lua_pushboolean( ls, (e && e->mType == ENTITY_LUNEM && game->mParty->AddLunem((Lunem*)e)) );
-	
+
 	return 1;
 }
 
 //	.ClearPartySlot(iSlot) - returns false if the slot was already empty or invalid, true otherwise.
-//		Will delete the Lunem from that slot. If the lunem exists on the map too, it will remain 
+//		Will delete the Lunem from that slot. If the lunem exists on the map too, it will remain
 //		on the map. Otherwise, the class is fully deleted
 int player_ClearPartySlot(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	int slot = (int)lua_tonumber(ls, 1);
 	lua_pushboolean( ls, game->mParty->ClearSlot(slot) );
-	
+
 	return 1;
 }
 
@@ -403,38 +403,38 @@ int player_IsPartyFull(lua_State* ls)
 
 int player_IsPartyEmpty(lua_State* ls)
 {
-	
+
 }
 
 int player_HasUsablePartyMember(lua_State* ls)
 {
 	lua_pushboolean( ls, game->mParty->HasLivingMember() );
 	return 1;
-}	
+}
 */
 
 /*	.UseItemOnPartyMember("id")
-		Will open the party dialog for the player to select a target party member. 
+		Will open the party dialog for the player to select a target party member.
 		Once a member is selected, will send out ITEM_USE with an additional table item: slot
-*/		
-/*		
+*/
+/*
 int player_UseItemOnPartyMember(lua_State* ls)
 {
 	luaCountArgs(ls, 1);
-	
+
 	string id = lua_tostring(ls, 1);
-	
+
 	game->mParty->SetVisible(true);
 	game->mParty->SetUseItemMode(id);
 	game->mParty->MoveToTop();
-	
+
 	return 0;
 }
 
 int player_EndDuelTurn(lua_State* ls)
-{	
+{
 	game->EndPlayersDuelTurn();
-	return 0;	
+	return 0;
 }
 */
 static const luaL_Reg functions[] = {

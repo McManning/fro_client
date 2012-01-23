@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -35,18 +35,18 @@ Uint32 SDL_GetPixel(SDL_Surface* surf, Uint32 x, Uint32 y)
 	{
 		FATAL("SDL_GetPixel called on " + pts(surf) + " without lock.");
 	}
-	
+
 	if (x >= surf->w || y >= surf->h || x < 0 || y < 0) {
 	//	WARNING("Invalid XY " + pts(surf));
 		return 0;
 	}
-	
+
 //	Uint32 pixel;
     int bpp = surf->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
     Uint8 *p = (Uint8 *)surf->pixels + y * surf->pitch + x * bpp;
 
-    switch (bpp) 
+    switch (bpp)
 	{
 	    case 1:
 	        return *p;
@@ -69,26 +69,26 @@ Uint32 SDL_GetPixel(SDL_Surface* surf, Uint32 x, Uint32 y)
     }
 }
 
-bool SDL_SetPixel(SDL_Surface* surf, Uint32 x, Uint32 y, 
+bool SDL_SetPixel(SDL_Surface* surf, Uint32 x, Uint32 y,
 					Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool copy)
 {
 	if (!surf)
 		return false;
-		
-    Uint32 	Rmask = surf->format->Rmask, 
-			Gmask = surf->format->Gmask, 
-			Bmask = surf->format->Bmask, 
+
+    Uint32 	Rmask = surf->format->Rmask,
+			Gmask = surf->format->Gmask,
+			Bmask = surf->format->Bmask,
 			Amask = surf->format->Amask;
     Uint32 R, G, B, A = 0;
 
     //Constrain this function to the surfaces clip
-	if (x >= surf->clip_rect.w + surf->clip_rect.x 
-		|| y >= surf->clip_rect.h + surf->clip_rect.y 
-		|| x < surf->clip_rect.x 
+	if (x >= surf->clip_rect.w + surf->clip_rect.x
+		|| y >= surf->clip_rect.h + surf->clip_rect.y
+		|| x < surf->clip_rect.x
 		|| y < surf->clip_rect.y)
 	{
 		//WARNING("Out of Bounds " + pts(surface));
-		return false; 
+		return false;
 	}
 
 	Uint32 c = SDL_MapRGBA(surf->format, r, g, b, a);
@@ -202,25 +202,24 @@ SDL_Surface* SDL_NewSurface(Uint32 width, Uint32 height, color colorKey, bool al
 	SDL_Surface *blankImg = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32,
 													 RMASK, GMASK, BMASK, AMASK);
 
-    if (blankImg == NULL) 
+    if (blankImg == NULL)
 	{
-        THROWNUM(1);
-        return NULL;
+        FATAL("SDL_CreateRGBSurface error");
     }
 
-    SDL_SetColorKey(blankImg, SDL_SRCCOLORKEY | SDL_RLEACCEL,	
+    SDL_SetColorKey(blankImg, SDL_SRCCOLORKEY | SDL_RLEACCEL,
 			SDL_MapRGB(blankImg->format, colorKey.r, colorKey.g, colorKey.b));
-			
+
     SDL_Surface* blankImgB;
 	if (alphaChannel)
 		blankImgB = SDL_DisplayFormatAlpha(blankImg);
-	else //Yes. It matters. Fucking SDL. 
+	else //Yes. It matters. Fucking SDL.
 		blankImgB = SDL_DisplayFormat(blankImg);
-		
+
     SDL_FreeSurface(blankImg);
-    
+
     if (!alphaChannel)
-    	SDL_FillRect(blankImgB, &blankImgB->clip_rect, 
+    	SDL_FillRect(blankImgB, &blankImgB->clip_rect,
 					SDL_MapRGB(blankImgB->format, colorKey.r, colorKey.g, colorKey.b));
 
 	return blankImgB;
@@ -240,59 +239,59 @@ SDL_Surface* SDL_CopySurface(SDL_Surface* src, SDL_Rect r)
 	rr.x = rr.y = 0;
 	rr.w = src->w;
 	rr.h = src->h;
-	
+
 	//constrain clip to our image. TODO: are these calculations right?
 	if (r.x < rr.x) r.x = rr.x;
 	if (r.y < rr.y) r.y = rr.y;
 	if (r.x + r.w > rr.w) r.w = rr.w - r.x;
 	if (r.y + r.h > rr.h) r.h = rr.h - r.y;
-	
+
 	/*if (!ConstrainRect(r, rr))
 	{
 		printf("Invalid Src Rect\n");
-		return NULL;	
+		return NULL;
 	}*/
-	
-	//to avoid having to deal with palettes and lower BPP conversions, let's just use SDL to convert the 
+
+	//to avoid having to deal with palettes and lower BPP conversions, let's just use SDL to convert the
 	//image to a 4 BPP version
 	SDL_Surface* tmp = SDL_DisplayFormatAlpha( src );
-	
+
 	if (!tmp)
 		return NULL;
-		
-	//if we're copying the entire surface, SDL_DisplayFormatAlpha did it for us already. 
+
+	//if we're copying the entire surface, SDL_DisplayFormatAlpha did it for us already.
 	if (r.x == 0 && r.y == 0 && r.w == tmp->w && r.h == tmp->h)
 		return tmp;
-	
+
 	//Otherwise, need to create a new surface and do a bit of memory work.
-	
+
 	//Generate a container for pixels
 	dst = SDL_CreateRGBSurface(SDL_SWSURFACE,
 				r.w, r.h, tmp->format->BitsPerPixel,
-				tmp->format->Rmask, tmp->format->Gmask, 
+				tmp->format->Rmask, tmp->format->Gmask,
 				tmp->format->Bmask, tmp->format->Amask);
 
 	if (SDL_MUSTLOCK(dst))
 		SDL_LockSurface(dst);
 	if (SDL_MUSTLOCK(tmp))
 		SDL_LockSurface(tmp);
-	
+
 	//Copy the subsection of pixels over
 	for (y = r.y; y < r.y + r.h; y++)
 	{
-		memcpy((char*)dst->pixels + (dst->pitch * dy), 
+		memcpy((char*)dst->pixels + (dst->pitch * dy),
 				(char*)tmp->pixels + (tmp->pitch * y + (r.x * tmp->format->BytesPerPixel)),
 				dst->pitch);
 		dy++;
 	}
-	
+
 	if (SDL_MUSTLOCK(dst))
 		SDL_UnlockSurface(dst);
 	if (SDL_MUSTLOCK(tmp))
 		SDL_UnlockSurface(tmp);
-		
+
 	SDL_FreeSurface(tmp);
-	
+
 	return dst;
 }
 
@@ -305,9 +304,9 @@ void SDL_Colorize(SDL_Surface* src, Uint8 r, Uint8 g, Uint8 b)
 	{
 		for (Uint32 x = 0; x < src->w; x++)
 		{
-			
+
 			SDL_GetRGBA( SDL_GetPixel(src, x, y), src->format, &r2, &g2, &b2, &a2 );
-			
+
 			//If greyscale, perform pixel adjustment
 			if ( r2 == g2 && g2 == b2)
 			{
@@ -315,12 +314,12 @@ void SDL_Colorize(SDL_Surface* src, Uint8 r, Uint8 g, Uint8 b)
 				r2 = (Uint8)((double)r + ( (double)(255 - r2) / 255 * (-(double)r) ));
 				g2 = (Uint8)((double)g + ( (double)(255 - g2) / 255 * (-(double)g) ));
 				b2 = (Uint8)((double)b + ( (double)(255 - b2) / 255 * (-(double)b) ));
-				
+
 				SDL_SetPixel(src, x, y, r2, g2, b2, a2, true);
 			}
-		
+
 		}
-	}	
+	}
 	UNLOCKSURF(src);
 }
 
