@@ -1,23 +1,23 @@
 
 /*
  * Copyright (c) 2011 Chase McManning
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights 
+ * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is 
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
 
@@ -42,13 +42,13 @@ uShort timer_inputThink(timer* t, uLong ms)
 	Input* i = (Input*)t->userData;
 	if (!i)
 		return TIMER_DESTROY;
-		
+
 	if (i->mIsPassword && !i->GetText().empty())
 		i->Changed();
 
 	// TODO: Blink the caret!
-	
-	return TIMER_CONTINUE;	
+
+	return TIMER_CONTINUE;
 }
 
 string getInputText(Widget* parent, string id)
@@ -101,10 +101,10 @@ InputMenu::InputMenu(Input* parent)
 {
 
 	Button* b;
-	
+
 	uShort y = 0;
 	uShort x = 0;
-	
+
 	uShort buttonSize = 18;
 
 	b = new Button(this, "cut", rect(x, y, buttonSize, buttonSize), "", callback_inputMenuCut);
@@ -116,17 +116,17 @@ InputMenu::InputMenu(Input* parent)
 		b->mHoverText = "Copy (Ctrl+C)";
 		b->SetImage("assets/gui/input_copy.png");
 	x += buttonSize;
-			
+
 	b = new Button(this, "paste", rect(x, y, buttonSize, buttonSize), "", callback_inputMenuPaste);
 		b->mHoverText = "Paste (Ctrl+V)";
 		b->SetImage("assets/gui/input_paste.png");
 	x += buttonSize;
-				
+
 	b = new Button(this, "selectall", rect(x, y, buttonSize, buttonSize), "", callback_inputMenuSelectAll);
 		b->mHoverText = "Select All (Ctrl+A)";
 		b->SetImage("assets/gui/input_selectall.png");
 	x += buttonSize;
-			
+
 	b = new Button(this, "color", rect(x, y, buttonSize, buttonSize), "", callback_inputMenuPasteColor);
 		b->mHoverText = "Paste Color (Ctrl+B)";
 		b->SetImage("assets/gui/input_color.png");
@@ -154,7 +154,7 @@ InputMenu::~InputMenu()
 void InputMenu::Event(SDL_Event* event)
 {
 	Frame::Event(event);
-	
+
 	//If the user hits any keys, destroy this info frame
 	if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP)
 		Die();
@@ -163,7 +163,7 @@ void InputMenu::Event(SDL_Event* event)
 
 /////////////////////////////////////////////////////////////
 
-Input::Input(Widget* wParent, string sId, rect rPosition, string sMask, 
+Input::Input(Widget* wParent, string sId, rect rPosition, string sMask,
 				uShort uMaxLen, bool bSpecialKeys, void (*callbackOnEnter)(Input*))
 {
 	mNeedUpdate = false;
@@ -176,7 +176,7 @@ Input::Input(Widget* wParent, string sId, rect rPosition, string sMask,
 
 	SetSelection(0, 0);
 	SetMenuEnabled(true);
-	
+
 	mCaretPos = 0;
 	mPixelX = 0;
 	mSelecting = false;
@@ -196,22 +196,22 @@ Input::Input(Widget* wParent, string sId, rect rPosition, string sMask,
 	mCharacterMask = sMask;
 
 	SetImage("assets/gui/input_bg.png");
-	
+
 	SetPosition(rPosition);
-	
+
 	if (wParent)
 		wParent->Add(this);
-	
+
 	timers->Add("", 100, false, timer_inputThink, NULL, this);
 }
 
-Input::~Input() 
+Input::~Input()
 {
 	mHistory.clear();
 	resman->Unload(mTextImage);
 }
 
-void Input::Render() 
+void Input::Render()
 {
 	Image* scr = Screen::Instance();
 	rect r = GetScreenPosition();
@@ -222,7 +222,7 @@ void Input::Render()
 	}
 
 	//Do a little bit of calculating
-	/*if (gui->GetTick() > mLastBlink && !mReadOnly && IsActive()) 
+	/*if (gui->GetTick() > mLastBlink && !mReadOnly && IsActive())
 	{
 		mLastBlink = gui->GetTick() + 600;
 		mDrawCaret = !mDrawCaret;
@@ -239,16 +239,16 @@ void Input::Render()
 
 	if (mIsPassword)
 	{
-		_renderPassword(scr, r);	
+		_renderPassword(scr, r);
 	}
 	else
 	{
 		// TODO: Good calculations that don't need clipping!
 		scr->PushClip(r);
-		
+
 		_renderText(scr, r);
-		
-		scr->PopClip();	
+
+		scr->PopClip();
 	}
 
 	Widget::Render();
@@ -258,9 +258,9 @@ void Input::_renderPassword(Image* scr, rect& r)
 {
 	if (mText.empty())
 		return;
-		
+
 	//render the visible text
-	mTextImage->Render(scr, r.x, r.y-1, 	
+	mTextImage->Render(scr, r.x, r.y-1,
 						rect(mPixelX-2, 0, r.w, r.h)
 					);
 }
@@ -268,64 +268,64 @@ void Input::_renderPassword(Image* scr, rect& r)
 void Input::_renderText(Image* scr, rect& r)
 {
 	int x, w, selStart, selEnd;
-	
+
 	if (mText.empty() || !mTextImage)
 		return;
 
 	//r.y += ((r.h / 2) - (mTextImage->Height() / 2));
-		
+
 	//render the highlight if we got it
-	if (mSelectionEnd != mSelectionStart && mFont) 
+	if (mSelectionEnd != mSelectionStart && mFont)
 	{
 		selStart = mSelectionStart;
 		selEnd = mSelectionEnd;
 		if (selStart > selEnd)
 			std::swap(selStart, selEnd);
-			
+
 		x = mFont->GetWidth(mText.substr(0, selStart));
 		x -= mPixelX;
 
 		//x is now the distance from the start to render text to the selection end.
-		if (x < 0) 
+		if (x < 0)
 			x = 0; //don't need to highlight shit not visible
-			
+
 		w = mFont->GetWidth(mText.substr(selStart, selEnd - selStart));
-		if (x + w > r.w) 
+		if (x + w > r.w)
 			w = r.w - x;
-		
+
 		//now have a clipped width~ Now draw the rect.
 		scr->DrawRect( rect(r.x + x, r.y, w, mTextImage->Height()), gui->mBaseColor );
 	}
-	
+
 	//render the visible text
-	mTextImage->Render(scr, r.x, r.y, 	
+	mTextImage->Render(scr, r.x, r.y,
 					rect(mPixelX, 0, r.w, r.h)
 				);
 
 	x = r.x + (CaretPosToPixel() - mPixelX);// - 1;
 
 	if (x < r.x + r.w /*&& mDrawCaret*/
-		&& !mReadOnly && IsActive() && HasKeyFocus() && x > r.x) 
+		&& !mReadOnly && IsActive() && HasKeyFocus() && x > r.x)
 	{
 		//render the caret (Same color as text)
 		scr->DrawRect(rect(x-1, r.y /*+ 1*/, 2, mTextImage->Height()/* - 2*/), mFontColor);
 	}
 }
 
-void Input::RecalculatePixelX() 
+void Input::RecalculatePixelX()
 {
 	//grab what section to render
 	int c = CaretPosToPixel();
 
-	if (mCaretPos == 0) 
+	if (mCaretPos == 0)
 	{
 		mPixelX = 0;
-	} 
+	}
 	else if (mPixelX > c) //caret is too far left
 	{
 		//uShort i = (mCaretPos - INPUT_JUMPBACK_NUM < 0) ? 0 : mCaretPos - INPUT_JUMPBACK_NUM;
 		//mPixelX = c - mFont->GetWidth(mText.substr(i, INPUT_JUMPBACK_NUM));
-		if (mCaretPos-1 < 0) 
+		if (mCaretPos-1 < 0)
 		{
 			mPixelX = 0;
 		}
@@ -336,10 +336,10 @@ void Input::RecalculatePixelX()
 			else
 				mPixelX -= mFont->GetWidth(mText.substr(mCaretPos-1, 1));
 		}
-	} 
+	}
 	else if (mPixelX + mPosition.w < c) //caret is too far right
-	{ 
-		mPixelX = c - mPosition.w + 7; //Compensate for the cursor-off-the-edge issue 
+	{
+		mPixelX = c - mPosition.w + 7; //Compensate for the cursor-off-the-edge issue
 	}
 }
 
@@ -352,9 +352,9 @@ void Input::SetCaretPos(int rx, int ry)
 	mDrawCaret = false; //false because update() will fix it
 	mLastBlink = 0;
 
-	for (int i = 0; i < mText.length(); i++) 
+	for (int i = 0; i < mText.length(); i++)
 	{
-		if (mFont->GetWidth(mText.substr(0, i).c_str()) > rx - mx + mPixelX) 
+		if (mFont->GetWidth(mText.substr(0, i).c_str()) > rx - mx + mPixelX)
 		{
 			//TODO: Bug: can't set between the LAST and LAST-1 character.
 			if (i == 0)
@@ -366,14 +366,14 @@ void Input::SetCaretPos(int rx, int ry)
 	}
 
 	mCaretPos = mText.length();
-	
+
 	FlagRender();
 }
 
 //Convert position between letters right back to a pixel pos
-int Input::CaretPosToPixel() 
+int Input::CaretPosToPixel()
 {
-	if (!mFont) 
+	if (!mFont)
 		return 0;
 	else if (mIsPassword)
 		return mText.substr(0, mCaretPos).length() * 16;
@@ -381,24 +381,24 @@ int Input::CaretPosToPixel()
 		return mFont->GetWidth(mText.substr(0, mCaretPos));
 }
 
-void Input::SetSelection(int start, int end) 
+void Input::SetSelection(int start, int end)
 {
     //Clamp the selection to the size of the string
-    if(start > mText.size()) 
+    if(start > mText.size())
 		start = mText.size();
-		
-    if(end > mText.size()) 
+
+    if(end > mText.size())
 		end = mText.size();
-		
-	if (start < 0) 
+
+	if (start < 0)
 		start = 0;
-		
-	if (end < 0) 
+
+	if (end < 0)
 		end = 0;
-		
+
     mSelectionStart = start;
     mSelectionEnd = end;
-    
+
     FlagRender();
 }
 
@@ -411,7 +411,7 @@ void Input::Event(SDL_Event* event)
 			{
 				mClickedOnce = false;
 				rect r = GetScreenPosition();
-				
+
 				if (mSelecting)
 				{
 					if (event->motion.x < r.x)
@@ -420,15 +420,15 @@ void Input::Event(SDL_Event* event)
 						if (mCaretPos < 0)
 							mCaretPos = 0;
 						SetSelection(mSelectionStart, mCaretPos);
-					} 
+					}
 					else if (event->motion.x > r.x + r.w)
 					{
 						mCaretPos++;
-						if (mCaretPos > mText.length()) 
+						if (mCaretPos > mText.length())
 							mCaretPos = mText.length();
 						SetSelection(mSelectionStart, mCaretPos);
-					} 
-					else 
+					}
+					else
 					{
 						SetCaretPos(event->motion.x, event->motion.y);
 						SetSelection(mSelectionStart, mCaretPos);
@@ -437,12 +437,12 @@ void Input::Event(SDL_Event* event)
 				}
 				FlagRender();
 			}
-			
+
             if (DidMouseLeave() || DidMouseEnter())
 			{
-				FlagRender();	
+				FlagRender();
 			}
-			
+
 		} break;
 		case SDL_MOUSEBUTTONUP: {
 			mSelecting = false;
@@ -454,7 +454,7 @@ void Input::Event(SDL_Event* event)
 				{
 					InputMenu* im = (InputMenu*)Get("inputmenu");
 					if (im)
-						im->Die();	
+						im->Die();
 				}*/
 				if (!mIsPassword)
 				{
@@ -467,7 +467,7 @@ void Input::Event(SDL_Event* event)
 			{
 				if (IsMenuEnabled())
 				{
-					//new InputMenu(this);	
+					//new InputMenu(this);
 					RightClickMenu* m = new RightClickMenu();
 						m->AddOption("Cut", callback_inputMenuCut, this);
 						m->AddOption("Copy", callback_inputMenuCopy, this);
@@ -476,7 +476,7 @@ void Input::Event(SDL_Event* event)
 						m->AddOption("Select All", callback_inputMenuSelectAll, this);
 				}
 			}
-			
+
 			// Small hack (Probably a better way to do this) to force a redraw once we lose key focus
 			// To be completely honest, custom events from GuiManager would be so fucking helpful
 			// right now...
@@ -485,14 +485,14 @@ void Input::Event(SDL_Event* event)
 				if (mHasFocusCheck)
 				{
 					mHasFocusCheck = false;
-					Changed();	
+					Changed();
 				}
 			}
 			else
 			{
-				mHasFocusCheck = true;	
+				mHasFocusCheck = true;
 			}
-			
+
 		} break;
 		case SDL_KEYDOWN: {
 			int selStart = mSelectionStart;
@@ -504,7 +504,7 @@ void Input::Event(SDL_Event* event)
 			{
 				if (event->key.keysym.mod & KMOD_CTRL) //handle ctrl+? shortcuts
 				{
-					switch (event->key.keysym.sym) 
+					switch (event->key.keysym.sym)
 					{
 						case SDLK_v:
 							Paste();
@@ -521,43 +521,43 @@ void Input::Event(SDL_Event* event)
 						case SDLK_b:
 							PasteColor();
 							break;
-						default: break;	
+						default: break;
 					}
 				}
 				else if (event->key.keysym.mod & KMOD_ALT)
 				{
-					//ignore	
+					//ignore
 				}
 				else //regular input
 				{
 					switch (event->key.keysym.sym)
 					{
 						case SDLK_BACKSPACE: {
-							if (selStart != selEnd) 
+							if (selStart != selEnd)
 							{
 								mText.erase(mText.begin() + selStart,
 												mText.begin() + selEnd);
 								mCaretPos = selStart;
 								SetSelection(0, 0);
-							} 
-							else if (!mText.empty() && mCaretPos > 0) 
+							}
+							else if (!mText.empty() && mCaretPos > 0)
 							{
 								mCaretPos--;
-								mText.erase(mText.begin() + mCaretPos);	
+								mText.erase(mText.begin() + mCaretPos);
 							}
 						} break;
 						case SDLK_DELETE: {
-							if (selStart != selEnd) 
+							if (selStart != selEnd)
 							{
 								mText.erase(mText.begin() + selStart,
 												mText.begin() + selEnd);
 								mCaretPos = selStart;
 								SetSelection(0, 0);
-							} 
-							else if (!mText.empty() && mCaretPos > 0) 
+							}
+							else if (!mText.empty() && mCaretPos > 0)
 							{
 								if (mCaretPos < mText.size())
-									mText.erase(mText.begin() + mCaretPos);	
+									mText.erase(mText.begin() + mCaretPos);
 							}
 						} break;
 						case SDLK_LEFT: {
@@ -638,34 +638,34 @@ void Input::Event(SDL_Event* event)
 						} break;
 					}
 				}
-				
+
 				Changed();
 			}
 		} break;
 		default: break;
 	}
-	
+
 	Widget::Event(event);
 }
 
-void Input::AddToHistory(string msg) 
+void Input::AddToHistory(string msg)
 {
 	//If the message has content, add it up
-	if (!msg.empty() && (msg.find_first_not_of(' ', 0) != string::npos)) 
-	{ 
+	if (!msg.empty() && (msg.find_first_not_of(' ', 0) != string::npos))
+	{
 		mHistory.push_back(msg);
 		if (mHistory.size() > MAX_INPUT_HISTORY)
 			mHistory.erase(mHistory.begin());
-			
+
 		mHistoryPos = mHistory.size();
 	}
 }
 
-void Input::_updateText() 
+void Input::_updateText()
 {
 	int i, s;
 	color c;
-	
+
 	//TODO: we should probably render the selected text outline & color change here instead of during rendering
 	RecalculatePixelX();
 
@@ -676,10 +676,10 @@ void Input::_updateText()
 	if (mIsPassword) msg.resize(mText.length(), INPUT_PASSWORD_CHAR);
 	else msg = mText;
 */
-	
+
 	if (!mIsPassword)
 	{
-		c = mFontColor; 
+		c = mFontColor;
 		if (/*!IsActive() ||*/ mReadOnly)
 			c.r = c.g = c.b = 128;
 		mTextImage = resman->ImageFromSurface( mFont->RenderToSDL(mText.c_str(), c) );
@@ -693,24 +693,24 @@ void Input::_updateText()
 			s = mText.at(i) - 20;
 			while (s >= MAX_PASSWORD_SYMBOLS)
 				s -= MAX_PASSWORD_SYMBOLS;
-			
+
 			if (mImage)
 				mImage->Render(mTextImage, i * 16, rnd(0, 3), rect((s>9)?29:15, 0+s*14, 14, 14));
-		}	
-	}	
+		}
+	}
 }
 
 //internal call, adds no matter what. Text must pass the checks
 //before calling this to finalize the add.
-void Input::_insertText(string msg) 
+void Input::_insertText(string msg)
 {
 	int selStart = mSelectionStart;
 	int selEnd = mSelectionEnd;
-	
+
 	if (selStart > selEnd)
 		std::swap(selStart, selEnd);
-		
-	if (selStart != selEnd) 
+
+	if (selStart != selEnd)
 	{
 		mText.erase(mText.begin() + selStart,
                 		mText.begin() + selEnd);
@@ -731,56 +731,56 @@ void Input::_insertText(string msg)
 	mDrawCaret = false; //false because update() will fix it. Wait what? TODO: Check into why this is necessary again?
 	mLastBlink = 0;
 
-	Changed();	
+	Changed();
 }
 
-void Input::AddText(string msg) 
+void Input::AddText(string msg)
 {
     //if we find any new lines, erase everything after the first
     //TODO: Maybe we should convert to space? Or send back some sort of warning that content was clipped?
-    if (msg.find("\n", 0) != string::npos) 
+    if (msg.find("\n", 0) != string::npos)
 	{
         msg.erase(msg.find("\n", 0));
     }
 
     //check if the characters are allowed in the mask, if not, don't add any
-    if (!mCharacterMask.empty()) 
+    if (!mCharacterMask.empty())
 	{
-		for (uShort i = 0; i < msg.length(); i++) 
+		for (uShort i = 0; i < msg.length(); i++)
 		{
 			bool found = false;
-			for (uShort c = 0; c < mCharacterMask.length(); c++) 
+			for (uShort c = 0; c < mCharacterMask.length(); c++)
 			{
-				if (mCharacterMask.at(c) == msg.at(i)) 
+				if (mCharacterMask.at(c) == msg.at(i))
 				{
-					found = true; 
-					break; 
+					found = true;
+					break;
 				}
 			}
 			if (!found) return;
 		}
 	}
-    
+
 	_insertText(msg);
 
 }
 
-void Input::Clear() 
+void Input::Clear()
 {
 	mText.clear();
 	mCaretPos = 0;
 	SetSelection(0, 0);
 	Changed();
-	//No need to delete mTextImage here, if mText is clear, mTextImage won't render. 
+	//No need to delete mTextImage here, if mText is clear, mTextImage won't render.
 }
 
-void Input::Changed() 
+void Input::Changed()
 {
-	mNeedUpdate = true; 
-	
+	mNeedUpdate = true;
+
 	if (onChangeCallback)
 		onChangeCallback(this);
-	
+
 	FlagRender();
 }
 
@@ -799,19 +799,19 @@ void Input::Cut()
 	if (selStart > selEnd)
 		std::swap(selStart, selEnd);
 
-	if (selStart != selEnd) 
+	if (selStart != selEnd)
 	{
 		sendStringToClipboard(mText.substr(selStart, selEnd - selStart));
 		mText.erase(mText.begin() + selStart,
 						mText.begin() + selEnd);
 		mCaretPos = selStart;
 		SetSelection(0, 0);
-		
+
 		DEBUGOUT("changed");
 	}
-	
-	
-	
+
+
+
 	Changed();
 }
 

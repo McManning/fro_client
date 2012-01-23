@@ -78,6 +78,7 @@ SDL_Image* ResourceManager::Load(string file, string password)
 	}
 
 	//img->PrintInfo();
+	img->managed = true;
 	mImages.push_back(img);
 
 	return img;
@@ -85,34 +86,28 @@ SDL_Image* ResourceManager::Load(string file, string password)
 
 bool ResourceManager::Unload(SDL_Image* src)
 {
-	if (!src)
-		return false;
+    if (src)
+    {
+        src->refCount--;
+        if (src->refCount < 1)
+        {
+            if (src->managed) // don't search if we're not managing it
+            {
+                // erase from managed list
+                for (int i = 0; i < mImages.size(); i++)
+                {
+                    if (mImages.at(i) && mImages.at(i) == src)
+                    {
+                        mImages.erase(mImages.begin() + i);
+                        break;
+                    }
+                }
+            }
 
-	for (int i = 0; i < mImages.size(); i++)
-	{
-		if (mImages.at(i) && mImages.at(i) == src)
-		{
-		//	DEBUGOUT("[ResourceManager::Unload SDL_Image*] Located Source: " + src->filename
-		//			+ " refcount: " + its(src->refCount));
-			src->refCount--;
-			if (src->refCount < 1) //no more links, delete
-			{
-		//		DEBUGOUT("[ResourceManager::Unload SDL_Image*] Refcount < 1, deleting");
-				delete src;
-				mImages.erase(mImages.begin() + i);
-				return true;
-			}
-			return true;
-		}
-	}
-
-	src->refCount--;
-	if (src->refCount < 1) //no more links, delete
-	{
-//		DEBUGOUT("[ResourceManager::Unload SDL_Image*] Unmanaged Refcount < 1, deleting");
-		SAFEDELETE(src);
-		return true;
-	}
+            delete src;
+            return true;
+        }
+    }
 
 	return false;
 }

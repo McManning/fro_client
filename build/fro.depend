@@ -22,7 +22,7 @@
 	"Image.h"
 	"RectManager.h"
 
-1319872737 e:\fro\trunk\core\image.h
+1327352667 e:\fro\trunk\core\image.h
 	"SDL/SDL_Image.h"
 	"Common.h"
 
@@ -90,7 +90,7 @@
 	<map>
 	"Common.h"
 
-1319872737 e:\fro\trunk\core\resourcemanager.h
+1327352667 e:\fro\trunk\core\resourcemanager.h
 	"Image.h"
 
 1319872737 e:\fro\trunk\core\timermanager.h

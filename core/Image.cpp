@@ -38,6 +38,7 @@ SDL_Image::SDL_Image()
 	refCount = 1;
 	state = NOIMAGE;
 	format = IMG_FORMAT_UNKNOWN;
+	managed = false;
 }
 
 SDL_Image::~SDL_Image()

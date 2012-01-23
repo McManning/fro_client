@@ -60,6 +60,8 @@
 		<Unit filename="..\core\GuiManager.h" />
 		<Unit filename="..\core\Image.cpp" />
 		<Unit filename="..\core\Image.h" />
+		<Unit filename="..\core\Logger.cpp" />
+		<Unit filename="..\core\Logger.h" />
 		<Unit filename="..\core\MessageData.cpp" />
 		<Unit filename="..\core\MessageData.h" />
 		<Unit filename="..\core\MessageManager.cpp" />
