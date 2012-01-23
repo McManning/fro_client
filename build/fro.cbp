@@ -47,8 +47,8 @@
 		<Unit filename="..\avatar\Avatar.h" />
 		<Unit filename="..\avatar\AvatarProperties.cpp" />
 		<Unit filename="..\avatar\AvatarProperties.h" />
-		<Unit filename="fro_private.h" />
-		<Unit filename="fro_private.rc">
+		<Unit filename="build.h" />
+		<Unit filename="build.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
 		<Unit filename="..\core\Common.cpp" />
@@ -115,10 +115,6 @@
 		<Unit filename="..\core\io\KeyValueMap.h" />
 		<Unit filename="..\core\io\md5.cpp" />
 		<Unit filename="..\core\io\md5.h" />
-		<Unit filename="..\core\io\tinyxml\tinyxml.cpp" />
-		<Unit filename="..\core\io\tinyxml\tinyxml.h" />
-		<Unit filename="..\core\io\tinyxml\tinyxmlerror.cpp" />
-		<Unit filename="..\core\io\tinyxml\tinyxmlparser.cpp" />
 		<Unit filename="..\core\net\DataPacket.cpp" />
 		<Unit filename="..\core\net\DataPacket.h" />
 		<Unit filename="..\core\net\DownloadManager.cpp" />

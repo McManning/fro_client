@@ -41,19 +41,6 @@
 
 LoginDialog* loginDialog;
 
-void callback_doUpdate(MessagePopup* m)
-{
-#ifdef WIN32
-	int result = (int)ShellExecute(NULL, "open", "updater.exe", "", NULL, SW_SHOWNORMAL);
-	if (result <= 32)
-	{
-		systemErrorMessage("Error!", "Encountered error code " + its(result) + " while trying to run updater.exe!\n\nPlease complain at http://sybolt.com/community/");
-	}
-#endif
-
-	appState = APPSTATE_CLOSING;
-}
-
 void dlCallback_welcomeDataSuccess(downloadData* data)
 {
 	vString lines;
@@ -85,6 +72,11 @@ void dlCallback_welcomeDataSuccess(downloadData* data)
 				{
 					printf("Hash %s doesn't match\n", hash.c_str());
 					loginDialog->SetControlState(false);
+
+					Label* l = (Label*)(loginDialog->Get("status"));
+					l->SetVisible(true);
+					l->SetCaption("The Gnomes have begun working");
+
 					AutoUpdater* au = new AutoUpdater();
 					au->SendRequestForManifest();
 					isDone = true;
